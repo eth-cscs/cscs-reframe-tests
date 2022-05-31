@@ -4,12 +4,14 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import os
+import sys
 
 import reframe.utility.typecheck as typ
 import reframe as rfm
-
-import checks.microbenchmarks.gpu.hooks as hooks
 from hpctestlib.microbenchmarks.gpu.pointer_chase import *
+
+sys.path.append(os.path.abspath(os.path.join(__file__, '../../..')))
+import microbenchmarks.gpu.hooks as hooks
 
 
 class SystemConfigCSCS(rfm.RegressionMixin):
