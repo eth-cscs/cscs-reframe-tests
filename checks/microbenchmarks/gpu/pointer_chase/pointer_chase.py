@@ -10,7 +10,7 @@ import reframe.utility.typecheck as typ
 import reframe as rfm
 from hpctestlib.microbenchmarks.gpu.pointer_chase import *
 
-sys.path.append(os.path.abspath(os.path.join(__file__, '../../..')))
+sys.path.append(os.path.abspath(os.path.join(__file__, '../../../..')))
 import microbenchmarks.gpu.hooks as hooks
 
 

@@ -9,7 +9,7 @@ import sys
 import reframe as rfm
 from hpctestlib.microbenchmarks.gpu.shmem import GpuShmem
 
-sys.path.append(os.path.abspath(os.path.join(__file__, '../../..')))
+sys.path.append(os.path.abspath(os.path.join(__file__, '../../../..')))
 import microbenchmarks.gpu.hooks as hooks
 
 
