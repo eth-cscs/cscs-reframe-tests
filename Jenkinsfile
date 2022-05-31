@@ -97,7 +97,7 @@ stage('Testing') {
                     checkout scm
                     changedTests =  sh(returnStdout: true,
                                        script: """${loginBash}
-                                       git diff origin/master...HEAD --name-only --oneline --no-merges | grep -e '^checks/.*\\.py' || echo 'NOTESTS'""").trim()
+                                       git diff origin/main...HEAD --name-only --oneline --no-merges | grep -e '^checks/.*\\.py' || echo 'NOTESTS'""").trim()
 
                     changedTestsOption = changedTests == 'NOTESTS' ? '' : changedTests.split().collect { "-c $reframeDir/cscs-reframe-tests/$it" }.join(' ')
                     changedTestsOption = changedTests == 'NOTESTS' ? '' : "${changedTestsOption}"
