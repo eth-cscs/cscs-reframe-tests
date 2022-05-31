@@ -8,7 +8,7 @@ import os
 import reframe.utility.typecheck as typ
 import reframe as rfm
 
-import cscstests.microbenchmarks.gpu.hooks as hooks
+import checks.microbenchmarks.gpu.hooks as hooks
 from hpctestlib.microbenchmarks.gpu.pointer_chase import *
 
 

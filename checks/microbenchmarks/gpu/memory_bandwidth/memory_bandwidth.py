@@ -5,7 +5,7 @@
 
 import reframe as rfm
 
-import cscstests.microbenchmarks.gpu.hooks as hooks
+import checks.microbenchmarks.gpu.hooks as hooks
 from hpctestlib.microbenchmarks.gpu.memory_bandwidth import *
 
 

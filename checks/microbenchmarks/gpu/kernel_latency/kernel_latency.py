@@ -6,7 +6,7 @@
 import reframe as rfm
 
 from hpctestlib.microbenchmarks.gpu.kernel_latency import GpuKernelLatency
-import cscstests.microbenchmarks.gpu.hooks as hooks
+import checks.microbenchmarks.gpu.hooks as hooks
 
 
 @rfm.simple_test

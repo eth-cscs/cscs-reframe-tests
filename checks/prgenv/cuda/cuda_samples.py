@@ -5,7 +5,7 @@
 
 import reframe as rfm
 import reframe.utility.sanity as sn
-import cscstests.microbenchmarks.gpu.hooks as hooks
+import checks.microbenchmarks.gpu.hooks as hooks
 
 
 @rfm.simple_test
