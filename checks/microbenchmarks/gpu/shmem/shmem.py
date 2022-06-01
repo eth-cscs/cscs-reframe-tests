@@ -3,10 +3,14 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-import reframe as rfm
+import os
+import sys
 
+import reframe as rfm
 from hpctestlib.microbenchmarks.gpu.shmem import GpuShmem
-import cscstests.microbenchmarks.gpu.hooks as hooks
+
+sys.path.append(os.path.abspath(os.path.join(__file__, '../../../..')))
+import microbenchmarks.gpu.hooks as hooks
 
 
 @rfm.simple_test
