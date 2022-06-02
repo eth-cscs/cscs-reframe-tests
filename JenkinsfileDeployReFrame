@@ -2,7 +2,7 @@
 
 def latestTag = 'null'
 def machines = '[dom daint eiger pilatus tsa]'
-def reviewersPR = 'teojgo,vkarak'
+def reviewersPR = 'teojgo,ekouts'
 def ebTemplate = '3.11.1'
 
 stage('Retrieve Latest Tag') {
