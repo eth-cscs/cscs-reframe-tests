@@ -6,9 +6,9 @@
 import re
 
 import reframe as rfm
+import reframe.core.runtime as rt
 import reframe.utility.osext as osext
 import reframe.utility.sanity as sn
-
 
 class SlurmSimpleBaseCheck(rfm.RunOnlyRegressionTest):
     '''Base class for Slurm simple binary tests'''
@@ -299,11 +299,35 @@ class slurm_response_check(rfm.RunOnlyRegressionTest):
                                 'real_time', float)
 
 
+system_partitions = {
+    'daint': [
+        'cscsci', 'long', 'large', 'normal*', 'prepost', '2go', 'low', 'xfer',
+        'debug'
+    ],
+    'dom': [
+        'cscsci', 'long', 'large', 'normal*', 'prepost', '2go', 'low', 'xfer'
+    ],
+    'eiger': [
+        'debug', 'normal*', 'prepost', 'low'
+    ],
+    'pilatus': [
+        'debug', 'normal*', 'prepost', 'low'
+    ]
+}
+
+def get_system_partitions():
+    cur_sys_name = rt.runtime().system.name
+    print('curr_system: ', cur_sys_name)
+    if cur_sys_name in system_partitions.keys():
+        return system_partitions[cur_sys_name]
+    else:
+        return []
+
 @rfm.simple_test
-class DaintQueueStatusCheck(rfm.RunOnlyRegressionTest):
+class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
     '''check system queue status'''
 
-    valid_systems = ['daint:login']
+    valid_systems = ['daint:login', 'dom:login', 'eiger:login', 'pilatus:login']
     valid_prog_environs = ['builtin']
     tags = {'slurm', 'maintenance', 'ops',
             'production', 'single-node'}
@@ -312,8 +336,7 @@ class DaintQueueStatusCheck(rfm.RunOnlyRegressionTest):
     local = True
     executable = 'sinfo'
     executable_opts = ['-o', '%P,%a,%D,%T']
-    partname = parameter(['cscsci', 'long', 'large', 'normal*', 'prepost',
-                          '2go', 'low', 'xfer', 'debug'])
+    partname = parameter(get_system_partitions())
     maintainers = ['RS', 'VH']
 
     def assert_partition_exists(self):
@@ -356,14 +379,3 @@ class DaintQueueStatusCheck(rfm.RunOnlyRegressionTest):
             self.assert_min_nodes(),
             self.assert_percentage_nodes(),
         ])
-
-@rfm.simple_test
-class DomQueueStatusCheck(DaintQueueStatusCheck):
-    valid_systems = ['dom:login']
-    partname = parameter(['cscsci', 'long', 'large', 'normal*', 'prepost',
-                          '2go', 'low', 'xfer'])
-
-@rfm.simple_test
-class ALPSQueueStatusCheck(DaintQueueStatusCheck):
-    valid_systems = ['eiger:login', 'pilatus:login']
-    partname = parameter(['debug', 'normal*', 'prepost', 'low'])
