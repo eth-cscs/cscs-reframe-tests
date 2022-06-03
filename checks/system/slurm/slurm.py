@@ -3,6 +3,8 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
+import re
+
 import reframe as rfm
 import reframe.utility.osext as osext
 import reframe.utility.sanity as sn
@@ -295,3 +297,73 @@ class slurm_response_check(rfm.RunOnlyRegressionTest):
     def real_time(self):
         return sn.extractsingle(r'real (?P<real_time>\S+)', self.stderr,
                                 'real_time', float)
+
+
+@rfm.simple_test
+class DaintQueueStatusCheck(rfm.RunOnlyRegressionTest):
+    '''check system queue status'''
+
+    valid_systems = ['daint:login']
+    valid_prog_environs = ['builtin']
+    tags = {'slurm', 'maintenance', 'ops',
+            'production', 'single-node'}
+    min_avail_nodes = variable(int, value=1)
+    ratio_avail_nonavail_nodes = variable(float, value=0.1)
+    local = True
+    executable = 'sinfo'
+    executable_opts = ['-o', '%P,%a,%D,%T']
+    partname = parameter(['cscsci', 'long', 'large', 'normal*', 'prepost',
+                          '2go', 'low', 'xfer', 'debug'])
+    maintainers = ['RS', 'VH']
+
+    def assert_partition_exists(self):
+        num_matches = sn.count(sn.findall(fr'^{self.partname}.*', self.stdout))
+        return sn.assert_gt(num_matches, 0,
+                            msg=f'{self.partname} not defined for partition '
+                                f'{self.current_system.name}')
+
+    def assert_min_nodes(self):
+        matches = sn.extractall(fr'^{re.escape(self.partname)},up,'
+                                fr'(?P<nodes>\d+),(allocated|reserved|idle)',
+                                self.stdout, 'nodes', int)
+        num_matches = sn.sum(matches)
+        return sn.assert_ge(num_matches, self.min_avail_nodes,
+                            msg=f'found {num_matches} nodes in partition '
+                                f'{self.partname} with status allocated, '
+                                f'reserved, or idle. Expected at least '
+                                f'{self.min_avail_nodes}')
+
+    def assert_percentage_nodes(self):
+        matches = sn.extractall(fr'^{re.escape(self.partname)},up,'
+                                fr'(?P<nodes>\d+),(allocated|reserved|idle)',
+                                self.stdout, 'nodes', int)
+        num_matches = sn.sum(matches)
+        all_matches = sn.extractall(fr'^{re.escape(self.partname)},up,'
+                                    fr'(?P<nodes>\d+),.*', self.stdout,
+                                    'nodes', int)
+        num_all_matches = sn.sum(all_matches)
+        return sn.assert_ge(num_matches,
+                            self.ratio_avail_nonavail_nodes * num_all_matches,
+                            msg=f'more than '
+                                f'{self.ratio_avail_nonavail_nodes * 100.0:.0f}% '
+                                f'of nodes are unavailable for '
+                                f'partition {self.partname}')
+
+    @sanity_function
+    def assert_sanity_functions(self):
+        return sn.all([
+            self.assert_partition_exists(),
+            self.assert_min_nodes(),
+            self.assert_percentage_nodes(),
+        ])
+
+@rfm.simple_test
+class DomQueueStatusCheck(DaintQueueStatusCheck):
+    valid_systems = ['dom:login']
+    partname = parameter(['cscsci', 'long', 'large', 'normal*', 'prepost',
+                          '2go', 'low', 'xfer'])
+
+@rfm.simple_test
+class ALPSQueueStatusCheck(DaintQueueStatusCheck):
+    valid_systems = ['eiger:login', 'pilatus:login']
+    partname = parameter(['debug', 'normal*', 'prepost', 'low'])
