@@ -317,11 +317,10 @@ system_partitions = {
 
 def get_system_partitions():
     cur_sys_name = rt.runtime().system.name
-    print('curr_system: ', cur_sys_name)
     if cur_sys_name in system_partitions.keys():
         return system_partitions[cur_sys_name]
     else:
-        return []
+        return ['normal']
 
 @rfm.simple_test
 class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
