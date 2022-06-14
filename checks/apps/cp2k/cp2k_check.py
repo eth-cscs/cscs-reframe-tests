@@ -56,7 +56,7 @@ class Cp2kCpuCheck(Cp2kCheck):
     valid_systems = ['daint:mc', 'eiger:mc', 'pilatus:mc']
     refs_by_scale = {
         'small': {
-            'dom:mc': {'time': (157.0, None, 0.05, 's')},
+            'dom:mc': {'time': (169.4, None, 0.05, 's')},
             'daint:mc': {'time': (157.0, None, 0.10, 's')},
             'eiger:mc': {'time': (70.0, None, 0.08, 's')},
             'pilatus:mc': {'time': (70.0, None, 0.08, 's')}
