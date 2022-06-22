@@ -299,23 +299,22 @@ class slurm_response_check(rfm.RunOnlyRegressionTest):
                                 'real_time', float)
 
 
-system_partitions = {
-    'daint': [
-        'cscsci', 'long', 'large', 'normal*', 'prepost', '2go', 'low', 'xfer',
-        'debug'
-    ],
-    'dom': [
-        'cscsci', 'long', 'large', 'normal*', 'prepost', '2go', 'low', 'xfer'
-    ],
-    'eiger': [
-        'debug', 'normal*', 'prepost', 'low'
-    ],
-    'pilatus': [
-        'debug', 'normal*', 'prepost', 'low'
-    ]
-}
-
 def get_system_partitions():
+    system_partitions = {
+        'daint': [
+            'cscsci', 'long', 'large', 'normal*', 'prepost', '2go', 'low', 'xfer',
+            'debug'
+        ],
+        'dom': [
+            'cscsci', 'long', 'large', 'normal*', 'prepost', '2go', 'low', 'xfer'
+        ],
+        'eiger': [
+            'debug', 'normal*', 'prepost', 'low'
+        ],
+        'pilatus': [
+            'debug', 'normal*', 'prepost', 'low'
+        ]
+    }
     cur_sys_name = rt.runtime().system.name
     if cur_sys_name in system_partitions.keys():
         return system_partitions[cur_sys_name]
@@ -335,32 +334,34 @@ class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
     local = True
     executable = 'sinfo'
     executable_opts = ['-o', '%P,%a,%D,%T']
-    partname = parameter(get_system_partitions())
+    slurm_partition = parameter(get_system_partitions())
     maintainers = ['RS', 'VH']
 
     def assert_partition_exists(self):
-        num_matches = sn.count(sn.findall(fr'^{self.partname}.*', self.stdout))
+        num_matches = sn.count(
+                sn.findall(fr'^{re.escape(self.slurm_partition)}.*',
+                self.stdout))
         return sn.assert_gt(num_matches, 0,
-                            msg=f'{self.partname} not defined for partition '
-                                f'{self.current_system.name}')
+                            msg=f'{self.slurm_partition!r} not defined for '
+                                f'partition {self.current_system.name}')
 
     def assert_min_nodes(self):
-        matches = sn.extractall(fr'^{re.escape(self.partname)},up,'
+        matches = sn.extractall(fr'^{re.escape(self.slurm_partition)},up,'
                                 fr'(?P<nodes>\d+),(allocated|reserved|idle)',
                                 self.stdout, 'nodes', int)
         num_matches = sn.sum(matches)
         return sn.assert_ge(num_matches, self.min_avail_nodes,
                             msg=f'found {num_matches} nodes in partition '
-                                f'{self.partname} with status allocated, '
+                                f'{self.slurm_partition} with status allocated, '
                                 f'reserved, or idle. Expected at least '
                                 f'{self.min_avail_nodes}')
 
     def assert_percentage_nodes(self):
-        matches = sn.extractall(fr'^{re.escape(self.partname)},up,'
+        matches = sn.extractall(fr'^{re.escape(self.slurm_partition)},up,'
                                 fr'(?P<nodes>\d+),(allocated|reserved|idle)',
                                 self.stdout, 'nodes', int)
         num_matches = sn.sum(matches)
-        all_matches = sn.extractall(fr'^{re.escape(self.partname)},up,'
+        all_matches = sn.extractall(fr'^{re.escape(self.slurm_partition)},up,'
                                     fr'(?P<nodes>\d+),.*', self.stdout,
                                     'nodes', int)
         num_all_matches = sn.sum(all_matches)
@@ -369,12 +370,13 @@ class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
                             msg=f'more than '
                                 f'{self.ratio_avail_nonavail_nodes * 100.0:.0f}% '
                                 f'of nodes are unavailable for '
-                                f'partition {self.partname}')
+                                f'partition {self.slurm_partition}')
 
     @sanity_function
-    def assert_sanity_functions(self):
+    def assert_partition_sanity(self):
         return sn.all([
             self.assert_partition_exists(),
             self.assert_min_nodes(),
             self.assert_percentage_nodes(),
         ])
+
