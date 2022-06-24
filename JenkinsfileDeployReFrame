@@ -34,7 +34,7 @@ println "The target version is ${targetVersion}"
 stage('Production PR') {
     node('dom') {
         dir('production_repo') {
-            git changelog: false, poll: false, url: 'https://github.com/eth-cscs/production'
+            git changelog: false, poll: false, url: 'git@github.com:eth-cscs/production.git'
             if (fileExists("easybuild/easyconfigs/r/reframe/reframe-${targetVersion}.eb"))
             {
                 println "There is already an easyconfig for tag: ${latestTag}. Aborting..."
@@ -43,7 +43,7 @@ stage('Production PR') {
             }
 
             def branchExists = sh(returnStatus: true,
-                                  script: """#!/bin/bash-l
+                                  script: """#!/bin/bash -l
                                              git branch --list | grep reframe/${targetVersion}
                                           """)
             if (branchExists == 0)
@@ -53,18 +53,17 @@ stage('Production PR') {
                 return
             }
 
-            sh(returnStatus: true,
-               script: """#!/bin/bash -l
-                          module load daint-gpu
-                          module load hub
-                          cd easybuild/easyconfigs/r/reframe
-                          git checkout -b reframe/${targetVersion}
-                          sed -r "s/(version\\s*=\\s*)'${ebTemplate}'/\\1'${targetVersion}'/g" reframe-${ebTemplate}.eb > reframe-${targetVersion}.eb
-                          git add reframe-${targetVersion}.eb
-                          git commit -m "Add recipe for ReFrame version ${targetVersion}"
-                          git push origin HEAD
-                          hub pull-request -r ${reviewersPR} -m "${machines} Add recipe for ReFrame version ${targetVersion}"
-                          """)
+            sh("""#!/bin/bash -l
+                  module load daint-gpu
+                  module load hub
+                  cd easybuild/easyconfigs/r/reframe
+                  git checkout -b reframe/${targetVersion}
+                  sed -r "s/(version\\s*=\\s*)'${ebTemplate}'/\\1'${targetVersion}'/g" reframe-${ebTemplate}.eb > reframe-${targetVersion}.eb
+                  git add reframe-${targetVersion}.eb
+                  git commit -m "Add recipe for ReFrame version ${targetVersion}"
+                  git push origin HEAD
+                  hub pull-request -r ${reviewersPR} -m "${machines} Add recipe for ReFrame version ${targetVersion}"
+               """)
         deleteDir()
         }
     }
