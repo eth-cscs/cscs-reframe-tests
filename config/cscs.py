@@ -580,6 +580,7 @@ site_configuration = {
                     'name': 'mc',
                     'descr': 'Multicore nodes (AMD EPYC 7742, 256|512GB/cn)',
                     'scheduler': 'slurm',
+                    'time_limit': '10m',
                     'container_platforms': [
                         {
                             'type': 'Sarus',
@@ -659,6 +660,7 @@ site_configuration = {
                     'name': 'mc',
                     'descr': 'Multicore nodes (AMD EPYC 7742, 256|512GB/cn)',
                     'scheduler': 'slurm',
+                    'time_limit': '10m',
                     'container_platforms': [
                         {
                             'type': 'Sarus',
