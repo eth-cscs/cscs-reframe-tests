@@ -343,7 +343,7 @@ class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
                 self.stdout))
         return sn.assert_gt(num_matches, 0,
                             msg=f'{self.slurm_partition!r} not defined for '
-                                f'partition {self.current_system.name}')
+                                f'partition {self.current_partition.fullname!r}')
 
     def assert_min_nodes(self):
         matches = sn.extractall(fr'^{re.escape(self.slurm_partition)},up,'
