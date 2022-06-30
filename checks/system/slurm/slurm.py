@@ -64,16 +64,6 @@ class HostnameCheck(SlurmSimpleBaseCheck):
         'pilatus:mc': r'^nid\d{6}$'
     }
 
-    @run_after('init')
-    def setdeps(self):
-        variants = SlurmQueueStatusCheck.get_variant_nums(slurm_partition=lambda x: x == self.current_partition.fullname)
-        for v in variants:
-            self.depends_on(SlurmQueueStatusCheck.variant_name(v))
-
-    @run_after('init')
-    def setup_deps(self):
-        self.depends_on('SlurmQueueStatusCheck')
-
     @run_before('sanity')
     def set_sanity_patterns(self):
         partname = self.current_partition.fullname
