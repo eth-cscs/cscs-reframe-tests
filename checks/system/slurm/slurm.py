@@ -10,6 +10,7 @@ import reframe.core.runtime as rt
 import reframe.utility.osext as osext
 import reframe.utility.sanity as sn
 
+
 class SlurmSimpleBaseCheck(rfm.RunOnlyRegressionTest):
     '''Base class for Slurm simple binary tests'''
 
@@ -62,6 +63,16 @@ class HostnameCheck(SlurmSimpleBaseCheck):
         'eiger:mc': r'^nid\d{6}$',
         'pilatus:mc': r'^nid\d{6}$'
     }
+
+    @run_after('init')
+    def setdeps(self):
+        variants = SlurmQueueStatusCheck.get_variant_nums(slurm_partition=lambda x: x == self.current_partition.fullname)
+        for v in variants:
+            self.depends_on(SlurmQueueStatusCheck.variant_name(v))
+
+    @run_after('init')
+    def setup_deps(self):
+        self.depends_on('SlurmQueueStatusCheck')
 
     @run_before('sanity')
     def set_sanity_patterns(self):
@@ -254,10 +265,10 @@ class MemoryOverconsumptionMpiCheck(SlurmCompiledBaseCheck):
 
     def reference_meminfo(self):
         reference_meminfo = {
-            'dom:gpu': 62,
-            'dom:mc': 62,
-            'daint:gpu': 62,
-            'daint:mc': 62,  # this will pass with 64 GB and above memory sizes
+            'dom:gpu': 58,
+            'dom:mc': 58,
+            'daint:gpu': 58,
+            'daint:mc': 58,  # this will pass with 61 GB and above memory sizes
             # this will pass with 256 GB and above memory sizes:
             'eiger:mc': 250,
             'pilatus:mc': 250
@@ -321,6 +332,7 @@ def get_system_partitions():
     else:
         return ['normal']
 
+
 @rfm.simple_test
 class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
     '''check system queue status'''
@@ -343,7 +355,7 @@ class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
                 self.stdout))
         return sn.assert_gt(num_matches, 0,
                             msg=f'{self.slurm_partition!r} not defined for '
-                                f'partition {self.current_system.name}')
+                                f'partition {self.current_partition.fullname!r}')
 
     def assert_min_nodes(self):
         matches = sn.extractall(fr'^{re.escape(self.slurm_partition)},up,'
