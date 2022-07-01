@@ -9,7 +9,7 @@ def ebRecipe = "${moduleName}-${version}.eb"
 
 stage('Production PR') {
     node('daint') {
-        # Retrieve the latest version of ReFrame
+        // Retrieve the latest version of ReFrame
         def reframeVersion = sh(returnStdout: true,
                                 script: """${loginBash}
                                            module load reframe
