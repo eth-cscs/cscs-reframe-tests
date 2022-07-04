@@ -653,7 +653,6 @@ site_configuration = {
                 },
                 {
                     'name': 'mc',
-                    'descr': 'Multicore nodes (AMD EPYC 7742, 256|512GB/cn)',
                     'scheduler': 'slurm',
                     'environs': [
                         'builtin',
@@ -661,6 +660,11 @@ site_configuration = {
                         'PrgEnv-cray',
                         'PrgEnv-gnu',
                         'PrgEnv-intel',
+                    ],
+                    'container_platforms': [
+                        {
+                            'type': 'Sarus',
+                        }
                     ],
                     'max_jobs': 100,
                     'access': ['-Cmc', f'--account={osext.osgroup()}'],
