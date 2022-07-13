@@ -34,8 +34,8 @@ class VASPCheck(rfm.RunOnlyRegressionTest):
                 'daint:mc': {'elapsed_time': (65.0, None, 0.10, 's')},
             },
             'zen2': {
-                'eiger:mc': {'elapsed_time': (100.0, None, 0.10, 's')},
-                'pilatus:mc': {'elapsed_time': (100.0, None, 0.10, 's')},
+                'eiger:mc': {'elapsed_time': (112.347, None, 0.10, 's')},
+                'pilatus:mc': {'elapsed_time': (89.083, None, 0.10, 's')},
             },
         },
         16: {
@@ -46,7 +46,7 @@ class VASPCheck(rfm.RunOnlyRegressionTest):
                 'daint:mc': {'elapsed_time': (131.0, None, 0.10, 's')},
             },
             'zen2': {
-                'eiger:mc': {'elapsed_time': (100.0, None, 0.10, 's')},
+                'eiger:mc': {'elapsed_time': (69.459, None, 0.10, 's')},
                 'pilatus:mc': {'elapsed_time': (100.0, None, 0.10, 's')}
             }
         }

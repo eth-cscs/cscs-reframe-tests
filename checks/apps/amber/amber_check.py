@@ -31,7 +31,7 @@ class cscs_amber_check(amber_nve_check):
         },
         4: {
             'zen2': {
-                'Cellulose_production_NVE': (3.2, -0.30, None, 'ns/day'),
+                'Cellulose_production_NVE': (3.691, -0.30, None, 'ns/day'),
                 'FactorIX_production_NVE': (7.0, -0.30, None, 'ns/day'),
                 'JAC_production_NVE': (30.0, -0.30, None, 'ns/day'),
                 'JAC_production_NVE_4fs': (45.0, -0.30, None, 'ns/day')
@@ -47,7 +47,7 @@ class cscs_amber_check(amber_nve_check):
         },
         8: {
             'zen2': {
-                'Cellulose_production_NVE': (1.3, -0.30, None, 'ns/day'),
+                'Cellulose_production_NVE': (2.877, -0.30, None, 'ns/day'),
                 'FactorIX_production_NVE': (3.5, -0.30, None, 'ns/day'),
                 'JAC_production_NVE': (17.0, -0.30, None, 'ns/day'),
                 'JAC_production_NVE_4fs': (30.5, -0.30, None, 'ns/day')

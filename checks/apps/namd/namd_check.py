@@ -115,14 +115,14 @@ class NamdCheck(rfm.RunOnlyRegressionTest):
                 self.reference = {
                     'dom:mc': {'days_ns': (0.52, None, 0.05, 'days/ns')},
                     'daint:mc': {'days_ns': (0.52, None, 0.05, 'days/ns')},
-                    'eiger:mc': {'days_ns': (0.12, None, 0.05, 'days/ns')},
-                    'pilatus:mc': {'days_ns': (0.12, None, 0.05, 'days/ns')},
+                    'eiger:mc': {'days_ns': (0.126, None, 0.05, 'days/ns')},
+                    'pilatus:mc': {'days_ns': (0.128, None, 0.05, 'days/ns')},
                 }
             else:
                 self.reference = {
                     'daint:mc': {'days_ns': (0.35, None, 0.10, 'days/ns')},
-                    'eiger:mc': {'days_ns': (0.05, None, 0.05, 'days/ns')},
-                    'pilatus:mc': {'days_ns': (0.05, None, 0.05, 'days/ns')}
+                    'eiger:mc': {'days_ns': (0.057, None, 0.05, 'days/ns')},
+                    'pilatus:mc': {'days_ns': (0.054, None, 0.05, 'days/ns')}
                 }
 
     @performance_function('days/ns')

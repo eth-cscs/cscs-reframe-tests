@@ -114,7 +114,7 @@ class cscs_gromacs_check(gromacs_check):
             'zen2': {
                 'HECBioSim/Glutamine-Binding-Protein': (240.0, None, None, 'ns/day'),  # noqa: E501
                 'HECBioSim/hEGFRDimer': (75.0, None, None, 'ns/day'),
-                'HECBioSim/hEGFRDimerSmallerPL': (110.0, None, None, 'ns/day'),
+                'HECBioSim/hEGFRDimerSmallerPL': (99.218, None, None, 'ns/day'),
                 'HECBioSim/hEGFRDimerPair': (33.0, None, None, 'ns/day'),
                 'HECBioSim/hEGFRtetramerPair': (13.0, None, None, 'ns/day'),
             },

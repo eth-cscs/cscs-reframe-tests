@@ -58,10 +58,10 @@ class cscs_osu_pt2pt_check(cscs_osu_benchmarks):
                     'bandwidth': (9528.0, -0.20, None, 'MB/s')
                 },
                 'eiger:mc': {
-                    'bandwidth': (12240.0, -0.10, None, 'MB/s')
+                    'bandwidth': (12240.41, -0.10, None, 'MB/s')
                 },
                 'pilatus:mc': {
-                    'bandwidth': (12240.0, -0.10, None, 'MB/s')
+                    'bandwidth': (12240.476, -0.10, None, 'MB/s')
                 }
             },
             'cuda': {
@@ -88,10 +88,10 @@ class cscs_osu_pt2pt_check(cscs_osu_benchmarks):
                     'latency': (1.47, None, 0.10, 'us')
                 },
                 'eiger:mc': {
-                    'latency': (2.33, None, 0.15, 'us')
+                    'latency': (2.76, None, 0.15, 'us')
                 },
                 'pilatus:mc': {
-                    'latency': (2.33, None, 0.15, 'us')
+                    'latency': (2.413, None, 0.15, 'us')
                 }
             },
             'cuda': {

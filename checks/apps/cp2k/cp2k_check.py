@@ -58,13 +58,13 @@ class Cp2kCpuCheck(Cp2kCheck):
         'small': {
             'dom:mc': {'time': (169.4, None, 0.05, 's')},
             'daint:mc': {'time': (157.0, None, 0.10, 's')},
-            'eiger:mc': {'time': (70.0, None, 0.08, 's')},
-            'pilatus:mc': {'time': (70.0, None, 0.08, 's')}
+            'eiger:mc': {'time': (76.116, None, 0.08, 's')},
+            'pilatus:mc': {'time': (70.568, None, 0.08, 's')}
         },
         'large': {
             'daint:mc': {'time': (122.0, None, 0.10, 's')},
-            'eiger:mc': {'time': (46.0, None, 0.05, 's')},
-            'pilatus:mc': {'time': (46.0, None, 0.05, 's')}
+            'eiger:mc': {'time': (54.381, None, 0.05, 's')},
+            'pilatus:mc': {'time': (49.916, None, 0.05, 's')}
         }
     }
 

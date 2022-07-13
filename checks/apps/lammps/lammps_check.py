@@ -87,13 +87,13 @@ class LAMMPSCPUCheck(LAMMPSCheck):
         'small': {
             'dom:mc': {'perf': (4394, -0.05, None, 'timesteps/s')},
             'daint:mc': {'perf': (2348, -0.10, None, 'timesteps/s')},
-            'eiger:mc': {'perf': (4500, -0.10, None, 'timesteps/s')},
-            'pilatus:mc': {'perf': (5000, -0.10, None, 'timesteps/s')}
+            'eiger:mc': {'perf': (3807.095, -0.10, None, 'timesteps/s')},
+            'pilatus:mc': {'perf': (4828.986, -0.10, None, 'timesteps/s')}
         },
         'large': {
             'daint:mc': {'perf': (2075, -0.10, None, 'timesteps/s')},
-            'eiger:mc': {'perf': (6500, -0.10, None, 'timesteps/s')},
-            'pilatus:mc': {'perf': (7500, -0.10, None, 'timesteps/s')}
+            'eiger:mc': {'perf': (4922.81, -0.10, None, 'timesteps/s')},
+            'pilatus:mc': {'perf': (7247.484, -0.10, None, 'timesteps/s')}
         }
     }
 
