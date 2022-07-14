@@ -26,12 +26,12 @@ class VASPCheck(rfm.RunOnlyRegressionTest):
     allref = {
         6: {
             'sm_60': {
-                'dom:gpu': {'elapsed_time': (56.0, None, 0.10, 's')},
-                'daint:gpu': {'elapsed_time': (66.0, None, 0.10, 's')},
+                'dom:gpu': {'elapsed_time': (66.811, None, 0.10, 's')},
+                'daint:gpu': {'elapsed_time': (67.407, None, 0.10, 's')},
             },
             'broadwell': {
-                'dom:mc': {'elapsed_time': (58.0, None, 0.10, 's')},
-                'daint:mc': {'elapsed_time': (65.0, None, 0.10, 's')},
+                'dom:mc': {'elapsed_time': (57.745, None, 0.10, 's')},
+                'daint:mc': {'elapsed_time': (65.62, None, 0.10, 's')},
             },
             'zen2': {
                 'eiger:mc': {'elapsed_time': (112.347, None, 0.10, 's')},
@@ -40,10 +40,10 @@ class VASPCheck(rfm.RunOnlyRegressionTest):
         },
         16: {
             'sm_60': {
-                'daint:gpu': {'elapsed_time': (78.0, None, 0.10, 's')},
+                'daint:gpu': {'elapsed_time': (61.393, None, 0.10, 's')},
             },
             'broadwell': {
-                'daint:mc': {'elapsed_time': (131.0, None, 0.10, 's')},
+                'daint:mc': {'elapsed_time': (45.404, None, 0.10, 's')},
             },
             'zen2': {
                 'eiger:mc': {'elapsed_time': (69.459, None, 0.10, 's')},

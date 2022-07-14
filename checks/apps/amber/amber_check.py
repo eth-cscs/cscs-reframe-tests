@@ -23,7 +23,7 @@ class cscs_amber_check(amber_nve_check):
     allref = {
         1: {
             'p100': {
-                'Cellulose_production_NVE': (30.0, -0.05, None, 'ns/day'),
+                'Cellulose_production_NVE': (30.84, -0.10, None, 'ns/day'),
                 'FactorIX_production_NVE': (134.0, -0.05, None, 'ns/day'),
                 'JAC_production_NVE': (388.0, -0.05, None, 'ns/day'),
                 'JAC_production_NVE_4fs': (742, -0.05, None, 'ns/day')
@@ -39,7 +39,7 @@ class cscs_amber_check(amber_nve_check):
         },
         6: {
             'broadwell': {
-                'Cellulose_production_NVE': (8.0, -0.30, None, 'ns/day'),
+                'Cellulose_production_NVE': (5.848, -0.10, None, 'ns/day'),
                 'FactorIX_production_NVE': (34.0, -0.30, None, 'ns/day'),
                 'JAC_production_NVE': (90.0, -0.30, None, 'ns/day'),
                 'JAC_production_NVE_4fs': (150.0, -0.30, None, 'ns/day')
@@ -55,7 +55,7 @@ class cscs_amber_check(amber_nve_check):
         },
         16: {
             'broadwell': {
-                'Cellulose_production_NVE': (10.0, -0.30, None, 'ns/day'),
+                'Cellulose_production_NVE': (2.121, -0.10, None, 'ns/day'),
                 'FactorIX_production_NVE': (36.0, -0.30, None, 'ns/day'),
                 'JAC_production_NVE': (78.0, -0.30, None, 'ns/day'),
                 'JAC_production_NVE_4fs': (135.0, -0.30, None, 'ns/day')

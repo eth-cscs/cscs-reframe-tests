@@ -103,24 +103,24 @@ class NamdCheck(rfm.RunOnlyRegressionTest):
         if self.arch == 'gpu':
             if self.scale == 'small':
                 self.reference = {
-                    'dom:gpu': {'days_ns': (0.147, None, 0.10, 'days/ns')},
-                    'daint:gpu': {'days_ns': (0.147, None, 0.10, 'days/ns')}
+                    'dom:gpu': {'days_ns': (0.149, None, 0.10, 'days/ns')},
+                    'daint:gpu': {'days_ns': (0.178, None, 0.10, 'days/ns')}
                 }
             else:
                 self.reference = {
-                    'daint:gpu': {'days_ns': (0.074, None, 0.10, 'days/ns')}
+                    'daint:gpu': {'days_ns': (0.072, None, 0.10, 'days/ns')}
                 }
         else:
             if self.scale == 'small':
                 self.reference = {
-                    'dom:mc': {'days_ns': (0.52, None, 0.05, 'days/ns')},
-                    'daint:mc': {'days_ns': (0.52, None, 0.05, 'days/ns')},
+                    'dom:mc': {'days_ns': (0.543, None, 0.10, 'days/ns')},
+                    'daint:mc': {'days_ns': (0.513, None, 0.10, 'days/ns')},
                     'eiger:mc': {'days_ns': (0.126, None, 0.05, 'days/ns')},
                     'pilatus:mc': {'days_ns': (0.128, None, 0.05, 'days/ns')},
                 }
             else:
                 self.reference = {
-                    'daint:mc': {'days_ns': (0.35, None, 0.10, 'days/ns')},
+                    'daint:mc': {'days_ns': (0.425, None, 0.10, 'days/ns')},
                     'eiger:mc': {'days_ns': (0.057, None, 0.05, 'days/ns')},
                     'pilatus:mc': {'days_ns': (0.054, None, 0.05, 'days/ns')}
                 }
