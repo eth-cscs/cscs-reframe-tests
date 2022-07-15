@@ -108,7 +108,7 @@ class NamdCheck(rfm.RunOnlyRegressionTest):
                 }
             else:
                 self.reference = {
-                    'daint:gpu': {'days_ns': (0.072, None, 0.10, 'days/ns')}
+                    'daint:gpu': {'days_ns': (0.072, None, 0.15, 'days/ns')}
                 }
         else:
             if self.scale == 'small':
