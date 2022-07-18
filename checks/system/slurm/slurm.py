@@ -77,7 +77,8 @@ class EnvironmentVariableCheck(SlurmSimpleBaseCheck):
                      'dom:gpu', 'dom:mc',
                      'arolla:cn', 'arolla:pn',
                      'tsa:cn', 'tsa:pn',
-                     'eiger:mc', 'pilatus:mc']
+                     'eiger:mc', 'pilatus:mc',
+                     'hohgant:mc']
     executable = '/bin/echo'
     executable_opts = ['$MY_VAR']
     variables = {'MY_VAR': 'TEST123456!'}
@@ -201,7 +202,7 @@ class MemoryOverconsumptionCheck(SlurmCompiledBaseCheck):
 @rfm.simple_test
 class MemoryOverconsumptionMpiCheck(SlurmCompiledBaseCheck):
     maintainers = ['JG']
-    valid_systems += ['eiger:mc', 'pilatus:mc']
+    valid_systems += ['eiger:mc', 'pilatus:mc', 'hohgant:mc']
     time_limit = '5m'
     sourcepath = 'eatmemory_mpi.c'
     tags.add('mem')
@@ -267,7 +268,7 @@ class MemoryOverconsumptionMpiCheck(SlurmCompiledBaseCheck):
 class slurm_response_check(rfm.RunOnlyRegressionTest):
     command = parameter(['squeue', 'sacct'])
     descr = 'Slurm command test'
-    valid_systems = ['daint:login', 'dom:login']
+    valid_systems = ['daint:login', 'dom:login', 'hohgant:login']
     valid_prog_environs = ['builtin']
     num_tasks = 1
     num_tasks_per_node = 1
