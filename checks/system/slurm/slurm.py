@@ -248,6 +248,7 @@ class MemoryOverconsumptionMpiCheck(SlurmCompiledBaseCheck):
             'daint:gpu': 12,
             'eiger:mc': 128,
             'pilatus:mc': 128,
+            'hohgant:mc': 128,
         }
         partname = self.current_partition.fullname
         self.num_tasks_per_node = tasks_per_node[partname]
@@ -262,7 +263,8 @@ class MemoryOverconsumptionMpiCheck(SlurmCompiledBaseCheck):
             'daint:mc': 58,  # this will pass with 61 GB and above memory sizes
             # this will pass with 256 GB and above memory sizes:
             'eiger:mc': 250,
-            'pilatus:mc': 250
+            'pilatus:mc': 250,
+            'hohgant:mc': 500
         }
         return reference_meminfo[self.current_partition.fullname]
 
