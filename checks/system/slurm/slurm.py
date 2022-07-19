@@ -64,6 +64,11 @@ class HostnameCheck(SlurmSimpleBaseCheck):
         'pilatus:mc': r'^nid\d{6}$'
     }
 
+    @run_before('run')
+    def set_pending_time(self):
+        if self.current_partition.name == 'xfer':
+            self.max_pending_time = '2m'
+
     @run_before('sanity')
     def set_sanity_patterns(self):
         partname = self.current_partition.fullname
