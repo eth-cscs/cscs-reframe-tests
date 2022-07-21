@@ -13,11 +13,17 @@ class DefaultPrgEnvCheck(rfm.RunOnlyRegressionTest):
     descr = 'Ensure PrgEnv-cray is loaded by default'
     valid_prog_environs = ['builtin']
     valid_systems = ['daint:login', 'dom:login',
-                     'eiger:login', 'pilatus:login']
+                     'eiger:login', 'pilatus:login',
+                     'hohgant:login']
     executable = 'module'
     executable_opts = ['--terse', 'list']
     maintainers = ['TM', 'CB']
     tags = {'production', 'craype'}
+
+    @run_after('init')
+    def load_cray_module(self):
+        if self.current_system.name in ['hohgant']:
+            self.modules = ['cray']
 
     @run_before('sanity')
     def set_sanity(self):
@@ -28,7 +34,8 @@ class DefaultPrgEnvCheck(rfm.RunOnlyRegressionTest):
 class EnvironmentCheck(rfm.RunOnlyRegressionTest):
     descr = 'Ensure programming environment is loaded correctly'
     valid_systems = ['daint:login', 'dom:login',
-                     'eiger:login', 'pilatus:login']
+                     'eiger:login', 'pilatus:login',
+                     'hohgant:login']
     valid_prog_environs = ['PrgEnv-aocc', 'PrgEnv-cray', 'PrgEnv-gnu',
                            'PrgEnv-intel', 'PrgEnv-pgi', 'PrgEnv-nvidia']
     executable = 'module'
@@ -91,10 +98,15 @@ class CrayVariablesCheckEiger(CrayVariablesCheck):
         'cray-mpich', 'cray-openshmemx', 'cray-parallel-netcdf', 'cray-pmi',
         'cray-python', 'cray-R', 'gcc', 'papi'
     ])
-    valid_systems = ['eiger:login']
+    valid_systems = ['eiger:login', 'pilatus:login', 'hohgant:login']
+
+    @run_after('init')
+    def load_cray_module(self):
+        if self.current_system.name in ['hohgant']:
+            self.modules = ['cray']
 
     @run_after('init')
     def skip_modules(self):
         # FIXME: These modules should be fixed in later releases
-        if self.cray_module in {'cray-fftw', 'cray-python', 'cray-mpich'}:
+        if self.cray_module in {'cray-fftw', 'cray-python'}:
             self.valid_systems = []
