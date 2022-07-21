@@ -38,7 +38,7 @@ class MpiInitTest(rfm.RegressionTest):
     valid_prog_environs = ['PrgEnv-aocc', 'PrgEnv-cray', 'PrgEnv-gnu',
                            'PrgEnv-intel', 'PrgEnv-pgi', 'PrgEnv-nvidia']
     valid_systems = ['daint:gpu', 'daint:mc', 'dom:gpu', 'dom:mc', 'eiger:mc',
-                     'pilatus:mc']
+                     'pilatus:mc', 'hohgant:mc']
     build_system = 'SingleSource'
     sourcesdir = 'src/mpi_thread'
     sourcepath = 'mpi_init_thread.cpp'
@@ -52,22 +52,12 @@ class MpiInitTest(rfm.RegressionTest):
     )
     prebuild_cmds += ['module list']
     time_limit = '2m'
+    maintainers = ['JG', 'AJ']
+    tags = {'production', 'craype'}
 
-    def __init__(self):
-        if self.current_system.name in ['pilatus', 'eiger']:
-            # FIXME: workaround for C4KCUST-308
-            self.modules = ['cray-mpich', 'cray-libsci']
-
+    @run_after('init')
+    def set_cpp_flags(self):
         self.build_system.cppflags = self.cppflags[self.required_thread]
-        self.maintainers = ['JG', 'AJ']
-        self.tags = {'production', 'craype'}
-
-    @run_before('compile')
-    def skip_nvidia_cray_ex(self):
-        envname = self.current_environ.name
-        sysname = self.current_system.name
-        if self.current_system.name in ['pilatus', 'eiger']:
-            self.skip_if(self.current_environ.name == 'PrgEnv-nvidia', '')
 
     @run_before('sanity')
     def set_sanity(self):
