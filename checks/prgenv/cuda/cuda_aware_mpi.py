@@ -8,6 +8,7 @@ import sys
 
 import reframe as rfm
 import reframe.utility.sanity as sn
+import reframe.utility as rfm_util
 
 sys.path.append(os.path.abspath(os.path.join(__file__, '../../..')))
 import microbenchmarks.gpu.hooks as hooks
@@ -138,3 +139,67 @@ class cuda_aware_mpi_two_nodes_check(CudaAwareMpiRuns):
         self.num_tasks_per_node = 1
         self.num_gpus_per_node = 1
         self.executable_opts = ['-t %d 1' % self.num_tasks]
+
+
+@rfm.simple_test
+class gpu_direct(rfm.RegressionTest):
+    descr = 'gpuDirect MPI test'
+    sourcepath = 'gpudirect.cpp'
+    valid_systems = ['daint:gpu', 'dom:gpu']
+    valid_prog_environs = ['PrgEnv-cray']
+    build_system = 'SingleSource'
+    maintainers = ['JG']
+    tags = {'production', 'scs'}
+    valid_prog_environs = ['PrgEnv-cray']
+
+    module_info = parameter(rfm_util.find_modules('cdt/'))
+    gpu_arch = variable(str, type(None))
+    run_after('setup')(bind(hooks.set_num_gpus_per_node))
+
+    @run_after('init')
+    def apply_module_info(self):
+        s, e, m = self.module_info
+        self.modules = ['cudatoolkit', m]
+
+    @run_before('compile')
+    def set_compilers(self):
+        self.build_system.options = [
+            '-I/usr/local/cuda/targets/x86_64-linux/include',
+            '-L/usr/local/cuda/targets/x86_64-linux/lib',
+            '-lcudart',
+        ]
+
+    @run_before('run')
+    def set_env(self):
+        self.variables = {
+            'MPICH_RDMA_ENABLED_CUDA': '1',
+            'MPICH_VERSION_DISPLAY': '1',
+            # 'CRAY_CUDA_MPS': '1',
+        }
+        self.prerun_cmds = [
+            'export LD_LIBRARY_PATH=$CRAY_LD_LIBRARY_PATH:$LD_LIBRARY_PATH',
+            # test will fail when built with cdt<=21.09 (cray-mpich<=7.7.18):
+            # PASS:rk=1     // 1st call
+            # FAIL:rk=1:-1  //  2d call
+        ]
+
+    @run_before('run')
+    def set_num_tasks(self):
+        self.num_tasks = 2
+        self.num_tasks_per_node = 1
+
+    @run_before('sanity')
+    def set_sanity_patterns(self):
+        result = sn.count(sn.extractall(r'^(PASS):', self.stdout, 1))
+        self.sanity_patterns = sn.assert_reference(result, 2, 0, 0)
+
+    @performance_function('')
+    def mpi_version(self):
+        regex = r'MPI VERSION\s+: CRAY MPICH version (\S+) '
+        version = sn.extractsingle(regex, self.stdout, 1,
+                                   conv=lambda x: int(x.replace('.', '')))
+        return version
+
+    @performance_function('')
+    def num_pass(self):
+        return sn.count(sn.extractall(r'^(PASS):', self.stdout, 1))
