@@ -1073,6 +1073,22 @@ site_configuration = {
                 '--tag=production',
                 '--timestamp=%F_%H-%M-%S'
             ]
+        },
+        {
+            'name': 'production',
+            'options': [
+                '--unload-module=reframe',
+                '--exec-policy=async',
+                '--strict',
+                '--output=$SCRATCH/$USER/regression/production',
+                '--perflogdir=$SCRATCH/$USER/regression/production/logs',
+                '--stage=$SCRATCH/regression/production/stage',
+                '--report-file=$SCRATCH/$USER/regression/production/reports/prod_report_{sessionid}.json',
+                '--save-log-files',
+                '--tag=production',
+                '--timestamp=%F_%H-%M-%S'
+            ],
+            'target_systems': ['hohgant'],
         }
     ],
     'general': [
