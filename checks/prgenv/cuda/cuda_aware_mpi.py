@@ -159,6 +159,12 @@ class gpu_direct(rfm.RegressionTest):
     @run_after('init')
     def apply_module_info(self):
         s, e, m = self.module_info
+        self.skip_if(s not in self.valid_systems,
+                     f'{s} not in {self.valid_systems}')
+        self.skip_if(e not in self.valid_prog_environs,
+                     f'{e} not in {self.valid_prog_environs}')
+        bad_cdt = ['cdt/21.09', 'cdt/20.08']
+        self.skip_if(m in bad_cdt, f'{m} in {bad_cdt}')
         self.modules = ['cudatoolkit', m]
 
     @run_before('compile')
@@ -196,7 +202,7 @@ class gpu_direct(rfm.RegressionTest):
     @performance_function('')
     def mpi_version(self):
         regex = r'MPI VERSION\s+: CRAY MPICH version (\S+) '
-        version = sn.extractsingle(regex, self.stdout, 1,
+        version = sn.extractsingle(regex, self.stderr, 1,
                                    conv=lambda x: int(x.replace('.', '')))
         return version
 
