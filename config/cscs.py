@@ -632,7 +632,7 @@ site_configuration = {
         },
         {
             'name': 'hohgant',
-            'descr': 'Ηohgant virtual cluster',
+            'descr': 'Hohgant virtual cluster',
             'hostnames': ['hohgant'],
             'modules_system': 'lmod',
             'partitions': [
