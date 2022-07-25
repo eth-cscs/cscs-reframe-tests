@@ -56,15 +56,15 @@ class Cp2kCpuCheck(Cp2kCheck):
     valid_systems = ['daint:mc', 'eiger:mc', 'pilatus:mc']
     refs_by_scale = {
         'small': {
-            'dom:mc': {'time': (169.4, None, 0.05, 's')},
-            'daint:mc': {'time': (157.0, None, 0.10, 's')},
-            'eiger:mc': {'time': (70.0, None, 0.08, 's')},
-            'pilatus:mc': {'time': (70.0, None, 0.08, 's')}
+            'dom:mc': {'time': (169.619, None, 0.10, 's')},
+            'daint:mc': {'time': (208.108, None, 0.10, 's')},
+            'eiger:mc': {'time': (76.116, None, 0.08, 's')},
+            'pilatus:mc': {'time': (70.568, None, 0.08, 's')}
         },
         'large': {
-            'daint:mc': {'time': (122.0, None, 0.10, 's')},
-            'eiger:mc': {'time': (46.0, None, 0.05, 's')},
-            'pilatus:mc': {'time': (46.0, None, 0.05, 's')}
+            'daint:mc': {'time': (114.629, None, 0.10, 's')},
+            'eiger:mc': {'time': (54.381, None, 0.05, 's')},
+            'pilatus:mc': {'time': (49.916, None, 0.05, 's')}
         }
     }
 
@@ -130,11 +130,11 @@ class Cp2kGpuCheck(Cp2kCheck):
     }
     refs_by_scale = {
         'small': {
-            'dom:gpu': {'time': (182.0, None, 0.05, 's')},
-            'daint:gpu': {'time': (182.0, None, 0.10, 's')}
+            'dom:gpu': {'time': (176.153, None, 0.10, 's')},
+            'daint:gpu': {'time': (179.683, None, 0.10, 's')}
         },
         'large': {
-            'daint:gpu': {'time': (139.0, None, 0.10, 's')}
+            'daint:gpu': {'time': (140.498, None, 0.10, 's')}
         }
     }
 

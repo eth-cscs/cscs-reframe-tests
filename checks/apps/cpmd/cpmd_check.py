@@ -26,20 +26,20 @@ class CPMDCheck(rfm.RunOnlyRegressionTest):
     allref = {
         6: {
             'sm_60': {
-                'dom:gpu': {'elapsed_time': (120.0, None, 0.15, 's')},
-                'daint:gpu': {'elapsed_time': (192.0, None, 0.10, 's')},
+                'dom:gpu': {'elapsed_time': (125.177, None, 0.10, 's')},
+                'daint:gpu': {'elapsed_time': (199.54, None, 0.10, 's')},
             },
             'broadwell': {
-                'dom:mc': {'elapsed_time': (150.0, None, 0.15, 's')},
-                'daint:mc': {'elapsed_time': (237.0, None, 0.10, 's')},
+                'dom:mc': {'elapsed_time': (151.497, None, 0.10, 's')},
+                'daint:mc': {'elapsed_time': (248.396, None, 0.10, 's')},
             },
         },
         16: {
             'sm_60': {
-                'daint:gpu': {'elapsed_time': (212.0, None, 0.10, 's')}
+                'daint:gpu': {'elapsed_time': (189.07, None, 0.10, 's')}
             },
             'broadwell': {
-                'daint:mc': {'elapsed_time': (309.0, None, 0.10, 's')},
+                'daint:mc': {'elapsed_time': (303.204, None, 0.10, 's')},
             },
         }
     }
