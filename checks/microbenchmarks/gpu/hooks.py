@@ -22,6 +22,8 @@ def set_gpu_arch(self):
         if self.current_environ.name not in {'PrgEnv-nvidia'}:
             self.modules = ['craype-accel-nvidia60', 'cdt-cuda']
 
+    elif cs in {'hohgant', 'manali'}:
+        self.gpu_arch = '80'
     elif cs in {'arola', 'tsa'}:
         self.gpu_arch = '70'
         self.modules = ['cuda/10.1.243']
@@ -48,6 +50,8 @@ def set_num_gpus_per_node(self):
         self.num_gpus_per_node = 1
     elif cs in {'arola', 'tsa'}:
         self.num_gpus_per_node = 8
+    elif cs in {'hohgant', 'manali'}:
+        self.num_gpus_per_node = 4
     elif cp in {'ault:amda100', 'ault:intelv100'}:
         self.num_gpus_per_node = 4
     elif cp in {'ault:amdv100'}:
