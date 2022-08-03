@@ -17,7 +17,7 @@ from reframe.core.exceptions import SanityError
 class CompileAffinityTool(rfm.CompileOnlyRegressionTest):
     valid_systems = [
         'daint:gpu', 'daint:mc', 'dom:gpu', 'dom:mc',
-        'eiger:mc', 'pilatus:mc',
+        'eiger:mc', 'pilatus:mc', 'hohgant:mc',
         'ault:amdv100'
     ]
     valid_prog_environs = [
@@ -54,7 +54,7 @@ class CompileAffinityTool(rfm.CompileOnlyRegressionTest):
 
 @rfm.simple_test
 class CompileAffinityToolNoOmp(CompileAffinityTool):
-    valid_systems = ['eiger:mc', 'pilatus:mc']
+    valid_systems = ['eiger:mc', 'pilatus:mc', 'hohgant:mc']
 
     @run_before('compile')
     def set_build_opts(self):
@@ -91,7 +91,7 @@ class AffinityTestBase(rfm.RunOnlyRegressionTest):
 
     valid_systems = [
         'daint:gpu', 'daint:mc', 'dom:gpu', 'dom:mc',
-        'eiger:mc', 'pilatus:mc',
+        'eiger:mc', 'pilatus:mc', 'hohgant:mc',
         'ault:amdv100'
     ]
     valid_prog_environs = [
@@ -106,6 +106,7 @@ class AffinityTestBase(rfm.RunOnlyRegressionTest):
         'daint:mc':   'topo_dom_mc.json',
         'eiger:mc':   'topo_eiger_mc.json',
         'pilatus:mc':   'topo_eiger_mc.json',
+        'hohgant:mc':   'topo_hohgant_mc.json',
         'ault:amdv100': 'topo_ault_amdv100.json',
     })
 
@@ -593,7 +594,7 @@ class OneTaskPerNumaNode(AffinityTestBase):
     Multithreading is disabled.
     '''
 
-    valid_systems = ['eiger:mc', 'pilatus:mc']
+    valid_systems = ['eiger:mc', 'pilatus:mc', 'hohgant:mc']
     use_multithreading = False
     num_cpus_per_task = required
 
@@ -622,7 +623,8 @@ class OneTaskPerNumaNode(AffinityTestBase):
     @run_before('run')
     def set_tasks(self):
         self.num_tasks = self.num_numa_nodes
-        if self.current_partition.fullname in {'eiger:mc', 'pilatus:mc'}:
+        if self.current_partition.fullname in {'eiger:mc', 'pilatus:mc',
+                                               'hohgant:mc'}:
             self.num_cpus_per_task = 16
 
     @run_before('sanity')

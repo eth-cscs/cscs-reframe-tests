@@ -13,7 +13,7 @@ class mpit_check(rfm.RegressionTest):
     def __init__(self):
         self.descr = 'Checks MPI_T control/performance variables/categories'
         self.valid_systems = ['daint:gpu', 'dom:gpu', 'daint:mc', 'dom:mc',
-                              'eiger:mc', 'pilatus:mc']
+                              'eiger:mc', 'pilatus:mc', 'hohgant:mc']
         self.valid_prog_environs = [
             'PrgEnv-aocc', 'PrgEnv-cray', 'PrgEnv-gnu', 'PrgEnv-intel',
             'PrgEnv-pgi', 'PrgEnv-nvidia']
@@ -51,6 +51,10 @@ class mpit_check(rfm.RegressionTest):
             '8.1.12': {
                 'control': 'ref/mpit_control_vars_8.1.12.ref',
                 'categories': 'ref/mpit_categories_8.1.12.ref',
+            },
+             '8.1.13': {
+                'control': 'ref/mpit_control_vars_8.1.13.ref',
+                'categories': 'ref/mpit_categories_8.1.13.ref',
             },
         }
         # {{{ 0/ MPICH version:

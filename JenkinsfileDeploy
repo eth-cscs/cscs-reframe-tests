@@ -1,41 +1,36 @@
 def tag = env.TAG_NAME
 def version = tag.substring(1)                  // Remove the first character of the tag which is 'v'
 def machines = '[dom daint eiger pilatus tsa]'  // To be included in the PR title
-def reviewersPR = 'teojgo,vkarak'               // The Github usernames requested for review
-def ebTemplate = '3.9.1'                        // The eb recipe of ReFrame to use as template
-
-stage('Deploy Tests') {
-    node('daint') {
-        dir('private_tests') {
-            sh(returnStatus: true,
-               script: """#!/bin/bash -l
-                          git clone git@github.com:eth-cscs/reframe-tests.git
-                          cd reframe-tests
-                          git tag -a -m "ReFrame private tests ${version} release" -f ${tag}
-                          git archive --format=tar.gz --prefix=reframe-tests-${version}/ ${tag} -o reframe-tests-${version}.tar.gz
-                          git push origin -f ${tag}
-                          cp reframe-tests-${version}.tar.gz /apps/common/easybuild/sources/r/reframe
-                          """)
-            deleteDir()
-        }
-    }
-}
+def reviewersPR = 'teojgo,ekouts'               // The Github usernames requested for review
+def ebTemplate = '22.06'                        // The eb recipe of ReFrame to use as template
+def moduleName = 'reframe-cscs-tests'
+def loginBash = '#!/bin/bash -l'
+def ebRecipe = "${moduleName}-${version}.eb"
 
 stage('Production PR') {
     node('daint') {
+        // Retrieve the latest version of ReFrame
+        def reframeVersion = sh(returnStdout: true,
+                                script: """${loginBash}
+                                           module load reframe
+                                           reframe -V""").trim()
+
+        println("Found ReFrame version: ${reframeVersion}")
+
         dir('production_repo') {
             sh(returnStatus: true,
                script: """#!/bin/bash -l
                           module load daint-gpu
                           module load hub
                           git clone git@github.com:eth-cscs/production.git
-                          cd production/easybuild/easyconfigs/r/reframe
-                          git checkout -b reframe/${version}
-                          sed -r "s/(version\\s*=\\s*)'${ebTemplate}'/\\1'${version}'/g" reframe-${ebTemplate}.eb > reframe-${version}.eb
-                          git add reframe-${version}.eb
-                          git commit -m "Add recipe for ReFrame version ${version}"
+                          cd production/easybuild/easyconfigs/r/${moduleName}
+                          git checkout -b ${moduleName}/${version}
+                          sed -r "s/(version\\s*=\\s*)'${ebTemplate}'/\\1'${version}'/g" ${moduleName}-${ebTemplate}.eb > ${ebRecipe}
+                          sed  -ri "s/(dependencies\\s*=\\s*\\[\\('reframe'\\s*,\\s*)\\S*\\)\\]/\\1'${reframeVersion}'\\)\\]/g" ${ebRecipe}
+                          git add ${ebRecipe}
+                          git commit -m "Add recipe for ReFrame CSCS tests version ${version}"
                           git push origin HEAD
-                          hub pull-request -r ${reviewersPR} -m "${machines} Add recipe for ReFrame version ${version}"
+                          hub pull-request -r ${reviewersPR} -m "${machines} Add recipe for ReFrame CSCS tests version ${version}"
                           """)
         deleteDir()
         }

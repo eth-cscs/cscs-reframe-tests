@@ -580,6 +580,7 @@ site_configuration = {
                     'name': 'mc',
                     'descr': 'Multicore nodes (AMD EPYC 7742, 256|512GB/cn)',
                     'scheduler': 'slurm',
+                    'time_limit': '10m',
                     'container_platforms': [
                         {
                             'type': 'Sarus',
@@ -630,6 +631,58 @@ site_configuration = {
             ]
         },
         {
+            'name': 'hohgant',
+            'descr': 'Hohgant virtual cluster',
+            'hostnames': ['hohgant'],
+            'modules_system': 'lmod',
+            'partitions': [
+                {
+                    'name': 'login',
+                    'scheduler': 'local',
+                    'time_limit': '10m',
+                    'environs': [
+                        'builtin',
+                        'PrgEnv-aocc',
+                        'PrgEnv-cray',
+                        'PrgEnv-gnu',
+                        'PrgEnv-intel'
+                    ],
+                    'descr': 'Login nodes',
+                    'max_jobs': 4,
+                    'launcher': 'local'
+                },
+                {
+                    'name': 'mc',
+                    'scheduler': 'slurm',
+                    'environs': [
+                        'builtin',
+                        'PrgEnv-aocc',
+                        'PrgEnv-cray',
+                        'PrgEnv-gnu',
+                        'PrgEnv-intel',
+                    ],
+                    'container_platforms': [
+                        {
+                            'type': 'Sarus',
+                        }
+                    ],
+                    'max_jobs': 100,
+                    'access': ['-Cmc', f'--account={osext.osgroup()}'],
+                    'resources': [
+                        {
+                            'name': 'switches',
+                            'options': ['--switches={num_switches}']
+                        },
+                        {
+                            'name': 'memory',
+                            'options': ['--mem={mem_per_node}']
+                        },
+                    ],
+                    'launcher': 'srun'
+                }
+            ]
+        },
+        {
             'name': 'pilatus',
             'descr': 'Alps Cray EX Supercomputer TDS',
             'hostnames': ['pilatus'],
@@ -659,6 +712,7 @@ site_configuration = {
                     'name': 'mc',
                     'descr': 'Multicore nodes (AMD EPYC 7742, 256|512GB/cn)',
                     'scheduler': 'slurm',
+                    'time_limit': '10m',
                     'container_platforms': [
                         {
                             'type': 'Sarus',
@@ -858,6 +912,26 @@ site_configuration = {
             'name': 'PrgEnv-intel',
             'target_systems': ['eiger', 'pilatus'],
             'modules': ['PrgEnv-intel']
+        },
+        {
+            'name': 'PrgEnv-aocc',
+            'target_systems': ['hohgant'],
+            'modules': ['cray', 'PrgEnv-aocc']
+        },
+        {
+            'name': 'PrgEnv-cray',
+            'target_systems': ['hohgant'],
+            'modules': ['cray', 'PrgEnv-cray']
+        },
+        {
+            'name': 'PrgEnv-gnu',
+            'target_systems': ['hohgant'],
+            'modules': ['cray', 'PrgEnv-gnu']
+        },
+        {
+            'name': 'PrgEnv-intel',
+            'target_systems': ['hohgant'],
+            'modules': ['cray', 'PrgEnv-intel']
         },
         {
             'name': 'cpeAMD',
