@@ -14,6 +14,9 @@ stage('Production PR') {
                                 script: """${loginBash}
                                            module load reframe
                                            reframe -V""").trim()
+
+        println("Found ReFrame version: ${reframeVersion}")
+
         dir('production_repo') {
             sh(returnStatus: true,
                script: """#!/bin/bash -l
@@ -23,7 +26,7 @@ stage('Production PR') {
                           cd production/easybuild/easyconfigs/r/${moduleName}
                           git checkout -b ${moduleName}/${version}
                           sed -r "s/(version\\s*=\\s*)'${ebTemplate}'/\\1'${version}'/g" ${moduleName}-${ebTemplate}.eb > ${ebRecipe}
-                          sed  -ir "s/(dependencies\\s*=\\s*\\[\\('reframe'\\s*,\\s*)\\S*\\)\\]/\\1'${reframeVersion}'\\)\\]/g" ${ebRecipe}
+                          sed  -ri "s/(dependencies\\s*=\\s*\\[\\('reframe'\\s*,\\s*)\\S*\\)\\]/\\1'${reframeVersion}'\\)\\]/g" ${ebRecipe}
                           git add ${ebRecipe}
                           git commit -m "Add recipe for ReFrame CSCS tests version ${version}"
                           git push origin HEAD
