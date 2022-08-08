@@ -46,60 +46,60 @@ class cscs_osu_pt2pt_check(cscs_osu_benchmarks):
         'mpi.pt2pt.osu_bw': {
             'cpu': {
                 'daint:gpu': {
-                    'bandwidth': (9481.0, -0.10, None, 'MB/s')
+                    'bandwidth': (9153.637, -0.10, None, 'MB/s')
                 },
                 'daint:mc': {
-                    'bandwidth': (8507, -0.15, None, 'MB/s')
+                    'bandwidth': (7650.943, -0.10, None, 'MB/s')
                 },
                 'dom:gpu': {
-                    'bandwidth': (9476.3, -0.05, None, 'MB/s')
+                    'bandwidth': (9140.621, -0.10, None, 'MB/s')
                 },
                 'dom:mc': {
-                    'bandwidth': (9528.0, -0.20, None, 'MB/s')
+                    'bandwidth': (8632.197, -0.10, None, 'MB/s')
                 },
                 'eiger:mc': {
-                    'bandwidth': (12240.0, -0.10, None, 'MB/s')
+                    'bandwidth': (12240.41, -0.10, None, 'MB/s')
                 },
                 'pilatus:mc': {
-                    'bandwidth': (12240.0, -0.10, None, 'MB/s')
+                    'bandwidth': (12240.476, -0.10, None, 'MB/s')
                 }
             },
             'cuda': {
                 'daint:gpu': {
-                    'bandwidth': (8560, -0.10, None, 'MB/s')
+                    'bandwidth': (8431.02, -0.10, None, 'MB/s')
                 },
                 'dom:gpu': {
-                    'bandwidth': (8813.09, -0.05, None, 'MB/s')
+                    'bandwidth': (8637.693, -0.10, None, 'MB/s')
                 }
             }
         },
         'mpi.pt2pt.osu_latency': {
             'cpu': {
                 'daint:gpu': {
-                    'latency': (1.40, None, 0.80, 'us')
+                    'latency': (1.651, None, 0.10, 'us')
                 },
                 'daint:mc': {
-                    'latency': (1.61, None, 0.70, 'us')
+                    'latency': (2.175, None, 0.10, 'us')
                 },
                 'dom:gpu': {
-                    'latency': (1.138, None, 0.10, 'us')
+                    'latency': (1.314, None, 0.10, 'us')
                 },
                 'dom:mc': {
-                    'latency': (1.47, None, 0.10, 'us')
+                    'latency': (1.439, None, 0.10, 'us')
                 },
                 'eiger:mc': {
-                    'latency': (2.33, None, 0.15, 'us')
+                    'latency': (2.76, None, 0.15, 'us')
                 },
                 'pilatus:mc': {
-                    'latency': (2.33, None, 0.15, 'us')
+                    'latency': (2.413, None, 0.15, 'us')
                 }
             },
             'cuda': {
                 'daint:gpu': {
-                    'latency': (6.82, None, 0.50, 'us')
+                    'latency': (8.907, None, 0.10, 'us')
                 },
                 'dom:gpu': {
-                    'latency': (5.56, None, 0.1, 'us')
+                    'latency': (6.043, None, 0.10, 'us')
                 },
             }
         }
@@ -140,31 +140,34 @@ class cscs_osu_collective_check(cscs_osu_benchmarks):
         'mpi.collective.osu_allreduce': {
             6: {
                 'dom:gpu': {
-                    'latency': (5.67, None, 0.05, 'us')
+                    'latency': (6.26, None, 0.10, 'us')
+                },
+                'dom:mc': {
+                    'latency': (7.235, None, 0.10, 'us')
                 },
                 'daint:gpu': {
-                    'latency': (8.66, None, 0.85, 'us')
+                    'latency': (18.012, None, 0.10, 'us')
                 },
                 'daint:mc': {
-                    'latency': (10.90, None, 1.90, 'us')
+                    'latency': (18.016, None, 0.10, 'us')
                 }
             },
             16: {
                 'daint:gpu': {
-                    'latency': (13.62, None, 1.16, 'us')
+                    'latency': (28.925, None, 0.10, 'us')
                 },
                 'daint:mc': {
-                    'latency': (19.07, None, 1.64, 'us')
+                    'latency': (39.147, None, 0.10, 'us')
                 }
             }
         },
         'mpi.collective.osu_alltoall': {
             6: {
                 'dom:gpu': {
-                    'latency': (8.23, None, 0.1, 'us')
+                    'latency': (8.23, None, 0.10, 'us')
                 },
                 'daint:gpu': {
-                    'latency': (20.73, None, 2.0, 'us')
+                    'latency': (20.73, None, 0.10, 'us')
                 },
                 'dom:mc': {
                     'latency': (0, None, None, 'us')
