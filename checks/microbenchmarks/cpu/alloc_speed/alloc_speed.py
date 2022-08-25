@@ -47,42 +47,42 @@ class AllocSpeedTest(rfm.RegressionTest):
         sys_reference = {
             'no': {
                 'dom:gpu': {
-                    'time': (1.32, -0.20, 0.15, 's')
+                    'time': (1.32, None, 0.15, 's')
                 },
                 'dom:mc': {
-                    'time': (1.51, -0.20, 0.10, 's')
+                    'time': (1.51, None, 0.10, 's')
                 },
                 'daint:gpu': {
-                    'time': (1.32, -0.20, 0.05, 's')
+                    'time': (1.32, None, 0.05, 's')
                 },
                 'daint:mc': {
-                    'time': (1.51, -0.20, 0.05, 's')
+                    'time': (1.51, None, 0.05, 's')
                 },
                 'eiger:mc': {
-                    'time': (0.12, -0.20, 0.05, 's')
+                    'time': (0.12, None, 0.05, 's')
                 },
                 'pilatus:mc': {
-                    'time': (0.12, -0.20, 0.05, 's')
+                    'time': (0.12, None, 0.05, 's')
                 },
             },
             '2M': {
                 'dom:gpu': {
-                    'time': (0.11, -0.20, 0.10, 's')
+                    'time': (0.11, None, 0.10, 's')
                 },
                 'dom:mc': {
-                    'time': (0.20, -0.20, 0.10, 's')
+                    'time': (0.20, None, 0.10, 's')
                 },
                 'daint:gpu': {
-                    'time': (0.11, -0.20, 0.10, 's')
+                    'time': (0.11, None, 0.10, 's')
                 },
                 'daint:mc': {
-                    'time': (0.20, -0.20, 0.10, 's')
+                    'time': (0.20, None, 0.10, 's')
                 },
                 'eiger:mc': {
-                    'time': (0.06, -0.20, 0.10, 's')
+                    'time': (0.06, None, 0.10, 's')
                 },
                 'pilatus:mc': {
-                    'time': (0.06, -0.20, 0.10, 's')
+                    'time': (0.06, None, 0.10, 's')
                 },
                 '*': {
                     'time': (0, None, None, 's')
