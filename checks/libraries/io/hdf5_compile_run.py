@@ -61,6 +61,14 @@ class HDF5Test(rfm.RegressionTest):
                 "cray-hdf5 is not supported for cdt >= 21.05 on PrgEnv-pgi"
             )
 
+    @run_after('setup')
+    def aocc(self):
+        #FIXME HPE support case 5365481562 with PrgEnv-aocc 
+        if self.current_environ.name == 'PrgEnv-aocc':
+            self.variables = {
+                'LD_LIBRARY_PATH': '$CRAY_LD_LIBRARY_PATH:$LD_LIBRARY_PATH'
+            }
+
     @run_before('compile')
     def set_sourcepath(self):
         self.sourcepath = f'h5ex_d_chunk.{self.lang}'
