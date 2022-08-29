@@ -46,7 +46,7 @@ program GpuDirectAcc
       end do
       if (data_sum(1)/=ref_val) then
         write (*,*) "Result : FAIL"
-        write (*,*) "Expected vwalue : ", ref_val, "actual value:",data_sum(1)
+        write (*,*) "Expected value : ", ref_val, "actual value:",data_sum(1)
       else
         write (*,*) "Result : OK"
       end if
