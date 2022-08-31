@@ -30,10 +30,6 @@ class OpenACCFortranCheck(rfm.RegressionTest):
             self.num_tasks = 2
             self.sourcepath = 'vecAdd_openacc_mpi.f90'
 
-    @run_after('setup')
-    def set_executable(self):
-        self.executable = self.name
-
     @run_before('compile')
     def set_variables(self):
         if self.current_system.name in ['arolla', 'tsa']:
