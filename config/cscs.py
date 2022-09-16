@@ -645,7 +645,8 @@ site_configuration = {
                         'PrgEnv-aocc',
                         'PrgEnv-cray',
                         'PrgEnv-gnu',
-                        'PrgEnv-intel'
+                        'PrgEnv-nvhpc',
+                        'PrgEnv-nvidia'
                     ],
                     'descr': 'Login nodes',
                     'max_jobs': 4,
