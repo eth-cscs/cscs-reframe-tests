@@ -659,7 +659,8 @@ site_configuration = {
                         'PrgEnv-aocc',
                         'PrgEnv-cray',
                         'PrgEnv-gnu',
-                        'PrgEnv-intel',
+                        'PrgEnv-nvhpc',
+                        'PrgEnv-nvidia'
                     ],
                     'container_platforms': [
                         {
@@ -942,6 +943,16 @@ site_configuration = {
             'name': 'PrgEnv-intel',
             'target_systems': ['hohgant'],
             'modules': ['cray', 'PrgEnv-intel']
+        },
+        {
+            'name': 'PrgEnv-nvhpc',
+            'target_systems': ['hohgant'],
+            'modules': ['cray', 'PrgEnv-nvhpc']
+        },
+        {
+            'name': 'PrgEnv-nvidia',
+            'target_systems': ['hohgant'],
+            'modules': ['cray', 'PrgEnv-nvidia']
         },
         {
             'name': 'cpeAMD',
