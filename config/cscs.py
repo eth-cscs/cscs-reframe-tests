@@ -652,7 +652,7 @@ site_configuration = {
                     'launcher': 'local'
                 },
                 {
-                    'name': 'mc',
+                    'name': 'gpu',
                     'scheduler': 'slurm',
                     'environs': [
                         'builtin',
@@ -664,10 +664,12 @@ site_configuration = {
                     'container_platforms': [
                         {
                             'type': 'Sarus',
+                        },
+                        {
+                            'type': 'Singularity',
                         }
                     ],
                     'max_jobs': 100,
-                    'access': ['-Cmc', f'--account={osext.osgroup()}'],
                     'resources': [
                         {
                             'name': 'switches',
@@ -677,6 +679,14 @@ site_configuration = {
                             'name': 'memory',
                             'options': ['--mem={mem_per_node}']
                         },
+                    ],
+                    'features': ['gpu'],
+                    'devices': [
+                        {
+                            'type': 'gpu',
+                            'arch': 'sm_80',
+                            'num_devices': 4
+                        }
                     ],
                     'launcher': 'srun'
                 }
