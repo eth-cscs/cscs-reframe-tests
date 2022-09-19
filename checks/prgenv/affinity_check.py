@@ -17,7 +17,7 @@ from reframe.core.exceptions import SanityError
 class CompileAffinityTool(rfm.CompileOnlyRegressionTest):
     valid_systems = [
         'daint:gpu', 'daint:mc', 'dom:gpu', 'dom:mc',
-        'eiger:mc', 'pilatus:mc', 'hohgant:mc',
+        'eiger:mc', 'pilatus:mc', 'hohgant:gpu',
         'ault:amdv100'
     ]
     valid_prog_environs = [
@@ -40,7 +40,6 @@ class CompileAffinityTool(rfm.CompileOnlyRegressionTest):
 
     @run_before('compile')
     def prgenv_nvidia_workaround(self):
-        cs = self.current_system.name
         ce = self.current_environ.name
         if ce == 'PrgEnv-nvidia':
             self.build_system.cppflags = [
@@ -54,7 +53,7 @@ class CompileAffinityTool(rfm.CompileOnlyRegressionTest):
 
 @rfm.simple_test
 class CompileAffinityToolNoOmp(CompileAffinityTool):
-    valid_systems = ['eiger:mc', 'pilatus:mc', 'hohgant:mc']
+    valid_systems = ['eiger:mc', 'pilatus:mc', 'hohgant:gpu']
 
     @run_before('compile')
     def set_build_opts(self):
@@ -91,12 +90,19 @@ class AffinityTestBase(rfm.RunOnlyRegressionTest):
 
     valid_systems = [
         'daint:gpu', 'daint:mc', 'dom:gpu', 'dom:mc',
-        'eiger:mc', 'pilatus:mc', 'hohgant:mc',
+        'eiger:mc', 'pilatus:mc', 'hohgant:gpu',
         'ault:amdv100'
     ]
     valid_prog_environs = [
         'PrgEnv-gnu', 'PrgEnv-cray', 'PrgEnv-intel', 'PrgEnv-nvidia'
     ]
+
+    @run_before('run')
+    def set_pmi2(self):
+        sys_name = self.current_system.name
+        env_name = self.current_environ.name
+        if sys_name == 'hohgant' and env_name == 'PrgEnv-nvidia':
+            self.job.launcher.options = ['--mpi=pmi2']
 
     # Dict with the partition's topology - output of "lscpu -e"
     topology = variable(dict, value={
@@ -106,7 +112,7 @@ class AffinityTestBase(rfm.RunOnlyRegressionTest):
         'daint:mc':   'topo_dom_mc.json',
         'eiger:mc':   'topo_eiger_mc.json',
         'pilatus:mc':   'topo_eiger_mc.json',
-        'hohgant:mc':   'topo_hohgant_mc.json',
+        'hohgant:gpu':   'topo_hohgant_gpu.json',
         'ault:amdv100': 'topo_ault_amdv100.json',
     })
 
@@ -594,7 +600,7 @@ class OneTaskPerNumaNode(AffinityTestBase):
     Multithreading is disabled.
     '''
 
-    valid_systems = ['eiger:mc', 'pilatus:mc', 'hohgant:mc']
+    valid_systems = ['eiger:mc', 'pilatus:mc', 'hohgant:gpu']
     use_multithreading = False
     num_cpus_per_task = required
 
@@ -624,7 +630,7 @@ class OneTaskPerNumaNode(AffinityTestBase):
     def set_tasks(self):
         self.num_tasks = self.num_numa_nodes
         if self.current_partition.fullname in {'eiger:mc', 'pilatus:mc',
-                                               'hohgant:mc'}:
+                                               'hohgant:gpu'}:
             self.num_cpus_per_task = 16
 
     @run_before('sanity')
