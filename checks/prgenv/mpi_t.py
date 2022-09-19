@@ -28,6 +28,13 @@ class mpit_check(rfm.RegressionTest):
         self.maintainers = ['JG']
         self.tags = {'craype', 'maintenance'}
 
+    @run_before('run')
+    def set_pmi2(self):
+        sys_name = self.current_system.name
+        env_name = self.current_environ.name
+        if sys_name == 'hohgant' and env_name == 'PrgEnv-nvidia':
+            self.job.launcher.options = ['--mpi=pmi2']
+
     @run_before('sanity')
     def set_sanity(self):
         rpt_file = os.path.join(self.stagedir, self.rpt)
@@ -52,9 +59,13 @@ class mpit_check(rfm.RegressionTest):
                 'control': 'ref/mpit_control_vars_8.1.12.ref',
                 'categories': 'ref/mpit_categories_8.1.12.ref',
             },
-             '8.1.13': {
+            '8.1.13': {
                 'control': 'ref/mpit_control_vars_8.1.13.ref',
                 'categories': 'ref/mpit_categories_8.1.13.ref',
+            },
+            '8.1.18': {
+                'control': 'ref/mpit_control_vars_8.1.18.ref',
+                'categories': 'ref/mpit_categories_8.1.18.ref',
             },
         }
         # {{{ 0/ MPICH version:
@@ -62,6 +73,7 @@ class mpit_check(rfm.RegressionTest):
         # MPI VERSION  : CRAY MPICH version 8.0.16.17 (ANL base 3.3)
         # MPI VERSION  : CRAY MPICH version 8.1.4.31 (ANL base 3.4a2)
         # MPI VERSION  : CRAY MPICH version 8.1.5.32 (ANL base 3.4a2)
+        # MPI VERSION  : CRAY MPICH version 8.1.18.4 (ANL base 3.4a2)
         #
         # cdt/21.02 cray-mpich/7.7.16
         # cdt/21.05 cray-mpich/7.7.17

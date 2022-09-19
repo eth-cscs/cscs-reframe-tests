@@ -40,7 +40,6 @@ class CompileAffinityTool(rfm.CompileOnlyRegressionTest):
 
     @run_before('compile')
     def prgenv_nvidia_workaround(self):
-        cs = self.current_system.name
         ce = self.current_environ.name
         if ce == 'PrgEnv-nvidia':
             self.build_system.cppflags = [
@@ -98,6 +97,13 @@ class AffinityTestBase(rfm.RunOnlyRegressionTest):
         'PrgEnv-gnu', 'PrgEnv-cray', 'PrgEnv-intel', 'PrgEnv-nvidia'
     ]
 
+    @run_before('run')
+    def set_pmi2(self):
+        sys_name = self.current_system.name
+        env_name = self.current_environ.name
+        if sys_name == 'hohgant' and env_name == 'PrgEnv-nvidia':
+            self.job.launcher.options = ['--mpi=pmi2']
+
     # Dict with the partition's topology - output of "lscpu -e"
     topology = variable(dict, value={
         'dom:gpu':    'topo_dom_gpu.json',
@@ -106,7 +112,7 @@ class AffinityTestBase(rfm.RunOnlyRegressionTest):
         'daint:mc':   'topo_dom_mc.json',
         'eiger:mc':   'topo_eiger_mc.json',
         'pilatus:mc':   'topo_eiger_mc.json',
-        'hohgant:gpu':   'topo_hohgant_mc.json',
+        'hohgant:gpu':   'topo_hohgant_gpu.json',
         'ault:amdv100': 'topo_ault_amdv100.json',
     })
 

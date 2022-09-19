@@ -59,6 +59,13 @@ class MpiInitTest(rfm.RegressionTest):
     def set_cpp_flags(self):
         self.build_system.cppflags = self.cppflags[self.required_thread]
 
+    @run_before('run')
+    def set_pmi2(self):
+        sys_name = self.current_system.name
+        env_name = self.current_environ.name
+        if sys_name == 'hohgant' and env_name == 'PrgEnv-nvidia':
+            self.job.launcher.options = ['--mpi=pmi2']
+
     @run_before('sanity')
     def set_sanity(self):
         # {{{ 0/ MPICH version:
@@ -66,6 +73,7 @@ class MpiInitTest(rfm.RegressionTest):
         # MPI VERSION  : CRAY MPICH version 8.0.16.17 (ANL base 3.3)
         # MPI VERSION  : CRAY MPICH version 8.1.4.31 (ANL base 3.4a2)
         # MPI VERSION  : CRAY MPICH version 8.1.5.32 (ANL base 3.4a2)
+        # MPI VERSION  : CRAY MPICH version 8.1.18.4 (ANL base 3.4a2)
         regex = r'= MPI VERSION\s+: CRAY MPICH version \S+ \(ANL base (\S+)\)'
         stdout = os.path.join(self.stagedir, sn.evaluate(self.stdout))
         mpich_version = sn.extractsingle(regex, stdout, 1)
