@@ -645,29 +645,33 @@ site_configuration = {
                         'PrgEnv-aocc',
                         'PrgEnv-cray',
                         'PrgEnv-gnu',
-                        'PrgEnv-intel'
+                        'PrgEnv-nvhpc',
+                        'PrgEnv-nvidia'
                     ],
                     'descr': 'Login nodes',
                     'max_jobs': 4,
                     'launcher': 'local'
                 },
                 {
-                    'name': 'mc',
+                    'name': 'gpu',
                     'scheduler': 'slurm',
                     'environs': [
                         'builtin',
                         'PrgEnv-aocc',
                         'PrgEnv-cray',
                         'PrgEnv-gnu',
-                        'PrgEnv-intel',
+                        'PrgEnv-nvhpc',
+                        'PrgEnv-nvidia'
                     ],
                     'container_platforms': [
                         {
                             'type': 'Sarus',
+                        },
+                        {
+                            'type': 'Singularity',
                         }
                     ],
                     'max_jobs': 100,
-                    'access': ['-Cmc', f'--account={osext.osgroup()}'],
                     'resources': [
                         {
                             'name': 'switches',
@@ -677,6 +681,14 @@ site_configuration = {
                             'name': 'memory',
                             'options': ['--mem={mem_per_node}']
                         },
+                    ],
+                    'features': ['gpu'],
+                    'devices': [
+                        {
+                            'type': 'gpu',
+                            'arch': 'sm_80',
+                            'num_devices': 4
+                        }
                     ],
                     'launcher': 'srun'
                 }
@@ -932,6 +944,16 @@ site_configuration = {
             'name': 'PrgEnv-intel',
             'target_systems': ['hohgant'],
             'modules': ['cray', 'PrgEnv-intel']
+        },
+        {
+            'name': 'PrgEnv-nvhpc',
+            'target_systems': ['hohgant'],
+            'modules': ['cray', 'PrgEnv-nvhpc']
+        },
+        {
+            'name': 'PrgEnv-nvidia',
+            'target_systems': ['hohgant'],
+            'modules': ['cray', 'PrgEnv-nvidia']
         },
         {
             'name': 'cpeAMD',
