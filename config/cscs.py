@@ -1059,7 +1059,8 @@ site_configuration = {
                     'extras': {
                         'facility': 'reframe',
                         'data-version': '1.0',
-                    }
+                    },
+                    'ignore_keys': ['check_perfvalues']
                 }
             ]
         }
