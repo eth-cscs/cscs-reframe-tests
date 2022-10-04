@@ -1060,7 +1060,7 @@ site_configuration = {
                         'facility': 'reframe',
                         'data-version': '1.0',
                     },
-                    'perflog_ignore': ['check_perfvalues']
+                    'ignore_keys': ['check_perfvalues']
                 }
             ]
         }
