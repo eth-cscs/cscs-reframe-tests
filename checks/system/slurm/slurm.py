@@ -209,12 +209,11 @@ class MemoryOverconsumptionCheck(SlurmCompiledBaseCheck):
 
 @rfm.simple_test
 class MemoryOverconsumptionMpiCheck(SlurmCompiledBaseCheck):
-    maintainers = ['JG']
+    maintainers = ['@jgphpc', '@ekouts']
     valid_systems += ['eiger:mc', 'pilatus:mc', 'hohgant:gpu']
     time_limit = '5m'
     sourcepath = 'eatmemory_mpi.c'
     tags.add('mem')
-    executable_opts = ['100%']
 
     @sanity_function
     def assert_found_oom(self):
@@ -246,6 +245,7 @@ class MemoryOverconsumptionMpiCheck(SlurmCompiledBaseCheck):
 
     @run_before('run')
     def set_tasks(self):
+        # TODO: use processor.json here or skip
         tasks_per_node = {
             'dom:mc': 36,
             'daint:mc': 36,
@@ -261,6 +261,7 @@ class MemoryOverconsumptionMpiCheck(SlurmCompiledBaseCheck):
         self.job.launcher.options = ['-u']
 
     def reference_meminfo(self):
+        # TODO: read rfm_job.out
         reference_meminfo = {
             'dom:gpu': 58,
             'dom:mc': 58,
