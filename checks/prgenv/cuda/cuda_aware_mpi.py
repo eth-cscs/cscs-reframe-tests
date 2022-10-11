@@ -25,7 +25,7 @@ class cuda_aware_mpi_check(rfm.CompileOnlyRegressionTest):
     prebuild_cmds = ['cd posts/cuda-aware-mpi-example/src']
     build_system = 'Make'
     postbuild_cmds = ['ls ../bin']
-    maintainers = ['JO']
+    maintainers = ['EK', 'TM']
     tags = {'production', 'scs'}
 
     gpu_arch = variable(str, type(None))

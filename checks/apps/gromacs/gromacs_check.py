@@ -10,7 +10,7 @@ from hpctestlib.sciapps.gromacs.benchmarks import gromacs_check
 @rfm.simple_test
 class cscs_gromacs_check(gromacs_check):
     modules = ['GROMACS']
-    maintainers = ['VH', 'VK']
+    maintainers = ['VH']
     use_multithreading = False
     extra_resources = {
         'switches': {
