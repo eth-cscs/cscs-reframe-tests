@@ -18,7 +18,7 @@ class H5PyTest(rfm.RunOnlyRegressionTest):
     executable_opts = ['h5py_mpi_test.py']
     postrun_cmds = ['h5dump parallel_test.hdf5']
     tags = {'health', 'production'}
-    maintainers = ['TM']
+    maintainers = ['TM', 'RS']
 
     @sanity_function
     def assert_success(self):
