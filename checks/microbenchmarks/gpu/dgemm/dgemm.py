@@ -40,7 +40,7 @@ class dgemm_gpu_check(DgemmGpu):
             'perf': (3.45, -0.1, None, 'TF/s')
         }
     }
-    maintainers = ['SK']
+    maintainers = ['@sekelle']
     tags = {'benchmark', 'health'}
 
     # Inject external hooks

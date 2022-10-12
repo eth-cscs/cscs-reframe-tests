@@ -62,7 +62,7 @@ class gpu_kernel_latency_check(GpuKernelLatency):
             },
         },
     })
-    maintainers = ['TM']
+    maintainers = ['@teojgo']
     tags = {'benchmark', 'diagnostic', 'craype', 'health'}
 
     @run_after('init')

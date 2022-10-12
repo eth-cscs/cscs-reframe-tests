@@ -45,7 +45,7 @@ class gpu_shmem_check(GpuShmem):
             'bandwidth': (9060, -0.01, None, 'GB/s')
         }
     }
-    maintainers = ['SK']
+    maintainers = ['@sebkell']
     tags = {'benchmark', 'diagnostic', 'craype', 'health'}
 
     # Inject external hooks
