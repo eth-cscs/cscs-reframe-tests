@@ -218,8 +218,12 @@ class MemoryOverconsumptionMpiCheck(SlurmCompiledBaseCheck):
 
     @run_before('compile')
     def set_skip(self):
-        # TODO: use env. features: if 'alps' then yes
-        if self.current_system.name in ['balfrin', 'manali', 'hohgant']:
+        self.skip_if(self.current_partition.name == 'login',
+            'skipping login nodes')
+
+    @run_before('compile')
+    def unset_ldflags(self):
+        if 'alps' in self.current_partition.features:
             self.build_system.ldflags = ['-L.']
 
     @run_before('run')
