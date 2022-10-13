@@ -39,5 +39,4 @@ class cscs_gpu_burn_check(gpu_burn_check):
         },
     }
 
-    maintainers = ['@vkarak']
     tags = {'diagnostic', 'benchmark', 'craype'}

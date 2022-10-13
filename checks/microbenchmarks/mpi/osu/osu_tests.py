@@ -29,7 +29,7 @@ class cscs_build_osu_benchmarks(build_osu_benchmarks):
 class cscs_osu_benchmarks(osu_build_run):
     exclusive_access = True
     tags = {'production', 'benchmark', 'craype'}
-    maintainers = ['@rsarm', '@vkarak']
+    maintainers = ['@rsarm']
 
 
 @rfm.simple_test
