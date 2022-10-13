@@ -24,7 +24,7 @@ class CudaSamplesTest(rfm.RegressionTest):
     ]
     sourcesdir = 'https://github.com/NVIDIA/cuda-samples.git'
     build_system = 'Make'
-    maintainers = ['JO']
+    maintainers = ['@ekouts', '@teojgo']
     tags = {'production'}
 
     # Required variables
