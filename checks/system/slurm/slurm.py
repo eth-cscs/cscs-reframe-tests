@@ -210,27 +210,30 @@ class MemoryOverconsumptionCheck(SlurmCompiledBaseCheck):
 @rfm.simple_test
 class MemoryOverconsumptionMpiCheck(SlurmCompiledBaseCheck):
     maintainers = ['@jgphpc', '@ekouts']
-    valid_systems += ['eiger:mc', 'pilatus:mc', 'hohgant:gpu']
+    valid_systems += ['*']
     time_limit = '5m'
+    build_system = 'SingleSource'
     sourcepath = 'eatmemory_mpi.c'
     tags.add('mem')
 
+    @run_before('compile')
+    def set_skip(self):
+        # TODO: use env. features: if 'alps' then yes
+        if self.current_system.name in ['balfrin', 'manali', 'hohgant']:
+            self.build_system.ldflags = ['-L.']
+
+    @run_before('run')
+    def set_num_tasks(self):
+        self.skip_if_no_procinfo()
+        cpu = self.current_partition.processor
+        self.num_tasks_per_node = int(
+            cpu.info['num_cpus'] / cpu.info['num_cpus_per_core'])
+        self.num_tasks = self.num_tasks_per_node
+        self.job.launcher.options = ['-u']
+
     @sanity_function
     def assert_found_oom(self):
-        return sn.assert_found(r'(oom-kill)|(Killed)',
-                               self.stderr)
-
-    @run_before('performance')
-    def set_references(self):
-        no_limit = (0, None, None, 'GB')
-        self.reference = {
-            '*': {
-                'max_cn_memory': no_limit,
-                'max_allocated_memory': (
-                    self.reference_meminfo(), -0.05, None, 'GB'
-                ),
-            }
-        }
+        return sn.assert_found(r'(oom-kill)|(Killed)', self.stderr)
 
     @performance_function('GB')
     def max_cn_memory(self):
@@ -243,36 +246,20 @@ class MemoryOverconsumptionMpiCheck(SlurmCompiledBaseCheck):
                  r' (\d+) GB')
         return sn.max(sn.extractall(regex, self.stdout, 1, int))
 
-    @run_before('run')
-    def set_tasks(self):
-        # TODO: use processor.json here or skip
-        tasks_per_node = {
-            'dom:mc': 36,
-            'daint:mc': 36,
-            'dom:gpu': 12,
-            'daint:gpu': 12,
-            'eiger:mc': 128,
-            'pilatus:mc': 128,
-            'hohgant:gpu': 128,
-        }
-        partname = self.current_partition.fullname
-        self.num_tasks_per_node = tasks_per_node[partname]
-        self.num_tasks = self.num_tasks_per_node
-        self.job.launcher.options = ['-u']
-
     def reference_meminfo(self):
-        # TODO: read rfm_job.out
-        reference_meminfo = {
-            'dom:gpu': 58,
-            'dom:mc': 58,
-            'daint:gpu': 58,
-            'daint:mc': 58,  # this will pass with 61 GB and above memory sizes
-            # this will pass with 256 GB and above memory sizes:
-            'eiger:mc': 250,
-            'pilatus:mc': 250,
-            'hohgant:gpu': 500
+        regex = 'memory from sysconf: total: \S+ \S+ avail: (?P<mem>\S+) GB'
+        return sn.extractsingle(regex, self.stdout, 'mem', int)
+
+    @run_before('performance')
+    def set_references(self):
+        self.reference = {
+            '*': {
+                'max_cn_memory': (0, None, None, 'GB'),
+                'max_allocated_memory': (
+                    self.reference_meminfo(), -0.05, None, 'GB'
+                ),
+            }
         }
-        return reference_meminfo[self.current_partition.fullname]
 
 
 @rfm.simple_test
@@ -312,11 +299,12 @@ class slurm_response_check(rfm.RunOnlyRegressionTest):
 def get_system_partitions():
     system_partitions = {
         'daint': [
-            'cscsci', 'long', 'large', 'normal*', 'prepost', '2go', 'low', 'xfer',
-            'debug'
+            'cscsci', 'long', 'large', 'normal*', 'prepost', '2go', 'low',
+            'xfer', 'debug'
         ],
         'dom': [
-            'cscsci', 'long', 'large', 'normal*', 'prepost', '2go', 'low', 'xfer'
+            'cscsci', 'long', 'large', 'normal*', 'prepost', '2go', 'low',
+            'xfer'
         ],
         'eiger': [
             'debug', 'normal*', 'prepost', 'low'
@@ -336,7 +324,8 @@ def get_system_partitions():
 class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
     '''check system queue status'''
 
-    valid_systems = ['daint:login', 'dom:login', 'eiger:login', 'pilatus:login']
+    valid_systems = ['daint:login', 'dom:login', 'eiger:login',
+                     'pilatus:login']
     valid_prog_environs = ['builtin']
     tags = {'slurm', 'maintenance', 'ops',
             'production', 'single-node'}
@@ -350,22 +339,22 @@ class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
 
     def assert_partition_exists(self):
         num_matches = sn.count(
-                sn.findall(fr'^{re.escape(self.slurm_partition)}.*',
-                self.stdout))
-        return sn.assert_gt(num_matches, 0,
-                            msg=f'{self.slurm_partition!r} not defined for '
-                                f'partition {self.current_partition.fullname!r}')
+            sn.findall(fr'^{re.escape(self.slurm_partition)}.*', self.stdout))
+        return sn.assert_gt(
+            num_matches, 0,
+            msg=f'{self.slurm_partition!r} not defined for '
+                f'partition {self.current_partition.fullname!r}')
 
     def assert_min_nodes(self):
         matches = sn.extractall(fr'^{re.escape(self.slurm_partition)},up,'
                                 fr'(?P<nodes>\d+),(allocated|reserved|idle)',
                                 self.stdout, 'nodes', int)
         num_matches = sn.sum(matches)
-        return sn.assert_ge(num_matches, self.min_avail_nodes,
-                            msg=f'found {num_matches} nodes in partition '
-                                f'{self.slurm_partition} with status allocated, '
-                                f'reserved, or idle. Expected at least '
-                                f'{self.min_avail_nodes}')
+        return sn.assert_ge(
+            num_matches, self.min_avail_nodes,
+            msg=f'found {num_matches} nodes in partition '
+                f'{self.slurm_partition} with status allocated, '
+                f'reserved, or idle. Expected at least {self.min_avail_nodes}')
 
     def assert_percentage_nodes(self):
         matches = sn.extractall(fr'^{re.escape(self.slurm_partition)},up,'
@@ -376,12 +365,13 @@ class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
                                     fr'(?P<nodes>\d+),.*', self.stdout,
                                     'nodes', int)
         num_all_matches = sn.sum(all_matches)
-        return sn.assert_ge(num_matches,
-                            self.ratio_avail_nonavail_nodes * num_all_matches,
-                            msg=f'more than '
-                                f'{self.ratio_avail_nonavail_nodes * 100.0:.0f}% '
-                                f'of nodes are unavailable for '
-                                f'partition {self.slurm_partition}')
+        return sn.assert_ge(
+                num_matches,
+                self.ratio_avail_nonavail_nodes * num_all_matches,
+                msg=f'more than '
+                    f'{self.ratio_avail_nonavail_nodes * 100.0:.0f}% '
+                    f'of nodes are unavailable for '
+                    f'partition {self.slurm_partition}')
 
     @sanity_function
     def assert_partition_sanity(self):
@@ -390,4 +380,3 @@ class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
             self.assert_min_nodes(),
             self.assert_percentage_nodes(),
         ])
-
