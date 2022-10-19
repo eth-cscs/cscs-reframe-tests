@@ -167,8 +167,9 @@ class CDO_InfoNCTest(CDOBaseTest):
             'test_echam_spectral-deflated_wind10_wl_ws.nc4': '442368',
             'test_echam_spectral-deflated_wind10_wl_ws.nc4c': '442368',
         }
+
         regex = (
-            f'info: Processed {value[self.test_filename]} values from '
+            f'info: Processed( {value[self.test_filename]} values from)? '
             r'(5|3) variables over (1|8) timestep'
         )
         return sn.assert_found(regex, self.stdout)
@@ -212,6 +213,6 @@ class CDO_MergeNCTest(CDOBaseTest):
     def assert_output(self):
         value = {'nc': '98304', 'nc4': '442368', 'nc4c': '442368'}
         regex = (
-            f'merge: Processed {value[self.test_type]} values from 3 variables'
+            f'merge: Processed( {value[self.test_type]} values from)? 3 variab'
         )
         return sn.assert_found(regex, self.stdout)

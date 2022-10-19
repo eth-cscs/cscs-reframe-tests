@@ -41,10 +41,10 @@ class NCOBaseTest(rfm.RunOnlyRegressionTest):
         if self.current_system.name in ['arolla', 'tsa']:
             self.exclusive_access = True
             self.valid_prog_environs = ['PrgEnv-gnu', 'PrgEnv-gnu-nompi']
-            self.modules = ['cdo', 'netcdf-fortran']
+            self.modules = ['nco', 'netcdf-fortran']
         elif self.current_system.name in ['eiger', 'pilatus']:
             self.valid_prog_environs = ['cpeGNU']
-            self.modules = ['CDO']
+            self.modules = ['NCO']
         elif self.current_system.name in ['manali', 'balfrin']:
             self.valid_prog_environs = ['PrgEnv-gnu']
             self.modules = ['nco', 'netcdf-fortran']
