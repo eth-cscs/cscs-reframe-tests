@@ -38,16 +38,26 @@ class CDOBaseTest(rfm.RunOnlyRegressionTest):
 
     @run_after('init')
     def setup_valid_pe(self):
+        modules = {
+            'arolla': ['cdo', 'netcdf-fortran'],
+            'tsa': ['cdo', 'netcdf-fortran'],
+            'eiger': ['CDO'],
+            'pilatus': ['CDO'],
+            'manali': ['cdo', 'netcdf-fortran'],
+            'balfrin': ['cdo', 'netcdf-fortran'],
+        }
+        if self.current_system.name in modules:
+            self.modules = modules[self.current_system.name]
+        else:
+            self.modules = ['CDO']
+
         if self.current_system.name in ['arolla', 'tsa']:
             self.exclusive_access = True
             self.valid_prog_environs = ['PrgEnv-gnu', 'PrgEnv-gnu-nompi']
-            self.modules = ['cdo', 'netcdf-fortran']
         elif self.current_system.name in ['eiger', 'pilatus']:
             self.valid_prog_environs = ['cpeGNU']
-            self.modules = ['CDO']
         elif self.current_system.name in ['manali', 'balfrin']:
             self.valid_prog_environs = ['PrgEnv-gnu']
-            self.modules = ['cdo', 'netcdf-fortran']
             self.squashfs_script = './exe.sh'
             # until VCMSA-102 is resolved:
             if self.current_system.name in ['balfrin']:
@@ -62,7 +72,6 @@ class CDOBaseTest(rfm.RunOnlyRegressionTest):
             ]
         else:
             self.valid_prog_environs = ['builtin']
-            self.modules = ['CDO']
 
 
 # Check that the netCDF loaded by the CDO module supports the nc4 filetype
