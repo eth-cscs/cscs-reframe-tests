@@ -219,7 +219,7 @@ class MemoryOverconsumptionMpiCheck(SlurmCompiledBaseCheck):
     @run_before('compile')
     def set_skip(self):
         self.skip_if(self.current_partition.name == 'login',
-            'skipping login nodes')
+                     'skipping login nodes')
 
     @run_before('compile')
     def unset_ldflags(self):
@@ -240,28 +240,23 @@ class MemoryOverconsumptionMpiCheck(SlurmCompiledBaseCheck):
         return sn.assert_found(r'(oom-kill)|(Killed)', self.stderr)
 
     @performance_function('GB')
-    def max_cn_memory(self):
-        return self.reference_meminfo()
+    def cn_avail_memory_from_sysconf(self):
+        regex = r'memory from sysconf: total: \S+ \S+ avail: (?P<mem>\S+) GB'
+        return sn.extractsingle(regex, self.stdout, 'mem', int)
 
     @performance_function('GB')
-    def max_allocated_memory(self):
+    def cn_max_allocated_memory(self):
         regex = (r'^Eating \d+ MB\/mpi \*\d+mpi = -\d+ MB memory from \/proc\/'
                  r'meminfo: total: \d+ GB, free: \d+ GB, avail: \d+ GB, using:'
                  r' (\d+) GB')
         return sn.max(sn.extractall(regex, self.stdout, 1, int))
 
-    def reference_meminfo(self):
-        regex = 'memory from sysconf: total: \S+ \S+ avail: (?P<mem>\S+) GB'
-        return sn.extractsingle(regex, self.stdout, 'mem', int)
-
     @run_before('performance')
     def set_references(self):
+        reference_mem = self.current_partition.extras['cn_memory'] - 3
         self.reference = {
             '*': {
-                'max_cn_memory': (0, None, None, 'GB'),
-                'max_allocated_memory': (
-                    self.reference_meminfo(), -0.05, None, 'GB'
-                ),
+                'cn_max_allocated_memory': (reference_mem, -0.05, None, 'GB'),
             }
         }
 
