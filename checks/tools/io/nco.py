@@ -2,7 +2,7 @@
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
-# {{{ The first of the following tests verify the installation. The remaining
+# The first of the following tests verify the installation. The remaining
 # tests operate on files. All netCDF files incl CDL metadata were
 # downloaded from:
 # https://www.unidata.ucar.edu/software/netcdf/examples/files.html
@@ -20,7 +20,6 @@
 # 'test_hgroups.nc4'; it gives the error:
 #   cdo info: Open failed on >test_hgroups.nc4<
 #   Unsupported file structure"
-# }}}
 import os
 
 import reframe as rfm
