@@ -38,16 +38,23 @@ class NCOBaseTest(rfm.RunOnlyRegressionTest):
 
     @run_after('init')
     def setup_valid_pe(self):
+        modules = {
+            'arolla': ['nco', 'netcdf-fortran'],
+            'tsa': ['nco', 'netcdf-fortran'],
+            'eiger': ['NCO'],
+            'pilatus': ['NCO'],
+            'manali': ['nco', 'netcdf-fortran'],
+            'balfrin': ['nco', 'netcdf-fortran'],
+        }
+        self.modules = modules.get(self.current_system.name, ['NCO'])
+
         if self.current_system.name in ['arolla', 'tsa']:
             self.exclusive_access = True
             self.valid_prog_environs = ['PrgEnv-gnu', 'PrgEnv-gnu-nompi']
-            self.modules = ['nco', 'netcdf-fortran']
         elif self.current_system.name in ['eiger', 'pilatus']:
             self.valid_prog_environs = ['cpeGNU']
-            self.modules = ['NCO']
         elif self.current_system.name in ['manali', 'balfrin']:
             self.valid_prog_environs = ['PrgEnv-gnu']
-            self.modules = ['nco', 'netcdf-fortran']
             self.squashfs_script = './exe.sh'
             # until VCMSA-102 is resolved:
             if self.current_system.name in ['balfrin']:
@@ -62,7 +69,6 @@ class NCOBaseTest(rfm.RunOnlyRegressionTest):
             ]
         else:
             self.valid_prog_environs = ['builtin']
-            self.modules = ['NCO']
 
 
 # Check that the netCDF loaded by the nco module supports the nc4 filetype
@@ -76,7 +82,7 @@ class NCO_DependencyTest(NCOBaseTest):
 
     @run_before('run')
     def setup_per_partition_name(self):
-        if 'squashfs' in self.current_partition.name:
+        if 'squashfs' in self.current_environ.features:
             self.executable = f'bash {self.squashfs_script}'
             self.executable_opts = ['nf-config', '--has-nc4']
         else:
@@ -95,7 +101,7 @@ class NCO_NC4SupportTest(NCOBaseTest):
 
     @run_before('run')
     def setup_per_partition_name(self):
-        if 'squashfs' in self.current_partition.name:
+        if 'squashfs' in self.current_environ.features:
             self.executable = f'bash {self.squashfs_script}'
             self.executable_opts = ['ncks', '-r', '2>&1']
         else:
@@ -120,20 +126,20 @@ class NCO_NC4SupportTest(NCOBaseTest):
 # define as executable just an echo with no arguments.
 @rfm.simple_test
 class NCO_CDOModuleCompatibilityTest(NCOBaseTest):
-    descr = ('verifies compatibility with the CDO module')
+    descr = ('verifies NCO compatibility with the CDO module')
     sourcesdir = None
     executable = 'echo'
 
     @run_before('run')
     def setup_nco_modulefile_name(self):
-        self.skip_if('squashfs' in self.current_partition.name,
+        self.skip_if('squashfs' in self.current_environ.features,
                      'skip NCO_CDOModuleCompatibilityTest with squashfs pe')
         if self.current_system.name in ['arolla', 'tsa']:
-            nco_name = 'cdo'
+            cdo_name = 'cdo'
         else:
-            nco_name = 'CDO'
+            cdo_name = 'CDO'
 
-        self.prerun_cmds += [f'module load {nco_name}']
+        self.prerun_cmds += [f'module load {cdo_name}']
 
     @sanity_function
     def assert_output(self):
@@ -160,7 +166,7 @@ class NCO_InfoNCTest(NCOBaseTest):
     def setup_per_partition_name(self):
         self.executable = (
             f'bash {self.squashfs_script} ncks'
-            if 'squashfs' in self.current_partition.name else 'ncks')
+            if 'squashfs' in self.current_environ.features else 'ncks')
 
         self.executable_opts = ['-M', self.test_filename, '2>&1']
 
@@ -206,7 +212,7 @@ class NCO_MergeNCTest(NCOBaseTest):
     def setup_per_partition_name(self):
         self.executable = (
             f'bash {self.squashfs_script} ncks'
-            if 'squashfs' in self.current_partition.name else 'nco')
+            if 'squashfs' in self.current_environ.features else 'ncks')
 
         self.executable_opts = ['-A', f'*.{self.test_type}']
 

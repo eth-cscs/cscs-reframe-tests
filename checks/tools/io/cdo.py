@@ -46,10 +46,7 @@ class CDOBaseTest(rfm.RunOnlyRegressionTest):
             'manali': ['cdo', 'netcdf-fortran'],
             'balfrin': ['cdo', 'netcdf-fortran'],
         }
-        if self.current_system.name in modules:
-            self.modules = modules[self.current_system.name]
-        else:
-            self.modules = ['CDO']
+        self.modules = modules.get(self.current_system.name, ['CDO'])
 
         if self.current_system.name in ['arolla', 'tsa']:
             self.exclusive_access = True
@@ -85,7 +82,7 @@ class CDO_DependencyTest(CDOBaseTest):
 
     @run_before('run')
     def setup_per_partition_name(self):
-        if 'squashfs' in self.current_partition.name:
+        if 'squashfs' in self.current_environ.features:
             self.executable = f'bash {self.squashfs_script}'
             self.executable_opts = ['nf-config', '--has-nc4']
         else:
@@ -104,7 +101,7 @@ class CDO_NC4SupportTest(CDOBaseTest):
 
     @run_before('run')
     def setup_per_partition_name(self):
-        if 'squashfs' in self.current_partition.name:
+        if 'squashfs' in self.current_environ.features:
             self.executable = f'bash {self.squashfs_script}'
             self.executable_opts = ['cdo', '-V', '2>&1']
         else:
@@ -124,13 +121,13 @@ class CDO_NC4SupportTest(CDOBaseTest):
 # define as executable just an echo with no arguments.
 @rfm.simple_test
 class CDO_NCOModuleCompatibilityTest(CDOBaseTest):
-    descr = ('verifies compatibility with the NCO module')
+    descr = ('verifies CDO compatibility with the NCO module')
     sourcesdir = None
     executable = 'echo'
 
     @run_before('run')
     def setup_nco_modulefile_name(self):
-        self.skip_if('squashfs' in self.current_partition.name,
+        self.skip_if('squashfs' in self.current_environ.features,
                      'skip CDO_NCOModuleCompatibilityTest with squashfs pe')
         if self.current_system.name in ['arolla', 'tsa']:
             nco_name = 'nco'
@@ -165,7 +162,7 @@ class CDO_InfoNCTest(CDOBaseTest):
     def setup_per_partition_name(self):
         self.executable = (
             f'bash {self.squashfs_script} cdo'
-            if 'squashfs' in self.current_partition.name else 'cdo')
+            if 'squashfs' in self.current_environ.features else 'cdo')
 
         self.executable_opts = ['info', self.test_filename, '2>&1']
 
@@ -211,7 +208,7 @@ class CDO_MergeNCTest(CDOBaseTest):
     def setup_per_partition_name(self):
         self.executable = (
             f'bash {self.squashfs_script} cdo'
-            if 'squashfs' in self.current_partition.name else 'cdo')
+            if 'squashfs' in self.current_environ.features else 'cdo')
 
         self.executable_opts = [
             '-O', 'merge', f'*.{self.test_type}',
