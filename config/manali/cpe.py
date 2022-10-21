@@ -61,6 +61,9 @@ site_configuration = {
                         }
                     ],
                     'max_jobs': 100,
+                    'extras': {
+                        'cn_memory': 500,
+                    },
                     # TODO: use an env variable here ?
                     'access': ['-x nid003120,nid003240,nid003241'],
                     'resources': [

@@ -60,8 +60,11 @@ site_configuration = {
                         }
                     ],
                     'max_jobs': 100,
+                    'extras': {
+                        'cn_memory': 500,
+                    },
                     # TODO: use an env variable here ?
-                    'access': ['-x nid002258,nid[002218-002219]'],
+                    # 'access': ['-x nid002258,nid[002218-002219]'],
                     'resources': [
                         {
                             'name': 'switches',
