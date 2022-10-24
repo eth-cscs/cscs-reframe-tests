@@ -544,6 +544,9 @@ site_configuration = {
                     ],
                     'descr': 'Tsa compute nodes',
                     'max_jobs': 20,
+                    'extras': {
+                        'cn_memory': 377,
+                    },
                     'features': ['gpu'],
                     'resources': [
                         {
@@ -687,9 +690,6 @@ site_configuration = {
                         }
                     ],
                     'max_jobs': 100,
-                    'extras': {
-                        'cn_memory': 500,
-                    },
                     'resources': [
                         {
                             'name': 'switches',
