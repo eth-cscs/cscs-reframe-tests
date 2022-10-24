@@ -14,12 +14,11 @@ import reframe.utility.sanity as sn
 class SlurmSimpleBaseCheck(rfm.RunOnlyRegressionTest):
     '''Base class for Slurm simple binary tests'''
 
-    valid_systems = ['daint:gpu', 'daint:mc',
-                     'dom:gpu', 'dom:mc',
-                     'arolla:cn', 'arolla:pn',
-                     'tsa:cn', 'tsa:pn',
-                     'daint:xfer', 'dom:xfer',
-                     'eiger:mc', 'pilatus:mc']
+    valid_systems = [
+        'daint:gpu', 'daint:mc', 'dom:gpu', 'dom:mc',
+        'arolla:cn', 'arolla:pn', 'tsa:cn', 'tsa:pn',
+        'daint:xfer', 'dom:xfer', 'eiger:mc', 'pilatus:mc'
+    ]
     valid_prog_environs = ['PrgEnv-cray']
     tags = {'slurm', 'maintenance', 'ops',
             'production', 'single-node'}
@@ -211,6 +210,7 @@ class MemoryOverconsumptionCheck(SlurmCompiledBaseCheck):
 class MemoryOverconsumptionMpiCheck(SlurmCompiledBaseCheck):
     maintainers = ['@jgphpc', '@ekouts']
     valid_systems += ['*']
+    valid_prog_environs += ['PrgEnv-gnu']
     time_limit = '5m'
     build_system = 'SingleSource'
     sourcepath = 'eatmemory_mpi.c'
@@ -220,6 +220,13 @@ class MemoryOverconsumptionMpiCheck(SlurmCompiledBaseCheck):
     def set_skip(self):
         self.skip_if(self.current_partition.name == 'login',
                      'skipping login nodes')
+
+    @run_before('compile')
+    def set_hohgant(self):
+        if 'hohgant' in self.current_system.name and \
+           'squashfs' in self.current_environ.features:
+            self.modules += ['cuda/11.7.1-gcc']
+            self.build_system.ldflags += ['-L$CUDA_HOME/lib64/stubs/ -lcuda']
 
     @run_before('compile')
     def unset_ldflags(self):

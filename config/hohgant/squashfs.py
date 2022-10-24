@@ -21,8 +21,8 @@ class MyLauncher(mpi.SrunLauncher):
         )
 
 
-target_system = 'manali'
-user_env_image = '/scratch/e1000/bcumming/balfrin.squashfs'  # NOTE: not v1
+target_system = 'hohgant'
+user_env_image = '/scratch/e1000/bcumming/balfrin.squashfs'
 user_env_root = '/user-environment'
 rfm_prefix = os.path.normpath(
     os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
@@ -34,7 +34,7 @@ site_configuration = {
     'systems': [
         {
             'name': target_system,
-            'descr': 'Manali virtual cluster',
+            'descr': 'Hohgant virtual cluster',
             'hostnames': [target_system],
             'modules_system': 'lmod',
             # TODO: use jfrog
@@ -74,7 +74,7 @@ site_configuration = {
                         'cn_memory': 500,
                     },
                     # TODO: use an env variable here ?
-                    'access': ['-x nid003048'],
+                    'access': ['-x nid003192'],
                     'resources': [
                         {
                             'name': 'switches',
