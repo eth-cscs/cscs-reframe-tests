@@ -5,24 +5,29 @@
 #
 # ReFrame CSCS settings
 #
+import json
 import os
 
 import reframe.core.launchers.mpi as mpi
 import reframe.utility.osext as osext
 
 
-# @mpi.register_launcher('squashfs-run')
-# class MyLauncher(mpi.SrunLauncher):
-#     def run_command(self, job):
-#         return ' '.join(self.command(job) + self.options + ['squashfs-run', '$STACKFILE'])
+target_system = 'manali'
+rfm_prefix = os.path.normpath(
+    os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
+)
+with open(f'{rfm_prefix}/common_logging.json', 'r') as cfg_file:
+    logging_section = json.load(cfg_file)
 
 site_configuration = {
     'systems': [
         {
-            'name': 'manali',
+            'name': target_system,
             'descr': 'Manali virtual cluster',
-            'hostnames': ['manali', 'nid003120'],
+            'hostnames': [target_system],
             'modules_system': 'lmod',
+            # TODO: use jfrog
+            'resourcesdir': '/scratch/e1000/piccinal/resources',
             'partitions': [
                 {
                     'name': 'login',
@@ -35,7 +40,6 @@ site_configuration = {
                         'PrgEnv-gnu',
                         'PrgEnv-nvhpc',
                         'PrgEnv-nvidia'
-                        # NOTE: /opt/cray/pe/lmod/modulefiles/core/
                     ],
                     'descr': 'Login nodes',
                     'max_jobs': 4,
@@ -65,7 +69,7 @@ site_configuration = {
                         'cn_memory': 500,
                     },
                     # TODO: use an env variable here ?
-                    'access': ['-x nid003120,nid003240,nid003241'],
+                    'access': ['-x nid003048'],
                     'resources': [
                         {
                             'name': 'switches',
@@ -90,7 +94,7 @@ site_configuration = {
         },
     ],
     'environments': [
-        #{{{ cray pe
+        # {{{ cray pe
         # NOTE: MPIDI_CRAY_init: GPU_SUPPORT_ENABLED is requested,
         #       but GTL library is not linked -> add -lgtl
         # 'PrgEnv-aocc',
@@ -99,7 +103,7 @@ site_configuration = {
         # 'PrgEnv-nvhpc',
         # 'PrgEnv-nvidia'
         {
-            'target_systems': ['manali'],
+            'target_systems': [target_system],
             'name': 'PrgEnv-aocc',
             # adding 'cpe' to workaround error:
             # /opt/cray/pe/libsci/22.08.1.1/AOCC/2.0/x86_64/lib/libsci_aocc_mp.so:
@@ -120,7 +124,7 @@ site_configuration = {
                 '$PE_MPICH_GTL_DIR_nvidia80 $PE_MPICH_GTL_LIBS_nvidia80']
         },
         {
-            'target_systems': ['manali'],
+            'target_systems': [target_system],
             'name': 'PrgEnv-gnu',
             'modules': ['cray', 'PrgEnv-gnu'],
             'cppflags': ['-I$CUDA_HOME/include'],
@@ -132,7 +136,7 @@ site_configuration = {
             'target_systems': ['manali'],
             'name': 'PrgEnv-nvhpc',
             'modules': ['cray', 'PrgEnv-nvhpc'],
-            # PrgEnv-nvhpc will not load cudatoolkit: CUDA_HOME will not be set 
+            # PrgEnv-nvhpc will not load cudatoolkit: CUDA_HOME will not be set
             'cppflags': ['-I$NVHPC/Linux_x86_64/2022/cuda/include'],
             'ldflags': [
                 '-L$NVHPC/Linux_x86_64/2022/cuda/lib64',
@@ -146,7 +150,7 @@ site_configuration = {
             },
         },
         {
-            'target_systems': ['manali'],
+            'target_systems': [target_system],
             'name': 'PrgEnv-nvidia',
             'modules': ['cray', 'PrgEnv-nvidia'],
             'cppflags': ['-I$CUDA_HOME/include'],
@@ -160,7 +164,7 @@ site_configuration = {
                 'launcher_options': '--mpi=pmi2',
             },
         },
-        #}}}
+        # }}}
         {
             'name': 'builtin',
             'cc': 'cc',
@@ -174,52 +178,7 @@ site_configuration = {
             'ftn': 'gfortran'
         }
     ],
-    # {{{ logs and modes
-    'logging': [
-        {
-            'handlers': [
-                {
-                    'type': 'file',
-                    'name': 'reframe.log',
-                    'level': 'debug2',
-                    'format': '[%(asctime)s] %(levelname)s: %(check_info)s: %(message)s',   # noqa: E501
-                    'append': False
-                },
-                {
-                    'type': 'stream',
-                    'name': 'stdout',
-                    'level': 'info',
-                    'format': '%(message)s'
-                },
-                {
-                    'type': 'file',
-                    'name': 'reframe.out',
-                    'level': 'info',
-                    'format': '%(message)s',
-                    'append': False
-                }
-            ],
-            'handlers_perflog': [
-                {
-                    'type': 'filelog',
-                    'prefix': '%(check_system)s/%(check_partition)s',
-                    'level': 'info',
-                    'format': '%(check_job_completion_time)s|reframe %(version)s|%(check_info)s|jobid=%(check_jobid)s|num_tasks=%(check_num_tasks)s|%(check_perf_var)s=%(check_perf_value)s|ref=%(check_perf_ref)s (l=%(check_perf_lower_thres)s, u=%(check_perf_upper_thres)s)|%(check_perf_unit)s',   # noqa: E501
-                    'datefmt': '%FT%T%:z',
-                    'append': True
-                },
-#                 {
-#                     'type': 'httpjson',
-#                     'url': 'http://httpjson-server:12345/rfm',
-#                     'level': 'info',
-#                     'extras': {
-#                         'facility': 'reframe',
-#                         'data-version': '1.0',
-#                     }
-#                 }
-            ]
-        }
-    ],
+    'logging': [logging_section],
     'modes': [
         {
             'name': 'maintenance',
@@ -227,10 +186,11 @@ site_configuration = {
                 '--unload-module=reframe',
                 '--exec-policy=async',
                 '--strict',
-                '--output=$APPS/UES/$USER/regression/maintenance',
-                '--perflogdir=$APPS/UES/$USER/regression/maintenance/logs',
+                '--output=$SCRATCH/regression/maintenance',
+                '--perflogdir=$SCRATCH/regression/maintenance/logs',
                 '--stage=$SCRATCH/regression/maintenance/stage',
-                '--report-file=$APPS/UES/$USER/regression/maintenance/reports/maint_report_{sessionid}.json',
+                '--report-file=$SCRATCH/regression/maintenance/reports/'
+                'maint_report_{sessionid}.json',
                 '-Jreservation=maintenance',
                 '--save-log-files',
                 '--tag=maintenance',
@@ -243,10 +203,11 @@ site_configuration = {
                 '--unload-module=reframe',
                 '--exec-policy=async',
                 '--strict',
-                '--output=$APPS/UES/$USER/regression/production',
-                '--perflogdir=$APPS/UES/$USER/regression/production/logs',
+                '--output=$/regression/production',
+                '--perflogdir=$CRATCH/regression/production/logs',
                 '--stage=$SCRATCH/regression/production/stage',
-                '--report-file=$APPS/UES/$USER/regression/production/reports/prod_report_{sessionid}.json',
+                '--report-file=$SCRATCH/regression/production/reports/'
+                'prod_report_{sessionid}.json',
                 '--save-log-files',
                 '--tag=production',
                 '--timestamp=%F_%H-%M-%S'
@@ -259,15 +220,15 @@ site_configuration = {
                 '--exec-policy=async',
                 '--strict',
                 '--prefix=$SCRATCH/$USER/regression/production',
-                '--report-file=$SCRATCH/$USER/regression/production/reports/prod_report_{sessionid}.json',
+                '--report-file=$SCRATCH/$USER/regression/production/reports/'
+                'prod_report_{sessionid}.json',
                 '--save-log-files',
                 '--tag=production',
                 '--timestamp=%F_%H-%M-%S'
             ],
-            'target_systems': ['hohgant'],
+            'target_systems': [target_system],
         }
     ],
-    # }}}
     'general': [
         {
             'resolve_module_conflicts': False,
