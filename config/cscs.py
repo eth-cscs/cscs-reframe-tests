@@ -980,7 +980,12 @@ site_configuration = {
         {
             'name': 'PrgEnv-nvidia',
             'target_systems': ['hohgant'],
-            'modules': ['cray', 'PrgEnv-nvidia']
+            'modules': ['cray', 'PrgEnv-nvidia'],
+            'extras': {
+                # "MPIR_pmi_init(83)....: PMI2_Job_GetId returned 14"
+                # -> add --mpi=pmi2 at runtime
+                'launcher_options': '--mpi=pmi2',
+            },
         },
         {
             'name': 'cpeAMD',

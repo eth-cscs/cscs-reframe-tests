@@ -227,13 +227,23 @@ class MemoryOverconsumptionMpiCheck(SlurmCompiledBaseCheck):
             self.build_system.ldflags = ['-L.']
 
     @run_before('run')
+    def set_job_parameters(self):
+        # fix for "MPIR_pmi_init(83)....: PMI2_Job_GetId returned 14"
+        set_pmi = (
+            self.current_environ.extras['launcher_options']
+            if 'launcher_options' in self.current_environ.extras
+            else ''
+        )
+        self.job.launcher.options += [set_pmi]
+
+    @run_before('run')
     def set_num_tasks(self):
         self.skip_if_no_procinfo()
         cpu = self.current_partition.processor
         self.num_tasks_per_node = int(
             cpu.info['num_cpus'] / cpu.info['num_cpus_per_core'])
         self.num_tasks = self.num_tasks_per_node
-        self.job.launcher.options = ['-u']
+        self.job.launcher.options += ['-u']
 
     @sanity_function
     def assert_found_oom(self):
