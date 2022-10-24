@@ -14,16 +14,17 @@ import reframe.utility.osext as osext
 @mpi.register_launcher('squashfs-run')
 class MyLauncher(mpi.SrunLauncher):
     def run_command(self, job):
-        return ' '.join(self.command(job) + self.options + ['squashfs-run', '$STACKFILE'])
+        return ' '.join(self.command(job) + self.options + ['squashfs-run', '$USER_ENV_IMAGE'])
 
 site_configuration = {
     'systems': [
         {
             'name': 'manali',
             'descr': 'Manali virtual cluster',
-            'hostnames': ['manali', 'nid003120'],
+            'hostnames': ['manali'],
             'modules_system': 'lmod',
-            'resourcesdir': '/apps/common/UES/reframe/resources',
+            # TODO: use jfrog
+            'resourcesdir': '/scratch/e1000/piccinal/resources',
             'partitions': [
                 {
                     'name': 'login',
@@ -95,15 +96,15 @@ site_configuration = {
             'target_systems': ['manali'],
             'name': 'PrgEnv-gnu',
             'variables': [
-                ['STACKFILE', os.environ.get('STACKFILE', '/scratch/e1000/bcumming/balfrin.squashfs')],
-                ['MODULEPATH', '/user-environment/modules'],
-                # ['STACKFILE', os.environ.get('STACKFILE', '/scratch/e1000/piccinal/balfrin.squashfs')],
-            ],
+                ['USER_ENV_IMAGE', os.environ.get('USER_ENV_IMAGE', '/scratch/e1000/bcumming/balfrin.squashfs')],
+                ['USER_ENV_ROOT', os.environ.get('USER_ENV_ROOT', '/user-environment/modules')],
+                ['USER_ENV_CUDA_VISIBLE', os.environ.get('USER_ENV_CUDA_VISIBLE', '$HOME/cuda_visible_devices.sh')],
+                ['MODULEPATH', os.path.join(os.environ.get("USER_ENV_ROOT", '/user-environment'), 'modules')],
+             ],
             'modules': [
                 {
-                    # 'name': 'cray-mpich-binary-8.1.18.4-gcc-gcc-11.3.0-twtq6ct',
                     'name': 'cray-mpich-binary/8.1.18.4-gcc',
-                    'path': os.getenv('STACKMPATH', '/user-environment/modules'),
+                    'path': os.path.join(os.environ.get("USER_ENV_ROOT", '/user-environment'), 'modules'),
                 },
             ],
             'features': ['squashfs'],
@@ -116,11 +117,16 @@ site_configuration = {
         {
             'target_systems': ['manali'],
             'name': 'PrgEnv-nvidia',
+            'variables': [
+                ['USER_ENV_IMAGE', os.environ.get('USER_ENV_IMAGE', '/scratch/e1000/bcumming/balfrin.squashfs')],
+                ['USER_ENV_ROOT', os.environ.get('USER_ENV_ROOT', '/user-environment/modules')],
+                ['USER_ENV_CUDA_VISIBLE', os.environ.get('USER_ENV_CUDA_VISIBLE', '$HOME/cuda_visible_devices.sh')],
+                ['MODULEPATH', os.path.join(os.environ.get("USER_ENV_ROOT", '/user-environment'), 'modules')],
+             ],
             'modules': [
                 {
-                    # 'name': 'cray-mpich-binary-8.1.18.4-nvhpc-nvhpc-22.7-5asckru',
                     'name': 'cray-mpich-binary/8.1.18.4-nvhpc',
-                    'path': os.getenv('STACKMPATH', '/user-environment/modules'),
+                    'path': os.path.join(os.environ.get("USER_ENV_ROOT", '/user-environment'), 'modules'),
                 },
             ],
             'features': ['squashfs'],
@@ -129,11 +135,6 @@ site_configuration = {
             'ftn': 'mpif90',
             'cppflags': ['-I$CUDA_HOME/include'],
             'ldflags': ['-L$CUDA_HOME/lib64', '-Wl,-rpath=$CUDA_HOME/lib64'],
-            'variables': [
-                ['STACKFILE', os.environ.get('STACKFILE', '/scratch/e1000/bcumming/balfrin.squashfs')],
-                ['MODULEPATH', '/user-environment/modules'],
-                # ['STACKFILE', os.environ.get('STACKFILE', '/scratch/e1000/piccinal/balfrin.squashfs')],
-            ],
         },
         #}}}
         {
