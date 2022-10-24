@@ -210,7 +210,7 @@ class MemoryOverconsumptionCheck(SlurmCompiledBaseCheck):
 class MemoryOverconsumptionMpiCheck(SlurmCompiledBaseCheck):
     maintainers = ['@jgphpc', '@ekouts']
     valid_systems += ['*']
-    valid_prog_environs += ['PrgEnv-gnu']
+    valid_prog_environs += ['PrgEnv-gnu', 'PrgEnv-nvidia']
     time_limit = '5m'
     build_system = 'SingleSource'
     sourcepath = 'eatmemory_mpi.c'
@@ -219,14 +219,7 @@ class MemoryOverconsumptionMpiCheck(SlurmCompiledBaseCheck):
     @run_before('compile')
     def set_skip(self):
         self.skip_if(self.current_partition.name == 'login',
-                     'skipping login nodes')
-
-    @run_before('compile')
-    def set_hohgant(self):
-        if 'hohgant' in self.current_system.name and \
-           'squashfs' in self.current_environ.features:
-            self.modules += ['cuda/11.7.1-gcc']
-            self.build_system.ldflags += ['-L$CUDA_HOME/lib64/stubs/ -lcuda']
+                     'MemoryOverconsumptionMpiCheck not needed on login node')
 
     @run_before('compile')
     def unset_ldflags(self):
