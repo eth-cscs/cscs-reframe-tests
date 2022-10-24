@@ -5,6 +5,7 @@
 #
 # ReFrame CSCS settings
 #
+import json
 import os
 
 import reframe.core.launchers.mpi as mpi
@@ -20,13 +21,22 @@ class MyLauncher(mpi.SrunLauncher):
         )
 
 
+target_system = 'balfrin'
+user_env_image = '/apps/uenv-images/balfrin-v1.squashfs'
+user_env_root = '/mch-environment/v1'
+rfm_prefix = os.path.normpath(
+    os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
+)
+with open(f'{rfm_prefix}/common_logging.json', 'r') as cfg_file:
+    logging_section = json.load(cfg_file)
+
 site_configuration = {
     'systems': [
         {
-            'name': 'manali',
-            'descr': 'Manali virtual cluster',
-            'hostnames': ['manali'],
-            'modules_system': 'lmod',
+            'name': target_system,
+            'descr': 'Balfrin virtual cluster',
+            'hostnames': [target_system],
+            'modules_system': 'tmod',
             # TODO: use jfrog
             'resourcesdir': '/scratch/e1000/piccinal/resources',
             'partitions': [
@@ -93,41 +103,27 @@ site_configuration = {
         # 'PrgEnv-gnu',
         # 'PrgEnv-nvidia'
         {
-            'target_systems': ['balfrin'],
+            'target_systems': [target_system],
             'name': 'PrgEnv-gnu',
             'variables': [
-                ['USER_ENV_IMAGE', os.environ.get('USER_ENV_IMAGE', '/apps/uenv-images/balfrin-v1.squashfs')],
-                ['USER_ENV_ROOT', os.environ.get('USER_ENV_ROOT', '/mch-environment/v1')],
-                ['USER_ENV_CUDA_VISIBLE', os.environ.get('USER_ENV_CUDA_VISIBLE', '$HOME/cuda_visible_devices.sh')],
-                ['MODULEPATH', os.path.join(os.environ.get("USER_ENV_ROOT", '/mch-environment/v1'), 'modules')],
-
-
-
                 ['USER_ENV_IMAGE',
-                 os.environ.get('USER_ENV_IMAGE',
-                                '/scratch/e1000/bcumming/balfrin.squashfs')],
+                 os.environ.get('USER_ENV_IMAGE', user_env_image)],
                 ['USER_ENV_ROOT',
-                 os.environ.get('USER_ENV_ROOT',
-                                '/user-environment/modules')],
+                 os.environ.get('USER_ENV_ROOT', user_env_root)],
                 ['USER_ENV_CUDA_VISIBLE',
                  os.environ.get('USER_ENV_CUDA_VISIBLE',
                                 '$HOME/cuda_visible_devices.sh')],
                 ['MODULEPATH',
-                 os.path.join(os.environ.get('USER_ENV_ROOT',
-                                             '/user-environment'), 'modules')],
-                
+                 os.path.join(os.environ.get('USER_ENV_ROOT', user_env_root),
+                              'modules')],
             ],
             'modules': [
                 {
                     'name': 'cray-mpich-binary/8.1.18.4-gcc',
-                    'path': os.path.join(os.environ.get("USER_ENV_ROOT", '/mch-environment/v1'), 'modules'),
-
                     'path': os.path.join(
-                        os.environ.get('USER_ENV_ROOT', '/user-environment'),
+                        os.environ.get('USER_ENV_ROOT', user_env_root),
                         'modules'
                     ),
-
-
                 },
             ],
             'features': ['squashfs'],
@@ -138,34 +134,27 @@ site_configuration = {
             'ldflags': ['-L$CUDA_HOME/lib64', '-Wl,-rpath=$CUDA_HOME/lib64'],
         },
         {
-            'target_systems': ['balfrin'],
+            'target_systems': [target_system],
             'name': 'PrgEnv-nvidia',
             'variables': [
-                ['STACKFILE', os.environ.get('STACKFILE', '/scratch/e1000/bcumming/balfrin.squashfs')],
-                ['MODULEPATH', '/mch-environment/v1/modules'],
-            ],
-
-            'variables': [
                 ['USER_ENV_IMAGE',
-                 os.environ.get('USER_ENV_IMAGE',
-                                '/scratch/e1000/bcumming/balfrin.squashfs')],
+                 os.environ.get('USER_ENV_IMAGE', user_env_image)],
                 ['USER_ENV_ROOT',
-                 os.environ.get('USER_ENV_ROOT',
-                                '/user-environment/modules')],
+                 os.environ.get('USER_ENV_ROOT', user_env_root)],
                 ['USER_ENV_CUDA_VISIBLE',
                  os.environ.get('USER_ENV_CUDA_VISIBLE',
                                 '$HOME/cuda_visible_devices.sh')],
                 ['MODULEPATH',
-                 os.path.join(os.environ.get('USER_ENV_ROOT',
-                                             '/user-environment'), 'modules')],
+                 os.path.join(os.environ.get('USER_ENV_ROOT', user_env_root),
+                              'modules')],
             ],
-
-
-
             'modules': [
                 {
                     'name': 'cray-mpich-binary/8.1.18.4-nvhpc',
-                    'path': os.getenv('STACKMPATH', '/mch-environment/v1/modules'),
+                    'path': os.path.join(
+                        os.environ.get('USER_ENV_ROOT', user_env_root),
+                        'modules'
+                    ),
                 },
             ],
             'features': ['squashfs'],
@@ -189,51 +178,7 @@ site_configuration = {
             'ftn': 'gfortran'
         }
     ],
-    'logging': [
-        {
-            'handlers': [
-                {
-                    'type': 'file',
-                    'name': 'reframe.log',
-                    'level': 'debug2',
-                    'format': '[%(asctime)s] %(levelname)s: %(check_info)s: %(message)s',   # noqa: E501
-                    'append': False
-                },
-                {
-                    'type': 'stream',
-                    'name': 'stdout',
-                    'level': 'info',
-                    'format': '%(message)s'
-                },
-                {
-                    'type': 'file',
-                    'name': 'reframe.out',
-                    'level': 'info',
-                    'format': '%(message)s',
-                    'append': False
-                }
-            ],
-            'handlers_perflog': [
-                {
-                    'type': 'filelog',
-                    'prefix': '%(check_system)s/%(check_partition)s',
-                    'level': 'info',
-                    'format': '%(check_job_completion_time)s|reframe %(version)s|%(check_info)s|jobid=%(check_jobid)s|num_tasks=%(check_num_tasks)s|%(check_perf_var)s=%(check_perf_value)s|ref=%(check_perf_ref)s (l=%(check_perf_lower_thres)s, u=%(check_perf_upper_thres)s)|%(check_perf_unit)s',   # noqa: E501
-                    'datefmt': '%FT%T%:z',
-                    'append': True
-                },
-#                 {
-#                     'type': 'httpjson',
-#                     'url': 'http://httpjson-server:12345/rfm',
-#                     'level': 'info',
-#                     'extras': {
-#                         'facility': 'reframe',
-#                         'data-version': '1.0',
-#                     }
-#                 }
-            ]
-        }
-    ],
+    'logging': [logging_section],
     'modes': [
         {
             'name': 'maintenance',
@@ -241,10 +186,10 @@ site_configuration = {
                 '--unload-module=reframe',
                 '--exec-policy=async',
                 '--strict',
-                '--output=$APPS/UES/$USER/regression/maintenance',
-                '--perflogdir=$APPS/UES/$USER/regression/maintenance/logs',
+                '--output=$SCRATCH/regression/maintenance',
+                '--perflogdir=$SCRATCH/regression/maintenance/logs',
                 '--stage=$SCRATCH/regression/maintenance/stage',
-                '--report-file=$APPS/UES/$USER/regression/maintenance/reports/'
+                '--report-file=$SCRATCH/regression/maintenance/reports/'
                 'maint_report_{sessionid}.json',
                 '-Jreservation=maintenance',
                 '--save-log-files',
@@ -258,10 +203,10 @@ site_configuration = {
                 '--unload-module=reframe',
                 '--exec-policy=async',
                 '--strict',
-                '--output=$APPS/UES/$USER/regression/production',
-                '--perflogdir=$APPS/UES/$USER/regression/production/logs',
+                '--output=$/regression/production',
+                '--perflogdir=$CRATCH/regression/production/logs',
                 '--stage=$SCRATCH/regression/production/stage',
-                '--report-file=$APPS/UES/$USER/regression/production/reports/'
+                '--report-file=$SCRATCH/regression/production/reports/'
                 'prod_report_{sessionid}.json',
                 '--save-log-files',
                 '--tag=production',
@@ -281,7 +226,7 @@ site_configuration = {
                 '--tag=production',
                 '--timestamp=%F_%H-%M-%S'
             ],
-            'target_systems': ['hohgant'],
+            'target_systems': [target_system],
         }
     ],
     'general': [
