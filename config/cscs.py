@@ -526,6 +526,9 @@ site_configuration = {
                     ],
                     'descr': 'Tsa post-processing nodes',
                     'max_jobs': 20,
+                    'extras': {
+                        'cn_memory': 377,
+                    },
                     'launcher': 'srun'
                 },
                 {
