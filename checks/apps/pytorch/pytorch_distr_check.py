@@ -3,7 +3,10 @@ import reframe as rfm
 import reframe.utility.sanity as sn
 
 
-class pytorch_distr_cnn_base(rfm.RunOnlyRegressionTest):
+@rfm.simple_test
+class pytorch_distr_cnn(rfm.RunOnlyRegressionTest):
+    descr = 'Check the training throughput of a cnn with torch.distributed'
+    platform = parameter(['native', 'Sarus', 'Singularity'])
     valid_systems = ['hohgant:gpu']
     valid_prog_environs = ['builtin']
     sourcesdir = 'src'
@@ -11,6 +14,7 @@ class pytorch_distr_cnn_base(rfm.RunOnlyRegressionTest):
     num_tasks_per_node = 4
     num_gpus_per_node = 4
     throughput_per_gpu = 864.62
+    executable = 'python cnn_distr.py'
     throughput_total = throughput_per_gpu * num_tasks
     reference = {
         'hohgant:gpu': {
@@ -21,9 +25,23 @@ class pytorch_distr_cnn_base(rfm.RunOnlyRegressionTest):
         }
     }
 
+    @run_after('init')
+    def skip_native_test(self):
+        # FIXME: Remove when PyTorch is available on Hohgant
+        self.skip_if(self.platform == 'native')
+
+    @run_before('run')
+    def set_container_variables(self):
+        container_platform = (
+            self.platform if self.platform != 'native' else None
+        )
+        self.container_platform.image = 'nvcr.io/nvidia/pytorch:22.08-py3'
+        self.container_platform.command = self.executable
+        self.container_platform.with_cuda = True
+
     @sanity_function
     def assert_job_is_complete(self):
-        return sn.assert_found(r'Total average', self.stdout),
+        return sn.assert_found(r'Total average', self.stdout)
 
     @performance_function('samples/sec')
     def samples_per_sec_per_gpu(self):
@@ -39,42 +57,10 @@ class pytorch_distr_cnn_base(rfm.RunOnlyRegressionTest):
             self.stdout, 'samples_per_sec_total', float
         ))
 
-
-@rfm.simple_test
-class pytorch_distr_cnn(pytorch_distr_cnn_base):
-    descr = 'Check the training throughput of a cnn'
-    executable = './set_visible_devices.sh python cnn_distr.py'
-    valid_systems = []  # FIXME: Remove when PyTorch is available on Hohgant
-
-
-class pytorch_distr_cnn_containers(pytorch_distr_cnn_base):
-    descr = 'Check the training throughput of a cnn with torch.distributed'
-
     @run_before('run')
     def set_visible_devices_per_rank(self):
-        self.job.launcher.options = ['--mpi=pmi2', './set_visible_devices.sh']
-
-    @run_before('run')
-    def set_container_variables(self):
-        self.container_platform.command = 'python cnn_distr.py'
-
-
-@rfm.simple_test
-class pytorch_distr_cnn_sarus(pytorch_distr_cnn_containers):
-    container_platform = 'Sarus'
-
-    @run_before('run')
-    def set_container_variables(self):
-        super().set_container_variables()
-        self.container_platform.image = 'nvcr.io/nvidia/pytorch:22.08-py3'
-
-
-@rfm.simple_test
-class pytorch_distr_cnn_singularity(pytorch_distr_cnn_containers):
-    container_platform = 'Singularity'
-
-    @run_before('run')
-    def set_container_variables(self):
-        super().set_container_variables()
-        self.container_platform.image = '/scratch/e1000/sarafael/pytorch_22.08-py3.sif'  # noqa E501
-        self.container_platform.with_cuda = True
+        self.job.launcher.options = ['./set_visible_devices.sh']
+        if self.platform != 'native':
+            self.job.launcher.options = (
+                ['--mpi=pmi2'] + self.job.launcher.options
+            )
