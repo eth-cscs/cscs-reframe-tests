@@ -44,7 +44,7 @@ class pytorch_distr_cnn_base(rfm.RunOnlyRegressionTest):
 class pytorch_distr_cnn(pytorch_distr_cnn_base):
     descr = 'Check the training throughput of a cnn'
     executable = './set_visible_devices.sh python cnn_distr.py'
-    skip = True  # FIXME: Remove when PyTorch is available on Hohgant
+    valid_systems = []  # FIXME: Remove when PyTorch is available on Hohgant
 
 
 class pytorch_distr_cnn_containers(pytorch_distr_cnn_base):
