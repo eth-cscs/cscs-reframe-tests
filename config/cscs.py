@@ -163,6 +163,9 @@ site_configuration = {
                     ],
                     'descr': 'Hybrid nodes (Haswell/P100)',
                     'max_jobs': 100,
+                    'extras': {
+                        'cn_memory': 64,
+                    },
                     'features': ['gpu'],
                     'resources': [
                         {
@@ -211,6 +214,9 @@ site_configuration = {
                     ],
                     'descr': 'Multicore nodes (Broadwell)',
                     'max_jobs': 100,
+                    'extras': {
+                        'cn_memory': 64,
+                    },
                     'resources': [
                         {
                             'name': 'switches',
@@ -312,6 +318,9 @@ site_configuration = {
                     ],
                     'descr': 'Hybrid nodes (Haswell/P100)',
                     'max_jobs': 100,
+                    'extras': {
+                        'cn_memory': 64,
+                    },
                     'launcher': 'srun',
                     'features': ['gpu'],
                     'resources': [
@@ -356,6 +365,9 @@ site_configuration = {
                     ],
                     'descr': 'Multicore nodes (Broadwell)',
                     'max_jobs': 100,
+                    'extras': {
+                        'cn_memory': 64,
+                    },
                     'resources': [
                         {
                             'name': 'gres',
@@ -602,6 +614,9 @@ site_configuration = {
                         'cpeIntel'
                     ],
                     'max_jobs': 100,
+                    'extras': {
+                        'cn_memory': 256,
+                    },
                     'access': ['-Cmc', f'--account={osext.osgroup()}'],
                     'resources': [
                         {
@@ -746,6 +761,9 @@ site_configuration = {
                         'cpeIntel'
                     ],
                     'max_jobs': 100,
+                    'extras': {
+                        'cn_memory': 256,
+                    },
                     'access': ['-Cmc', f'--account={osext.osgroup()}'],
                     'resources': [
                         {
