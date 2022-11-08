@@ -12,21 +12,21 @@ import reframe.core.launchers.mpi as mpi
 import reframe.utility.osext as osext
 
 
-@mpi.register_launcher('squashfs-run')
-class MyLauncher(mpi.SrunLauncher):
-    def run_command(self, job):
-        return ' '.join(
-            self.command(job) + self.options +
-            [f'--uenv-mount-file={uenv_mount_file}',
-             f'--uenv-mount-point={uenv_mount_point}',
-            ]
-            # ['squashfs-run', '$USER_ENV_IMAGE']
-        )
+# @mpi.register_launcher('squashfs-run')
+# class MyLauncher(mpi.SrunLauncher):
+#     def run_command(self, job):
+#         return ' '.join(
+#             self.command(job) + self.options +
+#             [f'--uenv-mount-file={uenv_mount_file}',
+#              f'--uenv-mount-point={uenv_mount_point}',
+#             ]
+#             # ['squashfs-run', '$USER_ENV_IMAGE']
+#         )
 
 
 target_system = 'hohgant'
-uenv_mount_file = '/scratch/e1000/bcumming/balfrin.squashfs'
-uenv_mount_point = '/user-environment'
+uenv_mount_file = os.environ.get('UENV_MOUNT_FILE', '/scratch/e1000/bcumming/balfrin.squashfs')
+uenv_mount_point = os.environ.get('UENV_MOUNT_POINT', '/user-environment')
 rfm_prefix = os.path.normpath(
     os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
 )
@@ -114,6 +114,8 @@ site_configuration = {
             'target_systems': [target_system],
             'name': 'PrgEnv-gnu',
             'variables': [
+                ['UENV_MOUNT_FILE_DEBUG', uenv_mount_file],
+                ['UENV_MOUNT_POINT_DEBUG', uenv_mount_point],
                 ['USER_ENV_CUDA_VISIBLE',
                  os.environ.get('USER_ENV_CUDA_VISIBLE',
                                 '$HOME/cuda_visible_devices.sh')],
@@ -141,8 +143,8 @@ site_configuration = {
             'target_systems': [target_system],
             'name': 'PrgEnv-nvidia',
             'variables': [
-                # ['USER_ENV_IMAGE',
-                #  os.environ.get('USER_ENV_IMAGE', uenv_mount_file)],
+                ['UENV_MOUNT_FILE_DEBUG', uenv_mount_file],
+                ['UENV_MOUNT_POINT_DEBUG', uenv_mount_point],
                 ['USER_ENV_CUDA_VISIBLE',
                  os.environ.get('USER_ENV_CUDA_VISIBLE',
                                 '$HOME/cuda_visible_devices.sh')],
