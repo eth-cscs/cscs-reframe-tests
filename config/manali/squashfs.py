@@ -22,8 +22,8 @@ class MyLauncher(mpi.SrunLauncher):
 
 
 target_system = 'manali'
-user_env_image = '/scratch/e1000/bcumming/balfrin.squashfs'  # NOTE: not v1
-user_env_root = '/user-environment'
+uenv_mount_file = '/scratch/e1000/bcumming/balfrin.squashfs'
+uenv_mount_point = '/user-environment'
 rfm_prefix = os.path.normpath(
     os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
 )
@@ -74,7 +74,11 @@ site_configuration = {
                         'cn_memory': 500,
                     },
                     # TODO: use an env variable here ?
-                    'access': ['-x nid003048'],
+                    'access': [
+                        '-x nid003048',
+                        f'--uenv-mount-file={uenv_mount_file}',
+                        f'--uenv-mount-point={uenv_mount_point}',
+                    ],
                     'resources': [
                         {
                             'name': 'switches',
@@ -93,7 +97,7 @@ site_configuration = {
                             'num_devices': 4
                         }
                     ],
-                    'launcher': 'squashfs-run'
+                    'launcher': 'srun'
                 }
             ]
         },
@@ -106,22 +110,18 @@ site_configuration = {
             'target_systems': [target_system],
             'name': 'PrgEnv-gnu',
             'variables': [
-                ['USER_ENV_IMAGE',
-                 os.environ.get('USER_ENV_IMAGE', user_env_image)],
-                ['USER_ENV_ROOT',
-                 os.environ.get('USER_ENV_ROOT', user_env_root)],
                 ['USER_ENV_CUDA_VISIBLE',
                  os.environ.get('USER_ENV_CUDA_VISIBLE',
                                 '$HOME/cuda_visible_devices.sh')],
-                ['MODULEPATH',
-                 os.path.join(os.environ.get('USER_ENV_ROOT', user_env_root),
-                              'modules')],
+                # ['MODULEPATH',
+                #  os.path.join(os.environ.get('USER_ENV_ROOT', uenv_mount_point),
+                #               'modules')],
             ],
             'modules': [
                 {
                     'name': 'cray-mpich-binary/8.1.18.4-gcc',
                     'path': os.path.join(
-                        os.environ.get('USER_ENV_ROOT', user_env_root),
+                        os.environ.get('USER_ENV_ROOT', uenv_mount_point),
                         'modules'
                     ),
                 },
@@ -137,22 +137,15 @@ site_configuration = {
             'target_systems': [target_system],
             'name': 'PrgEnv-nvidia',
             'variables': [
-                ['USER_ENV_IMAGE',
-                 os.environ.get('USER_ENV_IMAGE', user_env_image)],
-                ['USER_ENV_ROOT',
-                 os.environ.get('USER_ENV_ROOT', user_env_root)],
                 ['USER_ENV_CUDA_VISIBLE',
                  os.environ.get('USER_ENV_CUDA_VISIBLE',
                                 '$HOME/cuda_visible_devices.sh')],
-                ['MODULEPATH',
-                 os.path.join(os.environ.get('USER_ENV_ROOT', user_env_root),
-                              'modules')],
             ],
             'modules': [
                 {
                     'name': 'cray-mpich-binary/8.1.18.4-nvhpc',
                     'path': os.path.join(
-                        os.environ.get('USER_ENV_ROOT', user_env_root),
+                        os.environ.get('USER_ENV_ROOT', uenv_mount_point),
                         'modules'
                     ),
                 },
