@@ -340,7 +340,7 @@ class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
     tags = {'slurm', 'maintenance', 'ops',
             'production', 'single-node'}
     min_avail_nodes = variable(int, value=1)
-    ratio_avail_nonavail_nodes = variable(float, value=0.1)
+    ratio_nonavail_nodes = variable(float, value=0.1)
     local = True
     executable = 'sinfo'
     executable_opts = ['-o', '%P,%a,%D,%T']
@@ -375,10 +375,10 @@ class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
                                     fr'(?P<nodes>\d+),.*', self.stdout,
                                     'nodes', int)
         num_all_matches = sn.sum(all_matches)
-        return sn.assert_le((num_all_matches-num_matches)/num_all_matches,
-                            self.ratio_avail_nonavail_nodes,
+        return sn.assert_le(num_all_matches - num_matches,
+                            num_all_matches * self.ratio_nonavail_nodes,
                             msg=f'more than '
-                                f'{self.ratio_avail_nonavail_nodes * 100.0:.0f}% '
+                                f'{self.ratio_nonavail_nodes * 100.0:.0f}% '
                                 f'of nodes are unavailable for '
                                 f'partition {self.slurm_partition}')
 
