@@ -337,7 +337,7 @@ class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
 
     valid_systems = ['daint:login', 'dom:login', 'eiger:login', 'pilatus:login']
     valid_prog_environs = ['builtin']
-    tags = {'slurm', 'maintenance', 'ops',
+    tags = {'slurm', 'ops',
             'production', 'single-node'}
     min_avail_nodes = variable(int, value=1)
     ratio_minavail_nodes = variable(float, value=0.1)
@@ -354,8 +354,8 @@ class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
 
     def assert_partition_exists(self):
         num_matches = sn.count(
-                sn.findall(fr'^{re.escape(self.slurm_partition)}.*',
-                self.stdout))
+            sn.findall(fr'^{re.escape(self.slurm_partition)}.*', self.stdout)
+        )
         return sn.assert_gt(num_matches, 0,
                             msg=f'{self.slurm_partition!r} not defined for '
                                 f'partition {self.current_partition.fullname!r}')
@@ -396,4 +396,3 @@ class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
             self.assert_min_nodes(),
             self.assert_percentage_nodes(),
         ])
-
