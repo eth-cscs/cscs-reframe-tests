@@ -1,0 +1,15 @@
+FROM nvidia/cuda:11.0.3-devel-ubuntu20.04
+
+RUN apt-get update && \
+    apt-get install -y git && \
+    git clone https://github.com/NVIDIA/cuda-samples.git /usr/local/cudasamples && \
+    cd /usr/local/cudasamples && \
+    git fetch origin --tags && \
+    git checkout v11.0 && \
+    make -j$(nproc)
+
+FROM nvidia/cuda:11.0.3-runtime-ubuntu20.04
+
+COPY --from=0 /usr/local/cudasamples/bin/x86_64/linux/release/deviceQuery /cuda_samples/deviceQuery
+
+CMD /cuda_samples/deviceQuery
