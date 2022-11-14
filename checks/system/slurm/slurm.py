@@ -384,9 +384,10 @@ class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
                                     fr'(?P<nodes>\d+),.*', self.stdout,
                                     'nodes', int)
         num_all_matches = sn.sum(all_matches)
-        return sn.assert_ge(
-                num_matches,
-                self.ratio_avail_nonavail_nodes * num_all_matches,
+        diff_matches = num_all_matches - num_matches
+        return sn.assert_le(
+                diff_matches,
+                num_all_matches * self.ratio_minavail_nodes,
                 msg=f'more than '
                     f'{self.ratio_minavail_nodes * 100.0:.0f}% '
                     f'({diff_matches} out of {num_all_matches}) '
