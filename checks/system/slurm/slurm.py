@@ -355,6 +355,8 @@ class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
     def xfer_queue_correction(self):
         if self.slurm_partition == 'xfer':
             self.ratio_minavail_nodes = 0.3
+        if self.current_system.name == 'dom':
+            self.ratio_minavail_nodes = 0.5
 
     def assert_partition_exists(self):
         num_matches = sn.count(
@@ -385,14 +387,13 @@ class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
                                     'nodes', int)
         num_all_matches = sn.sum(all_matches)
         diff_matches = num_all_matches - num_matches
-        return sn.assert_le(
-                diff_matches,
-                num_all_matches * self.ratio_minavail_nodes,
-                msg=f'more than '
-                    f'{self.ratio_minavail_nodes * 100.0:.0f}% '
-                    f'({diff_matches} out of {num_all_matches}) '
-                    f'of nodes are unavailable for '
-                    f'partition {self.slurm_partition}')
+        return sn.assert_le(diff_matches,
+                            num_all_matches * self.ratio_minavail_nodes,
+                            msg=f'more than '
+                                f'{self.ratio_minavail_nodes * 100.0:.0f}% '
+                                f'({diff_matches} out of {num_all_matches}) '
+                                f'of nodes are unavailable for '
+                                f'partition {self.slurm_partition}')
 
     @sanity_function
     def assert_partition_sanity(self):
