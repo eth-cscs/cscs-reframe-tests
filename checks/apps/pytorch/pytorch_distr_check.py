@@ -6,7 +6,9 @@ import reframe.utility.sanity as sn
 @rfm.simple_test
 class pytorch_distr_cnn(rfm.RunOnlyRegressionTest):
     descr = 'Check the training throughput of a cnn with torch.distributed'
-    platform = parameter(['native', 'Sarus', 'Singularity'])
+    platform = parameter([
+        'native', 'Sarus', 'Singularity'
+    ])
     valid_systems = ['hohgant:gpu']
     valid_prog_environs = ['builtin']
     sourcesdir = 'src'
@@ -24,20 +26,27 @@ class pytorch_distr_cnn(rfm.RunOnlyRegressionTest):
                                       -0.1, None, 'samples/sec')
         }
     }
+    tags = {'production'}
 
     @run_after('init')
     def skip_native_test(self):
-        # FIXME: Remove when PyTorch is available on Hohgant
-        self.skip_if(self.platform == 'native')
+        # FIXME: Remove this when PyTorch is available on Hohgant
+        self.modules = ['cray', 'cray-python']
+        self.prerun_cmds = [
+            '. /apps/hohgant/sarafael/deeplearning-env/bin/activate'
+        ]
 
     @run_before('run')
     def set_container_variables(self):
-        container_platform = (
-            self.platform if self.platform != 'native' else None
-        )
-        self.container_platform.image = 'nvcr.io/nvidia/pytorch:22.08-py3'
-        self.container_platform.command = self.executable
-        self.container_platform.with_cuda = True
+        if self.platform != 'native':
+            self.container_platform = self.platform
+            self.container_platform.command = self.executable
+            self.container_platform.image = 'nvcr.io/nvidia/pytorch:22.08-py3'
+            if self.platform == 'Singularity':
+                self.container_platform.image = (
+                    f'docker://{self.container_platform.image}'
+                )
+                self.container_platform.with_cuda = True
 
     @sanity_function
     def assert_job_is_complete(self):
@@ -59,8 +68,7 @@ class pytorch_distr_cnn(rfm.RunOnlyRegressionTest):
 
     @run_before('run')
     def set_visible_devices_per_rank(self):
-        self.job.launcher.options = ['./set_visible_devices.sh']
         if self.platform != 'native':
-            self.job.launcher.options = (
-                ['--mpi=pmi2'] + self.job.launcher.options
-            )
+            self.job.launcher.options == ['--mpi=pmi2']
+
+        self.job.launcher.options.append('./set_visible_devices.sh')
