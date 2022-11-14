@@ -196,6 +196,11 @@ class MemoryOverconsumptionCheck(SlurmCompiledBaseCheck):
     sourcepath = 'eatmemory.c'
     executable_opts = ['4000M']
 
+    @run_before('compile')
+    def set_skip(self):
+        self.skip_if(self.current_partition.name == 'login',
+                     'MemoryOverconsumptionCheck not needed on login node')
+
     @sanity_function
     def assert_found_exceeded_memory(self):
         return sn.assert_found(r'(exceeded memory limit)|(Out Of Memory)',
@@ -336,23 +341,28 @@ class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
     valid_systems = ['daint:login', 'dom:login', 'eiger:login',
                      'pilatus:login']
     valid_prog_environs = ['builtin']
-    tags = {'slurm', 'maintenance', 'ops',
+    tags = {'slurm', 'ops',
             'production', 'single-node'}
     min_avail_nodes = variable(int, value=1)
-    ratio_avail_nonavail_nodes = variable(float, value=0.1)
+    ratio_minavail_nodes = variable(float, value=0.1)
     local = True
     executable = 'sinfo'
     executable_opts = ['-o', '%P,%a,%D,%T']
     slurm_partition = parameter(get_system_partitions())
     maintainers = ['RS', 'VH']
 
+    @run_after('init')
+    def xfer_queue_correction(self):
+        if self.slurm_partition == 'xfer':
+            self.ratio_minavail_nodes = 0.3
+
     def assert_partition_exists(self):
         num_matches = sn.count(
-            sn.findall(fr'^{re.escape(self.slurm_partition)}.*', self.stdout))
-        return sn.assert_gt(
-            num_matches, 0,
-            msg=f'{self.slurm_partition!r} not defined for '
-                f'partition {self.current_partition.fullname!r}')
+            sn.findall(fr'^{re.escape(self.slurm_partition)}.*', self.stdout)
+        )
+        return sn.assert_gt(num_matches, 0,
+                            msg=f'{self.slurm_partition!r} not defined for '
+                                f'partition {self.current_partition.fullname!r}')
 
     def assert_min_nodes(self):
         matches = sn.extractall(fr'^{re.escape(self.slurm_partition)},up,'
@@ -378,7 +388,8 @@ class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
                 num_matches,
                 self.ratio_avail_nonavail_nodes * num_all_matches,
                 msg=f'more than '
-                    f'{self.ratio_avail_nonavail_nodes * 100.0:.0f}% '
+                    f'{self.ratio_minavail_nodes * 100.0:.0f}% '
+                    f'({diff_matches} out of {num_all_matches}) '
                     f'of nodes are unavailable for '
                     f'partition {self.slurm_partition}')
 
