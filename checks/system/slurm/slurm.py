@@ -340,12 +340,17 @@ class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
     tags = {'slurm', 'ops',
             'production', 'single-node'}
     min_avail_nodes = variable(int, value=1)
-    ratio_avail_nonavail_nodes = variable(float, value=0.1)
+    ratio_minavail_nodes = variable(float, value=0.1)
     local = True
     executable = 'sinfo'
     executable_opts = ['-o', '%P,%a,%D,%T']
     slurm_partition = parameter(get_system_partitions())
     maintainers = ['RS', 'VH']
+
+    @run_after('init')
+    def xfer_queue_correction(self):
+        if self.slurm_partition == 'xfer':
+            self.ratio_minavail_nodes = 0.3
 
     def assert_partition_exists(self):
         num_matches = sn.count(
@@ -375,10 +380,12 @@ class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
                                     fr'(?P<nodes>\d+),.*', self.stdout,
                                     'nodes', int)
         num_all_matches = sn.sum(all_matches)
-        return sn.assert_ge(num_matches,
-                            self.ratio_avail_nonavail_nodes * num_all_matches,
+        diff_matches = num_all_matches - num_matches
+        return sn.assert_le(diff_matches,
+                            num_all_matches * self.ratio_minavail_nodes,
                             msg=f'more than '
-                                f'{self.ratio_avail_nonavail_nodes * 100.0:.0f}% '
+                                f'{self.ratio_minavail_nodes * 100.0:.0f}% '
+                                f'({diff_matches} out of {num_all_matches}) '
                                 f'of nodes are unavailable for '
                                 f'partition {self.slurm_partition}')
 
