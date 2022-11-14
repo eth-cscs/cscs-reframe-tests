@@ -687,6 +687,7 @@ site_configuration = {
                         }
                     ],
                     'max_jobs': 100,
+                    'access': ['-pnvgpu'],
                     'resources': [
                         {
                             'name': 'switches',
