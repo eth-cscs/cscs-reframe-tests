@@ -696,6 +696,7 @@ site_configuration = {
                     'extras': {
                         'cn_memory': 500,
                     },
+                    'access': ['-pnvgpu'],
                     'resources': [
                         {
                             'name': 'switches',
