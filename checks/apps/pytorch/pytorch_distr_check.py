@@ -6,9 +6,7 @@ import reframe.utility.sanity as sn
 @rfm.simple_test
 class pytorch_distr_cnn(rfm.RunOnlyRegressionTest):
     descr = 'Check the training throughput of a cnn with torch.distributed'
-    platform = parameter([
-        'native', 'Sarus', 'Singularity'
-    ])
+    platform = parameter(['native', 'Sarus'])
     valid_systems = ['hohgant:gpu']
     valid_prog_environs = ['builtin']
     sourcesdir = 'src'
@@ -42,11 +40,6 @@ class pytorch_distr_cnn(rfm.RunOnlyRegressionTest):
             self.container_platform = self.platform
             self.container_platform.command = self.executable
             self.container_platform.image = 'nvcr.io/nvidia/pytorch:22.08-py3'
-            if self.platform == 'Singularity':
-                self.container_platform.image = (
-                    f'docker://{self.container_platform.image}'
-                )
-                self.container_platform.with_cuda = True
 
     @sanity_function
     def assert_job_is_complete(self):
