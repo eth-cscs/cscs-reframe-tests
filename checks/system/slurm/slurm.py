@@ -196,7 +196,7 @@ class MemoryOverconsumptionCheck(SlurmCompiledBaseCheck):
     sourcepath = 'eatmemory.c'
     executable_opts = ['4000M']
 
-    @run_after('init')
+    @run_after('setup')
     def set_skip(self):
         self.skip_if(self.current_partition.name == 'login',
                      'MemoryOverconsumptionCheck not needed on login node')
@@ -221,7 +221,7 @@ class MemoryOverconsumptionMpiCheck(SlurmCompiledBaseCheck):
     sourcepath = 'eatmemory_mpi.c'
     tags.add('mem')
 
-    @run_before('compile')
+    @run_after('setup')
     def set_skip(self):
         self.skip_if(self.current_partition.name == 'login',
                      'MemoryOverconsumptionMpiCheck not needed on login node')
