@@ -526,6 +526,9 @@ site_configuration = {
                     ],
                     'descr': 'Tsa post-processing nodes',
                     'max_jobs': 20,
+                    'extras': {
+                        'cn_memory': 377,
+                    },
                     'launcher': 'srun'
                 },
                 {
@@ -544,6 +547,9 @@ site_configuration = {
                     ],
                     'descr': 'Tsa compute nodes',
                     'max_jobs': 20,
+                    'extras': {
+                        'cn_memory': 377,
+                    },
                     'features': ['gpu'],
                     'resources': [
                         {
@@ -687,6 +693,9 @@ site_configuration = {
                         }
                     ],
                     'max_jobs': 100,
+                    'extras': {
+                        'cn_memory': 500,
+                    },
                     'access': ['-pnvgpu'],
                     'resources': [
                         {
@@ -972,7 +981,12 @@ site_configuration = {
         {
             'name': 'PrgEnv-nvidia',
             'target_systems': ['hohgant'],
-            'modules': ['cray', 'PrgEnv-nvidia']
+            'modules': ['cray', 'PrgEnv-nvidia'],
+            'extras': {
+                # "MPIR_pmi_init(83)....: PMI2_Job_GetId returned 14"
+                # -> add --mpi=pmi2 at runtime
+                'launcher_options': '--mpi=pmi2',
+            },
         },
         {
             'name': 'cpeAMD',
