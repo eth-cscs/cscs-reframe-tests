@@ -367,9 +367,11 @@ class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
                                 f'partition {self.current_partition.fullname!r}')
 
     def assert_min_nodes(self):
-        matches = sn.extractall(fr'^{re.escape(self.slurm_partition)},up,'
-                                fr'(?P<nodes>\d+),(allocated|reserved|idle)',
-                                self.stdout, 'nodes', int)
+        matches = sn.extractall(
+            fr'^{re.escape(self.slurm_partition)},up,'
+            fr'(?P<nodes>\d+),(allocated|reserved|idle|mixed)',
+            self.stdout, 'nodes', int
+        )
         num_matches = sn.sum(matches)
         return sn.assert_ge(
             num_matches, self.min_avail_nodes,
@@ -378,9 +380,11 @@ class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
                 f'reserved, or idle. Expected at least {self.min_avail_nodes}')
 
     def assert_percentage_nodes(self):
-        matches = sn.extractall(fr'^{re.escape(self.slurm_partition)},up,'
-                                fr'(?P<nodes>\d+),(allocated|reserved|idle)',
-                                self.stdout, 'nodes', int)
+        matches = sn.extractall(
+            fr'^{re.escape(self.slurm_partition)},up,'
+            fr'(?P<nodes>\d+),(allocated|reserved|idle|mixed)',
+            self.stdout, 'nodes', int
+        )
         num_matches = sn.sum(matches)
         all_matches = sn.extractall(fr'^{re.escape(self.slurm_partition)},up,'
                                     fr'(?P<nodes>\d+),.*', self.stdout,
