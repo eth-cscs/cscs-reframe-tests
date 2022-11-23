@@ -28,7 +28,7 @@ class PetscPoisson2DCheck(rfm.RegressionTest):
 
     @run_before('compile')
     def set_variables(self):
-        self.variables = {'CRAYPE_LINK_TYPE': self.linkage}
+        self.env_vars = {'CRAYPE_LINK_TYPE': self.linkage}
 
     @run_before('compile')
     def intel_workaround(self):

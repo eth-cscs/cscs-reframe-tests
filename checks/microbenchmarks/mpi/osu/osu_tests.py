@@ -115,7 +115,7 @@ class cscs_osu_pt2pt_check(cscs_osu_benchmarks):
                                   'dom:gpu', 'arolla:cn', 'tsa:cn']
             if self.current_system.name in ('daint', 'dom'):
                 self.valid_prog_environs = ['PrgEnv-nvidia']
-                self.variables = {'MPICH_RDMA_ENABLED_CUDA': '1'}
+                self.env_vars = {'MPICH_RDMA_ENABLED_CUDA': 1}
 
         with contextlib.suppress(KeyError):
             self.reference = self.allref[self.benchmark_info[0]][build_type]

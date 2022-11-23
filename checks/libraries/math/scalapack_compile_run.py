@@ -32,7 +32,7 @@ class ScaLAPACKTest(rfm.RegressionTest):
             self.skip_if(self.linkage == 'static',
                          'static linking not supported on Alps')
 
-        self.variables = {'CRAYPE_LINK_TYPE': self.linkage}
+        self.env_vars = {'CRAYPE_LINK_TYPE': self.linkage}
 
     @run_before('sanity')
     def set_sanity_patterns(self):

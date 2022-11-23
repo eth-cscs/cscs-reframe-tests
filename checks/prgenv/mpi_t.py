@@ -21,7 +21,7 @@ class mpit_check(rfm.RegressionTest):
         self.sourcesdir = 'src/mpi_t'
         self.sourcepath = 'mpit_vars.c'
         self.prebuild_cmds = ['module list']
-        self.variables = {'MPICH_VERSION_DISPLAY': '1', 'MPITEST_VERBOSE': '1'}
+        self.env_vars = {'MPICH_VERSION_DISPLAY': 1, 'MPITEST_VERBOSE': 1}
         self.num_tasks_per_node = 1
         self.rpt = 'rpt'
         self.executable_opts = [f'&> {self.rpt}']

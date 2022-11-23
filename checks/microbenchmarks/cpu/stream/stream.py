@@ -53,7 +53,7 @@ class StreamTest(rfm.RegressionTest):
             'tsa:cn': 16,
             'tsa:pn': 16,
         }
-        self.variables = {
+        self.env_vars = {
             'OMP_PLACES': 'threads',
             'OMP_PROC_BIND': 'spread'
         }
@@ -96,12 +96,12 @@ class StreamTest(rfm.RegressionTest):
     def prepare_test(self):
         self.num_cpus_per_task = self.stream_cpus_per_task.get(
             self.current_partition.fullname, 1)
-        self.variables['OMP_NUM_THREADS'] = str(self.num_cpus_per_task)
+        self.env_vars['OMP_NUM_THREADS'] = self.num_cpus_per_task
         envname = self.current_environ.name
 
         self.build_system.cflags = self.prgenv_flags.get(envname, ['-O3'])
         if envname == 'PrgEnv-pgi':
-            self.variables['OMP_PROC_BIND'] = 'true'
+            self.env_vars['OMP_PROC_BIND'] = 'true'
 
         try:
             self.reference = self.stream_bw_reference[envname]
