@@ -684,6 +684,7 @@ site_configuration = {
                         'PrgEnv-nvhpc',
                         'PrgEnv-nvidia'
                     ],
+                    'prepare_cmds': ['module list'],
                     'container_platforms': [
                         {
                             'type': 'Sarus',
@@ -976,7 +977,10 @@ site_configuration = {
         {
             'name': 'PrgEnv-nvhpc',
             'target_systems': ['hohgant'],
-            'modules': ['cray', 'PrgEnv-nvhpc']
+            'modules': ['cray', 'PrgEnv-nvhpc'],
+            'extras': {
+                'launcher_options': '--mpi=pmi2',
+            },
         },
         {
             'name': 'PrgEnv-nvidia',
