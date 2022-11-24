@@ -65,6 +65,12 @@ class HelloWorldBaseTest(rfm.RegressionTest):
             self.valid_systems += ['eiger:mc', 'pilatus:mc', 'hohgant:gpu']
 
     @run_before('compile')
+    def skip_static_builds_on_alps(self):
+        self.skip_if('squashfs' in self.current_environ.features and
+                     self.linking == 'static',
+                     'static linking not needed with squashfs')
+
+    @run_before('compile')
     def prepare_build(self):
         self.variables['CRAYPE_LINK_TYPE'] = self.linking
         envname = re.sub(r'(PrgEnv-\w+).*', lambda m: m.group(1),
