@@ -684,7 +684,6 @@ site_configuration = {
                         'PrgEnv-nvhpc',
                         'PrgEnv-nvidia'
                     ],
-                    'prepare_cmds': ['module list'],
                     'container_platforms': [
                         {
                             'type': 'Sarus',
