@@ -674,7 +674,51 @@ site_configuration = {
                     'launcher': 'local'
                 },
                 {
-                    'name': 'gpu',
+                    'name': 'amdgpu',
+                    'scheduler': 'slurm',
+                    'environs': [
+                        'builtin',
+                        'PrgEnv-aocc',
+                        'PrgEnv-cray',
+                        'PrgEnv-gnu',
+                        'PrgEnv-nvhpc',
+                        'PrgEnv-nvidia'
+                    ],
+                    'container_platforms': [
+                        {
+                            'type': 'Sarus',
+                        },
+                        {
+                            'type': 'Singularity',
+                        }
+                    ],
+                    'max_jobs': 100,
+                    'extras': {
+                        'cn_memory': 500,
+                    },
+                    'access': ['-pamdgpu'],
+                    'resources': [
+                        {
+                            'name': 'switches',
+                            'options': ['--switches={num_switches}']
+                        },
+                        {
+                            'name': 'memory',
+                            'options': ['--mem={mem_per_node}']
+                        },
+                    ],
+                    'features': ['gpu'],
+                    'devices': [
+                        {
+                            'type': 'gpu',
+                            'arch': 'mi250',
+                            'num_devices': 8
+                        }
+                    ],
+                    'launcher': 'srun'
+                },
+                {
+                    'name': 'nvgpu',
                     'scheduler': 'slurm',
                     'environs': [
                         'builtin',
