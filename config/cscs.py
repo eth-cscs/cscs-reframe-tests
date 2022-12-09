@@ -526,6 +526,9 @@ site_configuration = {
                     ],
                     'descr': 'Tsa post-processing nodes',
                     'max_jobs': 20,
+                    'extras': {
+                        'cn_memory': 377,
+                    },
                     'launcher': 'srun'
                 },
                 {
@@ -544,6 +547,9 @@ site_configuration = {
                     ],
                     'descr': 'Tsa compute nodes',
                     'max_jobs': 20,
+                    'extras': {
+                        'cn_memory': 377,
+                    },
                     'features': ['gpu'],
                     'resources': [
                         {
@@ -646,8 +652,120 @@ site_configuration = {
             ]
         },
         {
+            'name': 'Clariden',
+            'descr': 'Clariden AI/ML cluster',
+            'hostnames': ['clariden'],
+            'modules_system': 'lmod',
+            'partitions': [
+                {
+                    'name': 'login',
+                    'scheduler': 'local',
+                    'time_limit': '10m',
+                    'environs': [
+                        'builtin',
+                        'PrgEnv-aocc',
+                        'PrgEnv-cray',
+                        'PrgEnv-gnu',
+                        'PrgEnv-nvhpc',
+                        'PrgEnv-nvidia'
+                    ],
+                    'descr': 'Login nodes',
+                    'max_jobs': 4,
+                    'launcher': 'local'
+                },
+                {
+                    'name': 'amdgpu',
+                    'scheduler': 'slurm',
+                    'environs': [
+                        'builtin',
+                        'PrgEnv-aocc',
+                        'PrgEnv-cray',
+                        'PrgEnv-gnu',
+                        'PrgEnv-nvhpc',
+                        'PrgEnv-nvidia'
+                    ],
+                    'container_platforms': [
+                        {
+                            'type': 'Sarus',
+                        },
+                        {
+                            'type': 'Singularity',
+                        }
+                    ],
+                    'max_jobs': 100,
+                    'extras': {
+                        'cn_memory': 500,
+                    },
+                    'access': ['-pamdgpu'],
+                    'resources': [
+                        {
+                            'name': 'switches',
+                            'options': ['--switches={num_switches}']
+                        },
+                        {
+                            'name': 'memory',
+                            'options': ['--mem={mem_per_node}']
+                        },
+                    ],
+                    'features': ['gpu'],
+                    'devices': [
+                        {
+                            'type': 'gpu',
+                            'arch': 'mi250',
+                            'num_devices': 8
+                        }
+                    ],
+                    'launcher': 'srun'
+                },
+                {
+                    'name': 'nvgpu',
+                    'scheduler': 'slurm',
+                    'environs': [
+                        'builtin',
+                        'PrgEnv-aocc',
+                        'PrgEnv-cray',
+                        'PrgEnv-gnu',
+                        'PrgEnv-nvhpc',
+                        'PrgEnv-nvidia'
+                    ],
+                    'container_platforms': [
+                        {
+                            'type': 'Sarus',
+                        },
+                        {
+                            'type': 'Singularity',
+                        }
+                    ],
+                    'max_jobs': 100,
+                    'extras': {
+                        'cn_memory': 500,
+                    },
+                    'access': ['-pnvgpu'],
+                    'resources': [
+                        {
+                            'name': 'switches',
+                            'options': ['--switches={num_switches}']
+                        },
+                        {
+                            'name': 'memory',
+                            'options': ['--mem={mem_per_node}']
+                        },
+                    ],
+                    'features': ['gpu'],
+                    'devices': [
+                        {
+                            'type': 'gpu',
+                            'arch': 'sm_80',
+                            'num_devices': 4
+                        }
+                    ],
+                    'launcher': 'srun'
+                }
+            ]
+        },
+        {
             'name': 'hohgant',
-            'descr': 'Hohgant virtual cluster',
+            'descr': 'Hohgant vcluster',
             'hostnames': ['hohgant'],
             'modules_system': 'lmod',
             'partitions': [
@@ -687,6 +805,10 @@ site_configuration = {
                         }
                     ],
                     'max_jobs': 100,
+                    'extras': {
+                        'cn_memory': 500,
+                    },
+                    'access': ['-pnvgpu'],
                     'resources': [
                         {
                             'name': 'switches',
@@ -971,7 +1093,12 @@ site_configuration = {
         {
             'name': 'PrgEnv-nvidia',
             'target_systems': ['hohgant'],
-            'modules': ['cray', 'PrgEnv-nvidia']
+            'modules': ['cray', 'PrgEnv-nvidia'],
+            'extras': {
+                # "MPIR_pmi_init(83)....: PMI2_Job_GetId returned 14"
+                # -> add --mpi=pmi2 at runtime
+                'launcher_options': '--mpi=pmi2',
+            },
         },
         {
             'name': 'cpeAMD',

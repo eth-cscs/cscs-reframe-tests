@@ -12,18 +12,21 @@ import reframe.core.launchers.mpi as mpi
 import reframe.utility.osext as osext
 
 
-@mpi.register_launcher('squashfs-run')
-class MyLauncher(mpi.SrunLauncher):
-    def run_command(self, job):
-        return ' '.join(
-            self.command(job) + self.options +
-            ['squashfs-run', '$USER_ENV_IMAGE']
-        )
+# @mpi.register_launcher('squashfs-run')
+# class MyLauncher(mpi.SrunLauncher):
+#     def run_command(self, job):
+#         return ' '.join(
+#             self.command(job) + self.options +
+#             [f'--uenv-mount-file={uenv_mount_file}',
+#              f'--uenv-mount-point={uenv_mount_point}',
+#             ]
+#             # ['squashfs-run', '$USER_ENV_IMAGE']
+#         )
 
 
-target_system = 'manali'
-uenv_mount_file = '/scratch/e1000/bcumming/balfrin.squashfs'
-uenv_mount_point = '/user-environment'
+target_system = 'hohgant'
+uenv_mount_file = os.environ.get('UENV_MOUNT_FILE', '/scratch/e1000/bcumming/balfrin.squashfs')
+uenv_mount_point = os.environ.get('UENV_MOUNT_POINT', '/user-environment')
 rfm_prefix = os.path.normpath(
     os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
 )
@@ -34,7 +37,7 @@ site_configuration = {
     'systems': [
         {
             'name': target_system,
-            'descr': 'Manali virtual cluster',
+            'descr': 'Hohgant virtual cluster',
             'hostnames': [target_system],
             'modules_system': 'lmod',
             # TODO: use jfrog
@@ -75,9 +78,13 @@ site_configuration = {
                     },
                     # TODO: use an env variable here ?
                     'access': [
-                        '-x nid003048',
+                        '-x nid003192',
                         f'--uenv-mount-file={uenv_mount_file}',
                         f'--uenv-mount-point={uenv_mount_point}',
+                    ],
+                    'prepare_cmds': [
+                        'echo "# UENV_MOUNT_FILE=$UENV_MOUNT_FILE"',
+                        'echo "# UENV_MOUNT_POINT=$UENV_MOUNT_POINT"',
                     ],
                     'resources': [
                         {
@@ -98,6 +105,7 @@ site_configuration = {
                         }
                     ],
                     'launcher': 'srun'
+                    # 'launcher': 'squashfs-run'
                 }
             ]
         },
@@ -140,6 +148,9 @@ site_configuration = {
                 ['USER_ENV_CUDA_VISIBLE',
                  os.environ.get('USER_ENV_CUDA_VISIBLE',
                                 '$HOME/cuda_visible_devices.sh')],
+                # ['MODULEPATH',
+                #  os.path.join(os.environ.get('USER_ENV_ROOT', uenv_mount_point),
+                #               'modules')],
             ],
             'modules': [
                 {
