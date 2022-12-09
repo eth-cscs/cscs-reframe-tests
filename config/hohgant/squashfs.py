@@ -27,6 +27,8 @@ import reframe.utility.osext as osext
 target_system = 'hohgant'
 uenv_mount_file = os.environ.get('UENV_MOUNT_FILE', '/scratch/e1000/bcumming/balfrin.squashfs')
 uenv_mount_point = os.environ.get('UENV_MOUNT_POINT', '/user-environment')
+uenv_mpi_modulefile_gnu = os.environ.get('USER_ENV_MPI_GNU', 'cray-mpich-binary/8.1.18.4-gcc')
+uenv_mpi_modulefile_nv = os.environ.get('USER_ENV_MPI_NV', 'cray-mpich-binary/8.1.18.4-nvhpc')
 rfm_prefix = os.path.normpath(
     os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
 )
@@ -127,7 +129,7 @@ site_configuration = {
             ],
             'modules': [
                 {
-                    'name': 'cray-mpich-binary/8.1.18.4-gcc',
+                    'name': uenv_mpi_modulefile_gnu,
                     'path': os.path.join(
                         os.environ.get('USER_ENV_ROOT', uenv_mount_point),
                         'modules'
@@ -154,7 +156,7 @@ site_configuration = {
             ],
             'modules': [
                 {
-                    'name': 'cray-mpich-binary/8.1.18.4-nvhpc',
+                    'name': uenv_mpi_modulefile_nv,
                     'path': os.path.join(
                         os.environ.get('USER_ENV_ROOT', uenv_mount_point),
                         'modules'

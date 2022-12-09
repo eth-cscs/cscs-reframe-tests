@@ -1088,7 +1088,10 @@ site_configuration = {
         {
             'name': 'PrgEnv-nvhpc',
             'target_systems': ['hohgant'],
-            'modules': ['cray', 'PrgEnv-nvhpc']
+            'modules': ['cray', 'PrgEnv-nvhpc'],
+            'extras': {
+                'launcher_options': '--mpi=pmi2',
+            },
         },
         {
             'name': 'PrgEnv-nvidia',
