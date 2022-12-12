@@ -4,134 +4,114 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import os
+
 import reframe as rfm
 import reframe.utility.sanity as sn
 
 
 @rfm.simple_test
-class mpit_check(rfm.RegressionTest):
-    def __init__(self):
-        self.descr = 'Checks MPI_T control/performance variables/categories'
-        self.valid_systems = ['daint:gpu', 'dom:gpu', 'daint:mc', 'dom:mc',
-                              'eiger:mc', 'pilatus:mc', 'hohgant:gpu']
-        self.valid_prog_environs = [
-            'PrgEnv-aocc', 'PrgEnv-cray', 'PrgEnv-gnu', 'PrgEnv-intel',
-            'PrgEnv-pgi', 'PrgEnv-nvidia']
-        self.build_system = 'SingleSource'
-        self.sourcesdir = 'src/mpi_t'
-        self.sourcepath = 'mpit_vars.c'
-        self.prebuild_cmds = ['module list']
-        self.variables = {'MPICH_VERSION_DISPLAY': '1', 'MPITEST_VERBOSE': '1'}
-        self.num_tasks_per_node = 1
-        self.rpt = 'rpt'
-        self.executable_opts = [f'&> {self.rpt}']
-        self.maintainers = ['JG']
-        self.tags = {'craype', 'maintenance'}
+class MpiInitTest(rfm.RegressionTest):
+    '''This test checks the value returned by calling MPI_Init_thread.
+
+    Output should look the same for all prgenv,
+    (mpi_thread_multiple seems to be not supported):
+
+    # 'single':
+    ['mpi_thread_supported=MPI_THREAD_SINGLE
+      mpi_thread_queried=MPI_THREAD_SINGLE 0'],
+
+    # 'funneled':
+    ['mpi_thread_supported=MPI_THREAD_FUNNELED
+      mpi_thread_queried=MPI_THREAD_FUNNELED 1'],
+
+    # 'serialized':
+    ['mpi_thread_supported=MPI_THREAD_SERIALIZED
+      mpi_thread_queried=MPI_THREAD_SERIALIZED 2'],
+
+    # 'multiple':
+    ['mpi_thread_supported=MPI_THREAD_SERIALIZED
+      mpi_thread_queried=MPI_THREAD_SERIALIZED 2']
+
+    '''
+    required_thread = parameter(['single', 'funneled', 'serialized',
+                                 'multiple'])
+    valid_prog_environs = ['PrgEnv-aocc', 'PrgEnv-cray', 'PrgEnv-gnu',
+                           'PrgEnv-intel', 'PrgEnv-pgi', 'PrgEnv-nvidia',
+                           'PrgEnv-nvhpc']
+    valid_systems = ['daint:gpu', 'daint:mc', 'dom:gpu', 'dom:mc', 'eiger:mc',
+                     'pilatus:mc', 'hohgant:gpu', 'hohgant:gpu-squashfs']
+    build_system = 'SingleSource'
+    sourcesdir = 'src/mpi_thread'
+    sourcepath = 'mpi_init_thread.cpp'
+    cppflags = variable(
+        dict, value={
+            'single': ['-D_MPI_THREAD_SINGLE'],
+            'funneled': ['-D_MPI_THREAD_FUNNELED'],
+            'serialized': ['-D_MPI_THREAD_SERIALIZED'],
+            'multiple': ['-D_MPI_THREAD_MULTIPLE']
+        }
+    )
+    prebuild_cmds += ['module list']
+    time_limit = '2m'
+    maintainers = ['JG', 'AJ']
+    tags = {'production', 'craype'}
+
+    @run_after('init')
+    def set_cpp_flags(self):
+        self.build_system.cppflags = self.cppflags[self.required_thread]
 
     @run_before('run')
-    def set_pmi2(self):
-        sys_name = self.current_system.name
-        env_name = self.current_environ.name
-        if sys_name == 'hohgant' and env_name == 'PrgEnv-nvidia':
-            self.job.launcher.options = ['--mpi=pmi2']
+    def set_job_parameters(self):
+        # fix for "MPIR_pmi_init(83)....: PMI2_Job_GetId returned 14"
+        self.job.launcher.options += (
+            [self.current_environ.extras['launcher_options']]
+            if 'launcher_options' in self.current_environ.extras
+            else ''
+        )
 
     @run_before('sanity')
     def set_sanity(self):
-        rpt_file = os.path.join(self.stagedir, self.rpt)
-        reference_files = {
-            '7.7': {
-                'control': 'ref/mpit_control_vars_7.7.ref',
-                'categories': 'ref/mpit_categories_7.7.ref',
-            },
-            '8.1.4': {
-                'control': 'ref/mpit_control_vars_8.1.4.ref',
-                'categories': 'ref/mpit_categories_8.1.4.ref',
-            },
-            '8.1.5': {
-                'control': 'ref/mpit_control_vars_8.1.5.ref',
-                'categories': 'ref/mpit_categories_8.1.5.ref',
-            },
-            '8.1.6': {
-                'control': 'ref/mpit_control_vars_8.1.5.ref',
-                'categories': 'ref/mpit_categories_8.1.5.ref',
-            },
-            '8.1.12': {
-                'control': 'ref/mpit_control_vars_8.1.12.ref',
-                'categories': 'ref/mpit_categories_8.1.12.ref',
-            },
-            '8.1.13': {
-                'control': 'ref/mpit_control_vars_8.1.13.ref',
-                'categories': 'ref/mpit_categories_8.1.13.ref',
-            },
-            '8.1.18': {
-                'control': 'ref/mpit_control_vars_8.1.18.ref',
-                'categories': 'ref/mpit_categories_8.1.18.ref',
-            },
-        }
-        # {{{ 0/ MPICH version:
+        # {{{ MPICH version:
         # MPI VERSION  : CRAY MPICH version 7.7.15 (ANL base 3.2)
         # MPI VERSION  : CRAY MPICH version 8.0.16.17 (ANL base 3.3)
         # MPI VERSION  : CRAY MPICH version 8.1.4.31 (ANL base 3.4a2)
         # MPI VERSION  : CRAY MPICH version 8.1.5.32 (ANL base 3.4a2)
         # MPI VERSION  : CRAY MPICH version 8.1.18.4 (ANL base 3.4a2)
-        #
-        # cdt/21.02 cray-mpich/7.7.16
-        # cdt/21.05 cray-mpich/7.7.17
-        #
-        # cpe/21.04 cray-mpich/8.1.4
-        # cpe/21.05 cray-mpich/8.1.5
-        # cpe/21.06 cray-mpich/8.1.6
-        # cpe/21.08 cray-mpich/8.1.8
-        # cpe/21.12 cray-mpich/8.1.12
-        regex = r'^MPI VERSION\s+: CRAY MPICH version (\S+) \(ANL base \S+\)'
-        mpich_version_major = sn.extractsingle_s(
-            r'^(\d+)\.\d+\.\d+', sn.extractsingle(regex, rpt_file, 1), 1
-        )
-        if mpich_version_major == '7':
-            mpich_version_minor = sn.extractsingle_s(
-                r'^\d+(\.\d+)\.\d+', sn.extractsingle(regex, rpt_file, 1), 1
-            )
-        elif mpich_version_major == '8':
-            mpich_version_minor = sn.extractsingle_s(
-                r'^\d+(\.\d+\.\d+)', sn.extractsingle(regex, rpt_file, 1), 1
-            )
-
-        mpich_version = mpich_version_major + mpich_version_minor
-        ref_ctrl_file = os.path.join(
-            self.stagedir,
-            reference_files[sn.evaluate(mpich_version)]['control'])
-        ref_catg_file = os.path.join(
-            self.stagedir,
-            reference_files[sn.evaluate(mpich_version)]['categories'])
+        # MPI VERSION  : CRAY MPICH version 8.1.21.11 (ANL base 3.4a2)
+        regex = r'= MPI VERSION\s+: CRAY MPICH version \S+ \(ANL base (\S+)\)'
+        stdout = os.path.join(self.stagedir, sn.evaluate(self.stdout))
+        mpich_version = sn.extractsingle(regex, stdout, 1)
+        self.mpithread_version = {
+            '3.2': {
+                'MPI_THREAD_SINGLE': 0,
+                'MPI_THREAD_FUNNELED': 1,
+                'MPI_THREAD_SERIALIZED': 2,
+                # required=MPI_THREAD_MULTIPLE/supported=MPI_THREAD_SERIALIZED
+                'MPI_THREAD_MULTIPLE': 2
+            },
+            '3.3': {
+                'MPI_THREAD_SINGLE': 0,
+                'MPI_THREAD_FUNNELED': 1,
+                'MPI_THREAD_SERIALIZED': 2,
+                'MPI_THREAD_MULTIPLE': 3
+            },
+            '3.4a2': {
+                'MPI_THREAD_SINGLE': 0,
+                'MPI_THREAD_FUNNELED': 1,
+                'MPI_THREAD_SERIALIZED': 2,
+                'MPI_THREAD_MULTIPLE': 3
+            },
+        }
         # }}}
-        # {{{ 1/ MPI Control Variables: MPIR_...
-        # --- extract runtime data:
-        regex = r'^\t(?P<vars>MPIR\S+)\t'
-        self.run_control_vars = sorted(sn.extractall(regex, rpt_file, 'vars'))
-        # --- debug with:"grep -P '\tMPIR+\S*\t' rpt |awk '{print $1}' |sort"
-        # --- extract reference data:
-        regex = r'^(?P<vars>MPIR\S+)$'
-        self.ref_control_vars = sorted(sn.extractall(regex, ref_ctrl_file,
-                                                     'vars'))
-        # compare runtime and reference in self.sanity_patterns below
-        # }}}
-        # {{{ 2/ MPI Category:
-        # --- extract runtime data:
-        regex = (r'^(?P<category>Category \w+ has \d+ control variables, \d+'
-                 r' performance variables, \d+ subcategories)')
-        self.run_cat_vars = sorted(sn.extractall(regex, rpt_file, 'category'))
-        # --- extract reference data:
-        regex = r'^(?P<category>.*)$'
-        ref_cat_vars = sorted(sn.extractall(regex, ref_catg_file, 'category'))
-        self.ref_cat_vars = list(filter(None, ref_cat_vars))
-        # compare runtime and reference in self.sanity_patterns below
-        # --- debug with:"grep Category rpt |sort"
-        # }}}
-        # {{{ 3/ Extracted lists can be compared (when sorted):
+        regex = (r'^mpi_thread_required=(\w+)\s+mpi_thread_supported=\w+'
+                 r'\s+mpi_thread_queried=\w+\s+(\d)')
+        required_thread = sn.extractsingle(regex, stdout, 1)
+        found_mpithread = sn.extractsingle(regex, stdout, 2, int)
         self.sanity_patterns = sn.all([
-            sn.assert_eq(self.ref_control_vars, self.run_control_vars,
-                         msg='sanity1 "mpit_control_vars.ref" failed'),
-            sn.assert_eq(self.ref_cat_vars, self.run_cat_vars,
-                         msg='sanity2 "mpit_categories.ref" failed'),
+            sn.assert_found(r'tid=0 out of 1 from rank 0 out of 1',
+                            stdout, msg='sanity: not found'),
+            sn.assert_eq(found_mpithread,
+                         self.mpithread_version[sn.evaluate(mpich_version)]
+                                               [sn.evaluate(required_thread)],
+                         msg='sanity_eq: {0} != {1}')
         ])
-        # }}}
