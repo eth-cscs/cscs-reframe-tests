@@ -62,7 +62,7 @@ class HelloWorldBaseTest(rfm.RegressionTest):
     @run_after('init')
     def adapt_valid_systems(self):
         if self.linking == 'dynamic':
-            self.valid_systems += ['eiger:mc', 'pilatus:mc', 'hohgant:gpu']
+            self.valid_systems += ['eiger:mc', 'pilatus:mc', 'hohgant:nvgpu']
 
     @run_before('compile')
     def skip_static_builds_on_alps(self):

@@ -7,7 +7,7 @@ import reframe.utility.sanity as sn
 class pytorch_distr_cnn(rfm.RunOnlyRegressionTest):
     descr = 'Check the training throughput of a cnn with torch.distributed'
     platform = parameter(['native', 'Sarus'])
-    valid_systems = ['hohgant:gpu']
+    valid_systems = ['hohgant:nvgpu']
     valid_prog_environs = ['builtin']
     sourcesdir = 'src'
     num_tasks = 16
@@ -17,7 +17,7 @@ class pytorch_distr_cnn(rfm.RunOnlyRegressionTest):
     executable = 'python cnn_distr.py'
     throughput_total = throughput_per_gpu * num_tasks
     reference = {
-        'hohgant:gpu': {
+        'hohgant:nvgpu': {
             'samples_per_sec_per_gpu': (throughput_per_gpu,
                                         -0.1, None, 'samples/sec'),
             'samples_per_sec_total': (throughput_total,
