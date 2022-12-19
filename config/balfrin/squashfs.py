@@ -185,7 +185,7 @@ site_configuration = {
             'options': [
                 '--unload-module=reframe',
                 '--exec-policy=async',
-                '--strict',
+                '-Sstrict_check=1',
                 '--output=$SCRATCH/regression/maintenance',
                 '--perflogdir=$SCRATCH/regression/maintenance/logs',
                 '--stage=$SCRATCH/regression/maintenance/stage',
@@ -202,7 +202,7 @@ site_configuration = {
             'options': [
                 '--unload-module=reframe',
                 '--exec-policy=async',
-                '--strict',
+                '-Sstrict_check=1',
                 '--output=$/regression/production',
                 '--perflogdir=$CRATCH/regression/production/logs',
                 '--stage=$SCRATCH/regression/production/stage',
@@ -218,7 +218,7 @@ site_configuration = {
             'options': [
                 '--unload-module=reframe',
                 '--exec-policy=async',
-                '--strict',
+                '-Sstrict_check=1',
                 '--prefix=$SCRATCH/$USER/regression/production',
                 '--report-file=$SCRATCH/$USER/regression/production/reports/'
                 'prod_report_{sessionid}.json',
