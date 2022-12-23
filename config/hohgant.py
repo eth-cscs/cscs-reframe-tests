@@ -6,10 +6,6 @@
 # ReFrame CSCS settings
 #
 
-import reframe.utility.osext as osext
-import copy
-
-
 site_configuration = {
     'systems': [
         {

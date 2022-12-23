@@ -5,7 +5,22 @@
 #
 # ReFrame CSCS settings
 #
+
 site_configuration = {
+    'environments': [
+        {
+            'name': 'builtin',
+            'cc': 'cc',
+            'cxx': 'CC',
+            'ftn': 'ftn'
+        },
+        {
+            'name': 'builtin-gcc',
+            'cc': 'gcc',
+            'cxx': 'g++',
+            'ftn': 'gfortran'
+        }
+    ],
     'logging': [
         {
             'perflog_compat': True,
