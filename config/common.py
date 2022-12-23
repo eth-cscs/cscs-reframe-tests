@@ -5,10 +5,6 @@
 #
 # ReFrame CSCS settings
 #
-
-import reframe.utility.osext as osext
-
-
 site_configuration = {
     'logging': [
         {
