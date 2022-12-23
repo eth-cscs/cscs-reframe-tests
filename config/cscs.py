@@ -33,7 +33,8 @@ site_configuration = {
                     'environs': ['gnu'],
                     'descr': 'Fujitsu A64FX CPUs',
                     'max_jobs': 100,
-                    'launcher': 'srun'
+                    'launcher': 'srun',
+                    'features': ['remote'],
                 },
                 {
                     'name': 'amda100',
@@ -43,7 +44,7 @@ site_configuration = {
                     'descr': 'AMD Naples 32c + 4x NVIDIA A100',
                     'max_jobs': 100,
                     'launcher': 'srun',
-                    'features': ['gpu'],
+                    'features': ['gpu', 'nvgpu', 'remote'],
                     'devices': [
                         {
                             'type': 'gpu',
@@ -60,7 +61,7 @@ site_configuration = {
                     'descr': 'AMD Naples 32c + 2x NVIDIA V100',
                     'max_jobs': 100,
                     'launcher': 'srun',
-                    'features': ['gpu'],
+                    'features': ['gpu', 'nvgpu', 'remote'],
                     'devices': [
                         {
                             'type': 'gpu',
@@ -77,7 +78,7 @@ site_configuration = {
                     'descr': 'AMD Naples 32c + 3x AMD GFX900',
                     'max_jobs': 100,
                     'launcher': 'srun',
-                    'features': ['gpu'],
+                    'features': ['gpu', 'amdgpu', 'remote'],
                     'devices': [
                         {
                             'type': 'gpu',
@@ -94,7 +95,7 @@ site_configuration = {
                     'descr': 'Intel Skylake 36c + 4x NVIDIA V100',
                     'max_jobs': 100,
                     'launcher': 'srun',
-                    'features': ['gpu'],
+                    'features': ['gpu', 'nvgpu', 'remote'],
                     'devices': [
                         {
                             'type': 'gpu',
@@ -110,7 +111,8 @@ site_configuration = {
                     'environs': ['gnu'],
                     'descr': 'Intel Skylake 36c',
                     'max_jobs': 100,
-                    'launcher': 'srun'
+                    'launcher': 'srun',
+                    'features': ['remote'],
                 }
             ]
         },
@@ -166,7 +168,7 @@ site_configuration = {
                     'extras': {
                         'cn_memory': 64,
                     },
-                    'features': ['gpu'],
+                    'features': ['gpu', 'nvgpu', 'remote'],
                     'resources': [
                         {
                             'name': 'switches',
@@ -217,6 +219,7 @@ site_configuration = {
                     'extras': {
                         'cn_memory': 64,
                     },
+                    'features': ['remote'],
                     'resources': [
                         {
                             'name': 'switches',
@@ -240,7 +243,8 @@ site_configuration = {
                     ],
                     'descr': 'JupyterHub GPU nodes',
                     'max_jobs': 10,
-                    'launcher': 'srun'
+                    'launcher': 'srun',
+                    'features': ['gpu', 'nvgpu', 'remote'],
                 },
                 {
                     'name': 'jupyter_mc',
@@ -253,7 +257,8 @@ site_configuration = {
                     ],
                     'descr': 'JupyterHub multicore nodes',
                     'max_jobs': 10,
-                    'launcher': 'srun'
+                    'launcher': 'srun',
+                    'features': ['remote'],
                 },
                 {
                     'name': 'xfer',
@@ -265,7 +270,8 @@ site_configuration = {
                     ],
                     'descr': 'Nordend nodes for internal transfers',
                     'max_jobs': 10,
-                    'launcher': 'srun'
+                    'launcher': 'srun',
+                    'features': ['remote'],
                 }
             ]
         },
@@ -322,7 +328,7 @@ site_configuration = {
                         'cn_memory': 64,
                     },
                     'launcher': 'srun',
-                    'features': ['gpu'],
+                    'features': ['gpu', 'nvgpu', 'remote'],
                     'resources': [
                         {
                             'name': 'gres',
@@ -368,6 +374,7 @@ site_configuration = {
                     'extras': {
                         'cn_memory': 64,
                     },
+                    'features': ['remote'],
                     'resources': [
                         {
                             'name': 'gres',
@@ -387,7 +394,8 @@ site_configuration = {
                     ],
                     'descr': 'JupyterHub GPU nodes',
                     'max_jobs': 10,
-                    'launcher': 'srun'
+                    'launcher': 'srun',
+                    'features': ['gpu', 'nvgpu', 'remote'],
                 },
                 {
                     'name': 'jupyter_mc',
@@ -400,7 +408,8 @@ site_configuration = {
                     ],
                     'descr': 'JupyterHub multicore nodes',
                     'max_jobs': 10,
-                    'launcher': 'srun'
+                    'launcher': 'srun',
+                    'features': ['remote'],
                 },
                 {
                     'name': 'xfer',
@@ -412,7 +421,8 @@ site_configuration = {
                     ],
                     'descr': 'Dedicated nodes for internal transfers',
                     'max_jobs': 10,
-                    'launcher': 'srun'
+                    'launcher': 'srun',
+                    'features': ['remote'],
                 }
             ]
         },
@@ -452,7 +462,8 @@ site_configuration = {
                     ],
                     'descr': 'Arolla post-processing nodes',
                     'max_jobs': 50,
-                    'launcher': 'srun'
+                    'launcher': 'srun',
+                    'features': ['remote'],
                 },
                 {
                     'name': 'cn',
@@ -467,7 +478,7 @@ site_configuration = {
                         'PrgEnv-pgi-nompi-nocuda'
                     ],
                     'descr': 'Arolla compute nodes',
-                    'features': ['gpu'],
+                    'features': ['gpu', 'nvgpu', 'remote'],
                     'devices': [
                         {
                             'type': 'gpu',
@@ -529,7 +540,8 @@ site_configuration = {
                     'extras': {
                         'cn_memory': 377,
                     },
-                    'launcher': 'srun'
+                    'launcher': 'srun',
+                    'features': ['remote'],
                 },
                 {
                     'name': 'cn',
@@ -550,7 +562,7 @@ site_configuration = {
                     'extras': {
                         'cn_memory': 377,
                     },
-                    'features': ['gpu'],
+                    'features': ['gpu', 'nvgpu', 'remote'],
                     'resources': [
                         {
                             'name': '_rfm_gpu',
@@ -623,6 +635,7 @@ site_configuration = {
                     'extras': {
                         'cn_memory': 256,
                     },
+                    'features': ['remote'],
                     'access': ['-Cmc', f'--account={osext.osgroup()}'],
                     'resources': [
                         {
@@ -645,9 +658,10 @@ site_configuration = {
                         f'--reservation=interact',
                         f'--account={osext.osgroup()}'
                     ],
-                    'descr': 'JupyterHub GPU nodes',
+                    'descr': 'JupyterHub multicore nodes',
                     'max_jobs': 10,
-                    'launcher': 'srun'
+                    'launcher': 'srun',
+                    'features': ['remote'],
                 },
             ]
         },
@@ -707,7 +721,7 @@ site_configuration = {
                             'options': ['--mem={mem_per_node}']
                         },
                     ],
-                    'features': ['gpu'],
+                    'features': ['gpu', 'amdgpu', 'remote'],
                     'devices': [
                         {
                             'type': 'gpu',
@@ -751,7 +765,7 @@ site_configuration = {
                             'options': ['--mem={mem_per_node}']
                         },
                     ],
-                    'features': ['gpu'],
+                    'features': ['gpu', 'nvgpu', 'remote'],
                     'devices': [
                         {
                             'type': 'gpu',
@@ -786,7 +800,7 @@ site_configuration = {
                     'launcher': 'local'
                 },
                 {
-                    'name': 'gpu',
+                    'name': 'nvgpu',
                     'scheduler': 'slurm',
                     'environs': [
                         'builtin',
@@ -819,7 +833,7 @@ site_configuration = {
                             'options': ['--mem={mem_per_node}']
                         },
                     ],
-                    'features': ['gpu'],
+                    'features': ['gpu', 'nvgpu', 'remote'],
                     'devices': [
                         {
                             'type': 'gpu',
@@ -827,6 +841,43 @@ site_configuration = {
                             'num_devices': 4
                         }
                     ],
+                    'launcher': 'srun'
+                },
+                {
+                    'name': 'amdgpu',
+                    'scheduler': 'slurm',
+                    'environs': [
+                        'builtin',
+                        'PrgEnv-aocc',
+                        'PrgEnv-cray',
+                        'PrgEnv-gnu',
+                        'PrgEnv-nvhpc',
+                        'PrgEnv-nvidia'
+                    ],
+                    'container_platforms': [
+                        {
+                            'type': 'Sarus',
+                        },
+                        {
+                            'type': 'Singularity',
+                        }
+                    ],
+                    'max_jobs': 100,
+                    'extras': {
+                        'cn_memory': 500,
+                    },
+                    'access': ['-pamdgpu'],
+                    'resources': [
+                        {
+                            'name': 'switches',
+                            'options': ['--switches={num_switches}']
+                        },
+                        {
+                            'name': 'memory',
+                            'options': ['--mem={mem_per_node}']
+                        },
+                    ],
+                    'features': ['gpu', 'amdgpu', 'remote'],
                     'launcher': 'srun'
                 }
             ]
@@ -887,6 +938,7 @@ site_configuration = {
                         'cn_memory': 256,
                     },
                     'access': ['-Cmc', f'--account={osext.osgroup()}'],
+                    'features': ['remote'],
                     'resources': [
                         {
                             'name': 'switches',
@@ -1169,6 +1221,7 @@ site_configuration = {
     ],
     'logging': [
         {
+            'perflog_compat': True,
             'handlers': [
                 {
                     'type': 'file',
