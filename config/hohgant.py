@@ -33,6 +33,7 @@ site_configuration = {
                 {
                     'name': 'nvgpu',
                     'scheduler': 'slurm',
+                    'time_limit': '10m',
                     'environs': [
                         'builtin',
                         'PrgEnv-aocc',
@@ -77,6 +78,7 @@ site_configuration = {
                 {
                     'name': 'amdgpu',
                     'scheduler': 'slurm',
+                    'time_limit': '10m',
                     'environs': [
                         'builtin',
                         'PrgEnv-aocc',
@@ -115,7 +117,7 @@ site_configuration = {
         },
     ],
     'environments': [
-{
+        {
             'name': 'PrgEnv-aocc',
             'target_systems': ['hohgant'],
             'modules': ['cray', 'PrgEnv-aocc']

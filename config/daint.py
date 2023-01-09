@@ -17,6 +17,7 @@ base_config = {
         {
             'name': 'login',
             'scheduler': 'local',
+            'time_limit': '10m',
             'environs': [
                 'builtin',
                 'PrgEnv-cray',
@@ -30,8 +31,8 @@ base_config = {
         },
         {
             'name': 'gpu',
-            'time_limit': '10m',
             'scheduler': 'slurm',
+            'time_limit': '10m',
             'container_platforms': [
                 {
                     'type': 'Sarus',
@@ -126,6 +127,7 @@ base_config = {
         {
             'name': 'jupyter_gpu',
             'scheduler': 'slurm',
+            'time_limit': '10m',
             'environs': ['builtin'],
             'access': [
                 f'-Cgpu',
@@ -140,6 +142,7 @@ base_config = {
         {
             'name': 'jupyter_mc',
             'scheduler': 'slurm',
+            'time_limit': '10m',
             'environs': ['builtin'],
             'access': [
                 f'-Cmc',
@@ -154,6 +157,7 @@ base_config = {
         {
             'name': 'xfer',
             'scheduler': 'slurm',
+            'time_limit': '10m',
             'environs': ['builtin'],
             'access': [
                 f'--partition=xfer',
