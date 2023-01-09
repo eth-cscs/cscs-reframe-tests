@@ -21,6 +21,7 @@ site_configuration = {
                 {
                     'name': 'login',
                     'scheduler': 'local',
+                    'time_limit': '10m',
                     'environs': ['gnu'],
                     'descr': 'Login nodes',
                     'max_jobs': 4,
@@ -29,6 +30,7 @@ site_configuration = {
                 {
                     'name': 'a64fx',
                     'scheduler': 'slurm',
+                    'time_limit': '10m',
                     'access': ['-pa64fx'],
                     'environs': ['gnu'],
                     'descr': 'Fujitsu A64FX CPUs',
@@ -39,6 +41,7 @@ site_configuration = {
                 {
                     'name': 'amda100',
                     'scheduler': 'slurm',
+                    'time_limit': '10m',
                     'access': ['-pamda100'],
                     'environs': ['gnu', 'cuda'],
                     'descr': 'AMD Naples 32c + 4x NVIDIA A100',
@@ -56,6 +59,7 @@ site_configuration = {
                 {
                     'name': 'amdv100',
                     'scheduler': 'slurm',
+                    'time_limit': '10m',
                     'access': ['-pamdv100'],
                     'environs': ['gnu', 'cuda'],
                     'descr': 'AMD Naples 32c + 2x NVIDIA V100',
@@ -73,6 +77,7 @@ site_configuration = {
                 {
                     'name': 'amdvega',
                     'scheduler': 'slurm',
+                    'time_limit': '10m',
                     'access': ['-pamdvega'],
                     'environs': ['gnu', 'rocm'],
                     'descr': 'AMD Naples 32c + 3x AMD GFX900',
@@ -90,6 +95,7 @@ site_configuration = {
                 {
                     'name': 'intelv100',
                     'scheduler': 'slurm',
+                    'time_limit': '10m',
                     'access': ['-pintelv100'],
                     'environs': ['gnu', 'cuda'],
                     'descr': 'Intel Skylake 36c + 4x NVIDIA V100',
@@ -107,6 +113,7 @@ site_configuration = {
                 {
                     'name': 'intel',
                     'scheduler': 'slurm',
+                    'time_limit': '10m',
                     'access': ['-pintel'],
                     'environs': ['gnu'],
                     'descr': 'Intel Skylake 36c',
@@ -126,6 +133,7 @@ site_configuration = {
                 {
                     'name': 'login',
                     'scheduler': 'local',
+                    'time_limit': '10m',
                     'environs': [
                         'builtin',
                         'PrgEnv-cray',
@@ -235,6 +243,7 @@ site_configuration = {
                 {
                     'name': 'jupyter_gpu',
                     'scheduler': 'slurm',
+                    'time_limit': '10m',
                     'environs': ['builtin'],
                     'access': [
                         f'-Cgpu',
@@ -249,6 +258,7 @@ site_configuration = {
                 {
                     'name': 'jupyter_mc',
                     'scheduler': 'slurm',
+                    'time_limit': '10m',
                     'environs': ['builtin'],
                     'access': [
                         f'-Cmc',
@@ -263,6 +273,7 @@ site_configuration = {
                 {
                     'name': 'xfer',
                     'scheduler': 'slurm',
+                    'time_limit': '10m',
                     'environs': ['builtin'],
                     'access': [
                         f'--partition=xfer',
@@ -285,6 +296,7 @@ site_configuration = {
                 {
                     'name': 'login',
                     'scheduler': 'local',
+                    'time_limit': '10m',
                     'environs': [
                         'builtin',
                         'PrgEnv-cray',
@@ -386,6 +398,7 @@ site_configuration = {
                 {
                     'name': 'jupyter_gpu',
                     'scheduler': 'slurm',
+                    'time_limit': '10m',
                     'environs': ['builtin'],
                     'access': [
                         f'-Cgpu',
@@ -400,6 +413,7 @@ site_configuration = {
                 {
                     'name': 'jupyter_mc',
                     'scheduler': 'slurm',
+                    'time_limit': '10m',
                     'environs': ['builtin'],
                     'access': [
                         f'-Cmc',
@@ -414,6 +428,7 @@ site_configuration = {
                 {
                     'name': 'xfer',
                     'scheduler': 'slurm',
+                    'time_limit': '10m',
                     'environs': ['builtin'],
                     'access': [
                         f'--partition=xfer',
@@ -436,6 +451,7 @@ site_configuration = {
                 {
                     'name': 'login',
                     'scheduler': 'local',
+                    'time_limit': '10m',
                     'environs': [
                         'PrgEnv-pgi',
                         'PrgEnv-pgi-nompi',
@@ -451,6 +467,7 @@ site_configuration = {
                 {
                     'name': 'pn',
                     'scheduler': 'slurm',
+                    'time_limit': '10m',
                     'access': ['--partition=pn-regression'],
                     'environs': [
                         'PrgEnv-pgi',
@@ -468,6 +485,7 @@ site_configuration = {
                 {
                     'name': 'cn',
                     'scheduler': 'slurm',
+                    'time_limit': '10m',
                     'access': ['--partition=cn-regression'],
                     'environs': [
                         'PrgEnv-gnu',
@@ -507,6 +525,7 @@ site_configuration = {
                 {
                     'name': 'login',
                     'scheduler': 'local',
+                    'time_limit': '10m',
                     'environs': [
                         'PrgEnv-pgi',
                         'PrgEnv-pgi-nompi',
@@ -524,6 +543,7 @@ site_configuration = {
                 {
                     'name': 'pn',
                     'scheduler': 'slurm',
+                    'time_limit': '10m',
                     'access': ['--partition=pn-regression'],
                     'environs': [
                         'PrgEnv-pgi',
@@ -546,6 +566,7 @@ site_configuration = {
                 {
                     'name': 'cn',
                     'scheduler': 'slurm',
+                    'time_limit': '10m',
                     'access': ['--partition=cn-regression'],
                     'environs': [
                         'PrgEnv-gnu',
@@ -652,6 +673,7 @@ site_configuration = {
                 {
                     'name': 'jupyter_mc',
                     'scheduler': 'slurm',
+                    'time_limit': '10m',
                     'environs': ['builtin'],
                     'access': [
                         f'-Cmc',
@@ -690,6 +712,7 @@ site_configuration = {
                 {
                     'name': 'amdgpu',
                     'scheduler': 'slurm',
+                    'time_limit': '10m',
                     'environs': [
                         'builtin',
                         'PrgEnv-aocc',
@@ -734,6 +757,7 @@ site_configuration = {
                 {
                     'name': 'nvgpu',
                     'scheduler': 'slurm',
+                    'time_limit': '10m',
                     'environs': [
                         'builtin',
                         'PrgEnv-aocc',
@@ -802,6 +826,7 @@ site_configuration = {
                 {
                     'name': 'nvgpu',
                     'scheduler': 'slurm',
+                    'time_limit': '10m',
                     'environs': [
                         'builtin',
                         'PrgEnv-aocc',
@@ -846,6 +871,7 @@ site_configuration = {
                 {
                     'name': 'amdgpu',
                     'scheduler': 'slurm',
+                    'time_limit': '10m',
                     'environs': [
                         'builtin',
                         'PrgEnv-aocc',
