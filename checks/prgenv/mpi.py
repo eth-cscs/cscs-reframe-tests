@@ -36,9 +36,10 @@ class MpiInitTest(rfm.RegressionTest):
     required_thread = parameter(['single', 'funneled', 'serialized',
                                  'multiple'])
     valid_prog_environs = ['PrgEnv-aocc', 'PrgEnv-cray', 'PrgEnv-gnu',
-                           'PrgEnv-intel', 'PrgEnv-pgi', 'PrgEnv-nvidia']
+                           'PrgEnv-intel', 'PrgEnv-pgi', 'PrgEnv-nvidia',
+                           'PrgEnv-nvhpc']
     valid_systems = ['daint:gpu', 'daint:mc', 'dom:gpu', 'dom:mc', 'eiger:mc',
-                     'pilatus:mc', 'hohgant:gpu']
+                     'pilatus:mc', 'hohgant:nvgpu', 'hohgant:gpu-squashfs']
     build_system = 'SingleSource'
     sourcesdir = 'src/mpi_thread'
     sourcepath = 'mpi_init_thread.cpp'
@@ -60,20 +61,23 @@ class MpiInitTest(rfm.RegressionTest):
         self.build_system.cppflags = self.cppflags[self.required_thread]
 
     @run_before('run')
-    def set_pmi2(self):
-        sys_name = self.current_system.name
-        env_name = self.current_environ.name
-        if sys_name == 'hohgant' and env_name == 'PrgEnv-nvidia':
-            self.job.launcher.options = ['--mpi=pmi2']
+    def set_job_parameters(self):
+        # fix for "MPIR_pmi_init(83)....: PMI2_Job_GetId returned 14"
+        self.job.launcher.options += (
+            [self.current_environ.extras['launcher_options']]
+            if 'launcher_options' in self.current_environ.extras
+            else ''
+        )
 
     @run_before('sanity')
     def set_sanity(self):
-        # {{{ 0/ MPICH version:
+        # {{{ MPICH version:
         # MPI VERSION  : CRAY MPICH version 7.7.15 (ANL base 3.2)
         # MPI VERSION  : CRAY MPICH version 8.0.16.17 (ANL base 3.3)
         # MPI VERSION  : CRAY MPICH version 8.1.4.31 (ANL base 3.4a2)
         # MPI VERSION  : CRAY MPICH version 8.1.5.32 (ANL base 3.4a2)
         # MPI VERSION  : CRAY MPICH version 8.1.18.4 (ANL base 3.4a2)
+        # MPI VERSION  : CRAY MPICH version 8.1.21.11 (ANL base 3.4a2)
         regex = r'= MPI VERSION\s+: CRAY MPICH version \S+ \(ANL base (\S+)\)'
         stdout = os.path.join(self.stagedir, sn.evaluate(self.stdout))
         mpich_version = sn.extractsingle(regex, stdout, 1)

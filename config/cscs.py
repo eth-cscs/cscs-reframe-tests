@@ -21,6 +21,7 @@ site_configuration = {
                 {
                     'name': 'login',
                     'scheduler': 'local',
+                    'time_limit': '10m',
                     'environs': ['gnu'],
                     'descr': 'Login nodes',
                     'max_jobs': 4,
@@ -29,21 +30,24 @@ site_configuration = {
                 {
                     'name': 'a64fx',
                     'scheduler': 'slurm',
+                    'time_limit': '10m',
                     'access': ['-pa64fx'],
                     'environs': ['gnu'],
                     'descr': 'Fujitsu A64FX CPUs',
                     'max_jobs': 100,
-                    'launcher': 'srun'
+                    'launcher': 'srun',
+                    'features': ['remote'],
                 },
                 {
                     'name': 'amda100',
                     'scheduler': 'slurm',
+                    'time_limit': '10m',
                     'access': ['-pamda100'],
                     'environs': ['gnu', 'cuda'],
                     'descr': 'AMD Naples 32c + 4x NVIDIA A100',
                     'max_jobs': 100,
                     'launcher': 'srun',
-                    'features': ['gpu'],
+                    'features': ['gpu', 'nvgpu', 'remote'],
                     'devices': [
                         {
                             'type': 'gpu',
@@ -55,12 +59,13 @@ site_configuration = {
                 {
                     'name': 'amdv100',
                     'scheduler': 'slurm',
+                    'time_limit': '10m',
                     'access': ['-pamdv100'],
                     'environs': ['gnu', 'cuda'],
                     'descr': 'AMD Naples 32c + 2x NVIDIA V100',
                     'max_jobs': 100,
                     'launcher': 'srun',
-                    'features': ['gpu'],
+                    'features': ['gpu', 'nvgpu', 'remote'],
                     'devices': [
                         {
                             'type': 'gpu',
@@ -72,12 +77,13 @@ site_configuration = {
                 {
                     'name': 'amdvega',
                     'scheduler': 'slurm',
+                    'time_limit': '10m',
                     'access': ['-pamdvega'],
                     'environs': ['gnu', 'rocm'],
                     'descr': 'AMD Naples 32c + 3x AMD GFX900',
                     'max_jobs': 100,
                     'launcher': 'srun',
-                    'features': ['gpu'],
+                    'features': ['gpu', 'amdgpu', 'remote'],
                     'devices': [
                         {
                             'type': 'gpu',
@@ -89,12 +95,13 @@ site_configuration = {
                 {
                     'name': 'intelv100',
                     'scheduler': 'slurm',
+                    'time_limit': '10m',
                     'access': ['-pintelv100'],
                     'environs': ['gnu', 'cuda'],
                     'descr': 'Intel Skylake 36c + 4x NVIDIA V100',
                     'max_jobs': 100,
                     'launcher': 'srun',
-                    'features': ['gpu'],
+                    'features': ['gpu', 'nvgpu', 'remote'],
                     'devices': [
                         {
                             'type': 'gpu',
@@ -106,11 +113,13 @@ site_configuration = {
                 {
                     'name': 'intel',
                     'scheduler': 'slurm',
+                    'time_limit': '10m',
                     'access': ['-pintel'],
                     'environs': ['gnu'],
                     'descr': 'Intel Skylake 36c',
                     'max_jobs': 100,
-                    'launcher': 'srun'
+                    'launcher': 'srun',
+                    'features': ['remote'],
                 }
             ]
         },
@@ -124,6 +133,7 @@ site_configuration = {
                 {
                     'name': 'login',
                     'scheduler': 'local',
+                    'time_limit': '10m',
                     'environs': [
                         'builtin',
                         'PrgEnv-cray',
@@ -166,7 +176,7 @@ site_configuration = {
                     'extras': {
                         'cn_memory': 64,
                     },
-                    'features': ['gpu'],
+                    'features': ['gpu', 'nvgpu', 'remote'],
                     'resources': [
                         {
                             'name': 'switches',
@@ -217,6 +227,7 @@ site_configuration = {
                     'extras': {
                         'cn_memory': 64,
                     },
+                    'features': ['remote'],
                     'resources': [
                         {
                             'name': 'switches',
@@ -232,6 +243,7 @@ site_configuration = {
                 {
                     'name': 'jupyter_gpu',
                     'scheduler': 'slurm',
+                    'time_limit': '10m',
                     'environs': ['builtin'],
                     'access': [
                         f'-Cgpu',
@@ -240,11 +252,13 @@ site_configuration = {
                     ],
                     'descr': 'JupyterHub GPU nodes',
                     'max_jobs': 10,
-                    'launcher': 'srun'
+                    'launcher': 'srun',
+                    'features': ['gpu', 'nvgpu', 'remote'],
                 },
                 {
                     'name': 'jupyter_mc',
                     'scheduler': 'slurm',
+                    'time_limit': '10m',
                     'environs': ['builtin'],
                     'access': [
                         f'-Cmc',
@@ -253,11 +267,13 @@ site_configuration = {
                     ],
                     'descr': 'JupyterHub multicore nodes',
                     'max_jobs': 10,
-                    'launcher': 'srun'
+                    'launcher': 'srun',
+                    'features': ['remote'],
                 },
                 {
                     'name': 'xfer',
                     'scheduler': 'slurm',
+                    'time_limit': '10m',
                     'environs': ['builtin'],
                     'access': [
                         f'--partition=xfer',
@@ -265,7 +281,8 @@ site_configuration = {
                     ],
                     'descr': 'Nordend nodes for internal transfers',
                     'max_jobs': 10,
-                    'launcher': 'srun'
+                    'launcher': 'srun',
+                    'features': ['remote'],
                 }
             ]
         },
@@ -279,6 +296,7 @@ site_configuration = {
                 {
                     'name': 'login',
                     'scheduler': 'local',
+                    'time_limit': '10m',
                     'environs': [
                         'builtin',
                         'PrgEnv-cray',
@@ -322,7 +340,7 @@ site_configuration = {
                         'cn_memory': 64,
                     },
                     'launcher': 'srun',
-                    'features': ['gpu'],
+                    'features': ['gpu', 'nvgpu', 'remote'],
                     'resources': [
                         {
                             'name': 'gres',
@@ -368,6 +386,7 @@ site_configuration = {
                     'extras': {
                         'cn_memory': 64,
                     },
+                    'features': ['remote'],
                     'resources': [
                         {
                             'name': 'gres',
@@ -379,6 +398,7 @@ site_configuration = {
                 {
                     'name': 'jupyter_gpu',
                     'scheduler': 'slurm',
+                    'time_limit': '10m',
                     'environs': ['builtin'],
                     'access': [
                         f'-Cgpu',
@@ -387,11 +407,13 @@ site_configuration = {
                     ],
                     'descr': 'JupyterHub GPU nodes',
                     'max_jobs': 10,
-                    'launcher': 'srun'
+                    'launcher': 'srun',
+                    'features': ['gpu', 'nvgpu', 'remote'],
                 },
                 {
                     'name': 'jupyter_mc',
                     'scheduler': 'slurm',
+                    'time_limit': '10m',
                     'environs': ['builtin'],
                     'access': [
                         f'-Cmc',
@@ -400,11 +422,13 @@ site_configuration = {
                     ],
                     'descr': 'JupyterHub multicore nodes',
                     'max_jobs': 10,
-                    'launcher': 'srun'
+                    'launcher': 'srun',
+                    'features': ['remote'],
                 },
                 {
                     'name': 'xfer',
                     'scheduler': 'slurm',
+                    'time_limit': '10m',
                     'environs': ['builtin'],
                     'access': [
                         f'--partition=xfer',
@@ -412,7 +436,8 @@ site_configuration = {
                     ],
                     'descr': 'Dedicated nodes for internal transfers',
                     'max_jobs': 10,
-                    'launcher': 'srun'
+                    'launcher': 'srun',
+                    'features': ['remote'],
                 }
             ]
         },
@@ -426,6 +451,7 @@ site_configuration = {
                 {
                     'name': 'login',
                     'scheduler': 'local',
+                    'time_limit': '10m',
                     'environs': [
                         'PrgEnv-pgi',
                         'PrgEnv-pgi-nompi',
@@ -441,6 +467,7 @@ site_configuration = {
                 {
                     'name': 'pn',
                     'scheduler': 'slurm',
+                    'time_limit': '10m',
                     'access': ['--partition=pn-regression'],
                     'environs': [
                         'PrgEnv-pgi',
@@ -452,11 +479,13 @@ site_configuration = {
                     ],
                     'descr': 'Arolla post-processing nodes',
                     'max_jobs': 50,
-                    'launcher': 'srun'
+                    'launcher': 'srun',
+                    'features': ['remote'],
                 },
                 {
                     'name': 'cn',
                     'scheduler': 'slurm',
+                    'time_limit': '10m',
                     'access': ['--partition=cn-regression'],
                     'environs': [
                         'PrgEnv-gnu',
@@ -467,7 +496,7 @@ site_configuration = {
                         'PrgEnv-pgi-nompi-nocuda'
                     ],
                     'descr': 'Arolla compute nodes',
-                    'features': ['gpu'],
+                    'features': ['gpu', 'nvgpu', 'remote'],
                     'devices': [
                         {
                             'type': 'gpu',
@@ -496,6 +525,7 @@ site_configuration = {
                 {
                     'name': 'login',
                     'scheduler': 'local',
+                    'time_limit': '10m',
                     'environs': [
                         'PrgEnv-pgi',
                         'PrgEnv-pgi-nompi',
@@ -513,6 +543,7 @@ site_configuration = {
                 {
                     'name': 'pn',
                     'scheduler': 'slurm',
+                    'time_limit': '10m',
                     'access': ['--partition=pn-regression'],
                     'environs': [
                         'PrgEnv-pgi',
@@ -529,11 +560,13 @@ site_configuration = {
                     'extras': {
                         'cn_memory': 377,
                     },
-                    'launcher': 'srun'
+                    'launcher': 'srun',
+                    'features': ['remote'],
                 },
                 {
                     'name': 'cn',
                     'scheduler': 'slurm',
+                    'time_limit': '10m',
                     'access': ['--partition=cn-regression'],
                     'environs': [
                         'PrgEnv-gnu',
@@ -550,7 +583,7 @@ site_configuration = {
                     'extras': {
                         'cn_memory': 377,
                     },
-                    'features': ['gpu'],
+                    'features': ['gpu', 'nvgpu', 'remote'],
                     'resources': [
                         {
                             'name': '_rfm_gpu',
@@ -623,6 +656,7 @@ site_configuration = {
                     'extras': {
                         'cn_memory': 256,
                     },
+                    'features': ['remote'],
                     'access': ['-Cmc', f'--account={osext.osgroup()}'],
                     'resources': [
                         {
@@ -639,22 +673,24 @@ site_configuration = {
                 {
                     'name': 'jupyter_mc',
                     'scheduler': 'slurm',
+                    'time_limit': '10m',
                     'environs': ['builtin'],
                     'access': [
                         f'-Cmc',
                         f'--reservation=interact',
                         f'--account={osext.osgroup()}'
                     ],
-                    'descr': 'JupyterHub GPU nodes',
+                    'descr': 'JupyterHub multicore nodes',
                     'max_jobs': 10,
-                    'launcher': 'srun'
+                    'launcher': 'srun',
+                    'features': ['remote'],
                 },
             ]
         },
         {
-            'name': 'hohgant',
-            'descr': 'Hohgant virtual cluster',
-            'hostnames': ['hohgant'],
+            'name': 'Clariden',
+            'descr': 'Clariden AI/ML cluster',
+            'hostnames': ['clariden'],
             'modules_system': 'lmod',
             'partitions': [
                 {
@@ -674,8 +710,54 @@ site_configuration = {
                     'launcher': 'local'
                 },
                 {
-                    'name': 'gpu',
+                    'name': 'amdgpu',
                     'scheduler': 'slurm',
+                    'time_limit': '10m',
+                    'environs': [
+                        'builtin',
+                        'PrgEnv-aocc',
+                        'PrgEnv-cray',
+                        'PrgEnv-gnu',
+                        'PrgEnv-nvhpc',
+                        'PrgEnv-nvidia'
+                    ],
+                    'container_platforms': [
+                        {
+                            'type': 'Sarus',
+                        },
+                        {
+                            'type': 'Singularity',
+                        }
+                    ],
+                    'max_jobs': 100,
+                    'extras': {
+                        'cn_memory': 500,
+                    },
+                    'access': ['-pamdgpu'],
+                    'resources': [
+                        {
+                            'name': 'switches',
+                            'options': ['--switches={num_switches}']
+                        },
+                        {
+                            'name': 'memory',
+                            'options': ['--mem={mem_per_node}']
+                        },
+                    ],
+                    'features': ['gpu', 'amdgpu', 'remote'],
+                    'devices': [
+                        {
+                            'type': 'gpu',
+                            'arch': 'mi250',
+                            'num_devices': 8
+                        }
+                    ],
+                    'launcher': 'srun'
+                },
+                {
+                    'name': 'nvgpu',
+                    'scheduler': 'slurm',
+                    'time_limit': '10m',
                     'environs': [
                         'builtin',
                         'PrgEnv-aocc',
@@ -707,7 +789,7 @@ site_configuration = {
                             'options': ['--mem={mem_per_node}']
                         },
                     ],
-                    'features': ['gpu'],
+                    'features': ['gpu', 'nvgpu', 'remote'],
                     'devices': [
                         {
                             'type': 'gpu',
@@ -715,6 +797,113 @@ site_configuration = {
                             'num_devices': 4
                         }
                     ],
+                    'launcher': 'srun'
+                }
+            ]
+        },
+        {
+            'name': 'hohgant',
+            'descr': 'Hohgant vcluster',
+            'hostnames': ['hohgant'],
+            'modules_system': 'lmod',
+            'partitions': [
+                {
+                    'name': 'login',
+                    'scheduler': 'local',
+                    'time_limit': '10m',
+                    'environs': [
+                        'builtin',
+                        'PrgEnv-aocc',
+                        'PrgEnv-cray',
+                        'PrgEnv-gnu',
+                        'PrgEnv-nvhpc',
+                        'PrgEnv-nvidia'
+                    ],
+                    'descr': 'Login nodes',
+                    'max_jobs': 4,
+                    'launcher': 'local'
+                },
+                {
+                    'name': 'nvgpu',
+                    'scheduler': 'slurm',
+                    'time_limit': '10m',
+                    'environs': [
+                        'builtin',
+                        'PrgEnv-aocc',
+                        'PrgEnv-cray',
+                        'PrgEnv-gnu',
+                        'PrgEnv-nvhpc',
+                        'PrgEnv-nvidia'
+                    ],
+                    'container_platforms': [
+                        {
+                            'type': 'Sarus',
+                        },
+                        {
+                            'type': 'Singularity',
+                        }
+                    ],
+                    'max_jobs': 100,
+                    'extras': {
+                        'cn_memory': 500,
+                    },
+                    'access': ['-pnvgpu'],
+                    'resources': [
+                        {
+                            'name': 'switches',
+                            'options': ['--switches={num_switches}']
+                        },
+                        {
+                            'name': 'memory',
+                            'options': ['--mem={mem_per_node}']
+                        },
+                    ],
+                    'features': ['gpu', 'nvgpu', 'remote'],
+                    'devices': [
+                        {
+                            'type': 'gpu',
+                            'arch': 'sm_80',
+                            'num_devices': 4
+                        }
+                    ],
+                    'launcher': 'srun'
+                },
+                {
+                    'name': 'amdgpu',
+                    'scheduler': 'slurm',
+                    'time_limit': '10m',
+                    'environs': [
+                        'builtin',
+                        'PrgEnv-aocc',
+                        'PrgEnv-cray',
+                        'PrgEnv-gnu',
+                        'PrgEnv-nvhpc',
+                        'PrgEnv-nvidia'
+                    ],
+                    'container_platforms': [
+                        {
+                            'type': 'Sarus',
+                        },
+                        {
+                            'type': 'Singularity',
+                        }
+                    ],
+                    'max_jobs': 100,
+                    'extras': {
+                        'cn_memory': 500,
+                    },
+                    'access': ['-pamdgpu'],
+                    'resources': [
+                        {
+                            'name': 'switches',
+                            'options': ['--switches={num_switches}']
+                        },
+                        {
+                            'name': 'memory',
+                            'options': ['--mem={mem_per_node}']
+                        },
+                    ],
+                    'features': ['gpu', 'amdgpu', 'remote'],
                     'launcher': 'srun'
                 }
             ]
@@ -775,6 +964,7 @@ site_configuration = {
                         'cn_memory': 256,
                     },
                     'access': ['-Cmc', f'--account={osext.osgroup()}'],
+                    'features': ['remote'],
                     'resources': [
                         {
                             'name': 'switches',
@@ -976,7 +1166,10 @@ site_configuration = {
         {
             'name': 'PrgEnv-nvhpc',
             'target_systems': ['hohgant'],
-            'modules': ['cray', 'PrgEnv-nvhpc']
+            'modules': ['cray', 'PrgEnv-nvhpc'],
+            'extras': {
+                'launcher_options': '--mpi=pmi2',
+            },
         },
         {
             'name': 'PrgEnv-nvidia',
@@ -1054,6 +1247,7 @@ site_configuration = {
     ],
     'logging': [
         {
+            'perflog_compat': True,
             'handlers': [
                 {
                     'type': 'file',
@@ -1104,7 +1298,7 @@ site_configuration = {
             'options': [
                 '--unload-module=reframe',
                 '--exec-policy=async',
-                '--strict',
+                '-Sstrict_check=1',
                 '--output=$APPS/UES/$USER/regression/maintenance',
                 '--perflogdir=$APPS/UES/$USER/regression/maintenance/logs',
                 '--stage=$SCRATCH/regression/maintenance/stage',
@@ -1120,7 +1314,7 @@ site_configuration = {
             'options': [
                 '--unload-module=reframe',
                 '--exec-policy=async',
-                '--strict',
+                '-Sstrict_check=1',
                 '--output=$APPS/UES/$USER/regression/production',
                 '--perflogdir=$APPS/UES/$USER/regression/production/logs',
                 '--stage=$SCRATCH/regression/production/stage',
@@ -1135,7 +1329,7 @@ site_configuration = {
             'options': [
                 '--unload-module=reframe',
                 '--exec-policy=async',
-                '--strict',
+                '-Sstrict_check=1',
                 '--prefix=$SCRATCH/$USER/regression/production',
                 '--report-file=$SCRATCH/$USER/regression/production/reports/prod_report_{sessionid}.json',
                 '--save-log-files',
