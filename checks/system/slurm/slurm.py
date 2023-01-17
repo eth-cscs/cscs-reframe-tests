@@ -88,7 +88,7 @@ class EnvironmentVariableCheck(SlurmSimpleBaseCheck):
                      'hohgant:nvgpu']
     executable = '/bin/echo'
     executable_opts = ['$MY_VAR']
-    env_vars = {'MY_VAR': 'TEST123456!'}
+    variables = {'MY_VAR': 'TEST123456!'}
     tags.remove('single-node')
 
     @sanity_function
