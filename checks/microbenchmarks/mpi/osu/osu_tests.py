@@ -37,6 +37,7 @@ class cscs_osu_pt2pt_check(cscs_osu_benchmarks):
     valid_systems = ['daint:gpu', 'daint:mc', 'dom:gpu', 'dom:mc',
                      'eiger:mc', 'pilatus:mc', 'arolla:cn', 'tsa:cn']
     valid_prog_environs = ['PrgEnv-gnu']
+    num_iters = 100
     benchmark_info = parameter([
         ('mpi.pt2pt.osu_bw', 'bandwidth'),
         ('mpi.pt2pt.osu_latency', 'latency')
