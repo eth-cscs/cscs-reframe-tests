@@ -83,9 +83,9 @@ class Cp2kCpuCheck(Cp2kCheck):
                 self.num_cpus_per_task = 16
                 self.num_tasks_per_core = 1
                 self.use_multithreading = False
-                self.variables = {
-                    'MPICH_OFI_STARTUP_CONNECT': '1',
-                    'OMP_NUM_THREADS': '8',
+                self.env_vars = {
+                    'MPICH_OFI_STARTUP_CONNECT': 1,
+                    'OMP_NUM_THREADS': 8,
                     'OMP_PLACES': 'cores',
                     'OMP_PROC_BIND': 'close'
                 }
@@ -99,9 +99,9 @@ class Cp2kCpuCheck(Cp2kCheck):
                 self.num_cpus_per_task = 16
                 self.num_tasks_per_core = 1
                 self.use_multithreading = False
-                self.variables = {
-                    'MPICH_OFI_STARTUP_CONNECT': '1',
-                    'OMP_NUM_THREADS': '8',
+                self.env_vars = {
+                    'MPICH_OFI_STARTUP_CONNECT': 1,
+                    'OMP_NUM_THREADS': 8,
                     'OMP_PLACES': 'cores',
                     'OMP_PROC_BIND': 'close'
                 }
@@ -124,7 +124,7 @@ class Cp2kGpuCheck(Cp2kCheck):
     num_gpus_per_node = 1
     num_tasks_per_node = 6
     num_cpus_per_task = 2
-    variables = {
+    env_vars = {
         'CRAY_CUDA_MPS': '1',
         'OMP_NUM_THREADS': str(num_cpus_per_task)
     }

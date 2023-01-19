@@ -51,10 +51,10 @@ class JacobiNoToolHybrid(rfm.RegressionTest):
 
     @run_before('compile')
     def set_env_variables(self):
-        self.variables = {
+        self.env_vars = {
             'CRAYPE_LINK_TYPE': 'dynamic',
-            'ITERATIONS': str(self.num_iterations),
-            'OMP_NUM_THREADS': str(self.num_cpus_per_task),
+            'ITERATIONS': self.num_iterations,
+            'OMP_NUM_THREADS': self.num_cpus_per_task,
             'OMP_PROC_BIND': 'true',
         }
 

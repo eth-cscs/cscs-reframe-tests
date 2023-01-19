@@ -13,7 +13,7 @@ class CollectivesBaseTest(rfm.RegressionTest):
     def __init__(self, bench_reference):
         self.valid_systems = ['dom:gpu', 'daint:gpu', 'arolla:cn', 'tsa:cn']
         self.valid_prog_environs = ['PrgEnv-gnu']
-        self.variables = {'G2G': '1'}
+        self.env_vars = {'G2G': 1}
         self.executable = 'build/src/comm_overlap_benchmark'
         if self.variant != 'default':
             self.executable_opts = [f'--{self.variant}']
@@ -40,7 +40,7 @@ class CollectivesBaseTest(rfm.RegressionTest):
             self.num_gpus_per_node = 1
             self.num_tasks_per_node = 1
             self.modules = ['craype-accel-nvidia60', 'CMake', 'cdt-cuda']
-            self.variables['MPICH_RDMA_ENABLED_CUDA'] = '1'
+            self.env_vars['MPICH_RDMA_ENABLED_CUDA'] = 1
             self.build_system.config_opts += [
                 '-DCUDA_COMPUTE_CAPABILITY="sm_60"'
             ]

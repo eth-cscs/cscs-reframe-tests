@@ -26,12 +26,12 @@ class BuildahTestBase(rfm.RunOnlyRegressionTest):
         if self.current_system.name in {'eiger', 'pilatus'}:
             self.graphroot = '/dev/shm/$USER/buildah_root'
             self.runroot = '/dev/shm/$USER/buildah_runroot'
-            self.variables = {'XDG_DATA_HOME': '/dev/shm/$USER/xdg_data_home'}
+            self.env_vars = {'XDG_DATA_HOME': '/dev/shm/$USER/xdg_data_home'}
         else:
             self.modules = ['Buildah']
             self.graphroot = '/scratch/local/$USER/buildah_root'
             self.runroot = '/scratch/local/$USER/buildah_runroot'
-            self.variables = {
+            self.env_vars = {
                 'XDG_DATA_HOME': '/scratch/local/$USER/xdg_data_home'
             }
 
@@ -198,7 +198,7 @@ class ContainerMpichOSUTest(rfm.RunOnlyRegressionTest):
                 f'sarus rmi load/library/mpich_osu:{partition_name}'
             ]
         else:
-            self.variables = {
+            self.env_vars = {
                 'SINGULARITY_CACHEDIR': self.stagedir
             }
             self.container_platform.image = 'mpich_osu.sif'

@@ -25,7 +25,7 @@ class BoostPythonBindingsTest(rfm.RegressionTest):
         version_cmd = ('python3 -c \'import sys; '
                        'ver=sys.version_info; '
                        'print(f"{ver.major}{ver.minor}")\'')
-        self.variables = {
+        self.env_vars = {
             'PYTHON_INCLUDE': '$(python3-config --includes)',
             'PYTHON_BOOST_LIB': f'boost_python$({version_cmd})'
         }

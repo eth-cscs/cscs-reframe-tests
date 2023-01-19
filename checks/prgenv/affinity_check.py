@@ -301,8 +301,8 @@ class AffinityOpenMPBase(AffinityTestBase):
 
     @run_before('run')
     def set_omp_vars(self):
-        self.variables = {
-            'OMP_NUM_THREADS': str(self.num_omp_threads),
+        self.env_vars = {
+            'OMP_NUM_THREADS': self.num_omp_threads,
             'OMP_PLACES': self.omp_bind,
             'OMP_PROC_BIND': self.omp_proc_bind,
         }
