@@ -132,11 +132,11 @@ class HPCGCheckMKL(rfm.RegressionTest, HPCGHookMixin):
 
     num_tasks = 0
     problem_size = 104
-    env_vars = {
-        'HUGETLB_VERBOSE': 0,
+    variables = {
+        'HUGETLB_VERBOSE': '0',
         'MPICH_MAX_THREAD_SAFETY': 'multiple',
-        'MPICH_USE_DMAPP_COLL': 1,
-        'PMI_NO_FORK': 1,
+        'MPICH_USE_DMAPP_COLL': '1',
+        'PMI_NO_FORK': '1',
         'KMP_AFFINITY': 'granularity=fine,compact'
     }
 
@@ -251,12 +251,12 @@ class HPCG_GPUCheck(rfm.RunOnlyRegressionTest, HPCGHookMixin):
 
     @run_after('init')
     def set_variables(self):
-        self.env_vars = {
-            'PMI_NO_FORK': 1,
-            'MPICH_USE_DMAPP_COLL': 1,
+        self.variables = {
+            'PMI_NO_FORK': '1',
+            'MPICH_USE_DMAPP_COLL': '1',
             'OMP_SCHEDULE': 'static',
-            'OMP_NUM_THREADS': self.num_cpus_per_task,
-            'HUGETLB_VERBOSE': 0,
+            'OMP_NUM_THREADS': str(self.num_cpus_per_task),
+            'HUGETLB_VERBOSE': '0',
             'HUGETLB_DEFAULT_PAGE_SIZE': '8M',
         }
 
