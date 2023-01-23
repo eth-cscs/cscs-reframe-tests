@@ -117,7 +117,7 @@ class cscs_osu_pt2pt_check(cscs_osu_benchmarks):
                 self.valid_prog_environs = ['PrgEnv-nvidia']
                 self.variables = {'MPICH_RDMA_ENABLED_CUDA': '1'}
 
-        if self.current_system.name in ('arolla', 'tsa'):
+        if self.current_system.name in {'arolla', 'tsa'}:
             num_iters = 100
 
         with contextlib.suppress(KeyError):
