@@ -118,7 +118,7 @@ class cscs_osu_pt2pt_check(cscs_osu_benchmarks):
                 self.env_vars = {'MPICH_RDMA_ENABLED_CUDA': 1}
 
         if self.current_system.name in {'arolla', 'tsa'}:
-            num_iters = 100
+            self.num_iters = 100
 
         with contextlib.suppress(KeyError):
             self.reference = self.allref[self.benchmark_info[0]][build_type]
