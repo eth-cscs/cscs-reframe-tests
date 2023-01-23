@@ -72,7 +72,7 @@ class HelloWorldBaseTest(rfm.RegressionTest):
 
     @run_before('compile')
     def prepare_build(self):
-        self.variables['CRAYPE_LINK_TYPE'] = self.linking
+        self.env_vars['CRAYPE_LINK_TYPE'] = self.linking
         envname = re.sub(r'(PrgEnv-\w+).*', lambda m: m.group(1),
                          self.current_environ.name)
         try:
@@ -209,7 +209,7 @@ class HelloWorldTestOpenMP(HelloWorldBaseTest, workaround_22_08_1_1):
     def set_omp_env_variable(self):
         # On SLURM there is no need to set OMP_NUM_THREADS if one defines
         # num_cpus_per_task, but adding for completeness and portability
-        self.variables['OMP_NUM_THREADS'] = str(self.num_cpus_per_task)
+        self.env_vars['OMP_NUM_THREADS'] = self.num_cpus_per_task
 
 
 @rfm.simple_test
@@ -261,4 +261,4 @@ class HelloWorldTestMPIOpenMP(HelloWorldBaseTest, workaround_22_08_1_1):
     def set_omp_env_variable(self):
         # On SLURM there is no need to set OMP_NUM_THREADS if one defines
         # num_cpus_per_task, but adding for completeness and portability
-        self.variables['OMP_NUM_THREADS'] = str(self.num_cpus_per_task)
+        self.env_vars['OMP_NUM_THREADS'] = self.num_cpus_per_task

@@ -34,9 +34,9 @@ class OpenACCFortranCheck(rfm.RegressionTest):
     def set_variables(self):
         if self.current_system.name in ['arolla', 'tsa']:
             self.exclusive_access = True
-            self.variables = {
+            self.env_vars = {
                 'CRAY_ACCEL_TARGET': 'nvidia70',
-                'MV2_USE_CUDA': '1'
+                'MV2_USE_CUDA': 1
             }
 
     @run_before('compile')

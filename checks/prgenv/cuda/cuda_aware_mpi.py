@@ -51,7 +51,7 @@ class cuda_aware_mpi_check(rfm.CompileOnlyRegressionTest):
         if self.current_environ.name == 'PrgEnv-pgi':
             self.build_system.cflags = ['-std=c99', ' -O3']
         elif self.current_environ.name == 'PrgEnv-nvidia':
-            self.variables = {
+            self.env_vars = {
                 'CUDA_HOME': '$CRAY_NVIDIA_PREFIX/cuda'
             }
 

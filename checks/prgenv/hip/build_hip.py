@@ -74,7 +74,7 @@ class HelloHip(rfm.RegressionTest):
 
     @run_before('compile')
     def set_env(self):
-        self.variables = {'HIP_PATH': f'{self.hip_path}'}
+        self.env_vars = {'HIP_PATH': f'{self.hip_path}'}
         self.build_system.cxx = os.path.join(self.hip_path, 'bin', 'hipcc')
 
     @sanity_function
