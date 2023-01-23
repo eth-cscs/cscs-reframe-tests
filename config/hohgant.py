@@ -156,7 +156,8 @@ site_configuration = {
             },
         },
     ],
-    'modes': {
+    'modes': [
+        {
             'name': 'production',
             'options': [
                 '--unload-module=reframe',
@@ -170,4 +171,5 @@ site_configuration = {
             ],
             'target_systems': ['hohgant'],
         }
+    ]
 }
