@@ -37,8 +37,6 @@ class cscs_osu_pt2pt_check(cscs_osu_benchmarks):
     valid_systems = ['daint:gpu', 'daint:mc', 'dom:gpu', 'dom:mc',
                      'eiger:mc', 'pilatus:mc', 'arolla:cn', 'tsa:cn']
     valid_prog_environs = ['PrgEnv-gnu']
-    if self.current_system.name in ('arolla', 'tsa'):
-        num_iters = 100
     benchmark_info = parameter([
         ('mpi.pt2pt.osu_bw', 'bandwidth'),
         ('mpi.pt2pt.osu_latency', 'latency')
@@ -118,6 +116,9 @@ class cscs_osu_pt2pt_check(cscs_osu_benchmarks):
             if self.current_system.name in ('daint', 'dom'):
                 self.valid_prog_environs = ['PrgEnv-nvidia']
                 self.variables = {'MPICH_RDMA_ENABLED_CUDA': '1'}
+
+        if self.current_system.name in ('arolla', 'tsa'):
+            num_iters = 100
 
         with contextlib.suppress(KeyError):
             self.reference = self.allref[self.benchmark_info[0]][build_type]
