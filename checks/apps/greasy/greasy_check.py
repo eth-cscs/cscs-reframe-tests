@@ -81,9 +81,9 @@ class GREASYCheck(rfm.RegressionTest):
     def set_environment_variables(self):
         # On SLURM there is no need to set OMP_NUM_THREADS if one defines
         # num_cpus_per_task, but adding for completeness and portability
-        self.variables = {
-            'OMP_NUM_THREADS': str(self.num_cpus_per_task),
-            'GREASY_NWORKERS_PER_NODE': str(self.workers_per_node),
+        self.env_vars = {
+            'OMP_NUM_THREADS': self.num_cpus_per_task,
+            'GREASY_NWORKERS_PER_NODE': self.workers_per_node,
             'GREASY_LOGFILE': self.greasy_logfile
         }
 
@@ -96,9 +96,9 @@ class GREASYCheck(rfm.RegressionTest):
     @run_before('run')
     def daint_dom_gpu_specific_workaround(self):
         if self.current_partition.fullname in ['daint:gpu', 'dom:gpu']:
-            self.variables['CRAY_CUDA_MPS'] = '1'
-            self.variables['CUDA_VISIBLE_DEVICES'] = '0'
-            self.variables['GPU_DEVICE_ORDINAL'] = '0'
+            self.env_vars['CRAY_CUDA_MPS'] = 1
+            self.env_vars['CUDA_VISIBLE_DEVICES'] = 0
+            self.env_vars['GPU_DEVICE_ORDINAL'] = 0
             self.extra_resources = {
                 'gres': {
                     'gres': 'gpu:0,craynetwork:4'

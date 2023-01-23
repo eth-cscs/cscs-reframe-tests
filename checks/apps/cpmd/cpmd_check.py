@@ -84,8 +84,8 @@ class CPMDCheck(rfm.RunOnlyRegressionTest):
         # set architecture for GPU partition (no auto-detection)
         if self.current_partition.fullname in ['daint:gpu', 'dom:gpu']:
             arch = 'sm_60'
-            self.variables = {
-                'CRAY_CUDA_MPS': '1'
+            self.env_vars = {
+                'CRAY_CUDA_MPS': 1
             }
         else:
             arch = proc.arch

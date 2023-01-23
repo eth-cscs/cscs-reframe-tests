@@ -214,7 +214,7 @@ class cscs_gromacs_check(gromacs_check):
         # Setup GPU run
         if self.nb_impl == 'gpu':
             self.num_gpus_per_node = 1
-            self.variables = {'CRAY_CUDA_MPS': '1'}
+            self.env_vars = {'CRAY_CUDA_MPS': 1}
 
         proc = self.current_partition.processor
 

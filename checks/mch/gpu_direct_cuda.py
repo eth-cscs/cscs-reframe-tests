@@ -18,13 +18,13 @@ class GpuDirectCudaCheck(rfm.RegressionTest):
         self.build_system.ldflags = ['-lcublas', '-lcudart']
         if self.current_system.name in ['daint', 'dom']:
             self.modules = ['craype-accel-nvidia60', 'cdt-cuda']
-            self.variables = {'MPICH_RDMA_ENABLED_CUDA': '1'}
+            self.env_vars = {'MPICH_RDMA_ENABLED_CUDA': 1}
             self.build_system.cxxflags = ['-ccbin CC', '-arch=sm_60']
         elif self.current_system.name in ['arolla', 'tsa']:
             self.exclusive_access = True
             self.valid_prog_environs = ['PrgEnv-gnu', 'PrgEnv-pgi']
-            self.variables = {
-                'G2G': '1',
+            self.env_vars = {
+                'G2G': 1,
             }
             self.build_system.cxxflags = ['-ccbin', 'mpicxx', '-arch=sm_70']
 

@@ -69,9 +69,9 @@ class QuantumESPRESSOCpuCheck(QuantumESPRESSOCheck):
                 self.num_tasks_per_node = 16
                 self.num_cpus_per_task = 16
                 self.num_tasks_per_core = 1
-                self.variables = {
-                    'MPICH_OFI_STARTUP_CONNECT': '1',
-                    'OMP_NUM_THREADS': '8',
+                self.env_vars = {
+                    'MPICH_OFI_STARTUP_CONNECT': 1,
+                    'OMP_NUM_THREADS': 8,
                     'OMP_PLACES': 'cores',
                     'OMP_PROC_BIND': 'close'
                 }
@@ -86,9 +86,9 @@ class QuantumESPRESSOCpuCheck(QuantumESPRESSOCheck):
                 self.num_tasks_per_node = 16
                 self.num_cpus_per_task = 16
                 self.num_tasks_per_core = 1
-                self.variables = {
-                    'MPICH_OFI_STARTUP_CONNECT': '1',
-                    'OMP_NUM_THREADS': '8',
+                self.env_vars = {
+                    'MPICH_OFI_STARTUP_CONNECT': 1,
+                    'OMP_NUM_THREADS': 8,
                     'OMP_PLACES': 'cores',
                     'OMP_PROC_BIND': 'close'
                 }

@@ -16,9 +16,9 @@ class GpuDirectAccCheck(rfm.RegressionTest):
         self.valid_prog_environs = ['PrgEnv-cray', 'PrgEnv-pgi',
                                     'PrgEnv-nvidia']
         if self.current_system.name in ['daint', 'dom']:
-            self.variables = {
-                'MPICH_RDMA_ENABLED_CUDA': '1',
-                'CRAY_CUDA_MPS': '1',
+            self.env_vars = {
+                'MPICH_RDMA_ENABLED_CUDA': 1,
+                'CRAY_CUDA_MPS': 1,
             }
             self.num_tasks = 2
             self.num_gpus_per_node = 1
@@ -28,8 +28,8 @@ class GpuDirectAccCheck(rfm.RegressionTest):
             self.num_tasks_per_node = 8
         if self.current_system.name in ['arolla', 'tsa']:
             self.exclusive_access = True
-            self.variables = {
-                'G2G': '1'
+            self.env_vars = {
+                'G2G': 1
             }
             self.num_tasks = 8
             self.num_gpus_per_node = 8
@@ -70,4 +70,4 @@ class GpuDirectAccCheck(rfm.RegressionTest):
             return
 
         if (self.current_environ.name == 'PrgEnv-pgi' and cdt == '20.08'):
-            self.variables['CUDA_HOME'] = '$CUDATOOLKIT_HOME'
+            self.env_vars['CUDA_HOME'] = '$CUDATOOLKIT_HOME'

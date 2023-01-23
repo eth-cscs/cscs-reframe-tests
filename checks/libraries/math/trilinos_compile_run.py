@@ -43,4 +43,4 @@ class TrilinosTest(rfm.RegressionTest):
 
     @run_before('run')
     def prepare_run(self):
-        self.variables = {'OMP_NUM_THREADS': '1'}
+        self.env_vars = {'OMP_NUM_THREADS': 1}

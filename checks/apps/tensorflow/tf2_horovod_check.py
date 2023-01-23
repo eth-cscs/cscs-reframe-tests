@@ -53,9 +53,9 @@ class cscs_tensorflow_horovod_check(tensorflow_cnn_check):
                 '*': self.allref[self.num_nodes]['sm_60']
             }
 
-        self.variables = {
+        self.env_vars = {
             'NCCL_DEBUG': 'INFO',
             'NCCL_IB_HCA': 'ipogif0',
-            'NCCL_IB_CUDA_SUPPORT': '1',
-            'OMP_NUM_THREADS': str(self.num_cpus_per_task)
+            'NCCL_IB_CUDA_SUPPORT': 1,
+            'OMP_NUM_THREADS': self.num_cpus_per_task
         }
