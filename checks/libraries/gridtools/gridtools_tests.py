@@ -81,8 +81,8 @@ class GridToolsCPURunCheck(GridToolsRunCheck):
     descr = 'GridTools CPU run test'
     num_gpus_per_node = 0
     gridtools_binaries = fixture(GridToolsBuildCheck,
-                         scope='environment',
-                         variants={'target': lambda x: x=='cpu'})
+                                 scope='environment',
+                                 variants={'target': lambda x: x=='cpu'})
     variant_data = {
         'horizontal_diffusion/cpu_kfirst_double': {
             'reference': {
@@ -145,8 +145,8 @@ class GridToolsGPURunCheck(GridToolsRunCheck):
     descr = 'GridTools GPU run test'
     num_gpus_per_node = 1
     gridtools_binaries = fixture(GridToolsBuildCheck,
-                         scope='environment',
-                         variants={'target': lambda x: x=='gpu'})
+                                 scope='environment',
+                                 variants={'target': lambda x: x=='gpu'})
     variant_data = {
         'horizontal_diffusion/gpu_double': {
             'reference': {
