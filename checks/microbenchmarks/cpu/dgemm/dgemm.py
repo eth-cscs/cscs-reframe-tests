@@ -69,7 +69,7 @@ class DGEMMTest(rfm.RegressionTest):
     def prepare_run(self):
         self.skip_if_no_procinfo()
         self.num_cpus_per_task = self.current_partition.processor.num_cores
-        self.variables = {
+        self.env_vars = {
             'OMP_NUM_THREADS': str(self.num_cpus_per_task),
             'OMP_BIND': 'cores',
             'OMP_PROC_BIND': 'spread',
