@@ -10,38 +10,33 @@ import reframe.utility.sanity as sn
 
 @rfm.simple_test
 class OpenCLCheck(rfm.RegressionTest):
-    valid_systems = ['daint:gpu', 'dom:gpu']
-    valid_prog_environs = ['PrgEnv-cray', 'PrgEnv-pgi',
-                           'PrgEnv-nvidia']
-    build_system = 'Make'
+    valid_systems = ['daint:gpu', 'dom:gpu', 'hohgant:nvgpu']
+    valid_prog_environs = ['PrgEnv-cray', 'PrgEnv-nvidia']
+    build_system = 'SingleSource'
+    sourcepath = 'vecAdd.c'
     sourcesdir = 'src/opencl'
     num_gpus_per_node = 1
     executable = 'vecAdd'
     maintainers = ['TM', 'SK']
     tags = {'production', 'craype'}
 
+    @run_after('init')
+    def restrict_environments_hohgant(self):
+        if self.current_system.name not in {'dom', 'daint'}:
+            self.valid_prog_environs = ['PrgEnv-nvidia']
+
     @run_after('setup')
-    def setup_nvidia(self):
-        if self.current_environ.name == 'PrgEnv-nvidia':
-            # This is used by the Makefile for the OpenCL headers
-            self.env_vars.update(
-                {'CUDATOOLKIT_HOME': '$CRAY_NVIDIA_PREFIX/cuda'})
-        else:
+    def setup_modules(self):
+        if (self.current_environ.name == 'PrgEnv-cray' and
+            self.current_system.name in {'dom', 'daint'}):
             self.modules = ['craype-accel-nvidia60']
 
     @run_before('compile')
     def setflags(self):
-        if self.current_environ.name == 'PrgEnv-pgi':
-            self.build_system.cflags = ['-mmmx']
-
-    @run_before('compile')
-    def cdt2006_pgi_workaround(self):
-        cdt = osext.cray_cdt_version()
-        if not cdt:
-            return
-
-        if (self.current_environ.name == 'PrgEnv-pgi' and cdt == '20.08'):
-            self.env_vars.update({'CUDA_HOME': '$CUDATOOLKIT_HOME'})
+        include_path = '$CRAY_NVIDIA_PREFIX/cuda/include'
+        libpath = '$CRAY_NVIDIA_PREFIX/cuda/lib64'
+        self.build_system.cflags = [f'-I{include_path}']
+        self.build_system.ldflags = [f'-L{libpath}', '-lOpenCL']
 
     @run_before('sanity')
     def set_sanity(self):
