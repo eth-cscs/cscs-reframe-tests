@@ -70,7 +70,7 @@ class cscs_amber_check(amber_nve_check):
             'mpi': {
                 4: ['eiger:mc', 'pilatus:mc'],
                 6: ['daint:mc', 'dom:mc'],
-                8: ['pilatus:mc'],
+                8: ['eiger:mc', 'pilatus:mc'],
                 16: ['daint:mc']
             }
         }
