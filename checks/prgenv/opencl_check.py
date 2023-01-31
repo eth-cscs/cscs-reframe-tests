@@ -4,7 +4,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import reframe as rfm
-import reframe.utility.osext as osext
 import reframe.utility.sanity as sn
 
 
@@ -20,23 +19,27 @@ class OpenCLCheck(rfm.RegressionTest):
     maintainers = ['TM', 'SK']
     tags = {'production', 'craype'}
 
-    @run_after('init')
-    def restrict_environments_hohgant(self):
-        if self.current_system.name not in {'dom', 'daint'}:
-            self.valid_prog_environs = ['PrgEnv-nvidia']
-
     @run_after('setup')
     def setup_modules(self):
-        if (self.current_environ.name == 'PrgEnv-cray' and
-            self.current_system.name in {'dom', 'daint'}):
-            self.modules = ['craype-accel-nvidia60']
+        if self.current_system.name in {'dom', 'daint'}:
+            if self.current_environ.name == 'PrgEnv-nvidia':
+                self.modules = ['cudatoolkit'] 
+            else:
+                self.modules = ['craype-accel-nvidia60']
+        else:
+            self.modules = ['cudatoolkit', 'craype-accel-nvidia80']
 
     @run_before('compile')
     def setflags(self):
-        include_path = '$CRAY_NVIDIA_PREFIX/cuda/include'
-        libpath = '$CRAY_NVIDIA_PREFIX/cuda/lib64'
-        self.build_system.cflags = [f'-I{include_path}']
-        self.build_system.ldflags = [f'-L{libpath}', '-lOpenCL']
+        if self.current_system.name in {'dom', 'daint'}:
+            include_path = '$CUDATOOLKIT_HOME/cuda/include'
+            libpath = '$CUDATOOLKIT_HOME/lib64'
+            self.build_system.cflags = [f'-I{include_path}']
+            self.build_system.ldflags = [f'-L{libpath}', '-lOpenCL']
+        else:
+            self.build_system.cflags = ['$CRAY_CUDATOOLKIT_INCLUDE_OPTS']
+            self.build_system.ldflags = ['$CRAY_CUDATOOLKIT_POST_LINK_OPTS',
+                                         '-lOpenCL', '-lstdc++']
 
     @run_before('sanity')
     def set_sanity(self):
