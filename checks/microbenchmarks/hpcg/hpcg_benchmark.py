@@ -132,7 +132,7 @@ class HPCGCheckMKL(rfm.RegressionTest, HPCGHookMixin):
 
     num_tasks = 0
     problem_size = 104
-    variables = {
+    env_vars = {
         'HUGETLB_VERBOSE': '0',
         'MPICH_MAX_THREAD_SAFETY': 'multiple',
         'MPICH_USE_DMAPP_COLL': '1',
@@ -251,7 +251,7 @@ class HPCG_GPUCheck(rfm.RunOnlyRegressionTest, HPCGHookMixin):
 
     @run_after('init')
     def set_variables(self):
-        self.variables = {
+        self.env_vars = {
             'PMI_NO_FORK': '1',
             'MPICH_USE_DMAPP_COLL': '1',
             'OMP_SCHEDULE': 'static',

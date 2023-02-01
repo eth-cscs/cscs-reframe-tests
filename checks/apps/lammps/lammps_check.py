@@ -54,7 +54,7 @@ class LAMMPSGPUCheck(LAMMPSCheck):
     valid_systems = ['daint:gpu']
     executable = 'lmp_mpi'
     executable_opts = ['-sf gpu', '-pk gpu 1', '-in in.lj.gpu']
-    variables = {'CRAY_CUDA_MPS': '1'}
+    env_vars = {'CRAY_CUDA_MPS': 1}
     num_gpus_per_node = 1
     refs_by_scale = {
         'small': {

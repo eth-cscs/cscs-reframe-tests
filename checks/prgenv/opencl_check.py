@@ -24,7 +24,7 @@ class OpenCLCheck(rfm.RegressionTest):
     def setup_nvidia(self):
         if self.current_environ.name == 'PrgEnv-nvidia':
             # This is used by the Makefile for the OpenCL headers
-            self.variables.update(
+            self.env_vars.update(
                 {'CUDATOOLKIT_HOME': '$CRAY_NVIDIA_PREFIX/cuda'})
         else:
             self.modules = ['craype-accel-nvidia60']
@@ -41,7 +41,7 @@ class OpenCLCheck(rfm.RegressionTest):
             return
 
         if (self.current_environ.name == 'PrgEnv-pgi' and cdt == '20.08'):
-            self.variables.update({'CUDA_HOME': '$CUDATOOLKIT_HOME'})
+            self.env_vars.update({'CUDA_HOME': '$CUDATOOLKIT_HOME'})
 
     @run_before('sanity')
     def set_sanity(self):

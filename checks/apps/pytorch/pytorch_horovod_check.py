@@ -43,11 +43,11 @@ class cscs_pytorch_horovod_check(pytorch_cnn_check):
         proc = self.current_partition.processor
         self.num_tasks = self.num_nodes * self.num_tasks_per_node
         self.num_cpus_per_task = proc.num_cores
-        self.variables = {
+        self.env_vars = {
             'NCCL_DEBUG': 'INFO',
             'NCCL_IB_HCA': 'ipogif0',
-            'NCCL_IB_CUDA_SUPPORT': '1',
-            'OMP_NUM_THREADS': str(self.num_cpus_per_task)
+            'NCCL_IB_CUDA_SUPPORT': 1,
+            'OMP_NUM_THREADS': self.num_cpus_per_task
         }
         with contextlib.suppress(KeyError):
             ref_vars = self.allref['sm_60'][self.model]

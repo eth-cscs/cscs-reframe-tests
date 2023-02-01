@@ -135,8 +135,8 @@ class RunErt_Base(rfm.RegressionTest):
 
     @run_before('run')
     def set_run_cmds(self):
-        self.variables = {
-            'OMP_NUM_THREADS': str(self.num_cpus_per_task),
+        self.env_vars = {
+            'OMP_NUM_THREADS': self.num_cpus_per_task,
             'OMP_PROC_BIND': 'close',
             'OMP_PLACES': 'cores',
         }

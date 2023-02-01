@@ -32,8 +32,8 @@ class RRTMGPTest(rfm.RegressionTest):
             'cd test'
         ]
         self.modules = ['craype-accel-nvidia60', 'cray-netcdf']
-        self.variables = {
-            'NCOL': '500',
+        self.env_vars = {
+            'NCOL': 500,
             'INIFILE': 'openacc-solvers-lw'
         }
         values = sn.extractall(r'.*\[\S+, (\S+)\]', self.stdout, 1, float)

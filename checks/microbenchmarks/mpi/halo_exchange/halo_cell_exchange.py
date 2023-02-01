@@ -142,7 +142,7 @@ class HaloCellExchangeTest(rfm.RegressionTest):
     def pgi_workaround(self):
         if self.current_system.name in ['daint', 'dom']:
             if self.current_environ.name == 'PrgEnv-pgi':
-                self.variables = {
+                self.env_vars = {
                     'CUDA_HOME': '$CUDATOOLKIT_HOME',
                 }
         if self.current_environ.name == 'PrgEnv-nvidia':

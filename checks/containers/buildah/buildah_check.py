@@ -210,7 +210,7 @@ class ContainerMpichOSUTest(rfm.RunOnlyRegressionTest):
                 f'sarus rmi load/library/mpich_osu:{partition_name}'
             ]
         else:
-            self.env_vars= {
+            self.env_vars = {
                 'SINGULARITY_CACHEDIR': self.stagedir
             }
             self.container_platform.image = 'mpich_osu.sif'

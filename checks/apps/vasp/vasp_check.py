@@ -108,16 +108,16 @@ class VASPCheck(rfm.RunOnlyRegressionTest):
         self.num_tasks_per_node = proc.num_sockets
         self.num_cpus_per_task = proc.num_cores // self.num_tasks_per_node
         self.num_tasks = self.num_nodes * self.num_tasks_per_node
-        self.variables = {
-            'OMP_NUM_THREADS': str(self.num_cpus_per_task),
+        self.env_vars = {
+            'OMP_NUM_THREADS': self.num_cpus_per_task,
             'OMP_PLACES': 'cores',
             'OMP_PROC_BIND': 'close'
         }
 
         # custom settings for selected architectures
         if arch == 'zen2':
-            self.variables.update({
-                'MPICH_OFI_STARTUP_CONNECT': '1'
+            self.env_vars.update({
+                'MPICH_OFI_STARTUP_CONNECT': 1
             })
 
         # setup performance references
