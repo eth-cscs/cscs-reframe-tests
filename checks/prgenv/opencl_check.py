@@ -26,7 +26,7 @@ class OpenCLCheck(rfm.RegressionTest):
                 self.modules = ['cudatoolkit'] 
             else:
                 self.modules = ['craype-accel-nvidia60']
-        else:
+        elif self.current_system.name in {'hohgant'}:
             self.modules = ['cudatoolkit', 'craype-accel-nvidia80']
 
     @run_before('compile')
