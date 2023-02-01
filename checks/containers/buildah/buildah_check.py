@@ -221,7 +221,7 @@ class ContainerMpichOSUTest(rfm.RunOnlyRegressionTest):
 
     @run_after('setup')
     def set_launcher_options(self):
-        if self.current_system.name not in {'dom', 'daint'}: 
+        if self.current_system.name in {'hohgant'}: 
             self.job.launcher.options = ['--mpi=pmi2']
 
     @sanity_function
