@@ -8,7 +8,7 @@ from reframe.core.backends import getlauncher
 
 class BuildahTestBase(rfm.RunOnlyRegressionTest):
     valid_systems = ['dom:gpu', 'dom:mc', 'daint:gpu', 'daint:mc',
-            'eiger:mc', 'pilatus:mc', 'hohgant:cpu', 'hohgant:nvgpu']
+            'eiger:mc', 'pilatus:mc', 'hohgant:nvgpu']
     valid_prog_environs = ['builtin']
     num_tasks = 1
     num_nodes = 1
