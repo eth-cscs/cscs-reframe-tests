@@ -9,13 +9,9 @@ import reframe as rfm
 import reframe.utility.sanity as sn
 
 
-@rfm.simple_test
 class GridToolsBuildCheck(rfm.CompileOnlyRegressionTest):
     target = parameter(['cpu', 'gpu'])
-    valid_prog_environs = ['builtin']
     modules = ['CMake', 'Boost']
-    valid_systems = ['daint:gpu', 'dom:gpu']
-
     sourcesdir = 'https://github.com/GridTools/gridtools.git'
     build_system = 'CMake'
     postbuild_cmds = ['ls tests/regression/']
@@ -23,10 +19,7 @@ class GridToolsBuildCheck(rfm.CompileOnlyRegressionTest):
     maintainers = ['CB']
 
     @run_after('init')
-    def adapt_valid_systems_and_descr(self):
-        if self.target == 'cpu':
-            self.valid_systems += ['daint:mc', 'dom:mc']
-
+    def adapt_descr(self):
         self.descr = f'GridTools {self.target} build test'
 
     @run_before('compile')
@@ -87,6 +80,9 @@ class GridToolsCPURunCheck(GridToolsRunCheck):
                          'horizontal_diffusion/cpu_ifirst_double'])
     descr = 'GridTools CPU run test'
     num_gpus_per_node = 0
+    gridtools_binaries = fixture(GridToolsBuildCheck,
+                                 scope='environment',
+                                 variants={'target': lambda x: x=='cpu'})
     variant_data = {
         'horizontal_diffusion/cpu_kfirst_double': {
             'reference': {
@@ -124,23 +120,16 @@ class GridToolsCPURunCheck(GridToolsRunCheck):
     tags = {'scs', 'benchmark'}
     maintainers = ['CB']
 
-    @require_deps
-    def set_executable(self, GridToolsBuildCheck_cpu):
-        self.executable = os.path.join(
-            GridToolsBuildCheck_cpu().stagedir,
-            'tests', 'regression', 'perftests'
-        )
-
     @run_after('init')
     def adapt_valid_systems(self):
         self.valid_systems += ['daint:mc', 'dom:mc']
 
-    @run_after('init')
-    def set_dependencies(self):
-        self.depends_on('GridToolsBuildCheck_cpu')
-
     @run_before('run')
     def set_executable_opts(self):
+        self.executable = os.path.join(
+            self.gridtools_binaries.stagedir,
+            'tests', 'regression', 'perftests'
+        )
         self.executable_opts = ['256', '256', '80', '3',
                                 f'--gtest_filter={self.variant}*']
 
@@ -155,6 +144,9 @@ class GridToolsGPURunCheck(GridToolsRunCheck):
                          'horizontal_diffusion/gpu_horizontal_double'])
     descr = 'GridTools GPU run test'
     num_gpus_per_node = 1
+    gridtools_binaries = fixture(GridToolsBuildCheck,
+                                 scope='environment',
+                                 variants={'target': lambda x: x=='gpu'})
     variant_data = {
         'horizontal_diffusion/gpu_double': {
             'reference': {
@@ -181,19 +173,12 @@ class GridToolsGPURunCheck(GridToolsRunCheck):
     tags = {'scs', 'benchmark'}
     maintainers = ['CB']
 
-    @require_deps
-    def set_executable(self, GridToolsBuildCheck_gpu):
-        self.executable = os.path.join(
-            GridToolsBuildCheck_gpu().stagedir,
-            'tests', 'regression', 'perftests'
-        )
-
-    @run_after('init')
-    def set_dependencies(self):
-        self.depends_on('GridToolsBuildCheck_gpu')
-
     @run_before('run')
     def set_executable_opts(self):
+        self.executable = os.path.join(
+            self.gridtools_binaries.stagedir,
+            'tests', 'regression', 'perftests'
+        )
         self.executable_opts = ['512', '512', '160', '3',
                                 f'--gtest_filter={self.variant}*']
 
