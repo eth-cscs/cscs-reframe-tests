@@ -4,7 +4,7 @@ import reframe.utility.sanity as sn
 
 @rfm.simple_test
 class SarusCudaNBodyCheck(rfm.RunOnlyRegressionTest):
-    valid_systems = ['+nvgpu']
+    valid_systems = ['dom:gpu', 'daint:gpu', 'hohgant:nvgpu']
     valid_prog_environs = ['builtin']
     sourcesdir = None
     container_platform = 'Sarus'
@@ -12,12 +12,18 @@ class SarusCudaNBodyCheck(rfm.RunOnlyRegressionTest):
     num_tasks_per_node = 1
     reference = {
         '*': {
-            'gflops': (2730., -0.15, None, 'Gflop/s')
+            'gflops': (2860., -0.10, None, 'Gflop/s')
         },
         'hohgant:nvgpu': {
-            'gflops': (12470., -0.20, None, 'Gflop/s')
+            'gflops': (30900., -0.10, None, 'Gflop/s')
         }
     }
+
+    image = variable(
+        str, value='nvcr.io/nvidia/k8s/cuda-sample:nbody-cuda11.7.1'
+    )
+
+    num_bodies_per_gpu = variable(int, value=200000)
 
     maintainers = ['amadonna', 'taliaga']
     tags = {'production'}
@@ -31,12 +37,12 @@ class SarusCudaNBodyCheck(rfm.RunOnlyRegressionTest):
 
     @run_after('setup')
     def setup_executable(self):
-        nbody_exec = '/usr/local/cuda/samples/bin/x86_64/linux/release/nbody'
-        self.container_platform.image = 'ethcscs/cudasamples:8.0'
+        nbody_exec = '/cuda-samples/nbody'
+        self.container_platform.image = self.image 
         self.prerun_cmds = ['sarus --version', 'unset XDG_RUNTIME_DIR']
         self.container_platform.command = (
             f'{nbody_exec} -benchmark -fp64 '
-            f'-numbodies={200000 * self.gpu_count} ' 
+            f'-numbodies={self.num_bodies_per_gpu * self.gpu_count} ' 
             f'-numdevices={self.gpu_count}'
         )
 
