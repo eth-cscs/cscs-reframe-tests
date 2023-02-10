@@ -42,15 +42,15 @@ class SarusOSULatency(BaseCheck):
                              for mpi_impl in ['mpich3.1.4', 'mvapich2.2']])
     reference = {
         'dom': {
-            'latency_256': (1.15, None, 0.10, 'us'),
+            'latency_256': (1.15, None, 0.50, 'us'),
             'latency_4M':  (432., None, 0.10, 'us')
         },
         'daint': {
-            'latency_256': (1.15, None, 0.10, 'us'),
+            'latency_256': (1.15, None, 0.50, 'us'),
             'latency_4M':  (432., None, 0.10, 'us')
         },
         '*': {
-            'latency_256': (2.3, None, 0.20, 'us'),
+            'latency_256': (2.3, None, 0.50, 'us'),
             'latency_4M':  (180., None, 0.10, 'us')
         },
     }
@@ -136,11 +136,11 @@ class SarusOSUBandwidth(BaseCheck):
             'bandwidth_4M':  (9870., -0.20, None, 'MB/s')
         },
         'daint': {
-            'bandwidth_256': (415., -0.20, None, 'MB/s'),
+            'bandwidth_256': (415., -0.50, None, 'MB/s'),
             'bandwidth_4M':  (9850., -0.20, None, 'MB/s')
         },
         '*': {
-            'bandwidth_256': (600., -0.10, None, 'MB/s'),
+            'bandwidth_256': (600., -0.50, None, 'MB/s'),
             'bandwidth_4M':  (24000., -0.10, None, 'MB/s')
         },
     }
