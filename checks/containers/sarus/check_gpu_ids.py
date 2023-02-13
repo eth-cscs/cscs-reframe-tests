@@ -37,7 +37,7 @@ class SarusNvidiaSmiCheck(BaseCheck):
         abs_dirname = os.path.abspath(os.path.dirname(__file__))
         self.executable = 'python'
         self.executable_opts = [
-            f'{abs_dirname}/compare_output_of_native_and_shifter_nvidia_smi.py'
+            f'{abs_dirname}/compare_output_of_native_and_sarus_nvidia_smi.py'
         ]
 
 

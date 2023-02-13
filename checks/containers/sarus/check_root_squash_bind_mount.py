@@ -9,7 +9,7 @@ import reframe.utility.osext as osext
 @rfm.simple_test
 class SarusRootSquashBindMount(rfm.RunOnlyRegressionTest):
     valid_systems = ['dom:gpu', 'dom:mc', 'daint:gpu', 'daint:mc',
-                     'eiger:mc', 'pilatus:mc']
+            'eiger:mc', 'pilatus:mc', 'hohgant:nvgpu']
     valid_prog_environs = ['builtin']
     sourcesdir = None
     container_platform = 'Sarus'
@@ -25,7 +25,7 @@ class SarusRootSquashBindMount(rfm.RunOnlyRegressionTest):
             prefix='sarus-root-squash-reframe-test-', dir=os.environ['HOME'])
         self.prerun_cmds = [
             f'echo "CHECK_SUCCESSFUL" > {self.test_dir}/test-file',
-            'sarus --version'
+            'sarus --version', 'unset XDG_RUNTIME_DIR'
         ]
         self.container_platform.mount_points = [
             (self.test_dir, '/reframe-test')

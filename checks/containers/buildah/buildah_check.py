@@ -165,14 +165,8 @@ class ContainerMpichOSUTest(rfm.RunOnlyRegressionTest):
         'dom:mc': {
             'bw': (9528.4, -0.10, None, 'MB/s')
         },
-        'eiger:mc': {
-            'bw': (12240.0, -0.10, None, 'MB/s')
-        },
-        'pilatus:mc': {
-            'bw': (12240.0, -0.10, None, 'MB/s')
-        },
-        'hohgant:nvgpu': {
-            'bw': (12240.0, -0.10, None, 'MB/s')
+        '*': {
+            'bw': (24000.0, -0.10, None, 'MB/s')
         },
     }
     image_path = variable(str)

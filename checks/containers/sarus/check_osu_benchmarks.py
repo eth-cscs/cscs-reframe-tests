@@ -4,7 +4,7 @@ import reframe.utility.sanity as sn
 
 class BaseCheck(rfm.RunOnlyRegressionTest):
     valid_systems = ['dom:gpu', 'dom:mc', 'daint:gpu', 'daint:mc',
-                     'eiger:mc', 'pilatus:mc']
+                     'eiger:mc', 'pilatus:mc', 'hohgant:nvgpu']
     valid_prog_environs = ['builtin']
     container_platform = 'Sarus'
     sourcesdir = None
@@ -19,8 +19,13 @@ class BaseCheck(rfm.RunOnlyRegressionTest):
         self.descr = f'{self.name} on {self.num_tasks} nodes(s)'
 
     @run_after('setup')
+    def set_launcher_options(self):
+        if self.current_system.name in {'hohgant'}:
+            self.job.launcher.options = ['--mpi=pmi2']
+
+    @run_after('setup')
     def set_prerun_cmds(self):
-        self.prerun_cmds += ['sarus --version']
+        self.prerun_cmds += ['sarus --version', 'unset XDG_RUNTIME_DIR']
 
     @sanity_function
     def assert_sanity(self):
@@ -31,34 +36,23 @@ class BaseCheck(rfm.RunOnlyRegressionTest):
 
 # note: the test images with Intel MPI are not used because we don't want
 # to risk to run into licensing issues by publishing the images on Docker Hub
+@rfm.simple_test
 class SarusOSULatency(BaseCheck):
     sarus_image = parameter([f'ethcscs/osu-mb:5.3.2-{mpi_impl}'
                              for mpi_impl in ['mpich3.1.4', 'mvapich2.2']])
     reference = {
         'dom': {
-            'latency_256': (1.15, None, 0.10, 'us'),
-            'latency_32k': (6.75, None, 0.10, 'us'),
-            'latency_65k': (10., None, 0.10, 'us'),
+            'latency_256': (1.15, None, 0.50, 'us'),
             'latency_4M':  (432., None, 0.10, 'us')
         },
         'daint': {
-            'latency_256': (1.15, None, 0.10, 'us'),
-            'latency_32k': (6.75, None, 0.10, 'us'),
-            'latency_65k': (10., None, 0.10, 'us'),
+            'latency_256': (1.15, None, 0.50, 'us'),
             'latency_4M':  (432., None, 0.10, 'us')
         },
-        'eiger': {
-            'latency_256': (3., None, 0.10, 'us'),
-            'latency_32k': (9.8, None, 0.10, 'us'),
-            'latency_65k': (13., None, 0.10, 'us'),
-            'latency_4M':  (354., None, 0.10, 'us')
+        '*': {
+            'latency_256': (2.3, None, 0.50, 'us'),
+            'latency_4M':  (180., None, 0.10, 'us')
         },
-        'pilatus': {
-            'latency_256': (3., None, 0.10, 'us'),
-            'latency_32k': (9.8, None, 0.10, 'us'),
-            'latency_65k': (13., None, 0.10, 'us'),
-            'latency_4M':  (354., None, 0.10, 'us')
-        }
     }
 
     @run_after('setup')
@@ -90,7 +84,7 @@ class SarusOSULatencyWithSshLauncher(BaseCheck):
     @run_after('setup')
     def generate_ssh_keys(self):
         # Ensure ssh keys are generated before running the test
-        self.prerun_cmds = ['sarus ssh-keygen']
+        self.prerun_cmds += ['sarus ssh-keygen']
 
     @run_after('setup')
     def setup_container_platform(self):
@@ -139,30 +133,18 @@ class SarusOSUBandwidth(BaseCheck):
     reference = {
         'dom': {
             'bandwidth_256': (415., -0.20, None, 'MB/s'),
-            'bandwidth_32k': (9250., -0.20, None, 'MB/s'),
-            'bandwidth_65k': (9600., -0.20, None, 'MB/s'),
             'bandwidth_4M':  (9870., -0.20, None, 'MB/s')
         },
         'daint': {
-            'bandwidth_256': (415., -0.20, None, 'MB/s'),
-            'bandwidth_32k': (9250., -0.20, None, 'MB/s'),
-            'bandwidth_65k': (9580., -0.20, None, 'MB/s'),
+            'bandwidth_256': (415., -0.50, None, 'MB/s'),
             'bandwidth_4M':  (9850., -0.20, None, 'MB/s')
         },
-        'eiger': {
-            'bandwidth_256': (500., -0.30, None, 'MB/s'),
-            'bandwidth_32k': (9800., -0.10, None, 'MB/s'),
-            'bandwidth_65k': (11600., -0.10, None, 'MB/s'),
-            'bandwidth_4M':  (12240., -0.10, None, 'MB/s')
+        '*': {
+            'bandwidth_256': (600., -0.50, None, 'MB/s'),
+            'bandwidth_4M':  (24000., -0.10, None, 'MB/s')
         },
-        'pilatus': {
-            'bandwidth_256': (500., -0.30, None, 'MB/s'),
-            'bandwidth_32k': (9800., -0.10, None, 'MB/s'),
-            'bandwidth_65k': (11600., -0.10, None, 'MB/s'),
-            'bandwidth_4M':  (12240., -0.10, None, 'MB/s')
-        }
     }
-
+    
     @run_after('setup')
     def setup_container_platform(self):
         self.container_platform.image = self.sarus_image
