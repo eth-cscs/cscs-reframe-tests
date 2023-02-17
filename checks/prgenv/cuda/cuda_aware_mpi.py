@@ -138,7 +138,7 @@ class cuda_aware_mpi_two_nodes_check(CudaAwareMpiRuns):
         self.num_tasks = 2
         self.num_tasks_per_node = 1
         self.num_gpus_per_node = 1
-        self.executable_opts = [f'-t %d {self.num_tasks}']
+        self.executable_opts = [f'-t %d {self.num_tasks} 1']
 
 
 def find_cdts(valid_systems, valid_prog_environs, modulename):
