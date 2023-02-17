@@ -141,16 +141,28 @@ class cuda_aware_mpi_two_nodes_check(CudaAwareMpiRuns):
         self.executable_opts = ['-t %d 1' % self.num_tasks]
 
 
+def find_cdts(valid_systems, valid_prog_environs, modulename):
+    # TODO: use rt.runtime().system.partitions[] ?
+    modulefiles = []
+    modulefile_info = rfm_util.find_modules(modulename)
+    for modulefile in modulefile_info:
+        if modulefile[0] in valid_systems and modulefile[1] in \
+           valid_prog_environs:
+            modulefiles.append(modulefile[2])
+
+    return modulefiles
+
+
 @rfm.simple_test
-class cuda_aware_mpi_check_cpe(rfm.RegressionTest):
+class cuda_aware_mpi_check_xc(rfm.RegressionTest):
     descr = 'Cuda-aware MPI test from NVIDIA code-samples.git'
     sourcesdir = ('https://github.com/NVIDIA-developer-blog/'
                   'code-samples.git')
     valid_systems = [
-        'daint:gpu', 'dom:gpu',
-        # TODO: 'hohgant:nvgpu', 'hohgant:nvgpu-sqfs',
+        'daint:gpu',
+        # TODO: 'dom:gpu', 'hohgant:nvgpu', 'hohgant:nvgpu-sqfs',
     ]
-    valid_prog_environs = ['PrgEnv-gnu']
+    valid_prog_environs = ['PrgEnv-gnu']  # TODO: PrgEnv-cray
     env_vars = {
         'MPICH_RDMA_ENABLED_CUDA': '1',
         'MPICH_VERSION_DISPLAY': '1',
@@ -162,43 +174,42 @@ class cuda_aware_mpi_check_cpe(rfm.RegressionTest):
     ]
     build_system = 'Make'
     maintainers = ['@ekouts', '@jgphpc']
-    tags = {'production', 'scs'}
-
-    # TODO: cpe_info
-    cdt_info = parameter(rfm_util.find_modules('cdt/'))
-    nvhpc_info = parameter(rfm_util.find_modules('nvhpc-nompi/'))
-    gcc_info = parameter(rfm_util.find_modules('gcc/'))
+    tags = {'production', 'scs', 'craype'}
+    cdt_info = parameter(find_cdts('daint:gpu', 'PrgEnv-gnu', 'cdt/'))
+    nvhpc_info = parameter(find_cdts('daint:gpu', 'PrgEnv-gnu',
+                                     'nvhpc-nompi/'))
+    gcc_info = parameter(find_cdts('daint:gpu', 'PrgEnv-gnu', 'gcc/'))
     gpu_arch = variable(str, type(None))
 
     @run_after('init')
     def apply_module_info(self):
-        s1, e1, m1 = self.cdt_info
-        s2, e2, m2 = self.nvhpc_info
-        s3, e3, m3 = self.gcc_info
+        # bad_pe= ['cdt/21.09', 'cdt/20.08']
+        # making sure "gcc version" is compatible with "cuda version" in nvhpc,
+        # nvhpc/22.3 has cuda/11.6 which supports gcc<12:
         nvhpc2gcc = {
-            '21.3': {'gcc': '10', 'cuda': '11.2'},
-            '21.5': {'gcc': '10', 'cuda': '11.3'},
-            '21.9': {'gcc': '11', 'cuda': '11.4'},
-            '22.2': {'gcc': '11', 'cuda': '11.6'},
-            '22.3': {'gcc': '11', 'cuda': '11.6'},
+            '21.3': {'cuda': '11.2', 'gcc': '10'},
+            '21.5': {'cuda': '11.3', 'gcc': '10'},
+            '21.9': {'cuda': '11.4', 'gcc': '11'},
+            '22.2': {'cuda': '11.6', 'gcc': '11'},
+            '22.3': {'cuda': '11.6', 'gcc': '11'},
             # TODO: newer nvhpc
         }
-        gcc_major_version = m3.split("/")[1].split(".")[0]
-        nvhpc_version = m2.split("/")[1]
-        best_gcc = (
-            f'gcc/{nvhpc2gcc[nvhpc_version]["gcc"]}.x '
-            f'(cuda/{nvhpc2gcc[nvhpc_version]["cuda"]}, {m2})'
+        gcc_major_version = self.gcc_info.split("/")[1].split(".")[0]
+        nvhpc_version = self.nvhpc_info.split("/")[1]
+        gcc_max_version = nvhpc2gcc[nvhpc_version]['gcc']
+        cuda_max_version = nvhpc2gcc[nvhpc_version]['cuda']
+        skip_msg = (
+            f'gcc/{gcc_major_version} != nvhpc/{nvhpc_version}:'
+            f'cuda/{cuda_max_version}:gcc/{gcc_max_version}'
         )
-        self.skip_if(gcc_major_version != nvhpc2gcc[nvhpc_version]['gcc'],
-                     f'{m3} != {best_gcc}')
-        self.modules = [m1, m2, m3]
-        # bad_pe= ['cdt/21.09', 'cdt/20.08']
+        self.skip_if(gcc_major_version != gcc_max_version, skip_msg)
+        self.modules = [self.cdt_info, self.nvhpc_info, self.gcc_info]
 
     @run_before('compile')
     def set_compilers(self):
         gput = self.current_partition.select_devices('gpu')[0]
         gcd_flgs = f'-arch={gput.arch}'
-        nvhpc_version = self.nvhpc_info[2].split("/")[1]
+        nvhpc_version = self.nvhpc_info.split("/")[1]
         cuda_path = f'/opt/nvidia/hpc_sdk/Linux_x86_64/{nvhpc_version}/cuda'
         link_flags = (
             # add -lcuda to avoid segmentation fault
