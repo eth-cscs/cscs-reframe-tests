@@ -112,6 +112,44 @@ site_configuration = {
                     ],
                     'features': ['gpu', 'amdgpu', 'remote'],
                     'launcher': 'srun'
+                },
+                {
+                    'name': 'cpu',
+                    'scheduler': 'slurm',
+                    'time_limit': '10m',
+                    'environs': [
+                        'builtin',
+                        'PrgEnv-aocc',
+                        'PrgEnv-cray',
+                        'PrgEnv-gnu',
+                        'PrgEnv-nvhpc',
+                        'PrgEnv-nvidia'
+                    ],
+                    'container_platforms': [
+                        {
+                            'type': 'Sarus',
+                        },
+                        {
+                            'type': 'Singularity',
+                        }
+                    ],
+                    'max_jobs': 100,
+                    'extras': {
+                        'cn_memory': 500,
+                    },
+                    'access': ['-pcpu'],
+                    'resources': [
+                        {
+                            'name': 'switches',
+                            'options': ['--switches={num_switches}']
+                        },
+                        {
+                            'name': 'memory',
+                            'options': ['--mem={mem_per_node}']
+                        },
+                    ],
+                    'features': ['remote'],
+                    'launcher': 'srun'
                 }
             ]
         },
