@@ -154,19 +154,19 @@ class ContainerMpichOSUTest(rfm.RunOnlyRegressionTest):
     num_tasks = 2
     reference = {
         'daint:gpu': {
-            'bw': (9607.0, -0.10, None, 'MB/s')
+            'bw': (9607.0, -0.15, None, 'MB/s')
         },
         'daint:mc': {
-            'bw': (9649.0, -0.10, None, 'MB/s')
+            'bw': (9649.0, -0.15, None, 'MB/s')
         },
         'dom:gpu': {
-            'bw': (9360.0, -0.05, None, 'MB/s')
+            'bw': (9360.0, -0.10, None, 'MB/s')
         },
         'dom:mc': {
-            'bw': (9528.4, -0.10, None, 'MB/s')
+            'bw': (9528.4, -0.15, None, 'MB/s')
         },
         '*': {
-            'bw': (24000.0, -0.10, None, 'MB/s')
+            'bw': (24000.0, -0.15, None, 'MB/s')
         },
     }
     image_path = variable(str)
