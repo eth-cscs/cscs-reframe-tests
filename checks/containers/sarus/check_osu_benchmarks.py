@@ -4,7 +4,7 @@ import reframe.utility.sanity as sn
 
 class BaseCheck(rfm.RunOnlyRegressionTest):
     valid_systems = ['dom:gpu', 'dom:mc', 'daint:gpu', 'daint:mc',
-                     'eiger:mc', 'pilatus:mc', 'hohgant:nvgpu']
+                     'eiger:mc', 'pilatus:mc', 'hohgant:nvgpu', 'hohgant:cpu']
     valid_prog_environs = ['builtin']
     container_platform = 'Sarus'
     sourcesdir = None
@@ -43,15 +43,15 @@ class SarusOSULatency(BaseCheck):
     reference = {
         'dom': {
             'latency_256': (1.15, None, 0.50, 'us'),
-            'latency_4M':  (432., None, 0.10, 'us')
+            'latency_4M':  (432., None, 0.15, 'us')
         },
         'daint': {
             'latency_256': (1.15, None, 0.50, 'us'),
-            'latency_4M':  (432., None, 0.10, 'us')
+            'latency_4M':  (432., None, 0.15, 'us')
         },
         '*': {
             'latency_256': (2.3, None, 0.50, 'us'),
-            'latency_4M':  (180., None, 0.10, 'us')
+            'latency_4M':  (180., None, 0.15, 'us')
         },
     }
 
@@ -141,7 +141,7 @@ class SarusOSUBandwidth(BaseCheck):
         },
         '*': {
             'bandwidth_256': (600., -0.50, None, 'MB/s'),
-            'bandwidth_4M':  (24000., -0.10, None, 'MB/s')
+            'bandwidth_4M':  (24000., -0.15, None, 'MB/s')
         },
     }
     

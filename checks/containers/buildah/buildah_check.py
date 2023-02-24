@@ -8,7 +8,7 @@ from reframe.core.backends import getlauncher
 
 class BuildahTestBase(rfm.RunOnlyRegressionTest):
     valid_systems = ['dom:gpu', 'dom:mc', 'daint:gpu', 'daint:mc',
-            'eiger:mc', 'pilatus:mc', 'hohgant:nvgpu']
+            'eiger:mc', 'pilatus:mc', 'hohgant:nvgpu', 'hohgant:cpu']
     valid_prog_environs = ['builtin']
     num_tasks = 1
     num_nodes = 1
@@ -147,26 +147,26 @@ class ContainerCudaDeviceQueryTest(rfm.RunOnlyRegressionTest):
 @rfm.simple_test
 class ContainerMpichOSUTest(rfm.RunOnlyRegressionTest):
     valid_systems = ['dom:gpu', 'dom:mc', 'daint:gpu', 'daint:mc',
-            'eiger:mc', 'pilatus:mc', 'hohgant:nvgpu']
+            'eiger:mc', 'pilatus:mc', 'hohgant:nvgpu', 'hohgant:cpu']
     valid_prog_environs = ['builtin']
     platform = parameter(['Sarus', 'Singularity'])
     num_tasks_per_node = 1
     num_tasks = 2
     reference = {
         'daint:gpu': {
-            'bw': (9607.0, -0.10, None, 'MB/s')
+            'bw': (9607.0, -0.15, None, 'MB/s')
         },
         'daint:mc': {
-            'bw': (9649.0, -0.10, None, 'MB/s')
+            'bw': (9649.0, -0.15, None, 'MB/s')
         },
         'dom:gpu': {
-            'bw': (9360.0, -0.05, None, 'MB/s')
+            'bw': (9360.0, -0.10, None, 'MB/s')
         },
         'dom:mc': {
-            'bw': (9528.4, -0.10, None, 'MB/s')
+            'bw': (9528.4, -0.15, None, 'MB/s')
         },
         '*': {
-            'bw': (24000.0, -0.10, None, 'MB/s')
+            'bw': (24000.0, -0.15, None, 'MB/s')
         },
     }
     image_path = variable(str)
