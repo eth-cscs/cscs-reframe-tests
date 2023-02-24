@@ -6,7 +6,7 @@ import reframe.utility.sanity as sn
 class SarusPullCommandCheck(rfm.RunOnlyRegressionTest):
     sourcesdir = None
     valid_systems = ['dom:gpu', 'dom:mc', 'daint:gpu', 'daint:mc',
-        'eiger:mc', 'pilatus:mc', 'hohgant:nvgpu']
+                     'eiger:mc', 'pilatus:mc', 'hohgant:nvgpu', 'hohgant:cpu']
     valid_prog_environs = ['builtin']
     num_tasks = 1
     num_tasks_per_node = 1

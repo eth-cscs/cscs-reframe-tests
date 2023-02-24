@@ -8,7 +8,7 @@ from reframe.core.backends import getlauncher
 
 class BuildahTestBase(rfm.RunOnlyRegressionTest):
     valid_systems = ['dom:gpu', 'dom:mc', 'daint:gpu', 'daint:mc',
-            'eiger:mc', 'pilatus:mc', 'hohgant:nvgpu']
+            'eiger:mc', 'pilatus:mc', 'hohgant:nvgpu', 'hohgant:cpu']
     valid_prog_environs = ['builtin']
     num_tasks = 1
     num_nodes = 1
@@ -147,7 +147,7 @@ class ContainerCudaDeviceQueryTest(rfm.RunOnlyRegressionTest):
 @rfm.simple_test
 class ContainerMpichOSUTest(rfm.RunOnlyRegressionTest):
     valid_systems = ['dom:gpu', 'dom:mc', 'daint:gpu', 'daint:mc',
-            'eiger:mc', 'pilatus:mc', 'hohgant:nvgpu']
+            'eiger:mc', 'pilatus:mc', 'hohgant:nvgpu', 'hohgant:cpu']
     valid_prog_environs = ['builtin']
     platform = parameter(['Sarus', 'Singularity'])
     num_tasks_per_node = 1
