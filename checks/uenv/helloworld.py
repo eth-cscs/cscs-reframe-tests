@@ -19,10 +19,12 @@ class HelloWorldBaseTest(rfm.RegressionTest):
         '_rfm_build_time="$(($(date +%s%N)-_rfm_build_time))"',
         'echo "Compilations time (ns): $_rfm_build_time"'
     ]
+    env_vars = {
+        'MPIR_CVAR_ENABLE_GPU': 0,
+    }
     build_locally = False
     pmi = variable(str, value='')
-    valid_systems = ['+uenv']
-    valid_prog_environs = ['builtin']
+    valid_systems = ['*']
     reference = {
         '*': {
             'compilation_time': (60, None, 0.1, 's')
@@ -45,11 +47,6 @@ class HelloWorldBaseTest(rfm.RegressionTest):
         if self.pmi != '':
             self.job.launcher.options = [f'--mpi={self.pmi}']
 
-    @run_after('setup')
-    def set_compilers(self):
-        self.build_system.cc = 'mpicc'
-        self.build_system.cxx = 'mpic++'
-        self.build_system.ftn = 'mpif90'
 
     @sanity_function
     def assert_hello_world(self):
@@ -98,6 +95,7 @@ class HelloWorldBaseTest(rfm.RegressionTest):
 
 @rfm.simple_test
 class HelloWorldTestSerial(HelloWorldBaseTest):
+    valid_prog_environs = ['+serial']
     sourcesdir = 'src/serial'
     num_tasks = 1
     num_tasks_per_node = 1
@@ -115,6 +113,7 @@ class HelloWorldTestSerial(HelloWorldBaseTest):
 
 @rfm.simple_test
 class HelloWorldTestOpenMP(HelloWorldBaseTest):
+    valid_prog_environs = ['+openmp']
     sourcesdir = 'src/openmp'
     num_tasks = 1
     num_tasks_per_node = 1
@@ -144,6 +143,7 @@ class HelloWorldTestOpenMP(HelloWorldBaseTest):
 
 @rfm.simple_test
 class HelloWorldTestMPI(HelloWorldBaseTest):
+    valid_prog_environs = ['+mpi']
     sourcesdir = 'src/mpi'
     # for the MPI test the self.num_tasks_per_node should always be one. If
     # not, the test will fail for the total number of lines in the output
@@ -164,6 +164,7 @@ class HelloWorldTestMPI(HelloWorldBaseTest):
 
 @rfm.simple_test
 class HelloWorldTestMPIOpenMP(HelloWorldBaseTest):
+    valid_prog_environs = ['+mpi +openmp']
     sourcesdir = 'src/mpi_openmp'
     num_tasks = 6
     num_tasks_per_node = 3

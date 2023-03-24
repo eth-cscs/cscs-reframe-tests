@@ -7,12 +7,17 @@
 #
 
 import os
+import pathlib
+import yaml
 
 uenv_file = os.environ.get('UENV_FILE', None)
 uenv_mount = os.environ.get('UENV_MOUNT', '/user-environment')
 
 uenv_access = [] 
 uenv_modules_path = [] 
+image_name = None 
+partitions = []
+features = []
 
 if uenv_file is not None:
     uenv_access = [
@@ -20,6 +25,119 @@ if uenv_file is not None:
         f'--uenv-mount={uenv_mount}',
     ]
     uenv_modules_path = [f'module use {uenv_mount}/modules']
+    image_path = pathlib.Path(uenv_file)
+    image_name = image_path.stem
+
+with open(image_path.parent / f'{image_name}.yaml') as image_envs:
+    image_environments = yaml.load(image_envs.read(), Loader=yaml.BaseLoader)
+
+
+if image_name is not None:
+    environs = image_environments['environments'] 
+    environ_names =  [e['name'] for e in environs] or ['builtin']
+
+    partitions = [
+        {
+            'name': f'nvgpu-{image_name}',
+            'scheduler': 'slurm',
+            'time_limit': '10m',
+            'environs': environ_names,
+            'container_platforms': [
+                {
+                    'type': 'Sarus',
+                },
+                {
+                    'type': 'Singularity',
+                }
+            ],
+            'max_jobs': 100,
+            'extras': {
+                'cn_memory': 500,
+            },
+            'access': ['-pnvgpu'] + uenv_access,
+            'resources': [
+                {
+                    'name': 'switches',
+                    'options': ['--switches={num_switches}']
+                },
+                {
+                    'name': 'memory',
+                    'options': ['--mem={mem_per_node}']
+                },
+            ],
+            'features': ['gpu', 'nvgpu', 'remote', 'uenv'] + features,
+            'devices': [
+                {
+                    'type': 'gpu',
+                    'arch': 'sm_80',
+                    'num_devices': 4
+                }
+            ],
+            'prepare_cmds': uenv_modules_path,
+            'launcher': 'srun'
+        },
+        {
+            'name': f'amdgpu-{image_name}',
+            'scheduler': 'slurm',
+            'time_limit': '10m',
+            'environs': environ_names,
+            'max_jobs': 100,
+            'extras': {
+                'cn_memory': 500,
+            },
+            'access': ['-pamdgpu'] + uenv_access,
+            'resources': [
+                {
+                    'name': 'switches',
+                    'options': ['--switches={num_switches}']
+                },
+                {
+                    'name': 'memory',
+                    'options': ['--mem={mem_per_node}']
+                },
+            ],
+            'features': ['gpu', 'amdgpu', 'remote', 'uenv'] + features,
+            'prepare_cmds': uenv_modules_path,
+            'launcher': 'srun'
+        },
+        {
+            'name': f'cpu-{image_name}',
+            'scheduler': 'slurm',
+            'time_limit': '10m',
+            'environs': environ_names,
+            'max_jobs': 100,
+            'extras': {
+                'cn_memory': 500,
+            },
+            'access': ['-pcpu'] + uenv_access ,
+            'resources': [
+                {
+                    'name': 'switches',
+                    'options': ['--switches={num_switches}']
+                },
+                {
+                    'name': 'memory',
+                    'options': ['--mem={mem_per_node}']
+                },
+            ],
+            'features': ['remote', 'uenv'] + features,
+            'prepare_cmds': uenv_modules_path,
+            'launcher': 'srun'
+        }
+    ]
+
+environs = image_environments['environments'] 
+environ_names =  [e['name'] for e in environs] or ['builtin']
+
+if environs:
+    actual_environs = []
+
+for e in environs: 
+    env = {
+        'target_systems': ['hohgant-uenv']
+    }
+    env.update(e)
+    actual_environs.append(env)
 
 site_configuration = {
     'systems': [
@@ -28,115 +146,10 @@ site_configuration = {
             'descr': 'Hohgant vcluster with uenv',
             'hostnames': ['hohgant'],
             'modules_system': 'lmod',
-            'partitions': [
-                {
-                    'name': 'login',
-                    'scheduler': 'local',
-                    'time_limit': '10m',
-                    'environs': [
-                        'builtin',
-                    ],
-                    'descr': 'Login nodes',
-                    'max_jobs': 4,
-                    'launcher': 'local'
-                },
-                {
-                    'name': 'nvgpu',
-                    'scheduler': 'slurm',
-                    'time_limit': '10m',
-                    'environs': [
-                        'builtin',
-                    ],
-                    'container_platforms': [
-                        {
-                            'type': 'Sarus',
-                        },
-                        {
-                            'type': 'Singularity',
-                        }
-                    ],
-                    'max_jobs': 100,
-                    'extras': {
-                        'cn_memory': 500,
-                    },
-                    'access': ['-pnvgpu'] + uenv_access,
-                    'resources': [
-                        {
-                            'name': 'switches',
-                            'options': ['--switches={num_switches}']
-                        },
-                        {
-                            'name': 'memory',
-                            'options': ['--mem={mem_per_node}']
-                        },
-                    ],
-                    'features': ['gpu', 'nvgpu', 'remote', 'uenv'],
-                    'devices': [
-                        {
-                            'type': 'gpu',
-                            'arch': 'sm_80',
-                            'num_devices': 4
-                        }
-                    ],
-                    'prepare_cmds': uenv_modules_path,
-                    'launcher': 'srun'
-                },
-                {
-                    'name': 'amdgpu',
-                    'scheduler': 'slurm',
-                    'time_limit': '10m',
-                    'environs': [
-                        'builtin',
-                    ],
-                    'max_jobs': 100,
-                    'extras': {
-                        'cn_memory': 500,
-                    },
-                    'access': ['-pamdgpu'] + uenv_access,
-                    'resources': [
-                        {
-                            'name': 'switches',
-                            'options': ['--switches={num_switches}']
-                        },
-                        {
-                            'name': 'memory',
-                            'options': ['--mem={mem_per_node}']
-                        },
-                    ],
-                    'features': ['gpu', 'amdgpu', 'remote', 'uenv'],
-                    'prepare_cmds': uenv_modules_path,
-                    'launcher': 'srun'
-                },
-                {
-                    'name': 'cpu',
-                    'scheduler': 'slurm',
-                    'time_limit': '10m',
-                    'environs': [
-                        'builtin',
-                    ],
-                    'max_jobs': 100,
-                    'extras': {
-                        'cn_memory': 500,
-                    },
-                    'access': ['-pcpu'] + uenv_access ,
-                    'resources': [
-                        {
-                            'name': 'switches',
-                            'options': ['--switches={num_switches}']
-                        },
-                        {
-                            'name': 'memory',
-                            'options': ['--mem={mem_per_node}']
-                        },
-                    ],
-                    'features': ['remote', 'uenv'],
-                    'prepare_cmds': uenv_modules_path,
-                    'launcher': 'srun'
-                }
-            ]
-        },
-    ],
-    'modes': [
+            'partitions': partitions
+        }
+     ],
+     'modes': [
         {
             'name': 'production',
             'options': [
@@ -152,6 +165,7 @@ site_configuration = {
             'target_systems': ['hohgant-uenv'],
         }
     ],
+    'environments': actual_environs,
     'general': [
         {
              'resolve_module_conflicts': False,

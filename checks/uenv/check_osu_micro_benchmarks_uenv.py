@@ -3,8 +3,8 @@ import reframe.utility.sanity as sn
 
 
 class BaseCheck(rfm.RunOnlyRegressionTest):
-    valid_systems = ['+uenv']
-    valid_prog_environs = ['builtin']
+    valid_systems = ['*']
+    valid_prog_environs = ['+osu-micro-benchmarks']
     sourcesdir = None
     num_tasks = 2
     num_tasks_per_node = 1
@@ -16,7 +16,7 @@ class BaseCheck(rfm.RunOnlyRegressionTest):
         'MPIR_CVAR_CH4_OFI_MULTI_NIC_STRIPING_THRESHOLD': 4194305
     }
     maintainers = ['TM']
-    tags = {'uenv', 'osu-micro-benchmarks'}
+    tags = {'uenv'}
 
     @run_after('init')
     def set_descr(self):
@@ -74,3 +74,31 @@ class OSUBandwidth(BaseCheck):
                 sn.extractsingle(r'4194304\s+(?P<bandwidth_4M>\S+)',
                                  self.stdout, 'bandwidth_4M', float)
         }
+
+
+@rfm.simple_test
+class OSUBandwidthCuda(OSUBandwidth):
+    valid_systems = ['+nvgpu']
+    valid_prog_environs = ['+osu-micro-benchmarks +cuda']
+    env_vars = {
+        'MPIR_CVAR_ENABLE_GPU': 1,
+        'MPICH_GPU_SUPPORT_ENABLED': 1,
+        'CUDA_VISIBLE_DEVICES': 0,
+        # Set to one byte more than the last entry of the test
+        'MPIR_CVAR_CH4_OFI_MULTI_NIC_STRIPING_THRESHOLD': 4194305
+    }
+    executable_opts = ['-d', 'cuda', 'D', 'D']
+
+
+@rfm.simple_test
+class OSULatencyCuda(OSUBandwidth):
+    valid_systems = ['+nvgpu']
+    valid_prog_environs = ['+osu-micro-benchmarks +cuda']
+    env_vars = {
+        'MPIR_CVAR_ENABLE_GPU': 1,
+        'MPICH_GPU_SUPPORT_ENABLED': 1,
+        'CUDA_VISIBLE_DEVICES': 0,
+        # Set to one byte more than the last entry of the test
+        'MPIR_CVAR_CH4_OFI_MULTI_NIC_STRIPING_THRESHOLD': 4194305
+    }
+    executable_opts = ['-d', 'cuda', 'D', 'D']

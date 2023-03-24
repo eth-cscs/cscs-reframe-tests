@@ -158,12 +158,14 @@ site_configuration = {
         {
             'name': 'PrgEnv-aocc',
             'target_systems': ['hohgant'],
-            'modules': ['cray', 'PrgEnv-aocc']
+            'modules': ['cray', 'PrgEnv-aocc'],
+            'features': ['mpi', 'openmp', 'serial']
         },
         {
             'name': 'PrgEnv-cray',
             'target_systems': ['hohgant'],
-            'modules': ['cray', 'PrgEnv-cray']
+            'modules': ['cray', 'PrgEnv-cray'],
+            'features': ['mpi', 'openmp', 'serial']
         },
         {
             'name': 'PrgEnv-gnu',
