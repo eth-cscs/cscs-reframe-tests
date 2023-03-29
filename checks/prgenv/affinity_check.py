@@ -17,7 +17,7 @@ from reframe.core.exceptions import SanityError
 class CompileAffinityTool(rfm.CompileOnlyRegressionTest):
     valid_systems = [
         'daint:gpu', 'daint:mc', 'dom:gpu', 'dom:mc',
-        'eiger:mc', 'pilatus:mc', 'hohgant:gpu',
+        'eiger:mc', 'pilatus:mc', 'hohgant:nvgpu',
         'ault:amdv100'
     ]
     valid_prog_environs = [
@@ -53,7 +53,7 @@ class CompileAffinityTool(rfm.CompileOnlyRegressionTest):
 
 @rfm.simple_test
 class CompileAffinityToolNoOmp(CompileAffinityTool):
-    valid_systems = ['eiger:mc', 'pilatus:mc', 'hohgant:gpu']
+    valid_systems = ['eiger:mc', 'pilatus:mc', 'hohgant:nvgpu']
 
     @run_before('compile')
     def set_build_opts(self):
@@ -90,7 +90,7 @@ class AffinityTestBase(rfm.RunOnlyRegressionTest):
 
     valid_systems = [
         'daint:gpu', 'daint:mc', 'dom:gpu', 'dom:mc',
-        'eiger:mc', 'pilatus:mc', 'hohgant:gpu',
+        'eiger:mc', 'pilatus:mc', 'hohgant:nvgpu',
         'ault:amdv100'
     ]
     valid_prog_environs = [
@@ -112,7 +112,7 @@ class AffinityTestBase(rfm.RunOnlyRegressionTest):
         'daint:mc':   'topo_dom_mc.json',
         'eiger:mc':   'topo_eiger_mc.json',
         'pilatus:mc':   'topo_eiger_mc.json',
-        'hohgant:gpu':   'topo_hohgant_gpu.json',
+        'hohgant:nvgpu':   'topo_hohgant_nvgpu.json',
         'ault:amdv100': 'topo_ault_amdv100.json',
     })
 
@@ -301,8 +301,8 @@ class AffinityOpenMPBase(AffinityTestBase):
 
     @run_before('run')
     def set_omp_vars(self):
-        self.variables = {
-            'OMP_NUM_THREADS': str(self.num_omp_threads),
+        self.env_vars = {
+            'OMP_NUM_THREADS': self.num_omp_threads,
             'OMP_PLACES': self.omp_bind,
             'OMP_PROC_BIND': self.omp_proc_bind,
         }
@@ -600,7 +600,7 @@ class OneTaskPerNumaNode(AffinityTestBase):
     Multithreading is disabled.
     '''
 
-    valid_systems = ['eiger:mc', 'pilatus:mc', 'hohgant:gpu']
+    valid_systems = ['eiger:mc', 'pilatus:mc', 'hohgant:nvgpu']
     use_multithreading = False
     num_cpus_per_task = required
 
@@ -630,7 +630,7 @@ class OneTaskPerNumaNode(AffinityTestBase):
     def set_tasks(self):
         self.num_tasks = self.num_numa_nodes
         if self.current_partition.fullname in {'eiger:mc', 'pilatus:mc',
-                                               'hohgant:gpu'}:
+                                               'hohgant:nvgpu'}:
             self.num_cpus_per_task = 16
 
     @run_before('sanity')

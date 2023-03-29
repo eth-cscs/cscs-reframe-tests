@@ -81,9 +81,9 @@ class NsimdTest(rfm.RegressionTest):
     def prepare_run(self):
         self.skip_if_no_procinfo()
         self.executable = f'NsimdTest_{self.bench_name}'.replace('.', '_')
-        self.variables = {
+        self.env_vars = {
             'CRAYPE_LINK_TYPE': 'dynamic',
-            'OMP_NUM_THREADS': str(self.num_cpus_per_task),
+            'OMP_NUM_THREADS': self.num_cpus_per_task,
         }
 
         # Setup the reference

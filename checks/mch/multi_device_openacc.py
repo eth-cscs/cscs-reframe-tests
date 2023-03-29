@@ -45,7 +45,7 @@ class MultiDeviceOpenaccTest(rfm.RegressionTest):
                 ]
         elif self.current_environ.name.startswith('PrgEnv-cray'):
             self.build_system.fflags += ['-DCRAY', '-hacc', '-hnoomp']
-            self.variables = {
+            self.env_vars = {
                 'CRAY_ACCEL_TARGET': 'nvidia35',
-                'MV2_USE_CUDA': '1'
+                'MV2_USE_CUDA': 1
             }

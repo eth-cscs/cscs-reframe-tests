@@ -85,10 +85,10 @@ class EnvironmentVariableCheck(SlurmSimpleBaseCheck):
                      'arolla:cn', 'arolla:pn',
                      'tsa:cn', 'tsa:pn',
                      'eiger:mc', 'pilatus:mc',
-                     'hohgant:gpu']
+                     'hohgant:nvgpu']
     executable = '/bin/echo'
     executable_opts = ['$MY_VAR']
-    variables = {'MY_VAR': 'TEST123456!'}
+    env_vars = {'MY_VAR': 'TEST123456!'}
     tags.remove('single-node')
 
     @sanity_function

@@ -25,9 +25,9 @@ class OpenaccCudaCpp(rfm.RegressionTest):
             self.num_tasks_per_node = 11
             self.num_gpus_per_node = 1
             self.build_system.options = ['NVCC_FLAGS="-arch=compute_60"']
-            self.variables = {
-                'MPICH_RDMA_ENABLED_CUDA': '1',
-                'CRAY_CUDA_MPS': '1'
+            self.env_vars = {
+                'MPICH_RDMA_ENABLED_CUDA': 1,
+                'CRAY_CUDA_MPS': 1
             }
         elif self.current_system.name in ['arolla', 'tsa']:
             self.exclusive_access = True
@@ -36,8 +36,8 @@ class OpenaccCudaCpp(rfm.RegressionTest):
             self.num_tasks_per_node = 8
             self.num_gpus_per_node = 8
             self.build_system.options = ['NVCC_FLAGS="-arch=compute_70"']
-            self.variables = {
-                'G2G': '1'
+            self.env_vars = {
+                'G2G': 1
             }
 
         self.executable = 'openacc_cuda_mpi_cppstd'
@@ -89,4 +89,4 @@ class OpenaccCudaCpp(rfm.RegressionTest):
             return
 
         if (self.current_environ.name == 'PrgEnv-pgi' and cdt >= '20.06'):
-            self.variables.update({'CUDA_HOME': '$CUDATOOLKIT_HOME'})
+            self.env_vars.update({'CUDA_HOME': '$CUDATOOLKIT_HOME'})

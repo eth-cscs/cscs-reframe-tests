@@ -63,7 +63,7 @@ class AutomaticArraysCheck(rfm.RegressionTest):
             return
 
         if (self.current_environ.name == 'PrgEnv-pgi' and cdt == '20.08'):
-            self.variables.update({'CUDA_HOME': '$CUDATOOLKIT_HOME'})
+            self.env_vars.update({'CUDA_HOME': '$CUDATOOLKIT_HOME'})
 
     @run_before('sanity')
     def set_sanity_and_perf_patterns(self):

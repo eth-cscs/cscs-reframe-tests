@@ -65,7 +65,7 @@ class HDF5Test(rfm.RegressionTest):
     def aocc(self):
         #FIXME HPE support case 5365481562 with PrgEnv-aocc 
         if self.current_environ.name == 'PrgEnv-aocc':
-            self.variables = {
+            self.env_vars = {
                 'LD_LIBRARY_PATH': '$CRAY_LD_LIBRARY_PATH:$LD_LIBRARY_PATH'
             }
 
