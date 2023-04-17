@@ -80,6 +80,7 @@ class OSUBandwidth(BaseCheck):
 class OSUBandwidthCuda(OSUBandwidth):
     valid_systems = ['+nvgpu']
     valid_prog_environs = ['+osu-micro-benchmarks +cuda']
+    modules = ['cuda', 'osu-micro-benchmarks']
     env_vars = {
         'MPIR_CVAR_ENABLE_GPU': 1,
         'MPICH_GPU_SUPPORT_ENABLED': 1,
@@ -94,6 +95,7 @@ class OSUBandwidthCuda(OSUBandwidth):
 class OSULatencyCuda(OSUBandwidth):
     valid_systems = ['+nvgpu']
     valid_prog_environs = ['+osu-micro-benchmarks +cuda']
+    modules = ['cuda', 'osu-micro-benchmarks']
     env_vars = {
         'MPIR_CVAR_ENABLE_GPU': 1,
         'MPICH_GPU_SUPPORT_ENABLED': 1,

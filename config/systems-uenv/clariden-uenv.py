@@ -31,7 +31,6 @@ if uenv_file is not None:
 with open(image_path.parent / f'{image_name}.yaml') as image_envs:
     image_environments = yaml.load(image_envs.read(), Loader=yaml.BaseLoader)
 
-
 if image_name is not None:
     environs = image_environments['environments'] 
     environ_names =  ([f'{image_name}_{e["name"]}'for e in environs] or 
@@ -101,30 +100,6 @@ if image_name is not None:
             'prepare_cmds': uenv_modules_path,
             'launcher': 'srun'
         },
-        {
-            'name': f'cpu',
-            'scheduler': 'slurm',
-            'time_limit': '10m',
-            'environs': environ_names,
-            'max_jobs': 100,
-            'extras': {
-                'cn_memory': 500,
-            },
-            'access': ['-pcpu'] + uenv_access ,
-            'resources': [
-                {
-                    'name': 'switches',
-                    'options': ['--switches={num_switches}']
-                },
-                {
-                    'name': 'memory',
-                    'options': ['--mem={mem_per_node}']
-                },
-            ],
-            'features': ['remote', 'uenv'] + features,
-            'prepare_cmds': uenv_modules_path,
-            'launcher': 'srun'
-        }
     ]
 
 
@@ -135,7 +110,7 @@ if environs:
 
 for e in environs: 
     env = {
-        'target_systems': ['hohgant-uenv']
+        'target_systems': ['clariden-uenv']
     }
     env.update(e)
     env['name'] = f'{image_name}_{e["name"]}'
@@ -144,9 +119,9 @@ for e in environs:
 site_configuration = {
     'systems': [
         {
-            'name': 'hohgant-uenv',
-            'descr': 'Hohgant vcluster with uenv',
-            'hostnames': ['hohgant'],
+            'name': 'clariden-uenv',
+            'descr': 'Clariden with uenv',
+            'hostnames': ['clariden'],
             'resourcesdir': '/users/manitart/reframe/resources',
             'modules_system': 'lmod',
             'partitions': partitions
@@ -172,7 +147,7 @@ site_configuration = {
     'general': [
         {
              'resolve_module_conflicts': False,
-             'target_systems': ['hohgant-uenv']
+             'target_systems': ['clariden-uenv']
         }
     ]
 }
