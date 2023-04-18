@@ -4,10 +4,9 @@ include:
 stages:
   - run
 
-run qe71 image:
+run rfm_test:
   extends: .container-runner-hohgant
   stage: run
-  needs: ["build qe71 image"]
   tags: ['hohgant-login-baremetal']
   variables:
     GIT_STRATEGY: fetch
