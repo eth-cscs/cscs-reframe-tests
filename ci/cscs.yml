@@ -1,0 +1,22 @@
+include:
+  - remote: 'https://gitlab.com/cscs-ci/recipes/-/raw/master/templates/v2/.ci-ext.yml'
+
+stages:
+  - run
+
+run qe71 image:
+  extends: .container-runner-hohgant
+  stage: run
+  needs: ["build qe71 image"]
+  tags: ['hohgant-login-baremetal']
+  variables:
+    GIT_STRATEGY: fetch
+  script:
+    - rm -rf venv_reframe
+    - python3 -m venv venv_reframe
+    - source venv_reframe/bin/activate
+    - pip install reframe-hpc
+    - export RFM_AUTODETECT_XTHOSTNAME=1
+    - export RFM_REMOTE_DETECT=0
+    - reframe -C config/cscs-uenv.py -c checks/uenv -r
+    - deactivate
