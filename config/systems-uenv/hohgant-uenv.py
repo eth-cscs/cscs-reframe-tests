@@ -38,45 +38,45 @@ if image_name is not None:
                       [f'{image_name}_builtin'])
 
     partitions = [
-        {
-            'name': f'nvgpu',
-            'scheduler': 'slurm',
-            'time_limit': '10m',
-            'environs': environ_names,
-            'container_platforms': [
-                {
-                    'type': 'Sarus',
-                },
-                {
-                    'type': 'Singularity',
-                }
-            ],
-            'max_jobs': 100,
-            'extras': {
-                'cn_memory': 500,
-            },
-            'access': ['-pnvgpu'] + uenv_access,
-            'resources': [
-                {
-                    'name': 'switches',
-                    'options': ['--switches={num_switches}']
-                },
-                {
-                    'name': 'memory',
-                    'options': ['--mem={mem_per_node}']
-                },
-            ],
-            'features': ['gpu', 'nvgpu', 'remote', 'uenv'] + features,
-            'devices': [
-                {
-                    'type': 'gpu',
-                    'arch': 'sm_80',
-                    'num_devices': 4
-                }
-            ],
-            'prepare_cmds': uenv_modules_path,
-            'launcher': 'srun'
-        },
+#        {
+#            'name': f'nvgpu',
+#            'scheduler': 'slurm',
+#            'time_limit': '10m',
+#            'environs': environ_names,
+#            'container_platforms': [
+#                {
+#                    'type': 'Sarus',
+#                },
+#                {
+#                    'type': 'Singularity',
+#                }
+#            ],
+#            'max_jobs': 100,
+#            'extras': {
+#                'cn_memory': 500,
+#            },
+#            'access': ['-pnvgpu'] + uenv_access,
+#            'resources': [
+#                {
+#                    'name': 'switches',
+#                    'options': ['--switches={num_switches}']
+#                },
+#                {
+#                    'name': 'memory',
+#                    'options': ['--mem={mem_per_node}']
+#                },
+#            ],
+#            'features': ['gpu', 'nvgpu', 'remote', 'uenv'] + features,
+#            'devices': [
+#                {
+#                    'type': 'gpu',
+#                    'arch': 'sm_80',
+#                    'num_devices': 4
+#                }
+#            ],
+#            'prepare_cmds': uenv_modules_path,
+#            'launcher': 'srun'
+#        },
         {
             'name': f'amdgpu',
             'scheduler': 'slurm',

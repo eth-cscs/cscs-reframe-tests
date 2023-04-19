@@ -17,5 +17,11 @@ run rfm_test:
     - pip install reframe-hpc
     - export RFM_AUTODETECT_XTHOSTNAME=1
     - export RFM_REMOTE_DETECT=0
-    - reframe -C config/cscs-uenv.py -c checks/uenv -r
+    - reframe -C config/cscs-uenv.py -c checks/uenv --report-junit=report.xml -r
     - deactivate
+  artifacts:
+    when: always
+    paths:
+      - report.xml
+    reports:
+      junit: report.xml
