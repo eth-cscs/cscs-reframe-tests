@@ -87,8 +87,6 @@ rigi_sys['hostnames'] = ['rigi']
 
 site_configuration = {
     'systems': [
-        eiger_sys,
-        pilatus_sys,
         rigi_sys
     ],
     'environments': [
