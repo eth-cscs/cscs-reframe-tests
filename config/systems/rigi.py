@@ -102,32 +102,32 @@ site_configuration = {
         },
         {
             'name': 'PrgEnv-gnu',
-            'target_systems': ['eiger', 'pilatus', 'rigi'],
+            'target_systems': ['rigi'],
             'modules': ['PrgEnv-gnu']
         },
         {
             'name': 'PrgEnv-intel',
-            'target_systems': ['eiger', 'pilatus', 'rigi'],
+            'target_systems': ['rigi'],
             'modules': ['PrgEnv-intel']
         },
         {
             'name': 'cpeAMD',
-            'target_systems': ['eiger', 'pilatus', 'rigi'],
+            'target_systems': ['rigi'],
             'modules': ['cpeAMD']
         },
         {
             'name': 'cpeCray',
-            'target_systems': ['eiger', 'pilatus', 'rigi'],
+            'target_systems': ['rigi'],
             'modules': ['cpeCray']
         },
         {
             'name': 'cpeGNU',
-            'target_systems': ['eiger', 'pilatus', 'rigi'],
+            'target_systems': ['rigi'],
             'modules': ['cpeGNU']
         },
         {
             'name': 'cpeIntel',
-            'target_systems': ['eiger', 'pilatus', 'rigi'],
+            'target_systems': ['rigi'],
             'modules': ['cpeIntel']
         },
     ],
