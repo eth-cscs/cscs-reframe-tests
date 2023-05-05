@@ -99,7 +99,7 @@ site_configuration = {
         },
         {
             'name': 'PrgEnv-cray',
-            'target_systems': ['eiger', 'pilatus', 'rigi'],
+            'target_systems': ['rigi'],
             'modules': ['PrgEnv-cray']
         },
         {
