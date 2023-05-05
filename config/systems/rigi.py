@@ -92,7 +92,7 @@ site_configuration = {
     'environments': [
         {
             'name': 'PrgEnv-aocc',
-            'target_systems': ['eiger', 'pilatus', 'rigi'],
+            'target_systems': ['rigi'],
             'modules': ['PrgEnv-aocc']
         },
         {
