@@ -134,22 +134,22 @@ site_configuration = {
         {
             'name': 'cpeAMD',
             'target_systems': ['eiger', 'pilatus'],
-            'modules': ['cpeAMD']
+            'modules': ['cray', 'cpeAMD']
         },
         {
             'name': 'cpeCray',
             'target_systems': ['eiger', 'pilatus'],
-            'modules': ['cpeCray']
+            'modules': ['cray', 'cpeCray']
         },
         {
             'name': 'cpeGNU',
             'target_systems': ['eiger', 'pilatus'],
-            'modules': ['cpeGNU']
+            'modules': ['cray', 'cpeGNU']
         },
         {
             'name': 'cpeIntel',
             'target_systems': ['eiger', 'pilatus'],
-            'modules': ['cpeIntel']
+            'modules': ['cray', 'cpeIntel']
         },
     ],
 }
