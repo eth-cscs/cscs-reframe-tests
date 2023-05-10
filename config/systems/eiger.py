@@ -98,17 +98,11 @@ eiger_sys['partitions'].append(
         'launcher': 'srun',
         'features': ['remote'],
     }
-)
 
-pilatus_sys = copy.deepcopy(base_config)
-pilatus_sys['name'] = 'pilatus'
-pilatus_sys['descr'] = 'Alps Cray EX Supercomputer TDS'
-pilatus_sys['hostnames'] = ['pilatus']
 
 site_configuration = {
     'systems': [
         eiger_sys,
-        pilatus_sys
     ],
     'environments': [
         {
