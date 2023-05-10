@@ -98,6 +98,7 @@ eiger_sys['partitions'].append(
         'launcher': 'srun',
         'features': ['remote'],
     }
+)
 
 
 site_configuration = {
