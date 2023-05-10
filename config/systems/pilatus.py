@@ -79,27 +79,6 @@ base_config = {
     ]
 }
 
-eiger_sys = copy.deepcopy(base_config)
-eiger_sys['name'] = 'eiger'
-eiger_sys['descr'] = 'Alps Cray EX Supercomputer'
-eiger_sys['hostnames'] = ['eiger']
-eiger_sys['partitions'].append(
-    {
-        'name': 'jupyter_mc',
-        'scheduler': 'slurm',
-        'environs': ['builtin'],
-        'access': [
-            f'-Cmc',
-            f'--reservation=interact',
-            f'--account={osext.osgroup()}'
-        ],
-        'descr': 'JupyterHub multicore nodes',
-        'max_jobs': 10,
-        'launcher': 'srun',
-        'features': ['remote'],
-    }
-)
-
 pilatus_sys = copy.deepcopy(base_config)
 pilatus_sys['name'] = 'pilatus'
 pilatus_sys['descr'] = 'Alps Cray EX Supercomputer TDS'
@@ -107,48 +86,47 @@ pilatus_sys['hostnames'] = ['pilatus']
 
 site_configuration = {
     'systems': [
-        eiger_sys,
         pilatus_sys
     ],
     'environments': [
         {
             'name': 'PrgEnv-aocc',
-            'target_systems': ['eiger', 'pilatus'],
+            'target_systems': ['pilatus'],
             'modules': ['cray', 'PrgEnv-aocc']
         },
         {
             'name': 'PrgEnv-cray',
-            'target_systems': ['eiger', 'pilatus'],
+            'target_systems': ['pilatus'],
             'modules': ['cray', 'PrgEnv-cray']
         },
         {
             'name': 'PrgEnv-gnu',
-            'target_systems': ['eiger', 'pilatus'],
+            'target_systems': ['pilatus'],
             'modules': ['cray', 'PrgEnv-gnu']
         },
         {
             'name': 'PrgEnv-intel',
-            'target_systems': ['eiger', 'pilatus'],
+            'target_systems': ['pilatus'],
             'modules': ['cray', 'PrgEnv-intel']
         },
         {
             'name': 'cpeAMD',
-            'target_systems': ['eiger', 'pilatus'],
+            'target_systems': ['pilatus'],
             'modules': ['cray', 'cpeAMD']
         },
         {
             'name': 'cpeCray',
-            'target_systems': ['eiger', 'pilatus'],
+            'target_systems': ['pilatus'],
             'modules': ['cray', 'cpeCray']
         },
         {
             'name': 'cpeGNU',
-            'target_systems': ['eiger', 'pilatus'],
+            'target_systems': ['pilatus'],
             'modules': ['cray', 'cpeGNU']
         },
         {
             'name': 'cpeIntel',
-            'target_systems': ['eiger', 'pilatus'],
+            'target_systems': ['pilatus'],
             'modules': ['cray', 'cpeIntel']
         },
     ],
