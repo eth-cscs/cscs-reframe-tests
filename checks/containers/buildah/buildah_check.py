@@ -183,6 +183,11 @@ class ContainerMpichOSUTest(rfm.RunOnlyRegressionTest):
     def set_dependencies(self):
         self.depends_on('BuildahMpichOSUTest')
 
+    def load_cray_module(self):
+        if self.current_system.name in ['pilatus']:
+            self.modules = ['cray']
+
+
     @run_after('setup')
     def config_container_platform(self):
         self.container_platform = self.platform
