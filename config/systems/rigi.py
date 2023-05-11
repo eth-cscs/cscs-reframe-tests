@@ -62,7 +62,7 @@ base_config = {
             'extras': {
                 'cn_memory': 256,
             },
-            'features': ['remote'],
+            'features': ['remote', 'sarus', 'singularity'],
             'access': ['-Cmc', f'--account={osext.osgroup()}'],
             'resources': [
                 {

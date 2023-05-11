@@ -17,10 +17,9 @@ class SarusPyFRCheck(rfm.RunOnlyRegressionTest):
     @run_after('init')
     def set_valid_systems(self):
         if self.backend == 'cuda':
-            self.valid_systems = ['dom:gpu', 'daint:gpu']
+            self.valid_systems = ['+sarus +nvgpu']
         else:
-            self.valid_systems = ['dom:gpu', 'dom:mc', 'daint:gpu', 'daint:mc',
-                                  'eiger:mc', 'pilatus:mc']
+            self.valid_systems = ['+sarus']
 
     @run_after('setup')
     def setup_container_platform(self):
