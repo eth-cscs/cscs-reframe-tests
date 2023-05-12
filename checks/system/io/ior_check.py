@@ -110,7 +110,7 @@ class IorCheck(rfm.RegressionTest):
 
         self.sourcesdir = os.path.join(self.current_system.resourcesdir, 'IOR')
 
-    @run_after('setup')
+    @run_after('init')
     def load_cray_module(self):
         if self.current_system.name in ['pilatus']:
             self.modules = ['cray']
