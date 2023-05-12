@@ -44,7 +44,7 @@ base_config = {
                 },
                 {
                     'type': 'Singularity',
-                    'modules': ['singularity/3.5.3-eiger']
+                    'modules': ['cray', 'singularity/3.5.3-eiger']
                 }
             ],
             'environs': [
