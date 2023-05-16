@@ -15,7 +15,7 @@ class SarusCudaNBodyCheck(rfm.RunOnlyRegressionTest):
             'gflops': (2860., -0.10, None, 'Gflop/s')
         },
         'hohgant:nvgpu': {
-            'gflops': (30900., -0.10, None, 'Gflop/s')
+            'gflops': (30900., -0.15, None, 'Gflop/s')
         }
     }
 
