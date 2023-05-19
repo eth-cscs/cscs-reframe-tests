@@ -5,7 +5,7 @@ import reframe.utility.sanity as sn
 @rfm.simple_test
 class SarusMPIWithGPUDirect(rfm.RunOnlyRegressionTest):
     valid_systems = ['dom:gpu', 'daint:gpu']
-    valid_prog_environs = ['builtin', 'PrgEnv-cray']
+    valid_prog_environs = ['builtin']
     sourcesdir = None
     container_platform = 'Sarus'
     num_tasks = 2

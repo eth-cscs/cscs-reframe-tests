@@ -3,8 +3,7 @@ import reframe.utility.sanity as sn
 
 
 class BaseCheck(rfm.RunOnlyRegressionTest):
-    valid_systems = ['dom:gpu', 'dom:mc', 'daint:gpu', 'daint:mc',
-                     'eiger:mc', 'pilatus:mc', 'hohgant:nvgpu', 'hohgant:cpu']
+    valid_systems = ['+sarus']
     valid_prog_environs = ['builtin']
     container_platform = 'Sarus'
     sourcesdir = None
