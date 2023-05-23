@@ -39,7 +39,9 @@ class MpiInitTest(rfm.RegressionTest):
         self.build_system.cppflags = self.cppflags[self.required_thread]
 
     @run_after('setup')
-    def skip_builtin_pe(self):
+    def skip_if_no_mpi(self):
+        self.skip_if(self.current_partition.name.startswith('login'),
+                     'skip login partition')
         self.skip_if(self.current_environ.name.startswith('builtin'),
                      'skip builtin pe')
 
