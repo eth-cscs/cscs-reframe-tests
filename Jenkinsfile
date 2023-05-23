@@ -196,8 +196,8 @@ stage('Cleanup Stale') {
                                  script: """${loginBash}
                                             echo \$SCRATCH""").trim()
                 sh("""${loginBash}
-                      find ${scratch} -maxdepth 1 -name 'ci-cscs-reframe-tests*' -ctime +${staleCleanupInterval} -type d -exec printf 'Removing  %s\\n' {} +
-                      find ${scratch} -maxdepth 1 -name 'ci-cscs-reframe-tests*' -ctime +${staleCleanupInterval} -type d -exec rm -rf {} +""")
+                      find ${scratch} -maxdepth 1 -name '${dirPrefix}*' -ctime +${staleCleanupInterval} -type d -print0 | xargs -0 printf 'Removing:  %s\n' 
+                      find ${scratch} -maxdepth 1 -name '${dirPrefix}*' -ctime +${staleCleanupInterval} -type d -print0 | xargs -0 rm -rfv""")
             }
         }
     }
