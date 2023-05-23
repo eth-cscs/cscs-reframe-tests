@@ -175,11 +175,6 @@ site_configuration = {
             'modules': ['cray', 'PrgEnv-gnu']
         },
         {
-            'name': 'PrgEnv-intel',
-            'target_systems': ['hohgant'],
-            'modules': ['cray', 'PrgEnv-intel']
-        },
-        {
             'name': 'PrgEnv-nvhpc',
             'target_systems': ['hohgant'],
             'modules': ['cray', 'PrgEnv-nvhpc'],
