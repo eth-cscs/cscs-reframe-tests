@@ -16,8 +16,8 @@ class MpiInitTest(rfm.RegressionTest):
     '''
     required_thread = parameter(['single', 'funneled', 'serialized',
                                  'multiple'])
-    valid_prog_environs = ['*']
-    valid_systems = ['*']
+    valid_prog_environs = ['+mpi']
+    valid_systems = ['+mpi']
     build_system = 'SingleSource'
     sourcesdir = 'src/mpi_thread'
     sourcepath = 'mpi_init_thread.cpp'
@@ -37,13 +37,6 @@ class MpiInitTest(rfm.RegressionTest):
     @run_after('init')
     def set_cpp_flags(self):
         self.build_system.cppflags = self.cppflags[self.required_thread]
-
-    @run_after('setup')
-    def skip_if_no_mpi(self):
-        self.skip_if('mpi' not in self.current_partition.features,
-                     'skip partition with no mpi')
-        self.skip_if('mpi' not in self.current_environ.features,
-                     'skip environ with no mpi')
 
     @run_before('run')
     def set_job_parameters(self):

@@ -10,20 +10,13 @@ import reframe.utility.sanity as sn
 @rfm.simple_test
 class NvmlCheck(rfm.RegressionTest):
     descr = 'Checks that nvml can report GPU informations'
-    valid_systems = ['*']
-    valid_prog_environs = ['*']
+    valid_systems = ['+nvgpu']
+    valid_prog_environs = ['+cuda']
     modules = ['cudatoolkit']
     build_system = 'SingleSource'
     sourcepath = '$CUDATOOLKIT_HOME/nvml/example/example.c'
     maintainers = []
     tags = {'production', 'craype', 'external-resources', 'health'}
-
-    @run_after('setup')
-    def skip_if_no_mpi(self):
-        self.skip_if('nvgpu' not in self.current_partition.features,
-                     'skip partition with no NVIDIA gpu')
-        self.skip_if('cuda' not in self.current_environ.features,
-                     'skip environ with no cuda')
 
     @run_before('compile')
     def set_build_flags(self):
