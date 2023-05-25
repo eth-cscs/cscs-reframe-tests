@@ -170,7 +170,7 @@ site_configuration = {
             'name': 'PrgEnv-cray',
             'target_systems': ['hohgant'],
             'modules': ['cray', 'PrgEnv-cray'],
-            'features': ['mpi']
+            'features': ['mpi', 'cuda']
         },
         {
             'name': 'PrgEnv-gnu',
@@ -182,7 +182,8 @@ site_configuration = {
             'name': 'PrgEnv-nvhpc',
             'target_systems': ['hohgant'],
             'modules': ['cray', 'PrgEnv-nvhpc'],
-            'features': ['mpi'],
+            'features': ['mpi', 'cuda'],
+            # 'prepare_cmds': ['module unload cudatoolkit'],
             'extras': {
                 'launcher_options': '--mpi=pmi2',
             },

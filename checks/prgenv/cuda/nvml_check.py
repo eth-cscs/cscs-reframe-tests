@@ -19,6 +19,12 @@ class NvmlCheck(rfm.RegressionTest):
     tags = {'production', 'craype', 'external-resources', 'health'}
 
     @run_before('compile')
+    def setup_nvhpc(self):
+        if 'PrgEnv-nvhpc' == self.current_environ.name:
+            self.modules.remove('cudatoolkit')
+            self.sourcepath = '$NVIDIA_PATH/cuda/bin/../nvml/example/example.c'
+
+    @run_before('compile')
     def set_build_flags(self):
         self.build_system.ldflags = ['-lnvidia-ml']
 
