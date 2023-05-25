@@ -66,7 +66,7 @@ site_configuration = {
                         },
                     ],
                     'features': [
-                        'gpu', 'nvgpu', 'remote', 'sarus', 'singularity', 'mpi'
+                        'gpu', 'nvgpu', 'remote', 'sarus', 'singularity',
                     ],
                     'devices': [
                         {
@@ -114,7 +114,6 @@ site_configuration = {
                     ],
                     'features': [
                         'gpu', 'amdgpu', 'remote', 'sarus', 'singularity',
-                        'mpi'
                     ],
                     'launcher': 'srun'
                 },
@@ -153,7 +152,7 @@ site_configuration = {
                             'options': ['--mem={mem_per_node}']
                         },
                     ],
-                    'features': ['remote', 'sarus', 'singularity', 'mpi'],
+                    'features': ['remote', 'sarus', 'singularity'],
                     'launcher': 'srun'
                 }
             ]
