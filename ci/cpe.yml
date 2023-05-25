@@ -15,11 +15,9 @@ run rfm_test:
     - python3 -m venv venv_reframe_cpe
     - source venv_reframe_cpe/bin/activate
     - pip install reframe-hpc
-    - export RFM_AUTODETECT_XTHOSTNAME=1
-    - export RFM_REMOTE_DETECT=0
-    - reframe -C config/cscs.py \
-      -c checks/prgenv/cuda/nvml_check.py \
-      -c checks/prgenv/mpi.py \
+    - reframe -C config/cscs.py
+      -c checks/prgenv/cuda/nvml_check.py
+      -c checks/prgenv/mpi.py
       --report-junit=reportcpe.xml -r
     - deactivate
   artifacts:
@@ -28,3 +26,11 @@ run rfm_test:
       - reportcpe.xml
     reports:
       junit: reportcpe.xml
+
+# TODO: add
+#       -c checks/containers/sarus/check_osu_benchmarks.py \
+#       -c checks/containers/sarus/check_pull_command.py \
+#       -c checks/containers/sarus/check_cuda_nbody.py \
+#       -c checks/containers/sarus/check_osu_benchmarks.py \
+#ok     -c checks/containers/sarus/check_pyfr.py \
+#ok     -c checks/containers/sarus/check_root_squash_bind_mount.py \
