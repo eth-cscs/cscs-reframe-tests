@@ -66,7 +66,7 @@ site_configuration = {
                         },
                     ],
                     'features': [
-                        'gpu', 'nvgpu', 'remote', 'sarus', 'singularity'
+                        'gpu', 'nvgpu', 'remote', 'sarus', 'singularity', 'mpi'
                     ],
                     'devices': [
                         {
@@ -114,6 +114,7 @@ site_configuration = {
                     ],
                     'features': [
                         'gpu', 'amdgpu', 'remote', 'sarus', 'singularity',
+                        'mpi'
                     ],
                     'launcher': 'srun'
                 },
@@ -152,7 +153,7 @@ site_configuration = {
                             'options': ['--mem={mem_per_node}']
                         },
                     ],
-                    'features': ['remote', 'sarus', 'singularity'],
+                    'features': ['remote', 'sarus', 'singularity', 'mpi'],
                     'launcher': 'srun'
                 }
             ]
@@ -162,22 +163,26 @@ site_configuration = {
         {
             'name': 'PrgEnv-aocc',
             'target_systems': ['hohgant'],
-            'modules': ['cray', 'PrgEnv-aocc']
+            'modules': ['cray', 'PrgEnv-aocc'],
+            'features': ['mpi']
         },
         {
             'name': 'PrgEnv-cray',
             'target_systems': ['hohgant'],
-            'modules': ['cray', 'PrgEnv-cray']
+            'modules': ['cray', 'PrgEnv-cray'],
+            'features': ['mpi']
         },
         {
             'name': 'PrgEnv-gnu',
             'target_systems': ['hohgant'],
-            'modules': ['cray', 'PrgEnv-gnu']
+            'modules': ['cray', 'PrgEnv-gnu'],
+            'features': ['mpi']
         },
         {
             'name': 'PrgEnv-nvhpc',
             'target_systems': ['hohgant'],
             'modules': ['cray', 'PrgEnv-nvhpc'],
+            'features': ['mpi'],
             'extras': {
                 'launcher_options': '--mpi=pmi2',
             },
@@ -186,6 +191,7 @@ site_configuration = {
             'name': 'PrgEnv-nvidia',
             'target_systems': ['hohgant'],
             'modules': ['cray', 'PrgEnv-nvidia'],
+            'features': ['mpi'],
             'extras': {
                 # "MPIR_pmi_init(83)....: PMI2_Job_GetId returned 14"
                 # -> add --mpi=pmi2 at runtime

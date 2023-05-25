@@ -40,10 +40,10 @@ class MpiInitTest(rfm.RegressionTest):
 
     @run_after('setup')
     def skip_if_no_mpi(self):
-        self.skip_if(self.current_partition.name.startswith('login'),
-                     'skip login partition')
-        self.skip_if(self.current_environ.name.startswith('builtin'),
-                     'skip builtin pe')
+        self.skip_if('mpi' not in self.current_partition.features,
+                     'skip partition with no mpi')
+        self.skip_if('mpi' not in self.current_environ.features,
+                     'skip environ with no mpi')
 
     @run_before('run')
     def set_job_parameters(self):
