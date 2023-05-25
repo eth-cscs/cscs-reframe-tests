@@ -17,7 +17,7 @@ run rfm_test:
     - pip install reframe-hpc
     - export RFM_AUTODETECT_XTHOSTNAME=1
     - export RFM_REMOTE_DETECT=0
-    - reframe -C config/cscs.py -c checks/prgenv/mpi.py -n multiple --report-junit=reportcpe.xml -r
+    - reframe -C config/cscs.py -c checks/prgenv/mpi.py --report-junit=reportcpe.xml -r
     - deactivate
   artifacts:
     when: always
