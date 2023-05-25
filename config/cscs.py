@@ -22,6 +22,7 @@ system_configs = [
     import_module_from_file(f).site_configuration for f in config_files
 ]
 
+# Build the configuration dictionary from all the systems/*.py config files
 site_configuration = {}
 for c in system_configs:
     for key, val in c.items():
