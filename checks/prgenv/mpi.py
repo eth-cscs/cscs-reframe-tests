@@ -17,7 +17,7 @@ class MpiInitTest(rfm.RegressionTest):
     required_thread = parameter(['single', 'funneled', 'serialized',
                                  'multiple'])
     valid_prog_environs = ['+mpi']
-    valid_systems = ['+mpi']
+    valid_systems = ['+remote']
     build_system = 'SingleSource'
     sourcesdir = 'src/mpi_thread'
     sourcepath = 'mpi_init_thread.cpp'
@@ -31,7 +31,6 @@ class MpiInitTest(rfm.RegressionTest):
     )
     prebuild_cmds += ['module list']
     time_limit = '2m'
-    maintainers = ['@jgphpc']
     tags = {'production', 'craype'}
 
     @run_after('init')
