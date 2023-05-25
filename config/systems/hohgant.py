@@ -176,7 +176,7 @@ site_configuration = {
             'name': 'PrgEnv-gnu',
             'target_systems': ['hohgant'],
             'modules': ['cray', 'PrgEnv-gnu'],
-            'features': ['mpi']
+            'features': ['mpi', 'cuda']
         },
         {
             'name': 'PrgEnv-nvhpc',
