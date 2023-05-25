@@ -66,7 +66,7 @@ site_configuration = {
                         },
                     ],
                     'features': [
-                        'gpu', 'nvgpu', 'remote', 'sarus', 'singularity',
+                        'gpu', 'nvgpu', 'remote', 'sarus', 'singularity'
                     ],
                     'devices': [
                         {

@@ -14,28 +14,15 @@ class MpiInitTest(rfm.RegressionTest):
     '''
     This test checks the value returned by calling MPI_Init_thread.
     '''
-    required_thread = parameter(['single', 'funneled', 'serialized',
-                                 'multiple'])
+    required_threads = ['funneled', 'serialized', 'multiple']
     valid_prog_environs = ['+mpi']
     valid_systems = ['+remote']
-    build_system = 'SingleSource'
+    build_system = 'Make'
     sourcesdir = 'src/mpi_thread'
-    sourcepath = 'mpi_init_thread.cpp'
-    cppflags = variable(
-        dict, value={
-            'single': ['-D_MPI_THREAD_SINGLE'],
-            'funneled': ['-D_MPI_THREAD_FUNNELED'],
-            'serialized': ['-D_MPI_THREAD_SERIALIZED'],
-            'multiple': ['-D_MPI_THREAD_MULTIPLE']
-        }
-    )
+    executable = 'mpi_init_thread_single.exe'
     prebuild_cmds += ['module list']
     time_limit = '2m'
     tags = {'production', 'craype'}
-
-    @run_after('init')
-    def set_cpp_flags(self):
-        self.build_system.cppflags = self.cppflags[self.required_thread]
 
     @run_before('run')
     def set_job_parameters(self):
@@ -45,6 +32,15 @@ class MpiInitTest(rfm.RegressionTest):
             if 'launcher_options' in self.current_environ.extras
             else ''
         )
+
+    @run_before('run')
+    def pre_launch(self):
+        cmd = self.job.launcher.run_command(self.job)
+        self.prerun_cmds = [
+            f'{cmd} mpi_init_thread_{ii}.exe &> {ii}.rpt'
+            for ii in self.required_threads
+        ]
+        self.postrun_cmds = ['ln -s rfm_job.out single.rpt']
 
     @run_before('sanity')
     def set_sanity(self):
@@ -77,15 +73,46 @@ class MpiInitTest(rfm.RegressionTest):
             },
         }
         # }}}
+        # {{{ regexes:
         regex = (r'^mpi_thread_required=(\w+)\s+mpi_thread_supported=\w+'
                  r'\s+mpi_thread_queried=\w+\s+(\d)')
-        required_thread = sn.extractsingle(regex, stdout, 1)
-        found_mpithread = sn.extractsingle(regex, stdout, 2, int)
+        # single:
+        req_thread_si = sn.extractsingle(regex, stdout, 1)
+        runtime_mpithread_si = sn.extractsingle(
+            regex, stdout, 2, int)
+        # funneled:
+        req_thread_f = sn.extractsingle(
+            regex, f'{self.stagedir}/funneled.rpt', 1)
+        runtime_mpithread_f = sn.extractsingle(
+            regex, f'{self.stagedir}/funneled.rpt', 2, int)
+        # serialized:
+        req_thread_s = sn.extractsingle(
+            regex, f'{self.stagedir}/serialized.rpt', 1)
+        runtime_mpithread_s = sn.extractsingle(
+            regex, f'{self.stagedir}/serialized.rpt', 2, int)
+        # multiple:
+        req_thread_m = sn.extractsingle(
+            regex, f'{self.stagedir}/multiple.rpt', 1)
+        runtime_mpithread_m = sn.extractsingle(
+            regex, f"{self.stagedir}/multiple.rpt", 2, int)
+        # }}}
         self.sanity_patterns = sn.all([
             sn.assert_found(r'tid=0 out of 1 from rank 0 out of 1',
                             stdout, msg='sanity: not found'),
-            sn.assert_eq(found_mpithread,
+            sn.assert_eq(runtime_mpithread_si,
                          self.mpithread_version[sn.evaluate(mpich_version)]
-                                               [sn.evaluate(required_thread)],
-                         msg='sanity_eq: {0} != {1}')
+                                               [sn.evaluate(req_thread_si)],
+                         msg='sanity_eq: {0} != {1}'),
+            sn.assert_eq(runtime_mpithread_f,
+                         self.mpithread_version[sn.evaluate(mpich_version)]
+                                               [sn.evaluate(req_thread_f)],
+                         msg='sanity_eq: {0} != {1}'),
+            sn.assert_eq(runtime_mpithread_s,
+                         self.mpithread_version[sn.evaluate(mpich_version)]
+                                               [sn.evaluate(req_thread_s)],
+                         msg='sanity_eq: {0} != {1}'),
+            sn.assert_eq(runtime_mpithread_m,
+                         self.mpithread_version[sn.evaluate(mpich_version)]
+                                               [sn.evaluate(req_thread_m)],
+                         msg='sanity_eq: {0} != {1}'),
         ])
