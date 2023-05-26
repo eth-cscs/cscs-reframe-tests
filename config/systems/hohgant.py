@@ -162,27 +162,26 @@ site_configuration = {
         {
             'name': 'PrgEnv-aocc',
             'target_systems': ['hohgant'],
-            'modules': ['cray', 'PrgEnv-aocc']
+            'modules': ['cray', 'PrgEnv-aocc'],
+            'features': ['mpi']
         },
         {
             'name': 'PrgEnv-cray',
             'target_systems': ['hohgant'],
-            'modules': ['cray', 'PrgEnv-cray']
+            'modules': ['cray', 'PrgEnv-cray'],
+            'features': ['mpi', 'cuda']
         },
         {
             'name': 'PrgEnv-gnu',
             'target_systems': ['hohgant'],
-            'modules': ['cray', 'PrgEnv-gnu']
-        },
-        {
-            'name': 'PrgEnv-intel',
-            'target_systems': ['hohgant'],
-            'modules': ['cray', 'PrgEnv-intel']
+            'modules': ['cray', 'PrgEnv-gnu'],
+            'features': ['mpi', 'cuda']
         },
         {
             'name': 'PrgEnv-nvhpc',
             'target_systems': ['hohgant'],
             'modules': ['cray', 'PrgEnv-nvhpc'],
+            'features': ['mpi', 'cuda'],
             'extras': {
                 'launcher_options': '--mpi=pmi2',
             },
@@ -191,6 +190,7 @@ site_configuration = {
             'name': 'PrgEnv-nvidia',
             'target_systems': ['hohgant'],
             'modules': ['cray', 'PrgEnv-nvidia'],
+            'features': ['mpi'],
             'extras': {
                 # "MPIR_pmi_init(83)....: PMI2_Job_GetId returned 14"
                 # -> add --mpi=pmi2 at runtime

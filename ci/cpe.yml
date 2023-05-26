@@ -1,0 +1,37 @@
+include:
+  - remote: 'https://gitlab.com/cscs-ci/recipes/-/raw/master/templates/v2/.ci-ext.yml'
+
+stages:
+  - run
+
+run rfm_test:
+  extends: .container-runner-hohgant
+  stage: run
+  tags: ['hohgant-login-baremetal']
+  variables:
+    GIT_STRATEGY: fetch
+  script:
+    - rm -fr venv_reframe_cpe
+    - python3 -m venv venv_reframe_cpe
+    - source venv_reframe_cpe/bin/activate
+    - pip install reframe-hpc
+    - reframe -C config/cscs.py
+      --system hohgant
+      -c checks/prgenv/cuda/nvml_check.py
+      -c checks/prgenv/mpi.py
+      --report-junit=reportcpe.xml -r
+    - deactivate
+  artifacts:
+    when: always
+    paths:
+      - reportcpe.xml
+    reports:
+      junit: reportcpe.xml
+
+# TODO: add
+#       -c checks/containers/sarus/check_osu_benchmarks.py \
+#       -c checks/containers/sarus/check_pull_command.py \
+#       -c checks/containers/sarus/check_cuda_nbody.py \
+#       -c checks/containers/sarus/check_osu_benchmarks.py \
+#ok     -c checks/containers/sarus/check_pyfr.py \
+#ok     -c checks/containers/sarus/check_root_squash_bind_mount.py \
