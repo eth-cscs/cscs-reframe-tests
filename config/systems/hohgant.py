@@ -182,7 +182,6 @@ site_configuration = {
             'target_systems': ['hohgant'],
             'modules': ['cray', 'PrgEnv-nvhpc'],
             'features': ['mpi', 'cuda'],
-            # 'prepare_cmds': ['module unload cudatoolkit'],
             'extras': {
                 'launcher_options': '--mpi=pmi2',
             },
