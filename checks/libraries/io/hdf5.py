@@ -10,6 +10,10 @@ import reframe.utility.sanity as sn
 
 @rfm.simple_test
 class HDF5Test(rfm.RegressionTest):
+    """
+    Create a file and dataset and select/read a subset from the dataset
+    https://portal.hdfgroup.org/display/HDF5/Examples+from+Learning+the+Basics
+    """
     lang = parameter(['cpp', 'f90'])
     valid_systems = ['+remote']
     valid_prog_environs = ['+mpi']
@@ -19,10 +23,6 @@ class HDF5Test(rfm.RegressionTest):
     num_tasks = 1
     postrun_cmds = ['h5ls *.h5']
     tags = {'production', 'craype', 'health'}
-
-    # NOTE: keeping (reference to old workarounds) as reminder:
-    # https://github.com/eth-cscs/cscs-reframe-tests/blob/v23.05/checks/
-    # -> libraries/io/hdf5_compile_run.py#L51
 
     @run_before('compile')
     def set_source(self):
@@ -38,3 +38,7 @@ class HDF5Test(rfm.RegressionTest):
     def set_sanity(self):
         self.sanity_patterns = sn.assert_found(r'IntArray\s+Dataset \{8, 10\}',
                                                self.stdout)
+
+    # NOTE: keeping (reference to old workarounds) as reminder:
+    # https://github.com/eth-cscs/cscs-reframe-tests/blob/v23.05/checks/
+    # -> libraries/io/hdf5_compile_run.py#L51
