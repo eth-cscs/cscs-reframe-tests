@@ -18,7 +18,6 @@ class HDF5Test(rfm.RegressionTest):
     valid_systems = ['+remote']
     valid_prog_environs = ['+mpi']
     build_system = 'SingleSource'
-    sourcesdir = None
     modules = ['cray-hdf5']
     num_tasks = 1
     postrun_cmds = ['h5ls *.h5']
@@ -31,7 +30,7 @@ class HDF5Test(rfm.RegressionTest):
             'cpp': 'c++/examples/h5tutr_subset.cpp',
             'f90': 'fortran/examples/h5_subset.f90'
         }
-        self.prebuild_cmds = [f'wget --quiet {repo}/{src[self.lang]}']
+        # self.prebuild_cmds = [f'wget --quiet {repo}/{src[self.lang]}']
         self.sourcepath = src[self.lang].split("/")[-1]
 
     @run_before('sanity')
