@@ -19,6 +19,7 @@ run rfm_test:
       --system hohgant
       -c checks/prgenv/cuda/nvml_check.py
       -c checks/prgenv/mpi.py
+      -c checks/libraries/io/hdf5.py
       --report-junit=reportcpe.xml -r
     - deactivate
   artifacts:
