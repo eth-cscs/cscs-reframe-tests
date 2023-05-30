@@ -30,7 +30,6 @@ class HDF5Test(rfm.RegressionTest):
             'cpp': 'c++/examples/h5tutr_subset.cpp',
             'f90': 'fortran/examples/h5_subset.f90'
         }
-        # self.prebuild_cmds = [f'wget --quiet {repo}/{src[self.lang]}']
         self.sourcepath = src[self.lang].split("/")[-1]
 
     @run_before('sanity')
