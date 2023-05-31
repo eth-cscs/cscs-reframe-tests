@@ -192,9 +192,9 @@ site_configuration = {
             'modules': ['cray', 'PrgEnv-nvidia'],
             'features': ['mpi', 'openacc'],
             'extras': {
+                 # Workaround "MPIR_pmi_init(83)....: PMI2_Job_GetId returned 14" error
                 'launcher_options': '--mpi=pmi2',
             },
-
         },
     ],
     'modes': [

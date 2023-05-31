@@ -16,7 +16,6 @@ class OpenACCFortranCheck(rfm.RegressionTest):
     modules = ['cudatoolkit']
     num_gpus_per_node = 1
     num_tasks_per_node = 1
-    maintainers = ['TM', 'AJ']
     tags = {'production', 'craype'}
 
     @run_after('init')
@@ -50,8 +49,7 @@ class OpenACCFortranCheck(rfm.RegressionTest):
     @run_before('run')
     def setup_mpi_gpu_support(self):
         if self.variant == 'mpi':
-            pass
-            #self.env_vars['MPICH_GPU_SUPPORT_ENABLED'] = 1
+            self.env_vars['MPICH_GPU_SUPPORT_ENABLED'] = 1
 
     @run_before('run')
     def set_laucnher_options(self):
