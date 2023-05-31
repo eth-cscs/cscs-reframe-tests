@@ -16,10 +16,10 @@ run rfm_test:
     - source venv_reframe_cpe/bin/activate
     - pip install reframe-hpc
     - reframe -C config/cscs.py
-      --system hohgant
       -c checks/prgenv/cuda/nvml_check.py
       -c checks/prgenv/mpi.py
       -c checks/libraries/io/hdf5.py
+      -c checks/microbenchmarks/cpu/alloc_speed/alloc_speed.py
       --report-junit=reportcpe.xml -r
     - deactivate
   artifacts:
