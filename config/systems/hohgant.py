@@ -175,7 +175,10 @@ site_configuration = {
             'name': 'PrgEnv-gnu',
             'target_systems': ['hohgant'],
             'modules': ['cray', 'PrgEnv-gnu'],
-            'features': ['mpi', 'cuda']
+            'features': ['mpi', 'cuda', 'alloc_speed'],
+            'extras': {
+                'hugepages2M': ['craype-hugepages2M']
+            }
         },
         {
             'name': 'PrgEnv-nvhpc',
