@@ -1,4 +1,4 @@
-# Copyright 2016-2022 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright 2016-2023 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -10,48 +10,64 @@ import reframe.utility.sanity as sn
 @rfm.simple_test
 class OpenACCFortranCheck(rfm.RegressionTest):
     variant = parameter(['mpi', 'nompi'])
-    valid_systems = ['daint:gpu', 'dom:gpu', 'arolla:cn', 'tsa:cn']
-    valid_prog_environs = ['PrgEnv-cray', 'PrgEnv-nvidia']
+    valid_systems = ['+nvgpu']
     sourcesdir = 'src/openacc'
     build_system = 'SingleSource'
+    modules = ['cudatoolkit']
     num_gpus_per_node = 1
     num_tasks_per_node = 1
     maintainers = ['TM', 'AJ']
     tags = {'production', 'craype'}
 
     @run_after('init')
+    def set_valid_prgenv(self):
+        self.valid_prog_environs = ['+openacc']
+        if self.variant == 'mpi':
+            self.valid_prog_environs = ['+openacc +mpi']
+
+    @run_after('init')
     def set_numtasks(self):
         if self.variant == 'nompi':
             self.num_tasks = 1
             self.sourcepath = 'vecAdd_openacc_nompi.f90'
-            if self.current_system.name in ['arolla', 'tsa']:
-                self.valid_prog_environs = ['PrgEnv-pgi-nompi']
         else:
             self.num_tasks = 2
             self.sourcepath = 'vecAdd_openacc_mpi.f90'
 
-    @run_before('compile')
-    def set_variables(self):
-        if self.current_system.name in ['arolla', 'tsa']:
-            self.exclusive_access = True
-            self.env_vars = {
-                'CRAY_ACCEL_TARGET': 'nvidia70',
-                'MV2_USE_CUDA': 1
-            }
+    @run_after('setup')
+    def set_modules(self):
+        curr_part = self.current_partition
+        gpu_arch = curr_part.select_devices('gpu')[0].arch
 
-    @run_before('compile')
-    def setflags(self):
-        if self.current_environ.name.startswith('PrgEnv-cray'):
-            self.build_system.fflags = ['-hacc', '-hnoomp']
-        elif (self.current_environ.name.startswith('PrgEnv-pgi') or
-              self.current_environ.name == 'PrgEnv-nvidia'):
-            if self.current_system.name in ['daint', 'dom']:
-                self.build_system.fflags = ['-acc', '-ta=tesla:cc60']
-            elif self.current_system.name in ['arolla', 'tsa']:
-                self.build_system.fflags = ['-acc', '-ta=tesla:cc70']
+        # Remove the '^sm_' prefix from the arch, e.g sm_80 -> 80
+        if gpu_arch.startswith('sm_'): 
+            accel_compute_capability = gpu_arch[len('sm_'):]
+        else:
+            accel_compute_capability = '80'
 
-    @run_before('sanity')
-    def set_sanity(self):
+        self.modules += [f'craype-accel-nvidia{accel_compute_capability}']
+
+    @run_before('run')
+    def setup_mpi_gpu_support(self):
+        if self.variant == 'mpi':
+            pass
+            #self.env_vars['MPICH_GPU_SUPPORT_ENABLED'] = 1
+
+    @run_before('run')
+    def set_laucnher_options(self):
+        self.job.launcher.options += [
+            self.current_environ.extras.get('launcher_options', '')
+        ]
+
+    @run_before('run')
+    def set_cuda_visible_devices(self):
+        curr_part = self.current_partition
+        self.gpu_count = curr_part.select_devices('gpu')[0].num_devices
+        cuda_visible_devices = ','.join(f'{i}' for i in range(self.gpu_count))
+        self.env_vars['CUDA_VISIBLE_DEVICES'] = cuda_visible_devices
+
+    @sanity_function
+    def assert_correct_result(self):
         result = sn.extractsingle(r'final result:\s+(?P<result>\d+\.?\d*)',
                                   self.stdout, 'result', float)
-        self.sanity_patterns = sn.assert_reference(result, 1., -1e-5, 1e-5)
+        return sn.assert_reference(result, 1., -1e-5, 1e-5)
