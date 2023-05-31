@@ -14,7 +14,6 @@ class AllocSpeedTest(rfm.RegressionTest):
     valid_systems = ['+remote']
     valid_prog_environs = ['+alloc_speed']
     build_system = 'SingleSource'
-    maintainers = ['AK', 'VH']
     tags = {'production', 'craype'}
 
     @run_after('init')
