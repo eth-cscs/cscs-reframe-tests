@@ -39,7 +39,7 @@ class OpenACCFortranCheck(rfm.RegressionTest):
         gpu_arch = curr_part.select_devices('gpu')[0].arch
 
         # Remove the '^sm_' prefix from the arch, e.g sm_80 -> 80
-        if gpu_arch.startswith('sm_'): 
+        if gpu_arch.startswith('sm_'):
             accel_compute_capability = gpu_arch[len('sm_'):]
         else:
             accel_compute_capability = '80'
@@ -47,12 +47,12 @@ class OpenACCFortranCheck(rfm.RegressionTest):
         self.modules += [f'craype-accel-nvidia{accel_compute_capability}']
 
     @run_before('run')
-    def setup_mpi_gpu_support(self):
+    def set_mpi_gpu_support(self):
         if self.variant == 'mpi':
             self.env_vars['MPICH_GPU_SUPPORT_ENABLED'] = 1
 
     @run_before('run')
-    def set_laucnher_options(self):
+    def set_launcher_options(self):
         self.job.launcher.options += [
             self.current_environ.extras.get('launcher_options', '')
         ]
