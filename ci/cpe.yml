@@ -20,6 +20,7 @@ run rfm_test:
       -c checks/prgenv/cuda/nvml_check.py
       -c checks/prgenv/mpi.py
       -c checks/libraries/io/hdf5.py
+      -c checks/containers/sarus/check_gpu_ids.py
       --report-junit=reportcpe.xml -r
     - deactivate
   artifacts:
