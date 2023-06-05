@@ -18,6 +18,7 @@ run rfm_test:
     - reframe -C config/cscs.py
       --system hohgant
       -c checks/prgenv/cuda/nvml_check.py
+      -c checks/prgenv/cuda-fortran/cuda_fortran_check.py
       -c checks/prgenv/mpi.py
       -c checks/libraries/io/hdf5.py
       -c checks/containers/sarus/check_gpu_ids.py
