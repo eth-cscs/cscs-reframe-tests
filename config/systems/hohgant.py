@@ -190,7 +190,7 @@ site_configuration = {
             'name': 'PrgEnv-nvidia',
             'target_systems': ['hohgant'],
             'modules': ['cray', 'PrgEnv-nvidia'],
-            'features': ['mpi'],
+            'features': ['mpi', 'cuda-fortran'],
             'extras': {
                 # "MPIR_pmi_init(83)....: PMI2_Job_GetId returned 14"
                 # -> add --mpi=pmi2 at runtime
