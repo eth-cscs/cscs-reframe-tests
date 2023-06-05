@@ -28,8 +28,8 @@ class SarusNvidiaSmiCheck(rfm.RunOnlyRegressionTest):
     @run_after('setup')
     def setup_sarus(self):
         self.container_platform.image = self.image
-        self.prerun_cmds = ['sarus --version', 'unset XDG_RUNTIME_DIR',
-                            'nvidia-smi -L > native.out']
+        self.prerun_cmds = ['sarus --version', 'nvidia-smi -L > native.out']
+        self.env_vars['XDG_RUNTIME_DIR'] = ''
         self.container_platform.command = 'nvidia-smi -L > sarus.out'
 
     @sanity_function
