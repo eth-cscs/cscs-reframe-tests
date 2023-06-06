@@ -11,12 +11,12 @@ import reframe.utility.sanity as sn
 
 sys.path.append(str(pathlib.Path(__file__).parent.parent.parent / 'mixins'))
 
-from cuda_visible_devices import CudaVisibleDevicesMixin
+from cuda_visible_devices_all import CudaVisibleDevicesAllMixin
 from extra_launcher_options import ExtraLauncherOptionsMixin
 
 
 @rfm.simple_test
-class CUDAFortranCheck(CudaVisibleDevicesMixin, ExtraLauncherOptionsMixin,
+class CUDAFortranCheck(CudaVisibleDevicesAllMixin, ExtraLauncherOptionsMixin,
                        rfm.RegressionTest):
     valid_systems = ['+nvgpu']
     valid_prog_environs = ['+cuda-fortran']

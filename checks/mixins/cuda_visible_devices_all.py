@@ -6,7 +6,7 @@
 import reframe as rfm
 
 
-class CudaVisibleDevicesMixin(rfm.RegressionMixin):
+class CudaVisibleDevicesAllMixin(rfm.RegressionMixin):
     @run_after('setup')
     def set_cuda_visible_devices(self):
         curr_part = self.current_partition
