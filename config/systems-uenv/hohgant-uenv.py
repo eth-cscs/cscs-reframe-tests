@@ -13,9 +13,9 @@ import yaml
 uenv_file = os.environ.get('UENV_FILE', None)
 uenv_mount = os.environ.get('UENV_MOUNT', '/user-environment')
 
-uenv_access = [] 
-uenv_modules_path = [] 
-image_name = None 
+uenv_access = []
+uenv_modules_path = []
+image_name = None
 partitions = []
 features = []
 
@@ -24,7 +24,6 @@ if uenv_file is not None:
         f'--uenv-file={uenv_file}',
         f'--uenv-mount={uenv_mount}',
     ]
-    uenv_modules_path = [f'module use {uenv_mount}/modules']
     image_path = pathlib.Path(uenv_file)
     image_name = image_path.stem
 
@@ -33,50 +32,50 @@ with open(image_path.parent / f'{image_name}.yaml') as image_envs:
 
 
 if image_name is not None:
-    environs = image_environments['environments'] 
-    environ_names =  ([f'{image_name}_{e["name"]}'for e in environs] or 
+    environs = image_environments.keys()
+    environ_names =  ([f'{image_name}_{e}'for e in environs] or
                       [f'{image_name}_builtin'])
 
     partitions = [
-#        {
-#            'name': f'nvgpu',
-#            'scheduler': 'slurm',
-#            'time_limit': '10m',
-#            'environs': environ_names,
-#            'container_platforms': [
-#                {
-#                    'type': 'Sarus',
-#                },
-#                {
-#                    'type': 'Singularity',
-#                }
-#            ],
-#            'max_jobs': 100,
-#            'extras': {
-#                'cn_memory': 500,
-#            },
-#            'access': ['-pnvgpu'] + uenv_access,
-#            'resources': [
-#                {
-#                    'name': 'switches',
-#                    'options': ['--switches={num_switches}']
-#                },
-#                {
-#                    'name': 'memory',
-#                    'options': ['--mem={mem_per_node}']
-#                },
-#            ],
-#            'features': ['gpu', 'nvgpu', 'remote', 'uenv'] + features,
-#            'devices': [
-#                {
-#                    'type': 'gpu',
-#                    'arch': 'sm_80',
-#                    'num_devices': 4
-#                }
-#            ],
-#            'prepare_cmds': uenv_modules_path,
-#            'launcher': 'srun'
-#        },
+        {
+            'name': f'nvgpu',
+            'scheduler': 'slurm',
+            'time_limit': '10m',
+            'environs': environ_names,
+            'container_platforms': [
+                {
+                    'type': 'Sarus',
+                },
+                {
+                    'type': 'Singularity',
+                }
+            ],
+            'max_jobs': 100,
+            'extras': {
+                'cn_memory': 500,
+            },
+            'access': ['-pnvgpu'] + uenv_access,
+            'resources': [
+                {
+                    'name': 'switches',
+                    'options': ['--switches={num_switches}']
+                },
+                {
+                    'name': 'memory',
+                    'options': ['--mem={mem_per_node}']
+                },
+            ],
+            'features': ['gpu', 'nvgpu', 'remote', 'uenv'] + features,
+            'devices': [
+                {
+                    'type': 'gpu',
+                    'arch': 'sm_80',
+                    'num_devices': 4
+                }
+            ],
+            'prepare_cmds': uenv_modules_path,
+            'launcher': 'srun'
+        },
         {
             'name': f'amdgpu',
             'scheduler': 'slurm',
@@ -128,17 +127,20 @@ if image_name is not None:
     ]
 
 
-environs = image_environments['environments'] 
+environs = image_environments
 
 if environs:
     actual_environs = []
 
-for e in environs: 
+for k, v in environs.items():
     env = {
         'target_systems': ['hohgant-uenv']
     }
-    env.update(e)
-    env['name'] = f'{image_name}_{e["name"]}'
+    env.update(v)
+
+    env['prepare_cmds'] = [f'source {v["activation"]}']
+    env['name'] = f'{image_name}_{k}'
+    del env['activation']
     actual_environs.append(env)
 
 site_configuration = {
@@ -148,7 +150,7 @@ site_configuration = {
             'descr': 'Hohgant vcluster with uenv',
             'hostnames': ['hohgant'],
             'resourcesdir': '/users/manitart/reframe/resources',
-            'modules_system': 'lmod',
+            'modules_system': 'nomod',
             'partitions': partitions
         }
      ],
