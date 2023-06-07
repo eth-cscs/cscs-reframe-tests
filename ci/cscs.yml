@@ -11,14 +11,12 @@ run rfm_test:
   variables:
     GIT_STRATEGY: fetch
   script:
-    - rm -rf venv_reframe
-    - python3 -m venv venv_reframe
-    - source venv_reframe/bin/activate
-    - pip install reframe-hpc
+    - rm -rf reframe
+    - git clone -b feat/prepare_cmds_env https://github.com/teojgo/reframe.git
+    - cd reframe
+    - ./bootstrap.sh
     - export RFM_AUTODETECT_XTHOSTNAME=1
-    - export RFM_REMOTE_DETECT=0
-    - reframe -C config/cscs-uenv.py -c checks/uenv --report-junit=report.xml -r
-    - deactivate
+    - ./bin/reframe -C ../config/cscs-uenv.py -c ../checks/uenv --report-junit=../report.xml -r
   artifacts:
     when: always
     paths:
