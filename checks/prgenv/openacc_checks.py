@@ -13,6 +13,7 @@ class OpenACCFortranCheck(rfm.RegressionTest):
     valid_systems = ['+nvgpu']
     sourcesdir = 'src/openacc'
     build_system = 'SingleSource'
+    modules = ['cudatoolkit']
     num_tasks = 1
     num_gpus_per_node = 1
     num_tasks_per_node = 1
@@ -35,23 +36,22 @@ class OpenACCFortranCheck(rfm.RegressionTest):
     def set_compilers(self):
         curr_part = self.current_partition
         gpu_arch = curr_part.select_devices('gpu')[0].arch
+
         # Remove the '^sm_' prefix from the arch, e.g sm_80 -> 80
         if gpu_arch.startswith('sm_'):
             accel_compute_capability = gpu_arch[len('sm_'):]
         else:
             accel_compute_capability = '80'
 
-        self.modules += (
-            ["cudatoolkit", f"craype-accel-nvidia{accel_compute_capability}"]
-            if self.current_environ.name == "PrgEnv-cray"
-            else ""
-        )
-        acc_flags = {
-            'PrgEnv-nvidia': [
-                '-acc', f'-ta=tesla:cc{accel_compute_capability}'],
-            'PrgEnv-cray': ['-hacc', '-hnoomp'],
-        }
-        self.build_system.ldflags = acc_flags[self.current_environ.name]
+        self.modules += [f'craype-accel-nvidia{accel_compute_capability}']
+
+        if self.current_environ.name == 'PrgEnv-cray':
+            self.build_system.fflags = ['-hacc', '-hnoomp']
+        else:
+            self.build_system.fflags = [
+                '-acc', f'-gpu=cc{accel_compute_capability}'
+            ]
+
 
     @run_before('run')
     def set_launcher_options(self):
