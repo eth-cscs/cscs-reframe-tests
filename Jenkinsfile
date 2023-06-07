@@ -2,7 +2,7 @@
 
 def dirPrefix = 'ci-cscs-reframe-tests'
 def loginBash = '#!/bin/bash -l'
-def machinesList = params.machines.split()
+def machinesList = ['hohgant']
 def machinesToRun = machinesList
 def runTests = true
 def uniqueID
@@ -97,7 +97,7 @@ stage('Testing') {
                     checkout scm
                     changedTests =  sh(returnStdout: true,
                                        script: """${loginBash}
-                                       git diff origin/main...HEAD --name-only --oneline --no-merges | grep -e '^checks/.*\\.py' || echo 'NOTESTS'""").trim()
+                                       git diff origin/alps...HEAD --name-only --oneline --no-merges | grep -e '^checks/.*\\.py' || echo 'NOTESTS'""").trim()
 
                     changedTestsOption = changedTests == 'NOTESTS' ? '' : changedTests.split().collect { "-c $reframeDir/cscs-reframe-tests/$it" }.join(' ')
                     changedTestsOption = changedTests == 'NOTESTS' ? '' : "${changedTestsOption}"
@@ -115,9 +115,9 @@ stage('Testing') {
 
                     def exitStatus = sh(returnStatus: true,
                                         script: """${loginBash}
-                                                   ./bootstrap.sh
-                                                   export RFM_AUTODETECT_XTHOSTNAME=1
-                                                   ./bin/reframe -C ${configFile} --exec-policy=async --save-log-files -r -J account=jenscscs --flex-alloc-nodes=2 -t 'production|benchmark' $changedTestsOption""")
+                                                   echo ./bootstrap.sh
+                                                   echo export RFM_AUTODETECT_XTHOSTNAME=1
+                                                   echo ./bin/reframe -C ${configFile} --exec-policy=async --save-log-files -r -J account=jenscscs --flex-alloc-nodes=2 -t 'production|benchmark' $changedTestsOption""")
                     sh("exit $exitStatus")
                 }
             }
@@ -196,8 +196,8 @@ stage('Cleanup Stale') {
                                  script: """${loginBash}
                                             echo \$SCRATCH""").trim()
                 sh("""${loginBash}
-                      find ${scratch} -maxdepth 1 -name 'ci-cscs-reframe-tests*' -ctime +${staleCleanupInterval} -type d -exec printf 'Removing  %s\\n' {} +
-                      find ${scratch} -maxdepth 1 -name 'ci-cscs-reframe-tests*' -ctime +${staleCleanupInterval} -type d -exec rm -rf {} +""")
+                      find ${scratch} -maxdepth 1 -name '${dirPrefix}*' -ctime +${staleCleanupInterval} -type d -print0 | xargs -0 printf 'Removing:  %s\n'
+                      find ${scratch} -maxdepth 1 -name '${dirPrefix}*' -ctime +${staleCleanupInterval} -type d -print0 | xargs -0 rm -rfv""")
             }
         }
     }

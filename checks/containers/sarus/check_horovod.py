@@ -6,7 +6,7 @@ import reframe.utility.sanity as sn
 class SarusHorovodTFCNNCheck(rfm.RunOnlyRegressionTest):
     sourcesdir = 'https://github.com/tensorflow/benchmarks'
     valid_systems = ['dom:gpu', 'daint:gpu']
-    valid_prog_environs = ['builtin', 'PrgEnv-cray']
+    valid_prog_environs = ['builtin']
     container_platform = 'Sarus'
     num_tasks = 4
     num_tasks_per_node = 1

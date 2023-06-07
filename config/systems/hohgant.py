@@ -65,7 +65,9 @@ site_configuration = {
                             'options': ['--mem={mem_per_node}']
                         },
                     ],
-                    'features': ['gpu', 'nvgpu', 'remote'],
+                    'features': [
+                        'gpu', 'nvgpu', 'remote', 'sarus', 'singularity'
+                    ],
                     'devices': [
                         {
                             'type': 'gpu',
@@ -110,7 +112,9 @@ site_configuration = {
                             'options': ['--mem={mem_per_node}']
                         },
                     ],
-                    'features': ['gpu', 'amdgpu', 'remote'],
+                    'features': [
+                        'gpu', 'amdgpu', 'remote', 'sarus', 'singularity',
+                    ],
                     'launcher': 'srun'
                 },
                 {
@@ -148,7 +152,7 @@ site_configuration = {
                             'options': ['--mem={mem_per_node}']
                         },
                     ],
-                    'features': ['remote'],
+                    'features': ['remote', 'sarus', 'singularity'],
                     'launcher': 'srun'
                 }
             ]
@@ -159,28 +163,25 @@ site_configuration = {
             'name': 'PrgEnv-aocc',
             'target_systems': ['hohgant'],
             'modules': ['cray', 'PrgEnv-aocc'],
-            'features': ['mpi', 'openmp', 'serial']
+            'features': ['mpi']
         },
         {
             'name': 'PrgEnv-cray',
             'target_systems': ['hohgant'],
             'modules': ['cray', 'PrgEnv-cray'],
-            'features': ['mpi', 'openmp', 'serial']
+            'features': ['mpi', 'cuda']
         },
         {
             'name': 'PrgEnv-gnu',
             'target_systems': ['hohgant'],
-            'modules': ['cray', 'PrgEnv-gnu']
-        },
-        {
-            'name': 'PrgEnv-intel',
-            'target_systems': ['hohgant'],
-            'modules': ['cray', 'PrgEnv-intel']
+            'modules': ['cray', 'PrgEnv-gnu'],
+            'features': ['mpi', 'cuda']
         },
         {
             'name': 'PrgEnv-nvhpc',
             'target_systems': ['hohgant'],
             'modules': ['cray', 'PrgEnv-nvhpc'],
+            'features': ['mpi', 'cuda'],
             'extras': {
                 'launcher_options': '--mpi=pmi2',
             },
@@ -189,6 +190,7 @@ site_configuration = {
             'name': 'PrgEnv-nvidia',
             'target_systems': ['hohgant'],
             'modules': ['cray', 'PrgEnv-nvidia'],
+            'features': ['mpi'],
             'extras': {
                 # "MPIR_pmi_init(83)....: PMI2_Job_GetId returned 14"
                 # -> add --mpi=pmi2 at runtime
@@ -203,8 +205,8 @@ site_configuration = {
                 '--unload-module=reframe',
                 '--exec-policy=async',
                 '-Sstrict_check=1',
-                '--prefix=$SCRATCH/$USER/regression/production',
-                '--report-file=$SCRATCH/$USER/regression/production/reports/prod_report_{sessionid}.json',
+                '--prefix=$SCRATCH/regression/production',
+                '--report-file=$SCRATCH/regression/production/reports/prod_report_{sessionid}.json',
                 '--save-log-files',
                 '--tag=production',
                 '--timestamp=%F_%H-%M-%S'

@@ -8,8 +8,7 @@ import reframe.utility.osext as osext
 
 @rfm.simple_test
 class SarusRootSquashBindMount(rfm.RunOnlyRegressionTest):
-    valid_systems = ['dom:gpu', 'dom:mc', 'daint:gpu', 'daint:mc',
-            'eiger:mc', 'pilatus:mc', 'hohgant:nvgpu', 'hohgant:cpu']
+    valid_systems = ['+sarus']
     valid_prog_environs = ['builtin']
     sourcesdir = None
     container_platform = 'Sarus'
