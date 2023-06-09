@@ -10,131 +10,129 @@ import os
 import pathlib
 import yaml
 
+from reframe.core.exceptions import ConfigError
+
 uenv_file = os.environ.get('UENV_FILE', None)
 uenv_mount = os.environ.get('UENV_MOUNT', '/user-environment')
 
-uenv_access = []
-uenv_modules_path = []
-image_name = None
-partitions = []
-features = []
+if uenv_file is None:
+    raise ConfigError('UENV_FILE is not set')
 
-if uenv_file is not None:
-    uenv_access = [
-        f'--uenv-file={uenv_file}',
-        f'--uenv-mount={uenv_mount}',
-    ]
-    image_path = pathlib.Path(uenv_file)
-    image_name = image_path.stem
+image_path = pathlib.Path(uenv_file)
+if not image_path.exists():
+    raise ConfigError(f"uenv image: '{image_path}' does not exist")
 
-with open(image_path.parent / f'{image_name}.yaml') as image_envs:
-    image_environments = yaml.load(image_envs.read(), Loader=yaml.BaseLoader)
+image_name = image_path.stem
+
+# Options for the Slurm plugin to mount the Squashfs uenv image
+uenv_access = [f'--uenv-file={uenv_file}', f'--uenv-mount={uenv_mount}']
+
+try:
+    rfm_meta = image_path.parent / f'{image_name}.yaml'
+    with open(rfm_meta) as image_envs:
+        image_environments = yaml.load(
+            image_envs.read(), Loader=yaml.BaseLoader)
+except OSError as err:
+    raise ConfigError(f"problem loading the metadata from '{rfm_meta}'")
 
 
-if image_name is not None:
-    environs = image_environments.keys()
-    environ_names =  ([f'{image_name}_{e}'for e in environs] or
-                      [f'{image_name}_builtin'])
+environs = image_environments.keys()
+environ_names =  ([f'{image_name}_{e}'for e in environs] or
+                  [f'{image_name}_builtin'])
 
-    partitions = [
-        {
-            'name': f'nvgpu',
-            'scheduler': 'slurm',
-            'time_limit': '10m',
-            'environs': environ_names,
-            'container_platforms': [
-                {
-                    'type': 'Sarus',
-                },
-                {
-                    'type': 'Singularity',
-                }
-            ],
-            'max_jobs': 100,
-            'extras': {
-                'cn_memory': 500,
+partitions = [
+    {
+        'name': f'nvgpu',
+        'scheduler': 'slurm',
+        'time_limit': '10m',
+        'environs': environ_names,
+        'container_platforms': [
+            {
+                'type': 'Sarus',
             },
-            'access': ['-pnvgpu'] + uenv_access,
-            'resources': [
-                {
-                    'name': 'switches',
-                    'options': ['--switches={num_switches}']
-                },
-                {
-                    'name': 'memory',
-                    'options': ['--mem={mem_per_node}']
-                },
-            ],
-            'features': ['gpu', 'nvgpu', 'remote', 'uenv'] + features,
-            'devices': [
-                {
-                    'type': 'gpu',
-                    'arch': 'sm_80',
-                    'num_devices': 4
-                }
-            ],
-            'prepare_cmds': uenv_modules_path,
-            'launcher': 'srun'
+            {
+                'type': 'Singularity',
+            }
+        ],
+        'max_jobs': 100,
+        'extras': {
+            'cn_memory': 500,
         },
-        {
-            'name': f'amdgpu',
-            'scheduler': 'slurm',
-            'time_limit': '10m',
-            'environs': environ_names,
-            'max_jobs': 100,
-            'extras': {
-                'cn_memory': 500,
+        'access': ['-pnvgpu'] + uenv_access,
+        'resources': [
+            {
+                'name': 'switches',
+                'options': ['--switches={num_switches}']
             },
-            'access': ['-pamdgpu'] + uenv_access,
-            'resources': [
-                {
-                    'name': 'switches',
-                    'options': ['--switches={num_switches}']
-                },
-                {
-                    'name': 'memory',
-                    'options': ['--mem={mem_per_node}']
-                },
-            ],
-            'features': ['gpu', 'amdgpu', 'remote', 'uenv'] + features,
-            'prepare_cmds': uenv_modules_path,
-            'launcher': 'srun'
+            {
+                'name': 'memory',
+                'options': ['--mem={mem_per_node}']
+            },
+        ],
+        'features': ['gpu', 'nvgpu', 'remote', 'uenv'],
+        'devices': [
+            {
+                'type': 'gpu',
+                'arch': 'sm_80',
+                'num_devices': 4
+            }
+        ],
+        'launcher': 'srun'
+    },
+    {
+        'name': f'amdgpu',
+        'scheduler': 'slurm',
+        'time_limit': '10m',
+        'environs': environ_names,
+        'max_jobs': 100,
+        'extras': {
+            'cn_memory': 500,
         },
-        {
-            'name': f'cpu',
-            'scheduler': 'slurm',
-            'time_limit': '10m',
-            'environs': environ_names,
-            'max_jobs': 100,
-            'extras': {
-                'cn_memory': 500,
+        'access': ['-pamdgpu'] + uenv_access,
+        'resources': [
+            {
+                'name': 'switches',
+                'options': ['--switches={num_switches}']
             },
-            'access': ['-pcpu'] + uenv_access ,
-            'resources': [
-                {
-                    'name': 'switches',
-                    'options': ['--switches={num_switches}']
-                },
-                {
-                    'name': 'memory',
-                    'options': ['--mem={mem_per_node}']
-                },
-            ],
-            'features': ['remote', 'uenv'] + features,
-            'prepare_cmds': uenv_modules_path,
-            'launcher': 'srun'
-        }
-    ]
+            {
+                'name': 'memory',
+                'options': ['--mem={mem_per_node}']
+            },
+        ],
+        'features': ['gpu', 'amdgpu', 'remote', 'uenv'],
+        'launcher': 'srun'
+    },
+    {
+        'name': f'cpu',
+        'scheduler': 'slurm',
+        'time_limit': '10m',
+        'environs': environ_names,
+        'max_jobs': 100,
+        'extras': {
+            'cn_memory': 500,
+        },
+        'access': ['-pcpu'] + uenv_access ,
+        'resources': [
+            {
+                'name': 'switches',
+                'options': ['--switches={num_switches}']
+            },
+            {
+                'name': 'memory',
+                'options': ['--mem={mem_per_node}']
+            },
+        ],
+        'features': ['remote', 'uenv'],
+        'launcher': 'srun'
+    }
+]
 
-
-environs = image_environments
-
-if environs:
+if image_environments:
     actual_environs = []
 
-for k, v in environs.items():
+for k, v in image_environments.items():
     env = {
-        'target_systems': ['hohgant-uenv']
+        'target_systems': ['hohgant']
     }
     env.update(v)
 
@@ -146,7 +144,7 @@ for k, v in environs.items():
 site_configuration = {
     'systems': [
         {
-            'name': 'hohgant-uenv',
+            'name': 'hohgant',
             'descr': 'Hohgant vcluster with uenv',
             'hostnames': ['hohgant'],
             'resourcesdir': '/users/manitart/reframe/resources',
@@ -167,14 +165,14 @@ site_configuration = {
                 '--tag=production',
                 '--timestamp=%F_%H-%M-%S'
             ],
-            'target_systems': ['hohgant-uenv'],
+            'target_systems': ['hohgant'],
         }
     ],
     'environments': actual_environs,
     'general': [
         {
              'resolve_module_conflicts': False,
-             'target_systems': ['hohgant-uenv']
+             'target_systems': ['hohgant']
         }
     ]
 }

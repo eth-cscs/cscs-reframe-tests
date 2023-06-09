@@ -12,6 +12,7 @@ class BaseCheck(rfm.RunOnlyRegressionTest):
     pmi = variable(str, value='')
     env_vars = {
         'MPIR_CVAR_ENABLE_GPU': 0,
+        'MPICH_GPU_SUPPORT_ENABLED': 0,
         # Set to one byte more than the last entry of the test
         'MPIR_CVAR_CH4_OFI_MULTI_NIC_STRIPING_THRESHOLD': 4194305
     }
