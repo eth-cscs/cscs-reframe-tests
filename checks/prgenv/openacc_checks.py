@@ -13,7 +13,6 @@ class OpenACCFortranCheck(rfm.RegressionTest):
     valid_systems = ['+nvgpu']
     sourcesdir = 'src/openacc'
     build_system = 'SingleSource'
-    modules = ['cudatoolkit']
     num_tasks = 1
     num_gpus_per_node = 1
     num_tasks_per_node = 1
@@ -43,12 +42,14 @@ class OpenACCFortranCheck(rfm.RegressionTest):
         else:
             accel_compute_capability = '80'
 
-        self.modules += [f'craype-accel-nvidia{accel_compute_capability}']
-
         if self.current_environ.name == 'PrgEnv-cray':
-            self.build_system.fflags = ['-hacc', '-hnoomp']
+            self.modules = [
+                'cudatoolkit',
+                f'craype-accel-nvidia{accel_compute_capability}'
+            ]
+            self.build_system.fflags += ['-hacc', '-hnoomp']
         else:
-            self.build_system.fflags = [
+            self.build_system.fflags += [
                 '-acc', f'-gpu=cc{accel_compute_capability}'
             ]
 
