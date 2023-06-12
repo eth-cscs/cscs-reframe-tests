@@ -50,7 +50,7 @@ class PnetCDFTest(rfm.RegressionTest):
             # pkg-config --variable path gcc-toolchain -> /opt/cray/pe/gcc/12.2.0/snos
             # LD_PRELOAD=/opt/cray/pe/gcc/12.2.0/snos/lib64/libstdc++.so
             self.env_vars = {
-                'LD_PRELOAD': '/opt/cray/pe/gcc/12.2.0/snos/lib64/libstdc++.so'
+                'LD_PRELOAD': '$GCC_PREFIX/snos/lib64/libstdc++.so'
             }
 
     @run_before('run')
