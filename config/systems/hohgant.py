@@ -169,7 +169,7 @@ site_configuration = {
             'name': 'PrgEnv-cray',
             'target_systems': ['hohgant'],
             'modules': ['cray', 'PrgEnv-cray'],
-            'features': ['mpi', 'cuda']
+            'features': ['mpi', 'cuda', 'openacc']
         },
         {
             'name': 'PrgEnv-gnu',
@@ -193,10 +193,9 @@ site_configuration = {
             'name': 'PrgEnv-nvidia',
             'target_systems': ['hohgant'],
             'modules': ['cray', 'PrgEnv-nvidia'],
-            'features': ['mpi'],
+            'features': ['mpi', 'openacc'],
             'extras': {
-                # "MPIR_pmi_init(83)....: PMI2_Job_GetId returned 14"
-                # -> add --mpi=pmi2 at runtime
+                 # Workaround "MPIR_pmi_init(83)....: PMI2_Job_GetId returned 14" error
                 'launcher_options': '--mpi=pmi2',
             },
         },
