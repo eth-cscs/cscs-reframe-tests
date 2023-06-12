@@ -115,9 +115,9 @@ stage('Testing') {
 
                     def exitStatus = sh(returnStatus: true,
                                         script: """${loginBash}
-                                                   echo ./bootstrap.sh
-                                                   echo export RFM_AUTODETECT_XTHOSTNAME=1
-                                                   echo ./bin/reframe -C ${configFile} --exec-policy=async --save-log-files -r -J account=jenscscs --flex-alloc-nodes=2 -t 'production|benchmark' $changedTestsOption""")
+                                                   ./bootstrap.sh
+                                                   export RFM_AUTODETECT_XTHOSTNAME=1
+                                                   ./bin/reframe -C ${configFile} --exec-policy=async --save-log-files -r -J account=jenscscs --flex-alloc-nodes=2 -t 'production|benchmark' $changedTestsOption""")
                     sh("exit $exitStatus")
                 }
             }

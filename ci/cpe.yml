@@ -19,6 +19,7 @@ run rfm_test:
       --system hohgant
       -c checks/prgenv/cuda/nvml_check.py
       -c checks/prgenv/mpi.py
+      -c checks/prgenv/openacc_checks.py
       -c checks/libraries/io/hdf5.py
       -c checks/containers/sarus/check_gpu_ids.py
       --report-junit=reportcpe.xml -r
