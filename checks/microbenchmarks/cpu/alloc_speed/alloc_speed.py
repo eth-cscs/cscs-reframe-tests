@@ -42,27 +42,28 @@ class AllocSpeedTest(rfm.RegressionTest):
 
     @run_before('performance')
     def set_reference(self):
+        base_perf = 0.12
         sys_reference = {
             'no': {
                 'hohgant:nvgpu': {
-                    'time': (0.12, None, 0.15, 's')
+                    'time': (base_perf, None, 0.15, 's')
                 },
                 'hohgant:amdgpu': {
-                    'time': (0.12, None, 0.15, 's')
+                    'time': (base_perf, None, 0.15, 's')
                 },
                 'hohgant:cpu': {
-                    'time': (0.12, None, 0.15, 's')
+                    'time': (base_perf, None, 0.15, 's')
                 }
             },
             '2M': {
                 'hohgant:nvgpu': {
-                    'time': (0.06, None, 0.15, 's')
+                    'time': (base_perf/2, None, 0.15, 's')
                 },
                 'hohgant:amdgpu': {
-                    'time': (0.06, None, 0.15, 's')
+                    'time': (base_perf/2, None, 0.15, 's')
                 },
                 'hohgant:cpu': {
-                    'time': (0.06, None, 0.15, 's')
+                    'time': (base_perf/2, None, 0.15, 's')
                 }
             },
         }
