@@ -85,9 +85,7 @@ site_configuration = {
                         'builtin',
                         'PrgEnv-aocc',
                         'PrgEnv-cray',
-                        'PrgEnv-gnu',
-                        'PrgEnv-nvhpc',
-                        'PrgEnv-nvidia'
+                        'PrgEnv-gnu'
                     ],
                     'container_platforms': [
                         {
