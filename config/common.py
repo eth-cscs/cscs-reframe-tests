@@ -108,7 +108,7 @@ site_configuration = {
             'remote_detect': True
         }
     ],
-    'autodetect_methods': [
-        'cat /etc/xthostname', 'hostname'
-    ]
+#     'autodetect_methods': [
+#         'cat /etc/xthostname', 'hostname'
+#     ]
 }
