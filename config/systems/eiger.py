@@ -79,54 +79,54 @@ base_config = {
     ]
 }
 
-pilatus_sys = copy.deepcopy(base_config)
-pilatus_sys['name'] = 'pilatus'
-pilatus_sys['descr'] = 'Alps Cray EX Supercomputer TDS'
-pilatus_sys['hostnames'] = ['pilatus']
+eiger_sys = copy.deepcopy(base_config)
+eiger_sys['name'] = 'eiger'
+eiger_sys['descr'] = 'Alps Cray EX Supercomputer TDS'
+eiger_sys['hostnames'] = ['eiger']
 
 site_configuration = {
     'systems': [
-        pilatus_sys
+        eiger_sys
     ],
     'environments': [
         {
             'name': 'PrgEnv-aocc',
-            'target_systems': ['pilatus'],
+            'target_systems': ['eiger'],
             'modules': ['cray', 'PrgEnv-aocc']
         },
         {
             'name': 'PrgEnv-cray',
-            'target_systems': ['pilatus'],
+            'target_systems': ['eiger'],
             'modules': ['cray', 'PrgEnv-cray']
         },
         {
             'name': 'PrgEnv-gnu',
-            'target_systems': ['pilatus'],
+            'target_systems': ['eiger'],
             'modules': ['cray', 'PrgEnv-gnu']
         },
         {
             'name': 'PrgEnv-intel',
-            'target_systems': ['pilatus'],
+            'target_systems': ['eiger'],
             'modules': ['cray', 'PrgEnv-intel']
         },
         {
             'name': 'cpeAMD',
-            'target_systems': ['pilatus'],
+            'target_systems': ['eiger'],
             'modules': ['cray', 'cpeAMD']
         },
         {
             'name': 'cpeCray',
-            'target_systems': ['pilatus'],
+            'target_systems': ['eiger'],
             'modules': ['cray', 'cpeCray']
         },
         {
             'name': 'cpeGNU',
-            'target_systems': ['pilatus'],
+            'target_systems': ['eiger'],
             'modules': ['cray', 'cpeGNU']
         },
         {
             'name': 'cpeIntel',
-            'target_systems': ['pilatus'],
+            'target_systems': ['eiger'],
             'modules': ['cray', 'cpeIntel']
         },
     ],
