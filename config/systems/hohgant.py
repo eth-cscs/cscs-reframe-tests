@@ -161,19 +161,19 @@ site_configuration = {
             'name': 'PrgEnv-aocc',
             'target_systems': ['hohgant'],
             'modules': ['cray', 'PrgEnv-aocc'],
-            'features': ['mpi']
+            'features': ['mpi', 'pnetcdf']
         },
         {
             'name': 'PrgEnv-cray',
             'target_systems': ['hohgant'],
             'modules': ['cray', 'PrgEnv-cray'],
-            'features': ['mpi', 'cuda', 'openacc']
+            'features': ['mpi', 'cuda', 'openacc', 'pnetcdf']
         },
         {
             'name': 'PrgEnv-gnu',
             'target_systems': ['hohgant'],
             'modules': ['cray', 'PrgEnv-gnu'],
-            'features': ['mpi', 'cuda', 'alloc_speed'],
+            'features': ['mpi', 'cuda', 'alloc_speed', 'pnetcdf'],
             'extras': {
                 'hugepages2M': ['craype-hugepages2M']
             }
@@ -182,7 +182,7 @@ site_configuration = {
             'name': 'PrgEnv-nvhpc',
             'target_systems': ['hohgant'],
             'modules': ['cray', 'PrgEnv-nvhpc'],
-            'features': ['mpi', 'cuda'],
+            'features': ['mpi', 'cuda', 'pnetcdf'],
             'extras': {
                 'launcher_options': '--mpi=pmi2',
             },
@@ -191,9 +191,9 @@ site_configuration = {
             'name': 'PrgEnv-nvidia',
             'target_systems': ['hohgant'],
             'modules': ['cray', 'PrgEnv-nvidia'],
-            'features': ['mpi', 'cuda-fortran', 'openacc'],
+            'features': ['mpi', 'cuda-fortran', 'openacc', 'pnetcdf'],
             'extras': {
-                 # Workaround "MPIR_pmi_init(83)....: PMI2_Job_GetId returned 14" error
+                # Workaround "MPIR_pmi_init(83)....: PMI2_Job_GetId returned 14" error
                 'launcher_options': '--mpi=pmi2',
             },
         },

@@ -22,6 +22,7 @@ run rfm_test:
       -c checks/prgenv/mpi.py
       -c checks/prgenv/openacc_checks.py
       -c checks/libraries/io/hdf5.py
+      -c checks/libraries/io/pnetcdf.py
       -c checks/containers/sarus/check_gpu_ids.py
       -c checks/microbenchmarks/cpu/alloc_speed/alloc_speed.py
       --report-junit=reportcpe.xml -r

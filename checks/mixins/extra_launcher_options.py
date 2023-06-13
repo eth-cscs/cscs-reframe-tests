@@ -10,5 +10,6 @@ class ExtraLauncherOptionsMixin(rfm.RegressionMixin):
     @run_before('run')
     def set_launcher_options(self):
         self.job.launcher.options += [
+            # get launcher_options from config if it exists else ''
             self.current_environ.extras.get('launcher_options', '')
         ]
