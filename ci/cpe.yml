@@ -20,8 +20,10 @@ run rfm_test:
       -c checks/prgenv/cuda/nvml_check.py
       -c checks/prgenv/cuda-fortran/cuda_fortran_check.py
       -c checks/prgenv/mpi.py
+      -c checks/prgenv/openacc_checks.py
       -c checks/libraries/io/hdf5.py
       -c checks/containers/sarus/check_gpu_ids.py
+      -c checks/microbenchmarks/cpu/alloc_speed/alloc_speed.py
       --report-junit=reportcpe.xml -r
     - deactivate
   artifacts:

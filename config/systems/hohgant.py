@@ -85,9 +85,7 @@ site_configuration = {
                         'builtin',
                         'PrgEnv-aocc',
                         'PrgEnv-cray',
-                        'PrgEnv-gnu',
-                        'PrgEnv-nvhpc',
-                        'PrgEnv-nvidia'
+                        'PrgEnv-gnu'
                     ],
                     'container_platforms': [
                         {
@@ -169,13 +167,16 @@ site_configuration = {
             'name': 'PrgEnv-cray',
             'target_systems': ['hohgant'],
             'modules': ['cray', 'PrgEnv-cray'],
-            'features': ['mpi', 'cuda']
+            'features': ['mpi', 'cuda', 'openacc']
         },
         {
             'name': 'PrgEnv-gnu',
             'target_systems': ['hohgant'],
             'modules': ['cray', 'PrgEnv-gnu'],
-            'features': ['mpi', 'cuda']
+            'features': ['mpi', 'cuda', 'alloc_speed'],
+            'extras': {
+                'hugepages2M': ['craype-hugepages2M']
+            }
         },
         {
             'name': 'PrgEnv-nvhpc',
@@ -190,10 +191,9 @@ site_configuration = {
             'name': 'PrgEnv-nvidia',
             'target_systems': ['hohgant'],
             'modules': ['cray', 'PrgEnv-nvidia'],
-            'features': ['mpi', 'cuda-fortran'],
+            'features': ['mpi', 'cuda-fortran', 'openacc'],
             'extras': {
-                # "MPIR_pmi_init(83)....: PMI2_Job_GetId returned 14"
-                # -> add --mpi=pmi2 at runtime
+                 # Workaround "MPIR_pmi_init(83)....: PMI2_Job_GetId returned 14" error
                 'launcher_options': '--mpi=pmi2',
             },
         },
