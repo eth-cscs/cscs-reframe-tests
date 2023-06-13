@@ -22,19 +22,19 @@ class netCDFTest(rfm.RegressionTest):
     valid_prog_environs = ['+mpi +netcdf-hdf5parallel']
     build_system = 'Make'
     # modules = ['cray-netcdf-hdf5parallel']  # can't use because of VCMSA-344
+    executable = 'wr.exe'
     tags = {'production', 'craype', 'health'}
 
     @run_before('compile')
     def set_source(self):
         self.sourcesdir = f'src/netcdf-hdf5parallel/{self.lang}'
-        self.executable = 'wr.exe'
 
     @run_before('run')
     def fix_cpe(self):
         # fix for "GLIBCXX_3.4.29 not found" error:
         if self.lang == 'cpp' and self.current_environ.name == 'PrgEnv-gnu':
             self.env_vars = {
-                'LD_PRELOAD': '/opt/cray/pe/gcc/12.2.0/snos/lib64/libstdc++.so'
+                'LD_PRELOAD': '$GCC_PREFIX/snos/lib64/libstdc++.so'
             }
 
     @run_before('run')
