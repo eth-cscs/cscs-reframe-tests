@@ -2,8 +2,8 @@
 
 def dirPrefix = 'ci-cscs-reframe-tests'
 def loginBash = '#!/bin/bash -l'
-def machinesList = params.machines.split()
-def machinesToRun = ['hohgant']
+def machinesList = ['hohgant']
+def machinesToRun = machinesList
 def runTests = true
 def uniqueID
 
@@ -115,9 +115,9 @@ stage('Testing') {
 
                     def exitStatus = sh(returnStatus: true,
                                         script: """${loginBash}
-                                                   echo ./bootstrap.sh
-                                                   echo export RFM_AUTODETECT_XTHOSTNAME=1
-                                                   echo ./bin/reframe -C ${configFile} --exec-policy=async --save-log-files -r -J account=jenscscs --flex-alloc-nodes=2 -t 'production|benchmark' $changedTestsOption""")
+                                                   ./bootstrap.sh
+                                                   export RFM_AUTODETECT_XTHOSTNAME=1
+                                                   ./bin/reframe -C ${configFile} --exec-policy=async --save-log-files -r -J account=jenscscs --flex-alloc-nodes=2 -t 'production|benchmark' $changedTestsOption""")
                     sh("exit $exitStatus")
                 }
             }
@@ -196,7 +196,7 @@ stage('Cleanup Stale') {
                                  script: """${loginBash}
                                             echo \$SCRATCH""").trim()
                 sh("""${loginBash}
-                      find ${scratch} -maxdepth 1 -name '${dirPrefix}*' -ctime +${staleCleanupInterval} -type d -print0 | xargs -0 printf 'Removing:  %s\n' 
+                      find ${scratch} -maxdepth 1 -name '${dirPrefix}*' -ctime +${staleCleanupInterval} -type d -print0 | xargs -0 printf 'Removing:  %s\n'
                       find ${scratch} -maxdepth 1 -name '${dirPrefix}*' -ctime +${staleCleanupInterval} -type d -print0 | xargs -0 rm -rfv""")
             }
         }
