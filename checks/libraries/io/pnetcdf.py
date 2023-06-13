@@ -3,13 +3,19 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
+import pathlib
+import sys
+
 import reframe as rfm
 import reframe.utility.osext as osext
 import reframe.utility.sanity as sn
 
+sys.path.append(str(pathlib.Path(__file__).parent.parent.parent / 'mixins'))
+from extra_launcher_options import ExtraLauncherOptionsMixin
+
 
 @rfm.simple_test
-class PnetCDFTest(rfm.RegressionTest):
+class PnetCDFTest(rfm.RegressionTest, ExtraLauncherOptionsMixin):
     """
     Write 6 3D integer array variables into a file. Each variable in the file
     is a dimensional transposed array from the one stored in memory.
@@ -47,20 +53,9 @@ class PnetCDFTest(rfm.RegressionTest):
     def fix_cpe(self):
         # fix for "GLIBCXX_3.4.29 not found" error:
         if self.lang == 'cpp' and self.current_environ.name == 'PrgEnv-gnu':
-            # pkg-config --variable path gcc-toolchain -> /opt/cray/pe/gcc/12.2.0/snos
-            # LD_PRELOAD=/opt/cray/pe/gcc/12.2.0/snos/lib64/libstdc++.so
             self.env_vars = {
                 'LD_PRELOAD': '$GCC_PREFIX/snos/lib64/libstdc++.so'
             }
-
-    @run_before('run')
-    def set_job_parameters(self):
-        # To avoid: "MPIR_pmi_init(83)....: PMI2_Job_GetId returned 14"
-        self.job.launcher.options += (
-            [self.current_environ.extras['launcher_options']]
-            if 'launcher_options' in self.current_environ.extras
-            else ''
-        )
 
     @run_before('sanity')
     def set_sanity(self):
