@@ -83,6 +83,22 @@ eiger_sys = copy.deepcopy(base_config)
 eiger_sys['name'] = 'eiger'
 eiger_sys['descr'] = 'Alps Cray EX Supercomputer'
 eiger_sys['hostnames'] = ['eiger']
+eiger_sys['partitions'].append(
+    {
+        'name': 'jupyter_mc',
+        'scheduler': 'slurm',
+        'environs': ['builtin'],
+        'access': [
+            f'-Cmc',
+            f'--reservation=interact',
+            f'--account={osext.osgroup()}'
+        ],
+        'descr': 'JupyterHub multicore nodes',
+        'max_jobs': 10,
+        'launcher': 'srun',
+        'features': ['remote'],
+    }
+)
 
 site_configuration = {
     'systems': [
