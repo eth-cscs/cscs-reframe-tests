@@ -108,18 +108,15 @@ eiger_sys['partitions'].append(
     }
 )
 
-
 site_configuration = {
     'systems': [
-        eiger_sys,
+        eiger_sys
     ],
     'environments': [
         {
             'name': 'PrgEnv-aocc',
             'target_systems': ['eiger'],
-            'modules': ['cray', 'PrgEnv-aocc'],
-            'features': ['serial', 'openmp', 'mpi', 'cuda',
-                         'hdf5', 'netcdf-hdf5parallel', 'pnetcdf', 'openmp']
+            'modules': ['cray', 'PrgEnv-aocc']
         },
         {
             'name': 'PrgEnv-cray',
@@ -131,16 +128,12 @@ site_configuration = {
         {
             'name': 'PrgEnv-gnu',
             'target_systems': ['eiger'],
-            'features': ['serial', 'openmp', 'mpi', 'cuda', 'alloc_speed',
-                         'hdf5', 'netcdf-hdf5parallel', 'pnetcdf', 'openmp'],
             'modules': ['cray', 'PrgEnv-gnu']
         },
         {
             'name': 'PrgEnv-intel',
             'target_systems': ['eiger'],
-            'modules': ['cray', 'PrgEnv-intel'],
-            'features': ['serial', 'openmp', 'mpi', 'cuda', 'alloc_speed',
-                         'hdf5', 'netcdf-hdf5parallel', 'pnetcdf', 'openmp']
+            'modules': ['cray', 'PrgEnv-intel']
         },
         {
             'name': 'cpeAMD',
