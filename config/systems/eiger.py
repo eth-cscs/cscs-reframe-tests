@@ -81,7 +81,7 @@ base_config = {
 
 eiger_sys = copy.deepcopy(base_config)
 eiger_sys['name'] = 'eiger'
-eiger_sys['descr'] = 'Alps Cray EX Supercomputer TDS'
+eiger_sys['descr'] = 'Alps Cray EX Supercomputer'
 eiger_sys['hostnames'] = ['eiger']
 
 site_configuration = {
