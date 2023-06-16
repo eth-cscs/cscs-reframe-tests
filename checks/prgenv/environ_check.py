@@ -22,7 +22,7 @@ class DefaultPrgEnvCheck(rfm.RunOnlyRegressionTest):
 
     @run_after('init')
     def load_cray_module(self):
-        if self.current_system.name in ['hohgant', 'pilatus']:
+        if self.current_system.name in ['hohgant', 'eiger', 'pilatus']:
             self.modules = ['cray']
 
     @run_before('sanity')
@@ -102,7 +102,7 @@ class CrayVariablesCheckEiger(CrayVariablesCheck):
 
     @run_after('init')
     def load_cray_module(self):
-        if self.current_system.name in ['hohgant', 'pilatus']:
+        if self.current_system.name in ['hohgant', 'eiger', 'pilatus']:
             self.modules = ['cray']
 
     @run_after('init')
