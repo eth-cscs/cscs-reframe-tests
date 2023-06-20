@@ -1,9 +1,7 @@
-# Copyright 2016-2022 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright 2016-2023 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
-
-import os
 
 import reframe as rfm
 import reframe.utility.osext as osext
@@ -11,89 +9,61 @@ import reframe.utility.sanity as sn
 
 
 @rfm.simple_test
-class NetCDFTest(rfm.RegressionTest):
-    lang = parameter(['cpp', 'c', 'f90'])
-    linkage = parameter(['dynamic', 'static'])
-    valid_systems = ['daint:gpu', 'daint:mc', 'dom:gpu', 'dom:mc',
-                     'arolla:cn', 'tsa:cn']
-    build_system = 'SingleSource'
-    num_tasks = 1
-    num_tasks_per_node = 1
-    maintainers = ['AJ', 'SO']
-    tags = {'production', 'craype', 'external-resources', 'health'}
-    lang_names = {
-            'c': 'C',
-            'cpp': 'C++',
-            'f90': 'Fortran 90'
-    }
-
-    @run_after('init')
-    def set_description(self):
-        self.descr = (f'{self.lang_names[self.lang]} NetCDF '
-                      f'{self.linkage.capitalize()}')
-
-    @run_after('init')
-    def setup_prgenvs(self):
-        if self.linkage == 'dynamic':
-            self.valid_systems += ['eiger:mc', 'pilatus:mc']
-
-        if self.current_system.name in ['daint', 'dom']:
-            self.valid_prog_environs = ['PrgEnv-cray', 'PrgEnv-gnu',
-                                        'PrgEnv-intel', 'PrgEnv-pgi',
-                                        'PrgEnv-nvidia']
-            self.modules = ['cray-netcdf']
-        elif self.current_system.name in ['arolla', 'tsa']:
-            self.exclusive_access = True
-            self.valid_prog_environs = ['PrgEnv-gnu-nompi', 'PrgEnv-pgi-nompi']
-        elif self.current_system.name in ['eiger', 'pilatus']:
-            # no cray-netcdf as of PE 21.02 with PrgEnv-intel
-            self.valid_prog_environs = ['PrgEnv-aocc', 'PrgEnv-cray',
-                                        'PrgEnv-gnu']
-            self.modules = ['cray-hdf5', 'cray-netcdf']
-        else:
-            self.valid_prog_environs = []
-
-    @run_after('setup')
-    def cdt_2105_skip(self):
-        # cray-netcdf is supported only on PrgEnv-nvidia for cdt >= 21.05
-        if self.current_environ.name == 'PrgEnv-nvidia':
-            self.skip_if(
-                osext.cray_cdt_version() < '21.05',
-                "cray-netcdf is not supported for cdt < 21.05 on PrgEnv-nvidia"
-            )
-        elif self.current_environ.name == 'PrgEnv-pgi':
-            self.skip_if(
-                osext.cray_cdt_version() >= '21.05',
-                "cray-netcdf is not supported for cdt >= 21.05 on PrgEnv-pgi"
-            )
+class netCDFTest(rfm.RegressionTest):
+    """
+    Write sample data then read it back, using parallel netcdf-hdf5:
+    - F90: https://github.com/Unidata/netcdf-fortran/tree/main/examples/F90/
+    - C: https://github.com/Unidata/netcdf-c/blob/main/nc_test4/tst_parallel.c
+    - C++: https://github.com/Unidata/netcdf-cxx4/tree/master/examples/
+    - TODO: compare tst_parallel.c with tst_parallel*.c
+    """
+    lang = parameter(['f90', 'c', 'cpp'])
+    valid_systems = ['+remote']
+    valid_prog_environs = ['+mpi +netcdf-hdf5parallel']
+    build_system = 'Make'
+    # modules = ['cray-netcdf-hdf5parallel']  # can't use because of VCMSA-344
+    executable = 'wr.exe'
+    tags = {'production', 'craype', 'health'}
 
     @run_before('compile')
-    def set_sources(self):
-        self.sourcesdir = os.path.join(self.current_system.resourcesdir,
-                                       'netcdf')
-        self.sourcepath = f'netcdf_read_write.{self.lang}'
+    def set_source(self):
+        self.sourcesdir = f'src/netcdf-hdf5parallel/{self.lang}'
 
-    @run_before('compile')
-    def setflags(self):
-        if self.current_system.name in ['arolla', 'tsa']:
-            self.modules = ['netcdf', 'netcdf-c++', 'netcdf-fortran']
-            self.build_system.cppflags = [
-                '-I$EBROOTNETCDF/include',
-                '-I$EBROOTNETCDFMINCPLUSPLUS/include',
-                '-I$EBROOTNETCDFMINFORTRAN/include'
-            ]
-            self.build_system.ldflags = [
-                '-L$EBROOTNETCDF/lib',
-                '-L$EBROOTNETCDFMINCPLUSPLUS/lib',
-                '-L$EBROOTNETCDFMINFORTRAN/lib',
-                '-L$EBROOTNETCDF/lib64',
-                '-L$EBROOTNETCDFMINCPLUSPLUS/lib64',
-                '-L$EBROOTNETCDFMINFORTRAN/lib64',
-                '-lnetcdf', '-lnetcdf_c++4', '-lnetcdff'
-            ]
-        else:
-            self.build_system.ldflags = [f'-{self.linkage}']
+    @run_before('run')
+    def fix_cpe(self):
+        # fix for "GLIBCXX_3.4.29 not found" error:
+        if self.lang == 'cpp' and self.current_environ.name == 'PrgEnv-gnu':
+            self.env_vars = {
+                'LD_PRELOAD': '$GCC_PREFIX/snos/lib64/libstdc++.so'
+            }
+
+    @run_before('run')
+    def set_job_parameters(self):
+        # To avoid: "MPIR_pmi_init(83)....: PMI2_Job_GetId returned 14"
+        self.job.launcher.options += (
+            [self.current_environ.extras['launcher_options']]
+            if 'launcher_options' in self.current_environ.extras
+            else ''
+        )
+        if self.lang in ['f90', 'cpp']:
+            launcher = (
+                f"{self.job.launcher.registered_name} "
+                f"{self.job.launcher.options[0]}"
+                if self.job.launcher.options
+                else self.job.launcher.registered_name
+            )
+
+            self.postrun_cmds = [f'{launcher} rd.exe']
+
+    @run_before('run')
+    def set_corner_case(self):
+        self.num_tasks = 1 if self.lang == 'cpp' else 4
 
     @run_before('sanity')
     def set_sanity(self):
-        self.sanity_patterns = sn.assert_found(r'SUCCESS', self.stdout)
+        regex = {
+            'f90': 'SUCCESS reading example file simple_xy_par.nc',  # //
+            'c': 'tst_parallel.*ok.$',                               # //
+            'cpp': 'SUCCESS reading example file simple_xy.nc',      # not //
+        }
+        self.sanity_patterns = sn.assert_found(regex[self.lang], self.stdout)
