@@ -161,19 +161,21 @@ site_configuration = {
             'name': 'PrgEnv-aocc',
             'target_systems': ['hohgant'],
             'modules': ['cray', 'PrgEnv-aocc'],
-            'features': ['mpi', 'netcdf-hdf5parallel', 'pnetcdf']
+            'features': ['serial', 'openmp', 'mpi', 'netcdf-hdf5parallel', 'pnetcdf']
         },
         {
             'name': 'PrgEnv-cray',
             'target_systems': ['hohgant'],
             'modules': ['cray', 'PrgEnv-cray'],
-            'features': ['mpi', 'cuda', 'openacc', 'netcdf-hdf5parallel', 'pnetcdf']
+            'features': ['serial', 'openmp', 'mpi', 'cuda', 'openacc',
+                         'netcdf-hdf5parallel', 'pnetcdf']
         },
         {
             'name': 'PrgEnv-gnu',
             'target_systems': ['hohgant'],
             'modules': ['cray', 'PrgEnv-gnu'],
-            'features': ['mpi', 'cuda', 'alloc_speed', 'netcdf-hdf5parallel', 'pnetcdf'],
+            'features': ['serial', 'openmp', 'mpi', 'cuda', 'alloc_speed',
+                         'netcdf-hdf5parallel', 'pnetcdf'],
             'extras': {
                 'hugepages2M': ['craype-hugepages2M']
             }
@@ -182,7 +184,8 @@ site_configuration = {
             'name': 'PrgEnv-nvhpc',
             'target_systems': ['hohgant'],
             'modules': ['cray', 'PrgEnv-nvhpc'],
-            'features': ['mpi', 'cuda', 'netcdf-hdf5parallel', 'pnetcdf'],
+            'features': ['serial', 'openmp', 'mpi', 'cuda',
+                         'netcdf-hdf5parallel', 'pnetcdf'],
             'extras': {
                 'launcher_options': '--mpi=pmi2',
             },
@@ -191,7 +194,8 @@ site_configuration = {
             'name': 'PrgEnv-nvidia',
             'target_systems': ['hohgant'],
             'modules': ['cray', 'PrgEnv-nvidia'],
-            'features': ['mpi', 'cuda-fortran', 'openacc', 'netcdf-hdf5parallel', 'pnetcdf'],
+            'features': ['serial', 'openmp', 'mpi', 'cuda-fortran', 'openacc',
+                         'netcdf-hdf5parallel', 'pnetcdf'],
             'extras': {
                 # Workaround "MPIR_pmi_init(83)....: PMI2_Job_GetId returned 14" error
                 'launcher_options': '--mpi=pmi2',
