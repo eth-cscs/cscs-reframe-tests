@@ -1,4 +1,4 @@
-# Copyright 2016-2022 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright 2016-2023 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -15,9 +15,10 @@ from extra_launcher_options import ExtraLauncherOptionsMixin
 
 class HelloWorldBaseTest(rfm.RegressionTest, ExtraLauncherOptionsMixin):
     linking = parameter(['dynamic'])
-    lang = parameter(['c', 'cpp', 'f90'])
+    lang = parameter(['c', 'cpp', 'F90'])
     prgenv_flags = {}
-    sourcepath = 'hello_world'
+    sourcesdir = 'src/hello'
+    sourcepath = 'hello'
     build_system = 'SingleSource'
     prebuild_cmds = ['_rfm_build_time="$(date +%s%N)"']
     postbuild_cmds = [
@@ -38,10 +39,9 @@ class HelloWorldBaseTest(rfm.RegressionTest, ExtraLauncherOptionsMixin):
         lang_names = {
             'c': 'C',
             'cpp': 'C++',
-            'f90': 'Fortran 90'
+            'F90': 'Fortran 90'
         }
         self.descr = f'{lang_names[self.lang]} Hello, World'
-
 
     @run_before('compile')
     def prepare_build(self):
@@ -59,8 +59,8 @@ class HelloWorldBaseTest(rfm.RegressionTest, ExtraLauncherOptionsMixin):
 
     @sanity_function
     def assert_hello_world(self):
-        result = sn.findall(r'Hello, World from thread \s*(\d+) out '
-                            r'of \s*(\d+) from process \s*(\d+) out of '
+        result = sn.findall(r'Hello, World from thread\s*(\d+) out '
+                            r'of\s*(\d+)\s*from rank\s*(\d+) out of'
                             r'\s*(\d+)', self.stdout)
 
         num_tasks = sn.getattr(self, 'num_tasks')
@@ -104,7 +104,6 @@ class HelloWorldBaseTest(rfm.RegressionTest, ExtraLauncherOptionsMixin):
 
 @rfm.simple_test
 class HelloWorldTestSerial(HelloWorldBaseTest):
-    sourcesdir = 'src/serial'
     num_tasks = 1
     num_tasks_per_node = 1
     num_cpus_per_task = 1
@@ -116,12 +115,11 @@ class HelloWorldTestSerial(HelloWorldBaseTest):
 
     @run_before('compile')
     def update_sourcepath(self):
-        self.sourcepath += f'_serial.{self.lang}'
+        self.sourcepath += f'.{self.lang}'
 
 
 @rfm.simple_test
 class HelloWorldTestOpenMP(HelloWorldBaseTest):
-    sourcesdir = 'src/openmp'
     num_tasks = 1
     num_tasks_per_node = 1
     num_cpus_per_task = 4
@@ -144,7 +142,7 @@ class HelloWorldTestOpenMP(HelloWorldBaseTest):
 
     @run_before('compile')
     def update_sourcepath(self):
-        self.sourcepath += '_openmp.' + self.lang
+        self.sourcepath += '.' + self.lang
 
     @run_before('run')
     def set_omp_env_variable(self):
@@ -155,7 +153,6 @@ class HelloWorldTestOpenMP(HelloWorldBaseTest):
 
 @rfm.simple_test
 class HelloWorldTestMPI(HelloWorldBaseTest):
-    sourcesdir = 'src/mpi'
     # for the MPI test the self.num_tasks_per_node should always be one. If
     # not, the test will fail for the total number of lines in the output
     # file is different then self.num_tasks * self.num_tasks_per_node
@@ -170,12 +167,12 @@ class HelloWorldTestMPI(HelloWorldBaseTest):
 
     @run_before('compile')
     def update_sourcepath(self):
-        self.sourcepath += '_mpi.' + self.lang
+        self.sourcepath += '.' + self.lang
+        self.build_system.cppflags += ['-DUSE_MPI']
 
 
 @rfm.simple_test
 class HelloWorldTestMPIOpenMP(HelloWorldBaseTest):
-    sourcesdir = 'src/mpi_openmp'
     num_tasks = 6
     num_tasks_per_node = 3
     num_cpus_per_task = 4
@@ -198,7 +195,8 @@ class HelloWorldTestMPIOpenMP(HelloWorldBaseTest):
 
     @run_before('compile')
     def update_sourcepath(self):
-        self.sourcepath += '_mpi_openmp.' + self.lang
+        self.sourcepath += '.' + self.lang
+        self.build_system.cppflags += ['-DUSE_MPI']
 
     @run_before('run')
     def set_omp_env_variable(self):
