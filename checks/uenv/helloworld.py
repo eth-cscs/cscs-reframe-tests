@@ -30,7 +30,6 @@ class HelloWorldBaseTest(rfm.RegressionTest):
             'compilation_time': (60, None, 0.1, 's')
         }
     }
-    maintainers = ['TM']
 
 
     @run_after('init')

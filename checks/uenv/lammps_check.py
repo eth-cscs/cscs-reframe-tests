@@ -1,12 +1,18 @@
-# Copyright 2016-2022 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright 2016-2023 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
 import os
+import pathlib
+import sys
 
 import reframe as rfm
 import reframe.utility.sanity as sn
+
+sys.path.append(str(pathlib.Path(__file__).parent.parent / 'mixins'))
+
+from cuda_visible_devices_all import CudaVisibleDevicesAllMixin
 
 
 class LAMMPSCheck(rfm.RunOnlyRegressionTest):
@@ -15,8 +21,7 @@ class LAMMPSCheck(rfm.RunOnlyRegressionTest):
     valid_prog_environs = ['+lammps']
     executable = 'lmp'
     modules = ['lammps']
-    tags = {'external-resources', 'maintenance', 'production'}
-    maintainers = ['TM']
+    tags = {'uenv'}
     strict_check = False
     extra_resources = {
         'switches': {
@@ -49,52 +54,45 @@ class LAMMPSCheck(rfm.RunOnlyRegressionTest):
 
 
 @rfm.simple_test
-class LAMMPSGPUCheck(LAMMPSCheck):
+class LAMMPSGPUCheck(CudaVisibleDevicesAllMixin, LAMMPSCheck):
     valid_systems = ['+nvgpu']
     valid_prog_environs = ['+lammps +cuda']
     executable = 'lmp'
     modules = ['cuda', 'lammps']
-    #env_vars = {'CRAY_CUDA_MPS': 1}
-    num_gpus_per_node = 1
     refs_by_scale = {
         'small': {
-            'hohgant-uenv': {'perf': (1566.979, -0.10, None, 'timesteps/s')}
+            'hohgant': {'perf': (1566.979, -0.10, None, 'timesteps/s')}
         },
         'large': {
-            'hohgant-uenv': {'perf': (1566.979, -0.10, None, 'timesteps/s')}
+            'hohgant': {'perf': (1566.979, -0.10, None, 'timesteps/s')}
         }
     }
 
     @run_after('setup')
     def set_test_parameters(self):
         self.descr = f'LAMMPS GPU check (version: {self.scale})'
-        curr_part = self.current_partition
-        gpu_count = curr_part.select_devices('gpu')[0].num_devices
-        #self.num_gpus_per_node = gpu_count
-        cuda_visible_devices = ','.join(f'{i}' for i in range(gpu_count))
-        self.env_vars['CUDA_VISIBLE_DEVICES'] = cuda_visible_devices
         self.executable_opts = [
             '-sf gpu', f'-pk gpu {gpu_count}', '-in in.lj.gpu'
         ]
 
         if self.scale == 'small':
             self.num_tasks = 12
-            self.num_tasks_per_node = gpu_count
+            self.num_tasks_per_node = self.num_gpus_per_node
         else:
             self.num_tasks = 32
-            self.num_tasks_per_node = gpu_count
+            self.num_tasks_per_node = self.num_gpus_per_node
 
         self.reference = self.refs_by_scale[self.scale]
-        
+
 
 @rfm.simple_test
 class LAMMPSCPUCheck(LAMMPSCheck):
     refs_by_scale = {
         'small': {
-            'hohgant-uenv': {'perf': (3807.095, -0.10, None, 'timesteps/s')},
+            'hohgant': {'perf': (3807.095, -0.10, None, 'timesteps/s')},
         },
         'large': {
-            'hohgant-uenv': {'perf': (7247.484, -0.10, None, 'timesteps/s')}
+            'hohgant': {'perf': (7247.484, -0.10, None, 'timesteps/s')}
         }
     }
 
