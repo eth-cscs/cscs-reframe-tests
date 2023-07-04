@@ -111,7 +111,7 @@ class HelloWorldTestSerial(HelloWorldBaseTest):
 
     @run_after('init')
     def update_description(self):
-        self.descr += ' Serial ' + self.linking.capitalize()
+        self.descr += f' Serial {self.linking.capitalize()}'
 
     @run_before('compile')
     def update_sourcepath(self):
@@ -138,7 +138,7 @@ class HelloWorldTestOpenMP(HelloWorldBaseTest):
 
     @run_after('init')
     def update_description(self):
-        self.descr += ' OpenMP ' + self.linking.capitalize()
+        self.descr += f' OpenMP {self.linking.capitalize()}'
 
     @run_before('compile')
     def update_sourcepath(self):
@@ -163,7 +163,7 @@ class HelloWorldTestMPI(HelloWorldBaseTest):
 
     @run_after('init')
     def update_description(self):
-        self.descr += ' MPI ' + self.linking.capitalize()
+        self.descr += f' MPI {self.linking.capitalize()}'
 
     @run_before('compile')
     def update_sourcepath(self):
@@ -191,7 +191,7 @@ class HelloWorldTestMPIOpenMP(HelloWorldBaseTest):
 
     @run_after('init')
     def update_description(self):
-        self.descr += ' MPI + OpenMP ' + self.linking.capitalize()
+        self.descr += f' MPI + OpenMP {self.linking.capitalize()}'
 
     @run_before('compile')
     def update_sourcepath(self):
