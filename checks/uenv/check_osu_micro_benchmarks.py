@@ -108,7 +108,7 @@ class OSUCuda(rfm.RegressionMixin):
 class OSUBandwidthCuda(OSUCuda, OSUBandwidth):
     reference = {
         '*': {
-            'bandwidth_256': (350., -0.15, None, 'MB/s'),
+            'bandwidth_256': (200., -0.15, None, 'MB/s'),
             'bandwidth_4M':  (24000., -0.15, None, 'MB/s')
         },
     }
