@@ -20,7 +20,6 @@ site_configuration = {
                     'time_limit': '10m',
                     'environs': [
                         'builtin',
-                        'PrgEnv-aocc',
                         'PrgEnv-cray',
                         'PrgEnv-gnu',
                         'PrgEnv-nvhpc',
@@ -36,7 +35,6 @@ site_configuration = {
                     'time_limit': '10m',
                     'environs': [
                         'builtin',
-                        'PrgEnv-aocc',
                         'PrgEnv-cray',
                         'PrgEnv-gnu',
                         'PrgEnv-nvhpc',
@@ -83,7 +81,6 @@ site_configuration = {
                     'time_limit': '10m',
                     'environs': [
                         'builtin',
-                        'PrgEnv-aocc',
                         'PrgEnv-cray',
                         'PrgEnv-gnu',
                         'PrgEnv-nvhpc',
@@ -123,7 +120,6 @@ site_configuration = {
                     'time_limit': '10m',
                     'environs': [
                         'builtin',
-                        'PrgEnv-aocc',
                         'PrgEnv-cray',
                         'PrgEnv-gnu',
                         'PrgEnv-nvhpc',
@@ -159,11 +155,6 @@ site_configuration = {
         },
     ],
     'environments': [
-        {
-            'name': 'PrgEnv-aocc',
-            'target_systems': ['hohgant'],
-            'modules': ['cray', 'PrgEnv-aocc']
-        },
         {
             'name': 'PrgEnv-cray',
             'target_systems': ['hohgant'],
