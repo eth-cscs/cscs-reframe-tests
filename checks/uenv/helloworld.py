@@ -30,7 +30,7 @@ class HelloWorldBaseTest(rfm.RegressionTest):
             'compilation_time': (60, None, 0.1, 's')
         }
     }
-
+    tags = {'uenv'}
 
     @run_after('init')
     def set_description(self):
