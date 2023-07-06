@@ -16,9 +16,13 @@ class BaseCheck(rfm.RunOnlyRegressionTest):
     modules = ['osu-micro-benchmarks']
     pmi = variable(str, value='')
     env_vars = {
+        # Disable GPU support for mpich
         'MPIR_CVAR_ENABLE_GPU': 0,
+
+        # Disable GPU support for cray-mpich
         'MPICH_GPU_SUPPORT_ENABLED': 0,
-        # Set to one byte more than the last entry of the test
+
+        # Set to one byte more than the last entry of the test (for mpich)
         'MPIR_CVAR_CH4_OFI_MULTI_NIC_STRIPING_THRESHOLD': 4194305
     }
     tags = {'uenv'}
@@ -88,13 +92,16 @@ class OSUCuda(rfm.RegressionMixin):
         self.valid_prog_environs = ['+osu-micro-benchmarks +cuda']
         self.modules = ['osu-micro-benchmarks', 'cuda']
         self.env_vars = {
+            # Enable GPU support for mpich
             'MPIR_CVAR_ENABLE_GPU': 1,
+
+            # Enable GPU support for cray-mpich
             'MPICH_GPU_SUPPORT_ENABLED': 1,
 
-            # Use only the first CUDA Gpu
+            # Use only the first CUDA GPU
             'CUDA_VISIBLE_DEVICES': 0,
 
-            # Set to one byte more than the last entry of the test
+            # Set to one byte more than the last entry of the test (for mpich)
             'MPIR_CVAR_CH4_OFI_MULTI_NIC_STRIPING_THRESHOLD': 4194305,
 
             # This is needed otherwise the test hangs
