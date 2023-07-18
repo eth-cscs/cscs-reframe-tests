@@ -3,11 +3,19 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
+import pathlib
+import sys
+
 import reframe as rfm
 import reframe.utility.sanity as sn
 
+sys.path.append(str(pathlib.Path(__file__).parent.parent.parent / 'mixins'))
 
-class SarusOSUCudaCheck(rfm.RunOnlyRegressionTest):
+from sarus_extra_launcher_options import SarusExtraLauncherOptionsMixin
+
+
+class SarusOSUCudaCheck(SarusExtraLauncherOptionsMixin,
+                        rfm.RunOnlyRegressionTest):
     image = 'quay.io/ethcscs/osu-mb:5.9-mpich3.4.1-cuda11.7.0-ubuntu22.04'
     valid_systems = ['+sarus +nvgpu']
     valid_prog_environs = ['builtin']
@@ -23,11 +31,6 @@ class SarusOSUCudaCheck(rfm.RunOnlyRegressionTest):
         # Use only the first CUDA GPU
         'CUDA_VISIBLE_DEVICES': 0,
     }
-
-    @run_after('setup')
-    def set_launcher_options(self):
-        if self.current_system.name in {'hohgant'}:
-            self.job.launcher.options = ['--mpi=pmi2']
 
     @run_after('setup')
     def set_prerun_cmds(self):

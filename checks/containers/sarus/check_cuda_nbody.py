@@ -1,3 +1,8 @@
+# Copyright 2016-2023 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# ReFrame Project Developers. See the top-level LICENSE file for details.
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
 import reframe as rfm
 import reframe.utility.sanity as sn
 
@@ -38,11 +43,11 @@ class SarusCudaNBodyCheck(rfm.RunOnlyRegressionTest):
     @run_after('setup')
     def setup_executable(self):
         nbody_exec = '/cuda-samples/nbody'
-        self.container_platform.image = self.image 
+        self.container_platform.image = self.image
         self.prerun_cmds = ['sarus --version', 'unset XDG_RUNTIME_DIR']
         self.container_platform.command = (
             f'{nbody_exec} -benchmark -fp64 '
-            f'-numbodies={self.num_bodies_per_gpu * self.gpu_count} ' 
+            f'-numbodies={self.num_bodies_per_gpu * self.gpu_count} '
             f'-numdevices={self.gpu_count}'
         )
 
