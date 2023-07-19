@@ -11,7 +11,7 @@ import reframe.utility.sanity as sn
 
 sys.path.append(str(pathlib.Path(__file__).parent.parent.parent / 'mixins'))
 
-from sarus_extra_launcher_options import SarusExtraLauncherOptionsMixin
+from sarus_extra_launcher_options import SarusExtraLauncherOptionsMixin  # noqa: E402
 
 
 class BaseCheck(SarusExtraLauncherOptionsMixin, rfm.RunOnlyRegressionTest):
@@ -22,8 +22,6 @@ class BaseCheck(SarusExtraLauncherOptionsMixin, rfm.RunOnlyRegressionTest):
     num_tasks = 2
     num_tasks_per_node = 1
     num_gpus_per_node = 1
-    maintainers = ['amadonna', 'taliaga']
-    tags = {'production'}
 
     @run_after('init')
     def set_descr(self):
@@ -64,7 +62,7 @@ class SarusOSULatency(BaseCheck):
     @run_after('setup')
     def setup_container_platform(self):
         self.container_platform.image = self.sarus_image
-        self.container_platform.command  = (
+        self.container_platform.command = (
             '/usr/local/libexec/osu-micro-benchmarks/mpi/pt2pt/osu_latency'
         )
         self.container_platform.with_mpi = True
@@ -96,13 +94,12 @@ class SarusOSULatencyWithSshLauncher(BaseCheck):
     def setup_container_platform(self):
         self.container_platform.image = self.sarus_image
         self.container_platform.options = [
-            '--mount=src=/scratch,dst=/scratch,type=bind',
-            '--ssh'
+            '--mount=src=/scratch,dst=/scratch,type=bind', '--ssh'
         ]
-        self.container_platform.command  = (
+        self.container_platform.command = (
             "bash -c 'syncfile=$SCRATCH/syncfile-$SLURM_JOB_ID;"
             "if [ $SLURM_PROCID = 0 ]; then"
-            "   mpirun -launcher=ssh /usr/local/libexec/osu-micro-benchmarks/mpi/pt2pt/osu_latency;"
+            "   mpirun -launcher=ssh /usr/local/libexec/osu-micro-benchmarks/mpi/pt2pt/osu_latency;"  # noqa: E501
             "   touch $syncfile;"
             "else"
             "   while [ ! -e $syncfile ]; do"

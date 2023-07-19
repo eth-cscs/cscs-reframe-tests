@@ -11,7 +11,7 @@ import reframe.utility.sanity as sn
 
 sys.path.append(str(pathlib.Path(__file__).parent.parent.parent / 'mixins'))
 
-from cuda_visible_devices_all import CudaVisibleDevicesAllMixin
+from cuda_visible_devices_all import CudaVisibleDevicesAllMixin  # noqa: E402
 
 
 @rfm.simple_test
@@ -22,8 +22,9 @@ class SarusNvidiaSmiCheck(CudaVisibleDevicesAllMixin,
     num_tasks = 1
     num_tasks_per_node = 1
     container_platform = 'Sarus'
+
+    # https://catalog.ngc.nvidia.com/orgs/nvidia/teams/k8s/containers/cuda-sample/tags  # noqa: E501
     image = 'nvidia/cuda:11.8.0-base-ubuntu18.04'
-    tags = {'production'}
 
     @run_after('setup')
     def setup_sarus(self):

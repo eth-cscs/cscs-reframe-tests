@@ -30,9 +30,6 @@ class SarusCudaNBodyCheck(rfm.RunOnlyRegressionTest):
 
     num_bodies_per_gpu = variable(int, value=200000)
 
-    maintainers = ['amadonna', 'taliaga']
-    tags = {'production'}
-
     @run_after('setup')
     def set_cuda_visible_devices(self):
         curr_part = self.current_partition
@@ -58,6 +55,7 @@ class SarusCudaNBodyCheck(rfm.RunOnlyRegressionTest):
     @run_before('performance')
     def set_perf(self):
         self.perf_patterns = {
-        'gflops': sn.extractsingle(r'= (?P<gflops>\S+)\sdouble-precision '
-                                   r'GFLOP/s.+', self.stdout, 'gflops', float)
+            'gflops': sn.extractsingle(
+                r'= (?P<gflops>\S+)\sdouble-precision GFLOP/s.+',
+                self.stdout, 'gflops', float)
         }

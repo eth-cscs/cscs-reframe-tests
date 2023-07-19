@@ -11,7 +11,7 @@ import reframe.utility.sanity as sn
 
 sys.path.append(str(pathlib.Path(__file__).parent.parent.parent / 'mixins'))
 
-from sarus_extra_launcher_options import SarusExtraLauncherOptionsMixin
+from sarus_extra_launcher_options import SarusExtraLauncherOptionsMixin  # noqa: E402
 
 
 class SarusOSUCudaCheck(SarusExtraLauncherOptionsMixin,
@@ -39,7 +39,7 @@ class SarusOSUCudaCheck(SarusExtraLauncherOptionsMixin,
     @run_after('setup')
     def setup_container_platform(self):
         self.container_platform.image = self.image
-        self.container_platform.command  = (
+        self.container_platform.command = (
             # The libmpi_gtl_cuda.so is needed by cray-mpich injected by
             # the Sarus mpi hook
             f"bash -c 'LD_PRELOAD=/usr/lib/libmpi_gtl_cuda.so "
