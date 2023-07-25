@@ -1,14 +1,16 @@
-# Features and extras in valid systems and programming environment
+# How to make your tests more portable
 
-In order for tests to be as generic as possible we define the `valid_systems` and `valid_prog_environs` with features that should be included in the configuration.
-More information [here](https://reframe-hpc.readthedocs.io/en/stable/regression_test_api.html#reframe.core.pipeline.RegressionTest.valid_systems).
+## Features and extras in valid systems and programming environment
+
+In order for tests to be as generic as possible we define the `valid_systems` and `valid_prog_environs` with features that should be defined in the configuration.
+More information [in the documentation of ReFrame](https://reframe-hpc.readthedocs.io/en/stable/regression_test_api.html#reframe.core.pipeline.RegressionTest.valid_systems).
 
 Examples of usage:
 
 ```python
 @rfm.simple_test
 class GPUTest(rfm.RegressionTest):
-    # Test that would test all the remote partitions (compute nodes)
+    # Test that will test all the remote partitions (compute nodes) that
     # have an NVIDIA GPU
     valid_systems = ['+nvgpu +remote']
     valid_prog_environs = ['+cuda']
@@ -16,7 +18,7 @@ class GPUTest(rfm.RegressionTest):
 
 @rfm.simple_test
 class LoginNodesTest(rfm.RegressionTest):
-    # Test that would test the login nodes
+    # Test that will run on the login nodes
     valid_systems = ['-remote']
     ...
 ```
@@ -99,9 +101,13 @@ class MemBandwidthTest(rfm.RunOnlyRegressionTest):
         # is automatically skipped when the processor information is not
         # available
         self.skip_if_no_procinfo()
+
+        # The test will get the number of CPUs and numa nodes that Reframe
+        # has detected for this partition
         processor_info = self.current_partition.processor
         self.num_cpus_per_task = processor_info.num_cpus
         numa_nodes = processor_info.topology['numa_nodes']
+
         self.numa_domains = [f'S{i}' for i, _ in enumerate(numa_nodes)]
         self.num_cpu_domain = (
             self.num_cpus_per_task // (len(self.numa_domains) *
@@ -113,10 +119,10 @@ class MemBandwidthTest(rfm.RunOnlyRegressionTest):
 Currently, ReFrame supports auto-detection of the local or remote processor information only.
 It does not support auto-detection of devices, in which cases users should explicitly specify this information using the `devices` [configuration option](https://reframe-hpc.readthedocs.io/en/stable/config_reference.html#config.systems.partitions.devices).
 
+## How to test containers
+
 ## Continuous Integration
 
 Testing of CPE and UENV software stacks is automated using CSCS CI. A list of the current ReFrame tests integrated in the CI can be found here:
 - CPE: https://gitlab.com/cscs-ci/ci-testing/webhook-ci/mirrors/6557018579987861/835515875116200/-/pipelines
 - UENV: https://gitlab.com/cscs-ci/ci-testing/webhook-ci/mirrors/551234120955960/1440398897047549/-/pipelines
-
-## How to test containers
