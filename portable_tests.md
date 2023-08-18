@@ -71,7 +71,7 @@ Here is an example how to use these features in a tests:
         ...
 ```
 
-## Extras for partitions
+### Extras for partitions
 
 | Extras | Description | Type | Example value |
 | --- | --- | --- | --- |
