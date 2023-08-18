@@ -78,7 +78,7 @@ Here is an example how to use these features in a tests:
 | cn_memory | Compute node memory | integer | 500 |
 | launcher_options | | list[string] | ['--mpi=pmi2']
 
-## Extras for environments
+### Extras for environments
 
 | Extras | Description | Type | Example value |
 | --- | --- | --- | --- |
