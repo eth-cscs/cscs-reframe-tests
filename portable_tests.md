@@ -31,7 +31,7 @@ class LoginNodesTest(rfm.RegressionTest):
 | nvgpu | The partitions has an NVIDIA GPU | Typically used with an environment with the `cuda` feature |
 | amdgpu | The partitions has an AMD GPU | | |
 | remote | The partitions has a remote scheduler (set when you want to test the compute nodes of a cluster) | | |
-| login | This partitios includes login nodes | | |
+| login | This partition includes login nodes | | |
 | sarus | Sarus is available in this partition | | |
 | singularity | Singularity is available in this partition | | |
 | uenv | Supports mounting and using user environments | |
