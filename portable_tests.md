@@ -36,7 +36,7 @@ class LoginNodesTest(rfm.RegressionTest):
 | singularity | Singularity is available in this partition | | |
 | uenv | Supports mounting and using user environments | |
 
-## Features for environments
+### Features for environments
 
 | Feature | Description | Notes |
 | --- | --- | --- |
