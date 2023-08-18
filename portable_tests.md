@@ -23,7 +23,7 @@ class LoginNodesTest(rfm.RegressionTest):
     ...
 ```
 
-## Features for partitions
+### Features for partitions
 
 | Feature | Description | Notes |
 | --- | --- | --- |
