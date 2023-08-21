@@ -44,7 +44,7 @@ base_config = {
                 },
                 {
                     'type': 'Singularity',
-                    'modules': ['singularity/3.5.3-eiger']
+                    'modules': ['cray', 'singularity/3.6.4-eiger']
                 }
             ],
             'environs': [
@@ -100,51 +100,50 @@ eiger_sys['partitions'].append(
     }
 )
 
-
 site_configuration = {
     'systems': [
-        eiger_sys,
+        eiger_sys
     ],
     'environments': [
         {
             'name': 'PrgEnv-aocc',
             'target_systems': ['eiger'],
-            'modules': ['PrgEnv-aocc']
+            'modules': ['cray', 'PrgEnv-aocc']
         },
         {
             'name': 'PrgEnv-cray',
             'target_systems': ['eiger'],
-            'modules': ['PrgEnv-cray']
+            'modules': ['cray', 'PrgEnv-cray']
         },
         {
             'name': 'PrgEnv-gnu',
             'target_systems': ['eiger'],
-            'modules': ['PrgEnv-gnu']
+            'modules': ['cray', 'PrgEnv-gnu']
         },
         {
             'name': 'PrgEnv-intel',
             'target_systems': ['eiger'],
-            'modules': ['PrgEnv-intel']
+            'modules': ['cray', 'PrgEnv-intel']
         },
         {
             'name': 'cpeAMD',
             'target_systems': ['eiger'],
-            'modules': ['cpeAMD']
+            'modules': ['cray', 'cpeAMD']
         },
         {
             'name': 'cpeCray',
             'target_systems': ['eiger'],
-            'modules': ['cpeCray']
+            'modules': ['cray', 'cpeCray']
         },
         {
             'name': 'cpeGNU',
             'target_systems': ['eiger'],
-            'modules': ['cpeGNU']
+            'modules': ['cray', 'cpeGNU']
         },
         {
             'name': 'cpeIntel',
             'target_systems': ['eiger'],
-            'modules': ['cpeIntel']
+            'modules': ['cray', 'cpeIntel']
         },
     ],
 }

@@ -112,7 +112,7 @@ class IorCheck(rfm.RegressionTest):
 
     @run_after('init')
     def load_cray_module(self):
-        if self.current_system.name in ['pilatus']:
+        if self.current_system.name in ['eiger', 'pilatus']:
             self.modules = ['cray']
 
     @run_before('compile')
