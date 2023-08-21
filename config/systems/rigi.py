@@ -44,7 +44,7 @@ base_config = {
                 },
                 {
                     'type': 'Singularity',
-                    'modules': ['cray', 'singularity/3.6.4-eiger']
+                    'modules': ['singularity/3.5.3-eiger']
                 }
             ],
             'environs': [
@@ -79,55 +79,56 @@ base_config = {
     ]
 }
 
-pilatus_sys = copy.deepcopy(base_config)
-pilatus_sys['name'] = 'pilatus'
-pilatus_sys['descr'] = 'Alps Cray EX Supercomputer TDS'
-pilatus_sys['hostnames'] = ['pilatus']
+
+rigi_sys = copy.deepcopy(base_config)
+rigi_sys['name'] = 'rigi'
+rigi_sys['descr'] = 'Alps Cray EX Supercomputer TDS'
+rigi_sys['hostnames'] = ['rigi']
 
 site_configuration = {
     'systems': [
-        pilatus_sys
+        rigi_sys
     ],
     'environments': [
         {
             'name': 'PrgEnv-aocc',
-            'target_systems': ['pilatus'],
-            'modules': ['cray', 'PrgEnv-aocc']
+            'target_systems': ['rigi'],
+            'modules': ['PrgEnv-aocc']
         },
         {
             'name': 'PrgEnv-cray',
-            'target_systems': ['pilatus'],
-            'modules': ['cray', 'PrgEnv-cray']
+            'target_systems': ['rigi'],
+            'modules': ['PrgEnv-cray']
         },
         {
             'name': 'PrgEnv-gnu',
-            'target_systems': ['pilatus'],
-            'modules': ['cray', 'PrgEnv-gnu']
+            'target_systems': ['rigi'],
+            'modules': ['PrgEnv-gnu']
         },
         {
             'name': 'PrgEnv-intel',
-            'target_systems': ['pilatus'],
-            'modules': ['cray', 'PrgEnv-intel']
+            'target_systems': ['rigi'],
+            'modules': ['PrgEnv-intel']
         },
         {
             'name': 'cpeAMD',
-            'target_systems': ['pilatus'],
-            'modules': ['cray', 'cpeAMD']
+            'target_systems': ['rigi'],
+            'modules': ['cpeAMD']
         },
         {
             'name': 'cpeCray',
-            'target_systems': ['pilatus'],
-            'modules': ['cray', 'cpeCray']
+            'target_systems': ['rigi'],
+            'modules': ['cpeCray']
         },
         {
             'name': 'cpeGNU',
-            'target_systems': ['pilatus'],
-            'modules': ['cray', 'cpeGNU']
+            'target_systems': ['rigi'],
+            'modules': ['cpeGNU']
         },
         {
             'name': 'cpeIntel',
-            'target_systems': ['pilatus'],
-            'modules': ['cray', 'cpeIntel']
+            'target_systems': ['rigi'],
+            'modules': ['cpeIntel']
         },
     ],
 }

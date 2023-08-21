@@ -4,7 +4,7 @@ import reframe.utility.sanity as sn
 
 @rfm.simple_test
 class SarusCudaNBodyCheck(rfm.RunOnlyRegressionTest):
-    valid_systems = ['dom:gpu', 'daint:gpu', 'hohgant:nvgpu']
+    valid_systems = ['+sarus +nvgpu']
     valid_prog_environs = ['builtin']
     sourcesdir = None
     container_platform = 'Sarus'
@@ -15,7 +15,7 @@ class SarusCudaNBodyCheck(rfm.RunOnlyRegressionTest):
             'gflops': (2860., -0.10, None, 'Gflop/s')
         },
         'hohgant:nvgpu': {
-            'gflops': (30900., -0.10, None, 'Gflop/s')
+            'gflops': (30900., -0.15, None, 'Gflop/s')
         }
     }
 

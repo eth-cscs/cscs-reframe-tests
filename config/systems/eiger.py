@@ -44,7 +44,7 @@ base_config = {
                 },
                 {
                     'type': 'Singularity',
-                    'modules': ['singularity/3.5.3-eiger']
+                    'modules': ['cray', 'singularity/3.6.4-eiger']
                 }
             ],
             'environs': [
@@ -62,7 +62,7 @@ base_config = {
             'extras': {
                 'cn_memory': 256,
             },
-            'features': ['remote'],
+            'features': ['remote', 'sarus', 'singularity'],
             'access': ['-Cmc', f'--account={osext.osgroup()}'],
             'resources': [
                 {
@@ -100,56 +100,50 @@ eiger_sys['partitions'].append(
     }
 )
 
-pilatus_sys = copy.deepcopy(base_config)
-pilatus_sys['name'] = 'pilatus'
-pilatus_sys['descr'] = 'Alps Cray EX Supercomputer TDS'
-pilatus_sys['hostnames'] = ['pilatus']
-
 site_configuration = {
     'systems': [
-        eiger_sys,
-        pilatus_sys
+        eiger_sys
     ],
     'environments': [
         {
             'name': 'PrgEnv-aocc',
-            'target_systems': ['eiger', 'pilatus'],
-            'modules': ['PrgEnv-aocc']
+            'target_systems': ['eiger'],
+            'modules': ['cray', 'PrgEnv-aocc']
         },
         {
             'name': 'PrgEnv-cray',
-            'target_systems': ['eiger', 'pilatus'],
-            'modules': ['PrgEnv-cray']
+            'target_systems': ['eiger'],
+            'modules': ['cray', 'PrgEnv-cray']
         },
         {
             'name': 'PrgEnv-gnu',
-            'target_systems': ['eiger', 'pilatus'],
-            'modules': ['PrgEnv-gnu']
+            'target_systems': ['eiger'],
+            'modules': ['cray', 'PrgEnv-gnu']
         },
         {
             'name': 'PrgEnv-intel',
-            'target_systems': ['eiger', 'pilatus'],
-            'modules': ['PrgEnv-intel']
+            'target_systems': ['eiger'],
+            'modules': ['cray', 'PrgEnv-intel']
         },
         {
             'name': 'cpeAMD',
-            'target_systems': ['eiger', 'pilatus'],
-            'modules': ['cpeAMD']
+            'target_systems': ['eiger'],
+            'modules': ['cray', 'cpeAMD']
         },
         {
             'name': 'cpeCray',
-            'target_systems': ['eiger', 'pilatus'],
-            'modules': ['cpeCray']
+            'target_systems': ['eiger'],
+            'modules': ['cray', 'cpeCray']
         },
         {
             'name': 'cpeGNU',
-            'target_systems': ['eiger', 'pilatus'],
-            'modules': ['cpeGNU']
+            'target_systems': ['eiger'],
+            'modules': ['cray', 'cpeGNU']
         },
         {
             'name': 'cpeIntel',
-            'target_systems': ['eiger', 'pilatus'],
-            'modules': ['cpeIntel']
+            'target_systems': ['eiger'],
+            'modules': ['cray', 'cpeIntel']
         },
     ],
 }

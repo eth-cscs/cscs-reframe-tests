@@ -20,7 +20,6 @@ site_configuration = {
                     'time_limit': '10m',
                     'environs': [
                         'builtin',
-                        'PrgEnv-aocc',
                         'PrgEnv-cray',
                         'PrgEnv-gnu',
                         'PrgEnv-nvhpc',
@@ -36,7 +35,6 @@ site_configuration = {
                     'time_limit': '10m',
                     'environs': [
                         'builtin',
-                        'PrgEnv-aocc',
                         'PrgEnv-cray',
                         'PrgEnv-gnu',
                         'PrgEnv-nvhpc',
@@ -65,7 +63,9 @@ site_configuration = {
                             'options': ['--mem={mem_per_node}']
                         },
                     ],
-                    'features': ['gpu', 'nvgpu', 'remote'],
+                    'features': [
+                        'gpu', 'nvgpu', 'remote', 'sarus', 'singularity'
+                    ],
                     'devices': [
                         {
                             'type': 'gpu',
@@ -81,7 +81,6 @@ site_configuration = {
                     'time_limit': '10m',
                     'environs': [
                         'builtin',
-                        'PrgEnv-aocc',
                         'PrgEnv-cray',
                         'PrgEnv-gnu',
                         'PrgEnv-nvhpc',
@@ -110,7 +109,9 @@ site_configuration = {
                             'options': ['--mem={mem_per_node}']
                         },
                     ],
-                    'features': ['gpu', 'amdgpu', 'remote'],
+                    'features': [
+                        'gpu', 'amdgpu', 'remote', 'sarus', 'singularity',
+                    ],
                     'launcher': 'srun'
                 },
                 {
@@ -119,7 +120,6 @@ site_configuration = {
                     'time_limit': '10m',
                     'environs': [
                         'builtin',
-                        'PrgEnv-aocc',
                         'PrgEnv-cray',
                         'PrgEnv-gnu',
                         'PrgEnv-nvhpc',
@@ -148,18 +148,13 @@ site_configuration = {
                             'options': ['--mem={mem_per_node}']
                         },
                     ],
-                    'features': ['remote'],
+                    'features': ['remote', 'sarus', 'singularity'],
                     'launcher': 'srun'
                 }
             ]
         },
     ],
     'environments': [
-        {
-            'name': 'PrgEnv-aocc',
-            'target_systems': ['hohgant'],
-            'modules': ['cray', 'PrgEnv-aocc']
-        },
         {
             'name': 'PrgEnv-cray',
             'target_systems': ['hohgant'],

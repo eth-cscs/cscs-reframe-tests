@@ -60,7 +60,7 @@ base_config = {
             'extras': {
                 'cn_memory': 64,
             },
-            'features': ['gpu', 'nvgpu', 'remote'],
+            'features': ['gpu', 'nvgpu', 'remote', 'sarus', 'singularity'],
             'resources': [
                 {
                     'name': 'switches',
@@ -111,7 +111,7 @@ base_config = {
             'extras': {
                 'cn_memory': 64,
             },
-            'features': ['remote'],
+            'features': ['remote', 'sarus', 'singularity'],
             'resources': [
                 {
                     'name': 'switches',
