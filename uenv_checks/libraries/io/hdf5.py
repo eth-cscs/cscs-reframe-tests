@@ -33,7 +33,7 @@ class HDF5Test(rfm.RegressionTest):
             'cpp': '`pkg-config --libs hdf5_cpp`',
             'f90': '`pkg-config --libs hdf5_fortran`'
         }
-        self.sourcepath = src[self.lang].split("/")[-1]
+        self.sourcepath = src[self.lang].split('/')[-1]
         self.build_system.cppflags = ['`pkg-config --cflags hdf5`']
         self.build_system.ldflags = [
             pkgconfig[self.lang],
