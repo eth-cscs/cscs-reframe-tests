@@ -10,7 +10,7 @@ import reframe.utility.sanity as sn
 @rfm.simple_test
 class OpenCLCheck(rfm.RegressionTest):
     valid_systems = ['+nvgpu']
-    valid_prog_environs = ['PrgEnv-cray', 'PrgEnv-nvidia']
+    valid_prog_environs = ['+opencl']
     build_system = 'SingleSource'
     sourcepath = 'vecAdd.c'
     sourcesdir = 'src/opencl'
