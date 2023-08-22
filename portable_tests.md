@@ -51,6 +51,7 @@ class LoginNodesTest(rfm.RegressionTest):
 | alloc_speed | | |
 | cuda-fortran | | |
 | openacc | | |
+| opencl | | |
 
 ## How to use the value of `extras` in a test
 
