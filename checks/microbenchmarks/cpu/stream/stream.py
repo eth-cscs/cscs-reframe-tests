@@ -51,7 +51,6 @@ class StreamTest(rfm.RegressionTest):
         }
     }
 
-
     @sanity_function
     def assert_validation(self):
         return sn.assert_found(
@@ -64,14 +63,15 @@ class StreamTest(rfm.RegressionTest):
             r'Triad:\s+(?P<triad>\S+)\s+\S+', self.stdout, 'triad', float
         )
 
-
     @run_after('setup')
     def prepare_test(self):
         self.skip_if_no_procinfo()
         self.num_cpus_per_task = int(self.current_partition.processor.num_cores)
         self.env_vars['OMP_NUM_THREADS'] = self.num_cpus_per_task
 
-        self.build_system.cflags += self.current_environ.extras.get('openmp_flags', [])
+        self.build_system.cflags += (
+            self.current_environ.extras.get('openmp_flags', [])
+        )
         self.build_system.cflags.append('-O3')
         envname = self.current_environ.name
 
