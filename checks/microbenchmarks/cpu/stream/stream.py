@@ -1,4 +1,4 @@
-# Copyright 2016-2022 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright 2016-2023 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -12,6 +12,8 @@ class StreamTest(rfm.RegressionTest):
     '''This test checks the stream test:
        Function    Best Rate MB/s  Avg time     Min time     Max time
        Triad:          13991.7     0.017174     0.017153     0.017192
+
+       Code taken from https://www.cs.virginia.edu/stream/FTP/Code/.
     '''
 
     descr = 'STREAM Benchmark'
