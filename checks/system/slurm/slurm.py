@@ -234,12 +234,9 @@ class MemoryOverconsumptionMpiCheck(SlurmCompiledBaseCheck):
     @run_before('run')
     def set_job_parameters(self):
         # fix for "MPIR_pmi_init(83)....: PMI2_Job_GetId returned 14"
-        set_pmi = (
-            self.current_environ.extras['launcher_options']
-            if 'launcher_options' in self.current_environ.extras
-            else ''
+        self.job.launcher.options += (
+            self.current_environ.extras.get('launcher_options', [])
         )
-        self.job.launcher.options += [set_pmi]
 
     @run_before('run')
     def set_num_tasks(self):

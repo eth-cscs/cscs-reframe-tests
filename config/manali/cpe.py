@@ -146,7 +146,7 @@ site_configuration = {
             'extras': {
                 # PrgEnv-nvhpc requires --mpi=pmi2 at runtime
                 # "MPIR_pmi_init(83)....: PMI2_Job_GetId returned 14"
-                'launcher_options': '--mpi=pmi2',
+                'launcher_options': ['--mpi=pmi2'],
             },
         },
         {
@@ -161,7 +161,7 @@ site_configuration = {
             'extras': {
                 # PrgEnv-nvidia requires --mpi=pmi2 at runtime:
                 # "MPIR_pmi_init(83)....: PMI2_Job_GetId returned 14"
-                'launcher_options': '--mpi=pmi2',
+                'launcher_options': ['--mpi=pmi2'],
             },
         },
         # }}}

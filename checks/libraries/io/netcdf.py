@@ -41,9 +41,7 @@ class netCDFTest(rfm.RegressionTest):
     def set_job_parameters(self):
         # To avoid: "MPIR_pmi_init(83)....: PMI2_Job_GetId returned 14"
         self.job.launcher.options += (
-            [self.current_environ.extras['launcher_options']]
-            if 'launcher_options' in self.current_environ.extras
-            else ''
+            self.current_environ.extras.get('launcher_options', [])
         )
         if self.lang in ['f90', 'cpp']:
             launcher = (
