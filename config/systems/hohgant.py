@@ -158,7 +158,7 @@ site_configuration = {
             'target_systems': ['hohgant'],
             'modules': ['cray', 'PrgEnv-cray'],
             'features': ['serial', 'openmp', 'mpi', 'cuda', 'openacc',
-                         'netcdf-hdf5parallel', 'pnetcdf', 'openmp', 'opencl']
+                         'netcdf-hdf5parallel', 'pnetcdf', 'openmp', 'opencl'],
             'extras': {
                 'openmp_flags': ['-fopenmp']
             }
