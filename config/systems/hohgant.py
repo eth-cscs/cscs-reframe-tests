@@ -158,7 +158,7 @@ site_configuration = {
             'target_systems': ['hohgant'],
             'modules': ['cray', 'PrgEnv-cray'],
             'features': ['serial', 'openmp', 'mpi', 'cuda', 'openacc',
-                         'netcdf-hdf5parallel', 'pnetcdf', 'opencl']
+                         'netcdf-hdf5parallel', 'pnetcdf', 'openmp', 'opencl']
         },
         {
             'name': 'PrgEnv-gnu',
@@ -185,7 +185,7 @@ site_configuration = {
             'target_systems': ['hohgant'],
             'modules': ['cray', 'PrgEnv-nvidia'],
             'features': ['serial', 'openmp', 'mpi', 'cuda-fortran', 'openacc',
-                         'netcdf-hdf5parallel', 'pnetcdf', 'opencl'],
+                         'netcdf-hdf5parallel', 'pnetcdf', 'openmp', 'opencl'],
             'extras': {
                 # Workaround "MPIR_pmi_init(83)....: PMI2_Job_GetId returned 14" error
                 'launcher_options': '--mpi=pmi2',
