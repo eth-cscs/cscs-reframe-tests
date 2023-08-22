@@ -1,4 +1,4 @@
-# Copyright 2016-2022 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright 2016-2023 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -16,30 +16,18 @@ class OpenCLCheck(rfm.RegressionTest):
     sourcesdir = 'src/opencl'
     num_gpus_per_node = 1
     executable = 'vecAdd'
-    maintainers = ['TM', 'SK']
     tags = {'production', 'craype'}
 
     @run_after('setup')
     def setup_modules(self):
-        if self.current_system.name in {'dom', 'daint'}:
-            if self.current_environ.name == 'PrgEnv-nvidia':
-                self.modules = ['cudatoolkit'] 
-            else:
-                self.modules = ['craype-accel-nvidia60']
-        elif self.current_system.name in {'hohgant'}:
-            self.modules = ['cudatoolkit', 'craype-accel-nvidia80']
+        sm = self.current_partition.select_devices('gpu')[0].arch[-2:]
+        self.modules = ['cudatoolkit', f'craype-accel-nvidia{sm}']
 
     @run_before('compile')
     def setflags(self):
-        if self.current_system.name in {'dom', 'daint'}:
-            include_path = '$CUDATOOLKIT_HOME/cuda/include'
-            libpath = '$CUDATOOLKIT_HOME/lib64'
-            self.build_system.cflags = [f'-I{include_path}']
-            self.build_system.ldflags = [f'-L{libpath}', '-lOpenCL']
-        else:
-            self.build_system.cflags = ['$CRAY_CUDATOOLKIT_INCLUDE_OPTS']
-            self.build_system.ldflags = ['$CRAY_CUDATOOLKIT_POST_LINK_OPTS',
-                                         '-lOpenCL', '-lstdc++']
+        self.build_system.cflags = ['$CRAY_CUDATOOLKIT_INCLUDE_OPTS']
+        self.build_system.ldflags = ['$CRAY_CUDATOOLKIT_POST_LINK_OPTS',
+                                     '-lOpenCL']
 
     @run_before('sanity')
     def set_sanity(self):
