@@ -56,9 +56,9 @@ class OpenACCFortranCheck(rfm.RegressionTest):
 
     @run_before('run')
     def set_launcher_options(self):
-        self.job.launcher.options += [
-            self.current_environ.extras.get('launcher_options', '')
-        ]
+        self.job.launcher.options += (
+            self.current_environ.extras.get('launcher_options', [])
+        )
 
     @run_before('run')
     def set_cuda_visible_devices(self):
