@@ -20,6 +20,9 @@ class CudaSamplesTest(rfm.RegressionTest):
         'simpleCUBLAS': '4_CUDA_Libraries',
         'conjugateGradientCudaGraphs': '4_CUDA_Libraries'
     }
+    env_vars = {
+        'LD_LIBRARY_PATH': '$CUDA_HOME/lib64:$LD_LIBRARY_PATH'
+    }
     valid_systems = ['+nvgpu']
     valid_prog_environs = ['+cuda']
     sourcesdir = 'https://github.com/NVIDIA/cuda-samples.git'
@@ -32,10 +35,8 @@ class CudaSamplesTest(rfm.RegressionTest):
 
     @run_before('compile')
     def set_build_options(self):
-        curr_part = self.current_partition
-
         # Remove the `sm_` prefix from the cuda arch
-        gpu_arch = curr_part.select_devices('gpu')[0].arch[3:]
+        gpu_arch = self.current_partition.select_devices('gpu')[0].arch[3:]
         self.build_system.options = [
             f'SMS="{gpu_arch}"', f'CUDA_PATH=$CUDA_HOME'
         ]
