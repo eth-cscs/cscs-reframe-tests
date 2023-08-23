@@ -15,6 +15,7 @@ class CUDAFortranCheck(rfm.RegressionTest):
     sourcepath = 'vecAdd_cuda.cuf'
     build_system = 'SingleSource'
     build_locally = False
+    sourcesdir = 'src/cuda-fortran'
 
     @sanity_function
     def assert_correct_result(self):
