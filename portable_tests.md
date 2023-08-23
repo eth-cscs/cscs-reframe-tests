@@ -52,6 +52,7 @@ class LoginNodesTest(rfm.RegressionTest):
 | cuda-fortran | | |
 | openacc | | |
 | opencl | | |
+| h5py | | |
 
 ## How to use the value of `extras` in a test
 
