@@ -33,10 +33,14 @@ class cuda_aware_mpi_check(rfm.CompileOnlyRegressionTest):
         gpu_arch = self.current_partition.select_devices('gpu')[0].arch[3:]
         gcd_flgs = f'-gencode arch=compute_{gpu_arch},code=sm_{gpu_arch}'
         self.build_system.options = [
-            f'CUDA_INSTALL_PATH=$CUDA_HOME',  # cuda_runtime.h
-            f'GENCODE_FLAGS="{gcd_flgs}"',
-            f'MPICC="{self.current_environ.cc}"',
-            f'MPILD="{self.current_environ.cxx}"'
+            rf'CUDA_INSTALL_PATH=${{CUDA_HOME}}',  # cuda_runtime.h
+
+            # Extract the include paths from the mpic++
+            rf'MPICFLAGS=$(mpic++ -compile-info | tr " " "\n" | '
+            rf'grep "^-I" | tr "\n" " ")'
+            rf'GENCODE_FLAGS="{gcd_flgs}"',
+            rf'MPICC="{self.current_environ.cc}"',
+            rf'MPILD="{self.current_environ.cxx}"'
         ]
 
     @run_before('sanity')
