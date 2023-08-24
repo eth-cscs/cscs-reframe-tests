@@ -9,6 +9,9 @@ import reframe.utility.sanity as sn
 
 
 class CDO_base(rfm.RunOnlyRegressionTest):
+    '''
+    https://www.unidata.ucar.edu/software/netcdf/examples/files.html
+    '''
     valid_systems = ['+remote']
     valid_prog_environs = ['+cdo']
     resource_dir = variable(str,
