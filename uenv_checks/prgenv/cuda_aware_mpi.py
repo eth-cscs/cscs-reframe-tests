@@ -23,7 +23,10 @@ class cuda_aware_mpi_check(rfm.CompileOnlyRegressionTest):
     valid_systems = ['+remote +nvgpu']
     valid_prog_environs = ['+cuda +mpi']
     build_locally = False
-    prebuild_cmds = ['cd posts/cuda-aware-mpi-example/src']
+    prebuild_cmds = [
+        'cd posts/cuda-aware-mpi-example/src',
+        'rm -rf MATLAB* series c++11_cuda'
+    ]
     build_system = 'Make'
     postbuild_cmds = ['ls ../bin']
 
@@ -34,10 +37,9 @@ class cuda_aware_mpi_check(rfm.CompileOnlyRegressionTest):
         gcd_flgs = f'-gencode arch=compute_{gpu_arch},code=sm_{gpu_arch}'
         self.build_system.options = [
             rf'CUDA_INSTALL_PATH=${{CUDA_HOME}}',  # cuda_runtime.h
-
             # Extract the include paths from the mpic++
             rf'MPICFLAGS=$(mpic++ -compile-info | tr " " "\n" | '
-            rf'grep "^-I" | tr "\n" " ")'
+            rf'grep "^-I" | tr "\n" " ")',
             rf'GENCODE_FLAGS="{gcd_flgs}"',
             rf'MPICC="{self.current_environ.cc}"',
             rf'MPILD="{self.current_environ.cxx}"'
