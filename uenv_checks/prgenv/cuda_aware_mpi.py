@@ -16,19 +16,17 @@ from cuda_visible_devices_all import CudaVisibleDevicesAllMixin
 
 
 @rfm.simple_test
-class cuda_aware_mpi_check(rfm.CompileOnlyRegressionTest):
-    descr = 'Cuda-aware MPI test from NVIDIA code-samples.git'
-    sourcesdir = ('https://github.com/NVIDIA-developer-blog/'
-                  'code-samples.git')
+class cuda_aware_mpi_compile(rfm.CompileOnlyRegressionTest):
+    descr = 'Compilation of Cuda-aware MPI test from NVIDIA code-samples.git'
+    sourcesdir = 'https://github.com/NVIDIA-developer-blog/code-samples.git'
     valid_systems = ['+remote +nvgpu']
-    valid_prog_environs = ['+cuda +mpi']
+    valid_prog_environs = ['+cuda-aware-mpi']
     build_locally = False
     prebuild_cmds = [
         'cd posts/cuda-aware-mpi-example/src',
         'rm -rf MATLAB* series c++11_cuda'
     ]
     build_system = 'Make'
-    postbuild_cmds = ['ls ../bin']
 
     @run_before('compile')
     def set_compilers(self):
@@ -53,7 +51,8 @@ class cuda_aware_mpi_check(rfm.CompileOnlyRegressionTest):
 
 class CudaAwareMpiRuns(CudaVisibleDevicesAllMixin, rfm.RunOnlyRegressionTest):
     valid_systems = ['+remote +nvgpu']
-    valid_prog_environs = ['+cuda +mpi']
+    valid_prog_environs = ['+cuda-aware-mpi']
+    sourcesdir = None
     env_vars = {
         'MPICH_GPU_SUPPORT_ENABLED': 1,
         'LD_LIBRARY_PATH': '${CUDA_HOME}/lib64:${LD_LIBRARY_PATH}'
@@ -61,20 +60,20 @@ class CudaAwareMpiRuns(CudaVisibleDevicesAllMixin, rfm.RunOnlyRegressionTest):
 
     @run_after('init')
     def add_deps(self):
-        self.depends_on('cuda_aware_mpi_check')
+        self.depends_on('cuda_aware_mpi_compile')
 
     @require_deps
-    def set_executable(self, cuda_aware_mpi_check):
+    def set_executable(self, cuda_aware_mpi_compile):
         self.executable = str(
-            pathlib.Path(cuda_aware_mpi_check().stagedir) / 'posts' /
+            pathlib.Path(cuda_aware_mpi_compile().stagedir) / 'posts' /
             'cuda-aware-mpi-example' / 'bin' / 'jacobi_cuda_aware_mpi'
         )
 
     @run_before('sanity')
     def set_sanity_patterns(self):
-        self.sanity_patterns = sn.assert_found(r'Stopped after 1000 iterations'
-                                               r' with residue 0.00024',
-                                               self.stdout)
+        self.sanity_patterns = sn.assert_found(
+            'Stopped after 1000 iterations with residue 0.00024', self.stdout
+        )
 
 @rfm.simple_test
 class cuda_aware_mpi_one_node_check(CudaAwareMpiRuns):

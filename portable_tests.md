@@ -45,6 +45,7 @@ class LoginNodesTest(rfm.RegressionTest):
 | compiler | The environment provides a typical compiler | |
 | openmp | The compiler of the environment supports openmp |
 | mpi | The compiler of the environment supports openmp | |
+| cuda-aware-mpi| A CUDA-aware mpi is provided | |
 | gromacs | GROMACS is available in this environment | |
 | netcdf-hdf5parallel | | |
 | pnetcdf | | |
