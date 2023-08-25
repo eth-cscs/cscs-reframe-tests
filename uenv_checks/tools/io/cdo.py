@@ -2,6 +2,7 @@
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
+
 import pathlib
 
 import reframe as rfm
@@ -14,8 +15,9 @@ class CDO_base(rfm.RunOnlyRegressionTest):
     '''
     valid_systems = ['+remote']
     valid_prog_environs = ['+cdo']
-    resource_dir = variable(str,
-                            value='/apps/common/UES/reframe/resources/CDO-NCO')
+    resource_dir = variable(
+        str, value='/apps/common/UES/reframe/resources/CDO-NCO')
+    needs_input = False
 
     @run_before('run')
     def get_inputfile(self):
@@ -33,7 +35,6 @@ class CDO_nc_config_test(CDO_base):
     '''
     executable = 'nc-config'
     executable_opts = ['--has-nc4']
-    needs_input = False
 
     @sanity_function
     def assert_output(self):
@@ -47,7 +48,6 @@ class CDO_nf_config_test(CDO_base):
     '''
     executable = 'nf-config'
     executable_opts = ['--has-nc4']
-    needs_input = False
 
     @sanity_function
     def assert_output(self):
@@ -62,7 +62,6 @@ class CDO_version_test(CDO_base):
     '''
     executable = 'cdo'
     executable_opts = ['--version', '2>&1']
-    needs_input = False
 
     @sanity_function
     def assert_output(self):
