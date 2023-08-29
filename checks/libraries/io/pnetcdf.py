@@ -46,8 +46,23 @@ class PnetCDFTest(rfm.RegressionTest, ExtraLauncherOptionsMixin):
             self.build_system.fflags = [
                 '-w', '-fallow-argument-mismatch', 'utils.F90'
             ]
+        elif (osext.cray_cdt_version() >= '23.05' and self.lang == 'f90'
+              and self.current_environ.name == 'PrgEnv-cray'):
+            self.build_system.fflags = [
+                '-L/opt/cray/pe/cce/16.0.0/cce-clang/x86_64/lib/'
+                'x86_64-unknown-linux-gnu -lunwind',
+                'utils.F90'
+            ]
         else:
             self.build_system.fflags = ['utils.F90']
+
+        # FIXME: hidden symbol `_Unwind_Resume' ...  is referenced by DSO
+        if (osext.cray_cdt_version() >= '23.05' and self.lang == 'f90'
+            and self.current_environ.name == 'PrgEnv-cray'):
+            self.build_system.ldlags = [
+                '-L/opt/cray/pe/cce/16.0.0/cce-clang/x86_64/lib/'
+                'x86_64-unknown-linux-gnu -lunwind',
+            ]
 
     @run_before('run')
     def fix_cpe(self):
