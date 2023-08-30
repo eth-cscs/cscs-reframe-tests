@@ -82,9 +82,7 @@ site_configuration = {
                     'environs': [
                         'builtin',
                         'PrgEnv-cray',
-                        'PrgEnv-gnu',
-                        'PrgEnv-nvhpc',
-                        'PrgEnv-nvidia'
+                        'PrgEnv-gnu'
                     ],
                     'container_platforms': [
                         {
@@ -158,34 +156,45 @@ site_configuration = {
         {
             'name': 'PrgEnv-cray',
             'target_systems': ['hohgant'],
-            'modules': ['cray', 'PrgEnv-cray']
+            'modules': ['cray', 'PrgEnv-cray'],
+            'features': ['serial', 'openmp', 'mpi', 'cuda', 'openacc',
+                         'netcdf-hdf5parallel', 'pnetcdf', 'openmp', 'opencl'],
+            'extras': {
+                'openmp_flags': ['-fopenmp']
+            }
         },
         {
             'name': 'PrgEnv-gnu',
             'target_systems': ['hohgant'],
-            'modules': ['cray', 'PrgEnv-gnu']
-        },
-        {
-            'name': 'PrgEnv-intel',
-            'target_systems': ['hohgant'],
-            'modules': ['cray', 'PrgEnv-intel']
+            'modules': ['cray', 'PrgEnv-gnu'],
+            'features': ['serial', 'openmp', 'mpi', 'cuda', 'alloc_speed',
+                         'netcdf-hdf5parallel', 'pnetcdf', 'openmp'],
+            'extras': {
+                'hugepages2M': ['craype-hugepages2M'],
+                'openmp_flags': ['-fopenmp']
+            }
         },
         {
             'name': 'PrgEnv-nvhpc',
             'target_systems': ['hohgant'],
             'modules': ['cray', 'PrgEnv-nvhpc'],
+            'features': ['serial', 'openmp', 'mpi', 'cuda',
+                         'netcdf-hdf5parallel', 'pnetcdf', 'openmp'],
             'extras': {
-                'launcher_options': '--mpi=pmi2',
+                'launcher_options': ['--mpi=pmi2'],
+                'openmp_flags': ['-fopenmp']
             },
         },
         {
             'name': 'PrgEnv-nvidia',
             'target_systems': ['hohgant'],
             'modules': ['cray', 'PrgEnv-nvidia'],
+            'features': ['serial', 'openmp', 'mpi', 'cuda-fortran', 'openacc',
+                         'netcdf-hdf5parallel', 'pnetcdf', 'openmp', 'opencl'],
             'extras': {
-                # "MPIR_pmi_init(83)....: PMI2_Job_GetId returned 14"
-                # -> add --mpi=pmi2 at runtime
-                'launcher_options': '--mpi=pmi2',
+                # Workaround "MPIR_pmi_init(83)....: PMI2_Job_GetId returned 14" error
+                'launcher_options': ['--mpi=pmi2'],
+                'openmp_flags': ['-mp']
             },
         },
     ],

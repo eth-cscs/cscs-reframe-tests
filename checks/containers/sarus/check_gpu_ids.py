@@ -1,52 +1,43 @@
-import os
+# Copyright 2016-2023 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# ReFrame Project Developers. See the top-level LICENSE file for details.
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
+import pathlib
 import sys
 
 import reframe as rfm
 import reframe.utility.sanity as sn
 
+sys.path.append(str(pathlib.Path(__file__).parent.parent.parent / 'mixins'))
 
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+from cuda_visible_devices_all import CudaVisibleDevicesAllMixin  # noqa: E402
 
 
-class BaseCheck(rfm.RunOnlyRegressionTest):
-    valid_systems = []
+@rfm.simple_test
+class SarusNvidiaSmiCheck(CudaVisibleDevicesAllMixin,
+                          rfm.RunOnlyRegressionTest):
+    valid_systems = ['+nvgpu +sarus']
     valid_prog_environs = ['builtin']
-    sourcesdir = None
-    modules = ['sarus']
     num_tasks = 1
     num_tasks_per_node = 1
-    num_gpus_per_node = 1
-    sarus_image = 'ethcscs/cudasamples:8.0'
-    maintainers = ['amadonna', 'taliaga']
-    tags = {'production'}
+    container_platform = 'Sarus'
+
+    # https://catalog.ngc.nvidia.com/orgs/nvidia/teams/k8s/containers/cuda-sample/tags  # noqa: E501
+    image = 'nvidia/cuda:11.8.0-base-ubuntu18.04'
 
     @run_after('setup')
-    def setup_prerun(self):
-        self.prerun_cmds = ['sarus --version',
-                            f'sarus pull {self.sarus_image}']
+    def setup_sarus(self):
+        self.container_platform.image = self.image
+        self.prerun_cmds = ['sarus --version', 'nvidia-smi -L > native.out']
+        self.env_vars['XDG_RUNTIME_DIR'] = ''
+        self.container_platform.command = 'nvidia-smi -L > sarus.out'
 
     @sanity_function
-    def assert_sanity(self):
-        return sn.assert_found(r'CHECK SUCCESSFUL', self.stdout)
-
-
-@rfm.simple_test
-class SarusNvidiaSmiCheck(BaseCheck):
-    @run_after('setup')
-    def setup_exec(self):
-        abs_dirname = os.path.abspath(os.path.dirname(__file__))
-        self.executable = 'python'
-        self.executable_opts = [
-            f'{abs_dirname}/compare_output_of_native_and_sarus_nvidia_smi.py'
-        ]
-
-
-@rfm.simple_test
-class SarusDeviceQueryCheck(BaseCheck):
-    @run_after('setup')
-    def setup_exec(self):
-        abs_dirname = os.path.abspath(os.path.dirname(__file__))
-        self.executable = 'python'
-        self.executable_opts = [
-            f'{abs_dirname}/compare_order_of_nvidia_devices.py'
-        ]
+    def assert_same_output(self):
+        native_output = sn.extractall('GPU.*', 'native.out')
+        sarus_output = sn.extractall('GPU.*', 'sarus.out')
+        return sn.all([
+            sn.assert_eq(native_output, sarus_output),
+            sn.assert_eq(sn.len(native_output), self.num_gpus_per_node)
+        ])

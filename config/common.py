@@ -107,5 +107,8 @@ site_configuration = {
             'check_search_recursive': True,
             'remote_detect': True
         }
-    ]
+    ],
+#     'autodetect_methods': [
+#         'cat /etc/xthostname', 'hostname'
+#     ]
 }
