@@ -20,21 +20,24 @@ class NvmlTest(rfm.RegressionTest):
 
     @run_before('compile')
     def set_build_flags(self):
+        self.prebuild_cmds = [f'echo "# {self.sourcepath}"']
         self.build_system.cflags = ['-I $CUDA_HOME/include']
         self.build_system.ldflags = ['-L $CUDA_HOME/lib64 -lnvidia-ml']
 
-    @run_before('sanity')
-    def set_sanity_patterns(self):
+    @sanity_function
+    def set_sanity(self):
         """
         Listing devices:
         0. NVIDIA A100-SXM4-80GB [00000000:03:00.0]
         Changing device's compute mode from 'Exclusive Process' to 'Prohibited'
         Need root privileges to do that: Insufficient Permissions # <-- OK
         """
-        regex_devices = r'Found \d+ devices'
+        cp = self.current_partition
+        self.gpu_count = cp.select_devices('gpu')[0].num_devices
+        regex_devices = rf'Found {self.gpu_count} devices'
         regex_pciinfo = r'\d+. NVIDIA.*\[\S+\]'
         regex_mode = 'Need root privileges to do that: Insufficient Permission'
-        self.sanity_patterns = sn.all([
+        return sn.all([
             sn.assert_found(regex_devices, self.stdout),
             sn.assert_found(regex_pciinfo, self.stdout),
             sn.assert_found(regex_mode, self.stdout),
