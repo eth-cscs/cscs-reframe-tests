@@ -9,11 +9,13 @@ import reframe.utility.sanity as sn
 
 class QuantumESPRESSOCheck(rfm.RunOnlyRegressionTest):
     valid_systems = ['hohgant:cpu', 'hohgant-uenv:cpu']
-    valid_prog_environs = ['builtin']
+    #valid_prog_environs = ['builtin']
+    valid_prog_environs = ['+quantum-espresso']
     container_image = variable(str, value='NULL')
     scale = parameter(['small'])
     executable = 'pw.x'
     executable_opts = ['-in', 'ausurf.in']
+    modules = ['quantum-espresso']
     #extra_resources = {
     #    'switches': {
     #        'num_switches': 1
