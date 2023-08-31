@@ -48,18 +48,29 @@ class QuantumESPRESSOCheck(QuantumESPRESSOCheckBase):
             'OMP_PROC_BIND': 'close'
         }
 
-        if self.scale == 'small':
-            self.energy_reference = -11427.09017218
-            self.num_tasks = 32
-            self.num_tasks_per_node = 32
-            self.num_cpus_per_task = 4
-            self.num_tasks_per_core = 1
-        else:
-            self.energy_reference = -11427.09017152
-            self.num_tasks = 256
-            self.num_tasks_per_node = 16
-            self.num_cpus_per_task = 16
-            self.num_tasks_per_core = 1
+        if self.current_partition.fullname in ['hohgant:cpu', 'hohgant-uenv:cpu']:
+            if self.scale == 'small':
+                self.energy_reference = -11427.09017218
+                self.num_tasks = 32
+                self.num_tasks_per_node = 32
+                self.num_cpus_per_task = 4
+            else:
+                self.energy_reference = -11427.09017152
+                self.num_tasks = 256
+                self.num_tasks_per_node = 16
+                self.num_cpus_per_task = 16
+
+        if self.current_partition.fullname in ['hohgant:nvgpu']:
+            if self.scale == 'small':
+                self.energy_reference = -11427.09017218
+                self.num_tasks = 4
+                self.num_tasks_per_node = 4
+                self.num_cpus_per_task = 16
+            else:
+                self.energy_reference = -11427.09017152
+                self.num_tasks = 8
+                self.num_tasks_per_node = 4
+                self.num_cpus_per_task = 16
 
     @run_after('setup')
     def setup_container_platform(self):
