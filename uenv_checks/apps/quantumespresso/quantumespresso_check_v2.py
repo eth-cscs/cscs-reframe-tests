@@ -8,7 +8,7 @@ import reframe.utility.sanity as sn
 
 
 class QuantumESPRESSOCheck(rfm.RunOnlyRegressionTest):
-    valid_systems = ['hohgant:cpu', 'hohgant-uenv:cpu']
+    valid_systems = ['hohgant:cpu', 'hohgant:nvgpu', 'hohgant-uenv:cpu']
     #valid_prog_environs = ['builtin']
     valid_prog_environs = ['builtin','+quantum-espresso']
     container_image = variable(str, value='NULL')
@@ -83,7 +83,11 @@ class QuantumESPRESSOCpuCheck(QuantumESPRESSOCheck):
             self.container_platform.with_mpi = False
             self.container_platform.pull_image = False
             self.container_platform.command = f'{self.executable} {" ".join(self.executable_opts)}'
-        else:
+
+    @run_after('setup')
+    def setup_uenv_moules(self):
+        # for uenv we need modules, for containers no
+        if self.container_image == 'NULL':
             modules = ['quantum-espresso']
 
     @run_before('performance')
