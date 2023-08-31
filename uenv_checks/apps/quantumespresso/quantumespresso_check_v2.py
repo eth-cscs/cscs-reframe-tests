@@ -10,7 +10,7 @@ import reframe.utility.sanity as sn
 class QuantumESPRESSOCheck(rfm.RunOnlyRegressionTest):
     valid_systems = ['hohgant:cpu', 'hohgant-uenv:cpu']
     #valid_prog_environs = ['builtin']
-    valid_prog_environs = ['+quantum-espresso']
+    valid_prog_environs = ['builtin','+quantum-espresso']
     container_image = variable(str, value='NULL')
     scale = parameter(['small'])
     executable = 'pw.x'
@@ -104,5 +104,6 @@ class QuantumESPRESSOCpuCheck(QuantumESPRESSOCheck):
         #self.job.launcher.options = ['--cpu-bind=cores', ' --hint=nomultithread']
         #
         self.job.launcher.options = [' --hint=nomultithread']
-        #if self.current_system.name in {'hohgant'}:
-        #    self.job.launcher.options += ['--mpi=pmi2']
+        # Sarus binds to nvhpc compilerd mpich which requires --mpi=pmi2 flag
+        if self.current_system.name in {'hohgant'} and self.container_image != 'NULL':
+            self.job.launcher.options += ['--mpi=pmi2']
