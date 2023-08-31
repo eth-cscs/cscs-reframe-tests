@@ -16,8 +16,8 @@ class QuantumESPRESSOCheck(rfm.RunOnlyRegressionTest):
     executable = 'pw.x'
     executable_opts = ['-in', 'ausurf.in']
     # for uenv we need modules, for containers no
-    if container_image == 'NULL':
-        modules = ['quantum-espresso']
+    #if container_image == 'NULL':
+    #    modules = ['quantum-espresso']
     #extra_resources = {
     #    'switches': {
     #        'num_switches': 1
