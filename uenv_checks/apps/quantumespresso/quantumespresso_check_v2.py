@@ -48,6 +48,24 @@ class QuantumESPRESSOCheck(QuantumESPRESSOCheckBase):
             'OMP_PROC_BIND': 'close'
         }
 
+    @run_after('setup')
+    def setup_container_platform(self):
+        # in case container_image was provided, initialize a container execution
+        if self.container_image != 'NULL':
+            self.container_platform = 'Sarus'
+            self.container_platform.image = self.container_image
+            self.container_platform.with_mpi = False
+            self.container_platform.pull_image = False
+            self.container_platform.command = f'{self.executable} {" ".join(self.executable_opts)}'
+
+    @run_after('setup')
+    def setup_uenv_moules(self):
+        # for uenv we need modules, for containers no
+        if self.container_image == 'NULL':
+            modules = ['quantum-espresso']
+
+    @run_after('setup')
+    def setup_mpi_layout(self):
         if self.current_partition.fullname in ['hohgant:cpu', 'hohgant-uenv:cpu']:
             if self.scale == 'small':
                 self.energy_reference = -11427.09017218
@@ -71,22 +89,6 @@ class QuantumESPRESSOCheck(QuantumESPRESSOCheckBase):
                 self.num_tasks = 8
                 self.num_tasks_per_node = 4
                 self.num_cpus_per_task = 16
-
-    @run_after('setup')
-    def setup_container_platform(self):
-        # in case container_image was provided, initialize a container execution
-        if self.container_image != 'NULL':
-            self.container_platform = 'Sarus'
-            self.container_platform.image = self.container_image
-            self.container_platform.with_mpi = False
-            self.container_platform.pull_image = False
-            self.container_platform.command = f'{self.executable} {" ".join(self.executable_opts)}'
-
-    @run_after('setup')
-    def setup_uenv_moules(self):
-        # for uenv we need modules, for containers no
-        if self.container_image == 'NULL':
-            modules = ['quantum-espresso']
 
     @run_before('performance')
     def set_reference(self):
