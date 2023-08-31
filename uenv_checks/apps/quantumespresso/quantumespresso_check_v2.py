@@ -83,6 +83,8 @@ class QuantumESPRESSOCpuCheck(QuantumESPRESSOCheck):
             self.container_platform.with_mpi = False
             self.container_platform.pull_image = False
             self.container_platform.command = f'{self.executable} {" ".join(self.executable_opts)}'
+        else:
+            modules = ['quantum-espresso']
 
     @run_before('performance')
     def set_reference(self):
