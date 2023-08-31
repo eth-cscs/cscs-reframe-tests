@@ -7,30 +7,17 @@ import reframe as rfm
 import reframe.utility.sanity as sn
 
 
-class QuantumESPRESSOCheck(rfm.RunOnlyRegressionTest):
+class QuantumESPRESSOCheckBase(rfm.RunOnlyRegressionTest):
     valid_systems = ['hohgant:cpu', 'hohgant:nvgpu', 'hohgant-uenv:cpu']
-    #valid_prog_environs = ['builtin']
     valid_prog_environs = ['builtin','+quantum-espresso']
     container_image = variable(str, value='NULL')
     scale = parameter(['small'])
     executable = 'pw.x'
     executable_opts = ['-in', 'ausurf.in']
-    # for uenv we need modules, for containers no
-    #if container_image == 'NULL':
-    #    modules = ['quantum-espresso']
-    #extra_resources = {
-    #    'switches': {
-    #        'num_switches': 1
-    #    }
-    #}
     strict_check = False
     maintainers = ['antonk']
     # todo: which tags it should have?
     tags = {'scs'}
-
-    #@run_after('init')
-    #def skip_if_null_image(self):
-    #    self.skip_if(self.container_image_image == 'NULL', 'no QE container image was given')
 
     @sanity_function
     def assert_simulation_success(self):
@@ -48,7 +35,7 @@ class QuantumESPRESSOCheck(rfm.RunOnlyRegressionTest):
                                 self.stdout, 'wtime', float)
 
 @rfm.simple_test
-class QuantumESPRESSOCpuCheck(QuantumESPRESSOCheck):
+class QuantumESPRESSOCheck(QuantumESPRESSOCheckBase):
     energy_tolerance = 1.0e-6
 
     @run_after('init')
