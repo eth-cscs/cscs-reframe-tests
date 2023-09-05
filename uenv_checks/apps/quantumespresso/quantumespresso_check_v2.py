@@ -12,7 +12,7 @@ qe_tests = {
             'energy_reference' : -11427.09017218,
             'performance_reference' : [
                 {'R' : 32,  # total number of ranks
-                 'T' : 4    # threads per rank
+                 'T' : 4,   # threads per rank
                  'P' : 55.4 # performance. here is time to solution
                 }
             ]
@@ -21,7 +21,7 @@ qe_tests = {
             'energy_reference' : -11427.09017218,
             'performance_reference' : [
                 {'R' : 32,  # total number of ranks
-                 'T' : 4    # threads per rank
+                 'T' : 4,   # threads per rank
                  'P' : 55.4 # performance. here is time to solution
                 }
             ]
@@ -30,7 +30,7 @@ qe_tests = {
             'energy_reference' : -11427.09017218,
             'performance_reference' : [
                 {'R' : 4,  # total number of ranks
-                 'T' : 16    # threads per rank
+                 'T' : 16, # threads per rank
                  'P' : 55.4 # performance. here is time to solution
                 }
             ]
@@ -81,8 +81,8 @@ class QuantumESPRESSOCheck(QuantumESPRESSOCheckBase):
         }
 
     @run_after('setup')
-    def setup_reference_dict(self)
-        self.ref_dict = qe_tests[test_name][self.current_partition.fullname]
+    def setup_reference_dict(self):
+        self.ref_dict = qe_tests[self.test_name][self.current_partition.fullname]
 
     @run_after('setup')
     def setup_container_platform(self):
@@ -102,26 +102,26 @@ class QuantumESPRESSOCheck(QuantumESPRESSOCheckBase):
             modules = ['quantum-espresso']
 
     @run_after('setup')
-    def setup_mpi_layout(self):
-        self.energy_reference = ref_dict['energy_reference']
-        self.num_tasks = ref_dict['performance_reference']['R']
-        self.num_cpus_per_task = ref_dict['performance_reference']['T']
+    def setup_resources(self):
+        self.num_tasks = self.ref_dict['performance_reference'][0]['R']
+        self.num_cpus_per_task = self.ref_dict['performance_reference'][0]['T']
         # TODO: this is a derived quantity from the threads_per_core and cores_per_node
         #self.num_tasks_per_node
 
     @run_before('performance')
     def set_reference(self):
+        self.energy_reference = self.ref_dict['energy_reference']
         self.reference = {
-            '*': {'time': (ref_dict['performance_reference']['P'], None, 0.10, 's')}
+            '*': {'time': (self.ref_dict['performance_reference'][0]['P'], None, 0.10, 's')}
         }
 
-    @run_before('run')
-    def set_task_distribution(self):
-        #self.job.options = ['--distribution=block:block']
-        return
+    #@run_before('run')
+    #def set_task_distribution(self):
+    #    #self.job.options = ['--distribution=block:block']
+    #    return
 
     @run_before('run')
-    def set_cpu_binding(self):
+    def set_job_launcher_options(self):
         #self.job.launcher.options = ['--cpu-bind=cores', ' --hint=nomultithread']
         #
         self.job.launcher.options = [' --hint=nomultithread']
