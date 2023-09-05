@@ -6,13 +6,44 @@
 import reframe as rfm
 import reframe.utility.sanity as sn
 
+qe_tests = {
+    'Au-surf' : {
+        'hohgant:cpu' : {
+            'energy_reference' : -11427.09017218,
+            'performance_reference' : [
+                {'R' : 32,  # total number of ranks
+                 'T' : 4    # threads per rank
+                 'P' : 55.4 # performance. here is time to solution
+                }
+            ]
+        },
+        'hohgant-uenv:cpu' : { # TODO: only hohgant:cpu should remain in the future
+            'energy_reference' : -11427.09017218,
+            'performance_reference' : [
+                {'R' : 32,  # total number of ranks
+                 'T' : 4    # threads per rank
+                 'P' : 55.4 # performance. here is time to solution
+                }
+            ]
+        },
+        'hohgant:nvgpu' : {
+            'energy_reference' : -11427.09017218,
+            'performance_reference' : [
+                {'R' : 4,  # total number of ranks
+                 'T' : 16    # threads per rank
+                 'P' : 55.4 # performance. here is time to solution
+                }
+            ]
+        }
+    }
+}
 
 class QuantumESPRESSOCheckBase(rfm.RunOnlyRegressionTest):
     valid_systems = ['hohgant:cpu', 'hohgant:nvgpu', 'hohgant-uenv:cpu']
     valid_prog_environs = ['builtin','+quantum-espresso']
     container_image = variable(str, value='NULL')
-    scale = parameter(['small'])
     executable = 'pw.x'
+    # TODO: tests should all have pw.in as input file
     executable_opts = ['-in', 'ausurf.in']
     strict_check = False
     maintainers = ['antonk']
@@ -37,16 +68,21 @@ class QuantumESPRESSOCheckBase(rfm.RunOnlyRegressionTest):
 @rfm.simple_test
 class QuantumESPRESSOCheck(QuantumESPRESSOCheckBase):
     energy_tolerance = 1.0e-6
+    test_name = 'Au-surf'
 
     @run_after('init')
     def setup_test(self):
-        self.descr = (f'QuantumESPRESSO CPU check (version: {self.scale})')
+        self.descr = (f'QuantumESPRESSO ground state SCF check')
         self.env_vars = {
-            'MPICH_OFI_STARTUP_CONNECT': 1,
-            'OMP_NUM_THREADS': 4,
-            'OMP_PLACES': 'cores',
-            'OMP_PROC_BIND': 'close'
+            #'MPICH_OFI_STARTUP_CONNECT': 1,
+            'OMP_NUM_THREADS': '$SLURM_CPUS_PER_TASK'
+            #'OMP_PLACES': 'cores',
+            #'OMP_PROC_BIND': 'close'
         }
+
+    @run_after('setup')
+    def setup_reference_dict(self)
+        self.ref_dict = qe_tests[test_name][self.current_partition.fullname]
 
     @run_after('setup')
     def setup_container_platform(self):
@@ -59,48 +95,25 @@ class QuantumESPRESSOCheck(QuantumESPRESSOCheckBase):
             self.container_platform.command = f'{self.executable} {" ".join(self.executable_opts)}'
 
     @run_after('setup')
-    def setup_uenv_moules(self):
+    def setup_uenv_modules(self):
         # for uenv we need modules, for containers no
         if self.container_image == 'NULL':
+            # is self.modules needed here?
             modules = ['quantum-espresso']
 
     @run_after('setup')
     def setup_mpi_layout(self):
-        if self.current_partition.fullname in ['hohgant:cpu', 'hohgant-uenv:cpu']:
-            if self.scale == 'small':
-                self.energy_reference = -11427.09017218
-                self.num_tasks = 32
-                self.num_tasks_per_node = 32
-                self.num_cpus_per_task = 4
-            else:
-                self.energy_reference = -11427.09017152
-                self.num_tasks = 256
-                self.num_tasks_per_node = 16
-                self.num_cpus_per_task = 16
-
-        if self.current_partition.fullname in ['hohgant:nvgpu']:
-            if self.scale == 'small':
-                self.energy_reference = -11427.09017218
-                self.num_tasks = 4
-                self.num_tasks_per_node = 4
-                self.num_cpus_per_task = 16
-            else:
-                self.energy_reference = -11427.09017152
-                self.num_tasks = 8
-                self.num_tasks_per_node = 4
-                self.num_cpus_per_task = 16
+        self.energy_reference = ref_dict['energy_reference']
+        self.num_tasks = ref_dict['performance_reference']['R']
+        self.num_cpus_per_task = ref_dict['performance_reference']['T']
+        # TODO: this is a derived quantity from the threads_per_core and cores_per_node
+        #self.num_tasks_per_node
 
     @run_before('performance')
     def set_reference(self):
-        references = {
-            'small': {
-                '*': {'time': (55.51, None, 0.10, 's')}
-            },
-            'large': {
-                '*': {'time': (43.211, None, 0.10, 's')}
-            }
+        self.reference = {
+            '*': {'time': (ref_dict['performance_reference']['P'], None, 0.10, 's')}
         }
-        self.reference = references[self.scale]
 
     @run_before('run')
     def set_task_distribution(self):
