@@ -105,12 +105,15 @@ class QuantumESPRESSOCheck(QuantumESPRESSOCheckBase):
     def setup_resources(self):
         self.num_tasks = self.ref_dict['performance_reference'][0]['R']
         self.num_cpus_per_task = self.ref_dict['performance_reference'][0]['T']
-        # TODO: this is a derived quantity from the threads_per_core and cores_per_node
+        # TODO: this is a derived quantity from num_cpus_per_task and cores_per_node
         #self.num_tasks_per_node
 
-    @run_before('performance')
-    def set_reference(self):
+    @run_before('sanity')
+    def set_sanity_reference(self):
         self.energy_reference = self.ref_dict['energy_reference']
+
+    @run_before('performance')
+    def set_performance_reference(self):
         self.reference = {
             '*': {'time': (self.ref_dict['performance_reference'][0]['P'], None, 0.10, 's')}
         }
