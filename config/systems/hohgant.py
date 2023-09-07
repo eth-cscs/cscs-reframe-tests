@@ -160,7 +160,8 @@ site_configuration = {
             'features': ['serial', 'openmp', 'mpi', 'cuda', 'openacc', 'hdf5',
                          'netcdf-hdf5parallel', 'pnetcdf', 'openmp', 'opencl'],
             'extras': {
-                'openmp_flags': ['-fopenmp']
+                'c_openmp_flags': ['-fopenmp'],
+                'f_openmp_flags': ['-homp']
             }
         },
         {
@@ -171,7 +172,7 @@ site_configuration = {
                          'hdf5', 'netcdf-hdf5parallel', 'pnetcdf', 'openmp'],
             'extras': {
                 'hugepages2M': ['craype-hugepages2M'],
-                'openmp_flags': ['-fopenmp']
+                'c_openmp_flags': ['-fopenmp']
             }
         },
         {
@@ -182,7 +183,7 @@ site_configuration = {
                          'hdf5', 'netcdf-hdf5parallel', 'pnetcdf', 'openmp'],
             'extras': {
                 'launcher_options': ['--mpi=pmi2'],
-                'openmp_flags': ['-fopenmp']
+                'c_openmp_flags': ['-fopenmp']
             },
         },
         {
@@ -195,7 +196,7 @@ site_configuration = {
             'extras': {
                 # Workaround "MPIR_pmi_init(83)....: PMI2_Job_GetId returned 14" error
                 'launcher_options': ['--mpi=pmi2'],
-                'openmp_flags': ['-mp']
+                'c_openmp_flags': ['-mp']
             },
         },
     ],
