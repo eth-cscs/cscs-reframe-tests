@@ -54,11 +54,23 @@ class build_osu_benchmarks(rfm.CompileOnlyRegressionTest):
     #: :scope: *session*
     osu_benchmarks = fixture(fetch_osu_benchmarks, scope='session')
 
+    # FIXME: version of clang compiler and default gcc not compatible
+    # with the default cudatoolkit (11.6)
+    @run_after('setup')
+    def skip_incompatible_envs_cuda(self):
+        if self.build_type == 'cuda':
+            if self.current_environ.name in {'PrgEnv-cray', 'PrgEnv-gnu'}:
+                self.skip(
+                    f'environ {self.current_environ.name!r} incompatible with'
+                    f'default cudatoolkit')
+
     @run_after('setup')
     def setup_compilers(self):
         if self.build_type == 'cuda':
             curr_part = self.current_partition
             gpu_arch = curr_part.select_devices('gpu')[0].arch
+
+
             if self.current_environ.name != 'PrgEnv-nvhpc':
                 self.build_system.ldflags = [
                     '${CRAY_CUDATOOLKIT_POST_LINK_OPTS}',
@@ -107,7 +119,7 @@ class build_osu_benchmarks(rfm.CompileOnlyRegressionTest):
         return True
 
 
-class osu_benchmark(ExtraLauncherOptionsMixin, rfm.RunOnlyRegressionTest):
+class osu_benchmark(rfm.RunOnlyRegressionTest, ExtraLauncherOptionsMixin):
     '''OSU benchmark test base class.'''
 
     #: Number of warmup iterations.
@@ -249,9 +261,9 @@ class osu_build_run(osu_benchmark):
     @run_before('run')
     def prepend_build_prefix(self):
         bench_path = self.benchmark_info[0].replace('.', '/')
-        self.executable = os.path.join(self.osu_binaries.stagedir,
-                                       self.osu_binaries.build_prefix,
-                                       'c', bench_path)
+        self.executable = os.path.join(
+            self.osu_binaries.stagedir, self.osu_binaries.build_prefix,
+            'c', bench_path)
 
 
 @rfm.simple_test
