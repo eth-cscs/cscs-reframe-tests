@@ -73,7 +73,7 @@ class CPE_CudaSamples(CudaSamplesBase):
     valid_prog_environs = ['+cuda']
 
     @run_after('setup')
-    def setup_modules(self):
+    def set_modules(self):
         if 'PrgEnv-nvhpc' != self.current_environ.name:
             sm = self.current_partition.select_devices('gpu')[0].arch[-2:]
             self.modules = ['cudatoolkit', f'craype-accel-nvidia{sm}',
@@ -101,7 +101,7 @@ class UENV_CudaSamples(CudaSamplesBase):
     valid_prog_environs = ['+cuda']
 
     @run_before('compile')
-    def set_build_options(self):
+    def set_build_flags(self):
         self.prebuild_cmds += [
             'echo CUDA_HOME=$CUDA_HOME',
         ]
