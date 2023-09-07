@@ -10,8 +10,6 @@ import reframe.utility.sanity as sn
 class NvmlBase(rfm.RegressionTest):
     descr = 'Checks that nvml can report GPU informations'
     build_locally = False
-    # valid_systems = ['+nvgpu']
-    # valid_prog_environs = ['+cuda']
     build_system = 'SingleSource'
     sourcesdir = None
 
@@ -39,7 +37,6 @@ class NvmlBase(rfm.RegressionTest):
 class CPE_NVMLCheck(NvmlBase):
     valid_systems = ['+nvgpu -uenv']
     valid_prog_environs = ['+cuda']
-    # sourcepath = '$CUDA_HOME/nvml/example/example.c'
     tags = {'production', 'external-resources', 'health', 'craype'}
 
     @run_after('setup')
@@ -70,5 +67,3 @@ class UENV_NVMLCheck(NvmlBase):
         self.prebuild_cmds = [f'echo "# {self.sourcepath}"']
         self.build_system.cflags = ['-I $CUDA_HOME/include']
         self.build_system.ldflags = ['-L $CUDA_HOME/lib64 -lnvidia-ml']
-
-
