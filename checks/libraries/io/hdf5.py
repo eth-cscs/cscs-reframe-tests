@@ -18,7 +18,6 @@ class HDF5TestBase(rfm.RegressionTest):
     num_tasks = 1
     build_locally = False
     postrun_cmds = ['h5ls *.h5']
-    tags = {'production', 'craype', 'health'}
 
     @run_before('compile')
     def set_source(self):
@@ -44,12 +43,14 @@ class CPE_HDF5Test(HDF5TestBase):
     modules = ['cray-hdf5']
     valid_prog_environs = ['+mpi +hdf5']
     valid_systems = ['+remote -uenv']
+    tags = {'production', 'health', 'craype'}
 
 
 @rfm.simple_test
 class Uenv_HDF5Test(HDF5TestBase):
     valid_prog_environs = ['+mpi +hdf5']
     valid_systems = ['+remote +uenv']
+    tags = {'production', 'health', 'uenv'}
 
     @run_before('compile')
     def set_build_flags(self):
