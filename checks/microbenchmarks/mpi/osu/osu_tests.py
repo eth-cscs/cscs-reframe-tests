@@ -173,7 +173,7 @@ class osu_benchmark(ExtraLauncherOptionsMixin, rfm.RunOnlyRegressionTest):
         ('mpi.pt2pt.standard.osu_latency', 'latency')
     ], fmt=lambda x: x[0], loggable=True)
 
-    tags = {'cpe'}
+    tags = {'craype'}
 
     @run_before('setup')
     def setup_per_benchmark(self):
@@ -228,10 +228,10 @@ class osu_build_run(osu_benchmark):
     def set_valid_systems_envs(self):
         build_type = self.osu_binaries.build_type
         if build_type == 'cuda':
-            self.valid_systems = ['+remote +nvgpu']
+            self.valid_systems = ['+remote +nvgpu -uenv']
             self.valid_prog_environs = ['+mpi +cuda']
         else:
-            self.valid_systems = ['+remote']
+            self.valid_systems = ['+remote -uenv']
             self.valid_prog_environs = ['+mpi']
 
     @run_before('run')
