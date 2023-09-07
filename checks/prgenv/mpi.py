@@ -4,19 +4,13 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import os
-import pathlib
-import sys
 
 import reframe as rfm
 import reframe.utility.sanity as sn
 
-sys.path.append(str(pathlib.Path(__file__).parent.parent / 'mixins'))
-
-from uenv_setup import UenvSetup
-
 
 @rfm.simple_test
-class MpiInitTest(rfm.RegressionTest, UenvSetup):
+class MpiInitTest(rfm.RegressionTest):
     '''
     This test checks the value returned by calling MPI_Init_thread.
     '''
@@ -28,7 +22,8 @@ class MpiInitTest(rfm.RegressionTest, UenvSetup):
     executable = 'mpi_init_thread_single.exe'
     prebuild_cmds += ['module list']
     time_limit = '2m'
-    tags = {'production', 'craype'}
+    build_locally = False
+    tags = {'production', 'craype', 'uenv'}
 
     @run_before('run')
     def set_job_parameters(self):

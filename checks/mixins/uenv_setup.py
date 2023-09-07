@@ -8,7 +8,5 @@ import reframe as rfm
 
 class UenvSetup(rfm.RegressionMixin):
     @run_after('setup')
-    def set_build_locally(self):
-        curr_part = self.current_partition
-        if 'uenv' in curr_part.features:
-            self.build_locally = False
+    def setup_uenv(self):
+        pass
