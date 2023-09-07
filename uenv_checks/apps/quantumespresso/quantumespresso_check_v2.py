@@ -3,6 +3,10 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
+import pathlib
+import re
+import sys
+
 import reframe as rfm
 import reframe.utility.sanity as sn
 
@@ -39,8 +43,11 @@ qe_tests = {
     }
 }
 
+sys.path.append(str(pathlib.Path(__file__).parent.parent / 'mixins'))
+from extra_launcher_options import ExtraLauncherOptionsMixin
 
-class QuantumESPRESSOCheckBase(rfm.RunOnlyRegressionTest):
+
+class QuantumESPRESSOCheckBase(rfm.RunOnlyRegressionTest, ExtraLauncherOptionsMixin):
     valid_systems = ['hohgant:cpu', 'hohgant:nvgpu', 'hohgant-uenv:cpu']
     valid_prog_environs = ['builtin', '+quantum-espresso']
     container_image = variable(str, value='NULL')
@@ -131,12 +138,13 @@ class QuantumESPRESSOCheck(QuantumESPRESSOCheckBase):
     #     #self.job.options = ['--distribution=block:block']
     #     return
 
-    @run_before('run')
-    def set_job_launcher_options(self):
-        # self.job.launcher.options =
-        # ['--cpu-bind=cores', ' --hint=nomultithread']
-        self.job.launcher.options = [' --hint=nomultithread']
-        # Sarus binds to nvhpc compilerd mpich which requires --mpi=pmi2 flag
-        if (self.current_system.name == 'hohgant' and
-           self.container_image != 'NULL'):
-            self.job.launcher.options += ['--mpi=pmi2']
+    # @run_before('run')
+    # def set_job_launcher_options(self):
+    # --> ExtraLauncherOptionsMixin
+    #     # self.job.launcher.options =
+    #     # ['--cpu-bind=cores', ' --hint=nomultithread']
+    #     self.job.launcher.options = [' --hint=nomultithread']
+    #     # Sarus binds to nvhpc compilerd mpich which requires --mpi=pmi2 flag
+    #     if (self.current_system.name == 'hohgant' and
+    #        self.container_image != 'NULL'):
+    #         self.job.launcher.options += ['--mpi=pmi2']
