@@ -1,70 +1,50 @@
-# Copyright 2016-2022 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright 2016-2023 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-import os
+import pathlib
 import sys
 
 import reframe as rfm
 import reframe.utility.sanity as sn
 import reframe.utility as rfm_util
 
-sys.path.append(os.path.abspath(os.path.join(__file__, '../../..')))
-import microbenchmarks.gpu.hooks as hooks
+sys.path.append(str(pathlib.Path(__file__).parent.parent.parent / 'mixins'))
+
+from cuda_visible_devices_all import CudaVisibleDevicesAllMixin
 
 
-@rfm.simple_test
-class cuda_aware_mpi_check(rfm.CompileOnlyRegressionTest):
-    descr = 'Cuda-aware MPI test from NVIDIA code-samples.git'
-    sourcesdir = ('https://github.com/NVIDIA-developer-blog/'
-                  'code-samples.git')
-    valid_systems = [
-        'daint:gpu', 'dom:gpu', 'arolla:cn', 'tsa:cn',
-        'ault:amdv100', 'ault:intelv100'
+class cuda_aware_mpi_compile_base(rfm.CompileOnlyRegressionTest):
+    descr = 'Compilation of Cuda-aware MPI test from NVIDIA code-samples.git'
+    sourcesdir = 'https://github.com/NVIDIA-developer-blog/code-samples.git'
+    build_locally = False
+    prebuild_cmds = [
+        'cd posts/cuda-aware-mpi-example/src',
+        'rm -rf MATLAB* series c++11_cuda'
     ]
-    prebuild_cmds = ['cd posts/cuda-aware-mpi-example/src']
     build_system = 'Make'
-    postbuild_cmds = ['ls ../bin']
-    maintainers = ['@ekouts', '@teojgo']
-    tags = {'production', 'scs'}
-
-    gpu_arch = variable(str, type(None))
-
-    @run_after('init')
-    def set_valid_prog_environs(self):
-        if self.current_system.name in ['arolla', 'tsa']:
-            self.valid_prog_environs = ['PrgEnv-gnu']
-        elif self.current_system.name in ['ault']:
-            self.valid_prog_environs = ['PrgEnv-gnu']
-        else:
-            self.valid_prog_environs = ['PrgEnv-cray', 'PrgEnv-gnu',
-                                        'PrgEnv-pgi', 'PrgEnv-nvidia']
-
-        if self.current_system.name in ['arolla', 'tsa', 'ault']:
-            self.exclusive_access = True
-
-    run_after('setup')(bind(hooks.set_gpu_arch))
-    run_after('setup')(bind(hooks.set_num_gpus_per_node))
 
     @run_before('compile')
     def set_compilers(self):
-        if self.current_environ.name == 'PrgEnv-pgi':
-            self.build_system.cflags = ['-std=c99', ' -O3']
-        elif self.current_environ.name == 'PrgEnv-nvidia':
-            self.env_vars = {
-                'CUDA_HOME': '$CRAY_NVIDIA_PREFIX/cuda'
-            }
+        # Remove the `sm_` prefix from the cuda arch
+        gpu_arch = self.current_partition.select_devices('gpu')[0].arch[3:]
+        gcd_flgs = f'-gencode arch=compute_{gpu_arch},code=sm_{gpu_arch}'
+        if 'PrgEnv-nvhpc' != self.current_environ.name:
+            mpiccflags = (
+                rf'MPICFLAGS=$(mpic++ -compile-info | tr " " "\n" | '
+                rf'grep "^-I" | tr "\n" " ")'
+            )
+        else:
+            mpiccflags = "MPICFLAGS='-I/opt/cray/pe/mpich/8.1.26/ofi/nvidia/20.7/include -I/opt/cray/pe/libsci/23.05.1.4/NVIDIA/20.7/x86_64/include -I/opt/cray/pe/dsmml/0.2.2/dsmml//include -I/opt/cray/xpmem/2.4.4-2.3_13.8__gff0e1d9.shasta/include -L/opt/cray/pe/mpich/8.1.26/ofi/nvidia/20.7/lib -L/opt/cray/pe/libsci/23.05.1.4/NVIDIA/20.7/x86_64/lib -L/opt/cray/pe/dsmml/0.2.2/dsmml//lib -L/opt/cray/xpmem/2.4.4-2.3_13.8__gff0e1d9.shasta/lib64 -Wl,--as-needed,-lsci_nvidia_mpi,--no-as-needed -Wl,--as-needed,-lsci_nvidia,--no-as-needed -ldl -Wl,--as-needed,-lmpi_nvidia,--no-as-needed -Wl,--as-needed,-ldsmml,--no-as-needed -lxpmem'"
 
-        gcd_flgs = (
-            '-gencode arch=compute_{0},code=sm_{0}'.format(self.gpu_arch)
-        )
         self.build_system.options = [
-            f'CUDA_INSTALL_PATH=$CUDA_HOME',  # cuda_runtime.h
-            f'MPI_HOME=$CRAY_MPICH_PREFIX',  # mpi.h
-            f'GENCODE_FLAGS="{gcd_flgs}"',
-            f'MPICC="{self.current_environ.cc}"',
-            f'MPILD="{self.current_environ.cxx}"'
+            rf'CUDA_INSTALL_PATH=${{CUDA_HOME}}',  # cuda_runtime.h
+            # Extract the include paths from the mpic++
+            rf'{mpiccflags}',
+            rf'GENCODE_FLAGS="{gcd_flgs}"',
+            rf'MPICC="{self.current_environ.cc}"',
+            rf'MPILD="{self.current_environ.cxx}"'
         ]
 
     @run_before('sanity')
@@ -73,66 +53,107 @@ class cuda_aware_mpi_check(rfm.CompileOnlyRegressionTest):
                                                self.stdout)
 
 
-class CudaAwareMpiRuns(rfm.RunOnlyRegressionTest):
+@rfm.simple_test
+class CPE_cuda_aware_mpi_compile(cuda_aware_mpi_compile_base):
+    valid_systems = ['+remote +nvgpu -uenv']
+    valid_prog_environs = ['+cuda']
+    tags = {'craype'}
 
-    prerun_cmds = ['export MPICH_RDMA_ENABLED_CUDA=1']
-    valid_systems = [
-        'daint:gpu', 'dom:gpu', 'arolla:cn', 'tsa:cn',
-        'ault:amdv100', 'ault:intelv100'
-    ]
+    @run_after('setup')
+    def setup_modules(self):
+        if 'PrgEnv-nvhpc' != self.current_environ.name:
+            sm = self.current_partition.select_devices('gpu')[0].arch[-2:]
+            self.modules = ['cudatoolkit', f'craype-accel-nvidia{sm}', 'cpe-cuda']
 
-    @run_after('init')
-    def set_valid_prog_environs(self):
-        if self.current_system.name in ['arolla', 'tsa']:
-            self.valid_prog_environs = ['PrgEnv-gnu']
-        elif self.current_system.name in ['ault']:
-            self.valid_prog_environs = ['PrgEnv-gnu']
-        else:
-            self.valid_prog_environs = ['PrgEnv-cray', 'PrgEnv-gnu',
-                                        'PrgEnv-pgi', 'PrgEnv-nvidia']
-
-        if self.current_system.name in ['arolla', 'tsa', 'ault']:
-            self.exclusive_access = True
-
-    @run_after('init')
-    def add_deps(self):
-        self.depends_on('cuda_aware_mpi_check')
-
-    run_after('setup')(bind(hooks.set_gpu_arch))
-    run_after('setup')(bind(hooks.set_num_gpus_per_node))
-
-    @require_deps
-    def set_executable(self, cuda_aware_mpi_check):
-        self.executable = os.path.join(
-            cuda_aware_mpi_check().stagedir,
-            'posts', 'cuda-aware-mpi-example',
-            'bin', 'jacobi_cuda_aware_mpi'
-        )
-
-    @run_before('sanity')
-    def set_sanity_patterns(self):
-        self.sanity_patterns = sn.assert_found(r'Stopped after 1000 iterations'
-                                               r' with residue 0.00024',
-                                               self.stdout)
+    @run_before('compile')
+    def set_build_flags(self):
+        self.prebuild_cmds += ['echo CUDATOOLKIT_HOME=$CUDATOOLKIT_HOME']
+        self.build_system.cflags = ['-I $CUDATOOLKIT_HOME/include']
+        self.build_system.ldflags = ['-L $CUDATOOLKIT_HOME/lib64 -lnvidia-ml']
 
 
 @rfm.simple_test
+class UENV_cuda_aware_mpi_compile(cuda_aware_mpi_compile_base):
+    valid_systems = ['+remote +nvgpu +uenv']
+    valid_prog_environs = ['+cuda-aware-mpi']
+    tags = {'uenv'}
+
+
+class CudaAwareMpiRuns(CudaVisibleDevicesAllMixin, rfm.RunOnlyRegressionTest):
+    sourcesdir = None
+    env_vars = {
+        'MPICH_GPU_SUPPORT_ENABLED': 1,
+        'LD_LIBRARY_PATH': '${CUDA_HOME}/lib64:${LD_LIBRARY_PATH}'
+    }
+
+    @run_before('sanity')
+    def set_sanity_patterns(self):
+        self.sanity_patterns = sn.assert_found(
+            'Stopped after 1000 iterations with residue 0.00024', self.stdout
+        )
+
+
 class cuda_aware_mpi_one_node_check(CudaAwareMpiRuns):
     '''Run the case in one node.'''
-
-    prerun_cmds += ['export CRAY_CUDA_MPS=1']
+    # Enable Cuda MPS to use more tasks than the available gpus
+    prerun_cmds += ['nvidia-cuda-mps-control -d ']
+    postrun_cmds += ['echo quit | nvidia-cuda-mps-control']
 
     @run_before('run')
     def set_num_tasks(self):
         self.num_tasks = 2 * self.num_gpus_per_node
         self.num_tasks_per_node = self.num_tasks
-        self.executable_opts = [f'-t {self.num_tasks/2} 2']
+        self.executable_opts = [f'-t {self.num_tasks // 2} 2']
+
+
+class CPE_Setup(rfm.RegressionMixin):
+    @run_after('init')
+    def set_valid_envs(self):
+        self.valid_systems = ['+remote +nvgpu -uenv']
+        self.valid_prog_environs = ['+cuda']
+        self.modules = ['cudatoolkit']
+
+    @run_after('init')
+    def add_deps(self):
+        self.depends_on('CPE_cuda_aware_mpi_compile')
+
+    @require_deps
+    def set_executable(self, CPE_cuda_aware_mpi_compile):
+        self.executable = str(
+            pathlib.Path(CPE_cuda_aware_mpi_compile().stagedir) / 'posts' /
+            'cuda-aware-mpi-example' / 'bin' / 'jacobi_cuda_aware_mpi'
+        )
+
+
+class UENV_Setup(rfm.RegressionMixin):
+    @run_after('init')
+    def set_valid_envs(self):
+        self.valid_systems = ['+remote +nvgpu +uenv']
+        self.valid_prog_environs = ['+cuda-aware-mpi']
+
+    @run_after('init')
+    def add_deps(self):
+        self.depends_on('UENV_cuda_aware_mpi_compile')
+
+    @require_deps
+    def set_executable(self, UENV_cuda_aware_mpi_compile):
+        self.executable = str(
+            pathlib.Path(UENV_cuda_aware_mpi_compile().stagedir) / 'posts' /
+            'cuda-aware-mpi-example' / 'bin' / 'jacobi_cuda_aware_mpi'
+        )
 
 
 @rfm.simple_test
-class cuda_aware_mpi_two_nodes_check(CudaAwareMpiRuns):
-    '''Run the case across two nodes.'''
+class CPE_cuda_aware_mpi_one_node_check(cuda_aware_mpi_one_node_check, CPE_Setup):
+    pass
 
+
+@rfm.simple_test
+class UENV_cuda_aware_mpi_one_node_check(cuda_aware_mpi_one_node_check, UENV_Setup):
+    pass
+
+
+class cuda_aware_mpi_two_nodes_check(CudaAwareMpiRuns):
     @run_before('run')
     def set_num_tasks(self):
         self.num_tasks = 2
@@ -141,124 +162,11 @@ class cuda_aware_mpi_two_nodes_check(CudaAwareMpiRuns):
         self.executable_opts = [f'-t {self.num_tasks} 1']
 
 
-def find_cdts(valid_systems, valid_prog_environs, modulename):
-    # TODO: use rt.runtime().system.partitions[] ?
-    modulefiles = []
-    for system, prog_env, modulefile in rfm_util.find_modules(modulename):
-        if (system in valid_systems and prog_env in valid_prog_environs):
-            modulefiles.append(modulefile)
-    return modulefiles
+@rfm.simple_test
+class CPE_cuda_aware_mpi_two_nodes_check(cuda_aware_mpi_two_nodes_check, CPE_Setup):
+    pass
 
 
 @rfm.simple_test
-class cuda_aware_mpi_check_xc(rfm.RegressionTest):
-    descr = 'Cuda-aware MPI test from NVIDIA code-samples.git'
-    sourcesdir = ('https://github.com/NVIDIA-developer-blog/'
-                  'code-samples.git')
-    valid_systems = [
-        'daint:gpu',
-        # TODO: 'dom:gpu', 'hohgant:nvgpu', 'hohgant:nvgpu-sqfs',
-    ]
-    valid_prog_environs = ['PrgEnv-gnu']  # TODO: PrgEnv-cray
-    env_vars = {
-        'MPICH_RDMA_ENABLED_CUDA': '1',
-        'MPICH_VERSION_DISPLAY': '1',
-        'LD_LIBRARY_PATH': '$CRAY_LD_LIBRARY_PATH:$LD_LIBRARY_PATH',
-    }
-    prebuild_cmds = [
-        'rm -fr MATLAB* series c++11_cuda',
-        'cd posts/cuda-aware-mpi-example/src'
-    ]
-    build_system = 'Make'
-    maintainers = ['@ekouts', '@jgphpc']
-    tags = {'production', 'scs', 'craype'}
-    cdt_info = parameter(find_cdts('daint:gpu', 'PrgEnv-gnu', 'cdt/'))
-    nvhpc_info = parameter(find_cdts('daint:gpu', 'PrgEnv-gnu',
-                                     'nvhpc-nompi/'))
-    gcc_info = parameter(find_cdts('daint:gpu', 'PrgEnv-gnu', 'gcc/'))
-    gpu_arch = variable(str, type(None))
-
-    @run_after('init')
-    def apply_module_info(self):
-        # bad_pe= ['cdt/21.09', 'cdt/20.08']
-        # making sure 'gcc version' is compatible with 'cuda version' in nvhpc,
-        # nvhpc/22.3 has cuda/11.6 which supports gcc<12:
-        nvhpc2gcc = {
-            '21.3': {'cuda': '11.2', 'gcc': '10'},
-            '21.5': {'cuda': '11.3', 'gcc': '10'},
-            '21.9': {'cuda': '11.4', 'gcc': '11'},
-            '22.2': {'cuda': '11.6', 'gcc': '11'},
-            '22.3': {'cuda': '11.6', 'gcc': '11'},
-            # TODO: newer nvhpc
-        }
-        gcc_major_version = self.gcc_info.split('/')[1].split('.')[0]
-        nvhpc_version = self.nvhpc_info.split('/')[1]
-        gcc_max_version = nvhpc2gcc[nvhpc_version]['gcc']
-        cuda_max_version = nvhpc2gcc[nvhpc_version]['cuda']
-        skip_msg = (
-            f'gcc/{gcc_major_version} != nvhpc/{nvhpc_version}:'
-            f'cuda/{cuda_max_version}:gcc/{gcc_max_version}'
-        )
-        self.skip_if(gcc_major_version != gcc_max_version, skip_msg)
-        self.modules = [self.cdt_info, self.nvhpc_info, self.gcc_info]
-
-    @run_before('compile')
-    def set_compilers(self):
-        gput = self.current_partition.select_devices('gpu')[0]
-        gcd_flgs = f'-arch={gput.arch}'
-        nvhpc_version = self.nvhpc_info.split('/')[1]
-        cuda_path = f'/opt/nvidia/hpc_sdk/Linux_x86_64/{nvhpc_version}/cuda'
-        link_flags = (
-            # add -lcuda to avoid segmentation fault
-            f'-Wl,-rpath={cuda_path}/lib64/ -lcuda '
-            # TODO: add -lmpi_gtl_cuda to avoid hangs (alps)
-            # '$PE_MPICH_GTL_DIR_nvidia80 $PE_MPICH_GTL_LIBS_nvidia80'
-        )
-        self.build_system.options = [
-            f'CUDA_INSTALL_PATH={cuda_path}',
-            f'MPI_HOME=$CRAY_MPICH_PREFIX',
-            f'GENCODE_FLAGS="{gcd_flgs}"',
-            f'MPICC="{self.current_environ.cc}"',
-            f'MPILD="{self.current_environ.cxx} {link_flags}"',
-        ]
-
-    @run_before('compile')
-    def extract_versions(self):
-        cmd1 = 'ldd ../bin/jacobi_cuda_aware_mpi | grep libcudart '
-        cmd2 = "awk '{print \"ls -l \",$3}'"
-        cmd3 = 'sh'
-        cmd4 = "awk '{print $11}'"
-        self.rpt = os.path.join(self.stagedir, 'rpt')
-        cmd = f'{cmd1} | {cmd2} | {cmd3} | {cmd4} > {self.rpt}'
-        self.postbuild_cmds += [cmd]
-
-    @run_before('run')
-    def set_executable(self):
-        self.executable = os.path.join(
-            self.stagedir,
-            'posts', 'cuda-aware-mpi-example', 'bin', 'jacobi_cuda_aware_mpi'
-        )
-
-    @run_before('run')
-    def set_run(self):
-        self.num_tasks = 2
-        self.num_tasks_per_node = 1
-        self.num_gpus_per_node = 1
-        self.executable_opts = [f'-t {self.num_tasks} 1']
-
-    @run_before('sanity')
-    def set_sanity_patterns(self):
-        self.sanity_patterns = sn.assert_found(r'Stopped after 1000 iterations'
-                                               r' with residue 0.00024',
-                                               self.stdout)
-
-    @run_before('performance')
-    def report_linked_versions(self):
-        regex_mpich = r'MPI VERSION\s+: CRAY MPICH version (\S+) '
-        regex_cudart = r'libcudart.so.(\S+)$'
-        self.perf_patterns = {
-            'mpich': sn.extractsingle(regex_mpich, self.stderr, 1,
-                                      conv=lambda x: int(x.replace('.', ''))),
-            'cudart': sn.extractsingle(regex_cudart, self.rpt, 1,
-                                       conv=lambda x: int(x.replace('.', ''))),
-        }
+class UENV_cuda_aware_mpi_two_nodes_check(cuda_aware_mpi_two_nodes_check, UENV_Setup):
+    pass
