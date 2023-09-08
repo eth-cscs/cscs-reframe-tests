@@ -36,7 +36,7 @@ class cuda_aware_mpi_compile_base(rfm.CompileOnlyRegressionTest):
                 rf'grep "^-I" | tr "\n" " ")'
             )
         else:
-            mpiccflags = "MPICFLAGS='-I/opt/cray/pe/mpich/8.1.26/ofi/nvidia/20.7/include -I/opt/cray/pe/libsci/23.05.1.4/NVIDIA/20.7/x86_64/include -I/opt/cray/pe/dsmml/0.2.2/dsmml//include -I/opt/cray/xpmem/2.4.4-2.3_13.8__gff0e1d9.shasta/include -L/opt/cray/pe/mpich/8.1.26/ofi/nvidia/20.7/lib -L/opt/cray/pe/libsci/23.05.1.4/NVIDIA/20.7/x86_64/lib -L/opt/cray/pe/dsmml/0.2.2/dsmml//lib -L/opt/cray/xpmem/2.4.4-2.3_13.8__gff0e1d9.shasta/lib64 -Wl,--as-needed,-lsci_nvidia_mpi,--no-as-needed -Wl,--as-needed,-lsci_nvidia,--no-as-needed -ldl -Wl,--as-needed,-lmpi_nvidia,--no-as-needed -Wl,--as-needed,-ldsmml,--no-as-needed -lxpmem'"
+            mpiccflags = ''
 
         self.build_system.options = [
             rf'CUDA_INSTALL_PATH=${{CUDA_HOME}}',  # cuda_runtime.h
