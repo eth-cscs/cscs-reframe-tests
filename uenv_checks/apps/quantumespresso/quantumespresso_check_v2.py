@@ -13,6 +13,7 @@ import reframe.utility.sanity as sn
 sys.path.append(str(pathlib.Path(__file__).parent.parent.parent / 'mixins'))
 from extra_launcher_options import ExtraLauncherOptionsMixin
 from sarus_extra_launcher_options import SarusExtraLauncherOptionsMixin
+from cuda_visible_devices_all import CudaVisibleDevicesAllMixin
 
 qe_tests = {
     'Au-surf': {
@@ -124,12 +125,12 @@ class QuantumESPRESSOCheck(rfm.RunOnlyRegressionTest):
         }
 
 @rfm.simple_test
-class SARUS_QuantumESPRESSOCheck(QuantumESPRESSOCheck, SarusExtraLauncherOptionsMixin):
+class SARUS_QuantumESPRESSOCheck(QuantumESPRESSOCheck, SarusExtraLauncherOptionsMixin, CudaVisibleDevicesAllMixin):
     tags = {'production', 'sarus'}
     container_image = variable(str, value='NULL')
     valid_prog_environs = ['builtin']
 
 @rfm.simple_test
-class UENV_QuantumESPRESSOCheck(QuantumESPRESSOCheck, ExtraLauncherOptionsMixin):
+class UENV_QuantumESPRESSOCheck(QuantumESPRESSOCheck, ExtraLauncherOptionsMixin, CudaVisibleDevicesAllMixin):
     tags = {'production', 'uenv'}
     valid_prog_environs = ['+quantum-espresso']
