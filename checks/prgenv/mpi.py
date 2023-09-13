@@ -22,15 +22,14 @@ class MpiInitTest(rfm.RegressionTest):
     executable = 'mpi_init_thread_single.exe'
     prebuild_cmds += ['module list']
     time_limit = '2m'
-    tags = {'production', 'craype'}
+    build_locally = False
+    tags = {'production', 'craype', 'uenv'}
 
     @run_before('run')
     def set_job_parameters(self):
         # To avoid: "MPIR_pmi_init(83)....: PMI2_Job_GetId returned 14"
         self.job.launcher.options += (
-            [self.current_environ.extras['launcher_options']]
-            if 'launcher_options' in self.current_environ.extras
-            else ''
+            self.current_environ.extras.get('launcher_options', [])
         )
 
     @run_before('run')

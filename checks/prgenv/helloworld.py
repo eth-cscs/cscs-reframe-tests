@@ -16,9 +16,9 @@ from extra_launcher_options import ExtraLauncherOptionsMixin
 class HelloWorldBaseTest(rfm.RegressionTest, ExtraLauncherOptionsMixin):
     linking = parameter(['dynamic'])
     lang = parameter(['c', 'cpp', 'F90'])
-    prgenv_flags = {}
     sourcesdir = 'src/hello'
     sourcepath = 'hello'
+    build_locally = False
     build_system = 'SingleSource'
     prebuild_cmds = ['_rfm_build_time="$(date +%s%N)"']
     postbuild_cmds = [
@@ -32,7 +32,12 @@ class HelloWorldBaseTest(rfm.RegressionTest, ExtraLauncherOptionsMixin):
         }
     }
     exclusive_access = True
-    tags = {'production', 'craype'}
+
+    # This is valid only for non-cray MPICH
+    env_vars = {
+        'MPIR_CVAR_ENABLE_GPU': 0,
+    }
+    tags = {'production', 'craype', 'uenv'}
 
     @run_after('init')
     def set_description(self):
@@ -46,16 +51,6 @@ class HelloWorldBaseTest(rfm.RegressionTest, ExtraLauncherOptionsMixin):
     @run_before('compile')
     def prepare_build(self):
         self.env_vars['CRAYPE_LINK_TYPE'] = self.linking
-        envname = re.sub(r'(PrgEnv-\w+).*', lambda m: m.group(1),
-                         self.current_environ.name)
-        try:
-            prgenv_flags = self.prgenv_flags[envname]
-        except KeyError:
-            prgenv_flags = []
-
-        self.build_system.cflags = prgenv_flags
-        self.build_system.cxxflags = prgenv_flags
-        self.build_system.fflags = prgenv_flags
 
     @sanity_function
     def assert_hello_world(self):
@@ -125,16 +120,13 @@ class HelloWorldTestOpenMP(HelloWorldBaseTest):
     num_cpus_per_task = 4
     valid_prog_environs = ['+openmp']
 
-    @run_after('init')
-    def set_prgenv_flags_map(self):
-        self.prgenv_flags = {
-            'PrgEnv-aocc': ['-fopenmp'],
-            'PrgEnv-cray': ['-homp' if self.lang == 'f90' else '-fopenmp'],
-            'PrgEnv-gnu': ['-fopenmp'],
-            'PrgEnv-intel': ['-qopenmp'],
-            'PrgEnv-nvidia': ['-mp'],
-            'PrgEnv-nvhpc': ['-mp']
-        }
+    @run_before('compile')
+    def set_openmp_flags(self):
+        self.build_system.cflags = self.current_environ.extras.get(
+            'c_openmp_flags', ['-fopenmp'])
+        self.build_system.cxxflags = self.build_system.cflags
+        self.build_system.fflags = self.current_environ.extras.get(
+            'f_openmp_flags', self.build_system.cflags )
 
     @run_after('init')
     def update_description(self):
@@ -179,19 +171,16 @@ class HelloWorldTestMPIOpenMP(HelloWorldBaseTest):
     valid_prog_environs = ['+mpi +openmp']
 
     @run_after('init')
-    def set_prgenv_compilation_flags_map(self):
-        self.prgenv_flags = {
-            'PrgEnv-aocc': ['-fopenmp'],
-            'PrgEnv-cray': ['-homp' if self.lang == 'f90' else '-fopenmp'],
-            'PrgEnv-gnu': ['-fopenmp'],
-            'PrgEnv-intel': ['-qopenmp'],
-            'PrgEnv-nvidia': ['-mp'],
-            'PrgEnv-nvhpc': ['-mp']
-        }
-
-    @run_after('init')
     def update_description(self):
         self.descr += f' MPI + OpenMP {self.linking.capitalize()}'
+
+    @run_before('compile')
+    def set_openmp_flags(self):
+        self.build_system.cflags = self.current_environ.extras.get(
+            'c_openmp_flags', ['-fopenmp'])
+        self.build_system.cxxflags = self.build_system.cflags
+        self.build_system.fflags = self.current_environ.extras.get(
+            'f_openmp_flags',  self.build_system.cflags)
 
     @run_before('compile')
     def update_sourcepath(self):

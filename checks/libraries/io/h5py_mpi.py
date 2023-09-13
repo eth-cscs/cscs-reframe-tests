@@ -1,4 +1,4 @@
-# Copyright 2016-2022 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright 2016-2023 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -9,16 +9,15 @@ import reframe.utility.sanity as sn
 
 @rfm.simple_test
 class H5PyTest(rfm.RunOnlyRegressionTest):
-    descr = 'Test that parallel HDF5 can be used by h5py'
-    valid_systems = ['daint:gpu', 'daint:mc', 'dom:gpu', 'dom:mc']
-    valid_prog_environs = ['builtin']
-    modules = ['h5py']
+    descr = 'Test that h5py can write a HDF5 file in parallel'
+    valid_systems = ['+remote +uenv']
+    valid_prog_environs = ['+h5py +mpi']
     num_tasks = 4
     executable = 'python'
-    executable_opts = ['h5py_mpi_test.py']
+    executable_opts = ['h5py_mpi.py']  # from src/
+    prerun_cmds = ['python --version']
     postrun_cmds = ['h5dump parallel_test.hdf5']
-    tags = {'health', 'production'}
-    maintainers = ['@teojgo', '@rsarm']
+    tags = {'health', 'production', 'uenv'}
 
     @sanity_function
     def assert_success(self):

@@ -22,8 +22,13 @@ ifeq ($(PE_ENV),AOCC)
 	NETCDF_DIR_PE = ${shell ls -d $(NETCDF_BASEDIR)/AOCC/*}
 endif
 
-INCP += -I $(NETCDF_DIR_PE)/include
-LDFLAGS += -L $(NETCDF_DIR_PE)/lib -Wl,-rpath,$(NETCDF_DIR_PE)/lib -lnetcdf_c++4
+ifeq ($(PE_ENV),UENV)
+	INCP += ${shell pkg-config --cflags netcdf-cxx4}
+	LDFLAGS += ${shell pkg-config --libs netcdf-cxx4} -Wl,-rpath,${shell pkg-config --variable=prefix netcdf-cxx4}/lib -Wl,-rpath,${shell pkg-config --variable=prefix netcdf}/lib
+else	
+	INCP += -I $(NETCDF_DIR_PE)/include
+	LDFLAGS += -L $(NETCDF_DIR_PE)/lib -Wl,-rpath,$(NETCDF_DIR_PE)/lib -lnetcdf_c++4
+endif
 
 .SUFFIXES: .o .cpp
 

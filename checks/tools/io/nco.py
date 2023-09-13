@@ -1,207 +1,135 @@
-# Copyright 2016-2022 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright 2016-2023 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-# The first of the following tests verify the installation. The remaining
-# tests operate on files. All netCDF files incl CDL metadata were
-# downloaded from:
-# https://www.unidata.ucar.edu/software/netcdf/examples/files.html
-# To avoid large test files some of the originally downloaded files were split
-# using 'cdo splitname <varname> <varname>_'.
-# NCO permits to do a large amount of operations. To verify the basic
-# functioning of NCO, I selected the operations that are equivivalent of
-# those chosen for the CDO tests (the rationale of this selection is explained
-# in the corresponding file):
-# - 'ncks --trd -M' ("print metadata to screen") corresponds to 'cdo info'
-# - 'ncks -A' ("append") corresponds to 'cdo merge'
-
-import os
+import pathlib
 
 import reframe as rfm
 import reframe.utility.sanity as sn
 
 
-class NCOBaseTest(rfm.RunOnlyRegressionTest):
-    def __init__(self):
-        self.sourcesdir = os.path.join(self.current_system.resourcesdir,
-                                       'CDO-NCO')
-        self.valid_systems = ['daint:gpu', 'daint:mc', 'dom:gpu',
-                              'dom:mc', 'arolla:pn', 'tsa:pn',
-                              'eiger:mc', 'pilatus:mc']
-        if self.current_system.name in ['arolla', 'tsa']:
-            self.exclusive_access = True
-            self.valid_prog_environs = ['PrgEnv-gnu-nompi',
-                                        'PrgEnv-gnu-nompi-nocuda']
-            self.modules = ['nco']
-        elif self.current_system.name in ['eiger', 'pilatus']:
-            self.valid_prog_environs = ['cpeGNU']
-            self.modules = ['NCO']
-        else:
-            self.valid_prog_environs = ['builtin']
-            self.modules = ['NCO']
+class NCO_base(rfm.RunOnlyRegressionTest):
+    '''
+    - 'ncks -r' corresponds to 'cdo --version'
+    - 'ncks -M' corresponds to 'cdo info'
+    - 'ncks -A' corresponds to 'cdo merge'
 
-        self.maintainers = ['SO', 'CB']
-        self.tags = {'production', 'mch', 'external-resources'}
+    https://www.unidata.ucar.edu/software/netcdf/examples/files.html
+    '''
+    valid_systems = ['+remote']
+    valid_prog_environs = ['+nco']
+    resource_dir = variable(
+        str, value='/apps/common/UES/reframe/resources/CDO-NCO')
+    needs_input = False
 
-
-# Check that the netCDF loaded by the NCO module supports the nc4 filetype
-# (nc4 support must be explicitly activated when the netCDF library is
-# compiled...).
-@rfm.simple_test
-class NCO_DependencyTest(NCOBaseTest):
-    def __init__(self):
-        super().__init__()
-        self.descr = ('verifies that the netCDF loaded by the NCO module '
-                      'supports the nc4 filetype')
-        self.sourcesdir = None
-        self.executable = 'nc-config'
-        self.executable_opts = ['--has-nc4']
-        self.sanity_patterns = sn.assert_found(r'^yes', self.stdout)
+    @run_before('run')
+    def get_inputfile(self):
+        if self.needs_input:
+            self.prerun_cmds += [
+                f'cp {self.resource_dir}/{input_file} .'
+                for input_file in self.test_filename
+            ]
 
 
 @rfm.simple_test
-class NCO_NC4SupportTest(NCOBaseTest):
-    def __init__(self):
-        super().__init__()
-        self.descr = ('verifies that the NCO supports the nc4 filetype')
-        self.sourcesdir = None
-        self.executable = 'ncks'
-        self.executable_opts = ['-r']
-        self.sanity_patterns = sn.all([
-            sn.assert_found(r'^netCDF4/HDF5 (support|available)\s+Yes\W',
-                            self.stdout),
-            sn.assert_found(r'^netCDF4/HDF5 (support|enabled)\s+Yes\W',
-                            self.stdout)
-        ])
+class NCO_nc_config_test(NCO_base):
+    '''
+    checks that nc-config is built with nc4 support
+    '''
+    executable = 'nc-config'
+    executable_opts = ['--has-nc4']
 
-
-# All NCO check load the NCO module (see NCOBaseTest). This test tries to load
-# then the CDO module to see if there appear any conflicts. If there are no
-# conflicts then self.stdout and self.stderr are empty. Note that the command
-# 'module load CDO' cannot be passed via self.executable to srun as 'module'
-# is not an executable. Thus, we run the command as a prerun_cmds command and
-# define as executable just an echo with no arguments.
-@rfm.simple_test
-class NCO_CDOModuleCompatibilityTest(NCOBaseTest):
-    def __init__(self):
-        super().__init__()
-        self.descr = ('verifies compatibility with the CDO module')
-        self.sourcesdir = None
-        self.executable = 'echo'
-        self.sanity_patterns = sn.assert_not_found(
-            r'(?i)error|conflict|unsupported|failure', self.stderr)
-
-        if self.current_system.name in ['arolla', 'tsa']:
-            cdo_name = 'cdo'
-        else:
-            cdo_name = 'CDO'
-
-        self.prerun_cmds = ['module load %s' % cdo_name]
+    @sanity_function
+    def assert_output(self):
+        return sn.assert_found(r'^yes', self.stdout)
 
 
 @rfm.simple_test
-class NCO_InfoNCTest(NCOBaseTest):
-    def __init__(self):
-        super().__init__()
-        self.descr = ('verifies reading info of a standard netCDF file')
-        self.executable = 'ncks'
-        self.executable_opts = ['-M', 'sresa1b_ncar_ccsm3-example.nc']
-        self.sanity_patterns = sn.all([
+class NCO_nf_config_test(NCO_base):
+    '''
+    checks that nf-config is built with nc4 support
+    '''
+    executable = 'nf-config'
+    executable_opts = ['--has-nc4']
+
+    @sanity_function
+    def assert_output(self):
+        return sn.assert_found(r'^yes', self.stdout)
+
+
+@rfm.simple_test
+class NCO_version_test(NCO_base):
+    '''
+    checks that nco is built with nc4* file types support:
+      netCDF4/HDF5 support  Yes http://nco.sf.net/nco.html#nco4
+    '''
+    executable = 'ncks'
+    executable_opts = ['-r', '2>&1']
+
+    @sanity_function
+    def assert_output(self):
+        return sn.assert_found(r'^netCDF4/HDF5 support\s+Yes\s', self.stdout)
+
+
+@rfm.simple_test
+class NCO_info_test(NCO_base):
+    '''
+    checks that `ncks -M` works with nc, nc4 and nc4c files
+    '''
+    needs_input = True
+    test_filename = parameter([
+        ['sresa1b_ncar_ccsm3-example.nc'],
+        ['test_echam_spectral-deflated_wind10_wl_ws.nc4'],
+        ['test_echam_spectral-deflated_wind10_wl_ws.nc4c'],
+    ])
+    executable = 'ncks'
+
+    @run_before('run')
+    def set_executable_opts(self):
+        self.executable_opts = ['-M', self.test_filename[0], '2>&1']
+
+    @sanity_function
+    def assert_output(self):
+        regexes = {
+            '.nc': r'model_name_english.*NCAR CCSM',
+            '.nc4': r'physics.*Modified ECMWF physics',
+            '.nc4c': r'physics.*Modified ECMWF physics',
+        }
+        test_type = pathlib.Path(self.test_filename[0]).suffix
+        return sn.all([
+            sn.assert_found(regexes[test_type], self.stdout),
             sn.assert_not_found(r'(?i)unsupported|error', self.stderr),
-            sn.assert_found(r'model_name_english.*NCAR CCSM', self.stdout)
         ])
 
 
 @rfm.simple_test
-class NCO_InfoNC4Test(NCOBaseTest):
-    def __init__(self):
-        super().__init__()
-        self.descr = ('verifies reading info of a netCDF-4 file')
-        self.executable = 'ncks'
-        self.executable_opts = [
-            '-M', 'test_echam_spectral-deflated_wind10_wl_ws.nc4'
-        ]
-        self.sanity_patterns = sn.all([
-            sn.assert_not_found(r'(?i)unsupported|error', self.stderr),
-            sn.assert_found(r'physics.*Modified ECMWF physics', self.stdout)
-        ])
+class NCO_merge_test(NCO_base):
+    '''
+    checks that `ncks -A` works with nc, nc4 and nc4c files
+    '''
+    needs_input = True
+    test_filename = parameter([
+        ['sresa1b_ncar_ccsm3-example_pr.nc',
+         'sresa1b_ncar_ccsm3-example_tas.nc'],
+        #
+        ['test_echam_spectral-deflated_wind10.nc4',
+         'test_echam_spectral-deflated_wl.nc4'],
+        #
+        ['test_echam_spectral-deflated_wind10.nc4c',
+         'test_echam_spectral-deflated_wl.nc4c'],
+    ])
+    executable = 'ncks'
 
+    @run_before('run')
+    def set_executable_opts(self):
+        test_type = pathlib.Path(self.test_filename[0]).suffix
+        extra = '-L 2' if test_type == '.nc4c' else ''
+        self.executable_opts = ['-A', extra, self.test_filename[0], '2>&1']
 
-@rfm.simple_test
-class NCO_InfoNC4CTest(NCOBaseTest):
-    def __init__(self):
-        super().__init__()
-        self.descr = ('verifies reading info of a compressed netCDF-4 file')
-        self.executable = 'ncks'
-        self.executable_opts = [
-            '-M', 'test_echam_spectral-deflated_wind10_wl_ws.nc4c'
-        ]
-        self.sanity_patterns = sn.all([
-            sn.assert_not_found(r'(?i)unsupported|error', self.stderr),
-            sn.assert_found(r'physics.*Modified ECMWF physics', self.stdout)
-        ])
-
-
-@rfm.simple_test
-class NCO_MergeNCTest(NCOBaseTest):
-    def __init__(self):
-        super().__init__()
-        self.descr = ('verifies merging of two standard netCDF files')
-        self.executable = 'ncks'
-        self.executable_opts = ['-A',
-                                'sresa1b_ncar_ccsm3-example_pr.nc',
-                                'sresa1b_ncar_ccsm3-example_tas.nc']
-        # NOTE: we only verify that there is no error produced. We do not
-        # verify the resulting file. Verifying would not be straight forward
-        # as the following does not work (it seems that there is a timestamp
-        # of file creation inserted in the metadata or similar):
-        # diff sresa1b_ncar_ccsm3-example_tas.nc \
-        #      sresa1b_ncar_ccsm3-example_pr_tas.nc
-        self.sanity_patterns = sn.all([
-            sn.assert_not_found(r'(?i)unsupported|error', self.stderr),
-            sn.assert_not_found(r'(?i)unsupported|error', self.stdout)
-        ])
-
-
-@rfm.simple_test
-class NCO_MergeNC4Test(NCOBaseTest):
-    def __init__(self):
-        super().__init__()
-        self.descr = ('verifies merging of two netCDF-4 files')
-        self.executable = 'ncks'
-        self.executable_opts = ['-A',
-                                'test_echam_spectral-deflated_wind10.nc4',
-                                'test_echam_spectral-deflated_wl.nc4']
-        # NOTE: we only verify that there is no error produced. We do not
-        # verify the resulting file. Verifying would not be straight forward
-        # as the following does not work (it seems that there is a timestamp
-        # of file creation inserted in the metadata or similar):
-        # diff test_echam_spectral - deflated_wl.nc4 \
-        #      test_echam_spectral - deflated_wind10_wl.nc4
-        self.sanity_patterns = sn.all([
-            sn.assert_not_found(r'(?i)unsupported|error', self.stderr),
-            sn.assert_not_found(r'(?i)unsupported|error', self.stdout)
-        ])
-
-
-@rfm.simple_test
-class NCO_MergeNC4CTest(NCOBaseTest):
-    def __init__(self):
-        super().__init__()
-        self.descr = ('verifies merging and compressing of two compressed '
-                      'netCDF-4 files')
-        self.executable = 'ncks'
-        self.executable_opts = ['-A', '-L', '2',
-                                'test_echam_spectral-deflated_wind10.nc4c',
-                                'test_echam_spectral-deflated_wl.nc4c']
-        # NOTE: we only verify that there is no error produced. We do not
-        # verify the resulting file. Verifying would not be straight forward
-        # as the following does not work (it seems that there is a timestamp
-        # of file creation inserted in the metadata or similar):
-        # diff test_echam_spectral-deflated_wl.nc4c \
-        #      test_echam_spectral-deflated_wind10_wl.nc4c
-        self.sanity_patterns = sn.all([
+    @sanity_function
+    def assert_output(self):
+        return sn.all([
             sn.assert_not_found(r'(?i)unsupported|error', self.stderr),
             sn.assert_not_found(r'(?i)unsupported|error', self.stdout)
         ])

@@ -8,8 +8,7 @@ import reframe.utility.osext as osext
 import reframe.utility.sanity as sn
 
 
-@rfm.simple_test
-class netCDFTest(rfm.RegressionTest):
+class netCDFBase(rfm.RegressionTest):
     """
     Write sample data then read it back, using parallel netcdf-hdf5:
     - F90: https://github.com/Unidata/netcdf-fortran/tree/main/examples/F90/
@@ -18,32 +17,24 @@ class netCDFTest(rfm.RegressionTest):
     - TODO: compare tst_parallel.c with tst_parallel*.c
     """
     lang = parameter(['f90', 'c', 'cpp'])
-    valid_systems = ['+remote']
-    valid_prog_environs = ['+mpi +netcdf-hdf5parallel']
+    build_locally = False
     build_system = 'Make'
-    # modules = ['cray-netcdf-hdf5parallel']  # can't use because of VCMSA-344
+    # modules = ['cray-netcdf-hdf5parallel']  # can't use because of VCUE-100
     executable = 'wr.exe'
-    tags = {'production', 'craype', 'health'}
 
     @run_before('compile')
     def set_source(self):
         self.sourcesdir = f'src/netcdf-hdf5parallel/{self.lang}'
 
     @run_before('run')
-    def fix_cpe(self):
-        # fix for "GLIBCXX_3.4.29 not found" error:
-        if self.lang == 'cpp' and self.current_environ.name == 'PrgEnv-gnu':
-            self.env_vars = {
-                'LD_PRELOAD': '$GCC_PREFIX/snos/lib64/libstdc++.so'
-            }
+    def set_serial_cpp_test(self):
+        self.num_tasks = 1 if self.lang == 'cpp' else 4
 
     @run_before('run')
     def set_job_parameters(self):
         # To avoid: "MPIR_pmi_init(83)....: PMI2_Job_GetId returned 14"
         self.job.launcher.options += (
-            [self.current_environ.extras['launcher_options']]
-            if 'launcher_options' in self.current_environ.extras
-            else ''
+            self.current_environ.extras.get('launcher_options', [])
         )
         if self.lang in ['f90', 'cpp']:
             launcher = (
@@ -52,12 +43,7 @@ class netCDFTest(rfm.RegressionTest):
                 if self.job.launcher.options
                 else self.job.launcher.registered_name
             )
-
             self.postrun_cmds = [f'{launcher} rd.exe']
-
-    @run_before('run')
-    def set_corner_case(self):
-        self.num_tasks = 1 if self.lang == 'cpp' else 4
 
     @run_before('sanity')
     def set_sanity(self):
@@ -67,3 +53,26 @@ class netCDFTest(rfm.RegressionTest):
             'cpp': 'SUCCESS reading example file simple_xy.nc',      # not //
         }
         self.sanity_patterns = sn.assert_found(regex[self.lang], self.stdout)
+
+
+@rfm.simple_test
+class CPE_NetcdfTest(netCDFBase):
+    valid_systems = ['+remote -uenv']
+    valid_prog_environs = ['+mpi +netcdf-hdf5parallel']
+    tags = {'production', 'health', 'craype'}
+
+    @run_before('run')
+    def fix_cpe(self):
+        # fix for "GLIBCXX_3.4.29 not found" error:
+        if self.lang == 'cpp' and self.current_environ.name == 'PrgEnv-gnu':
+            self.env_vars = {
+                'LD_PRELOAD': '$GCC_PREFIX/snos/lib64/libstdc++.so'
+            }
+
+
+@rfm.simple_test
+class UENV_NetcdfTest(netCDFBase):
+    valid_systems = ['+remote +uenv']
+    valid_prog_environs = ['+mpi +netcdf-hdf5parallel']
+    env_vars = {'PE_ENV': 'UENV'}
+    tags = {'production', 'health', 'uenv'}
