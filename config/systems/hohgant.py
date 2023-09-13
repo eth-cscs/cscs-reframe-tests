@@ -171,7 +171,6 @@ site_configuration = {
             'features': ['serial', 'openmp', 'mpi', 'cuda', 'alloc_speed',
                          'hdf5', 'netcdf-hdf5parallel', 'pnetcdf', 'openmp'],
             'extras': {
-                'hugepages2M': ['craype-hugepages2M'],
                 'c_openmp_flags': ['-fopenmp']
             }
         },
