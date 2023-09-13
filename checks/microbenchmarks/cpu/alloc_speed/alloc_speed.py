@@ -64,6 +64,7 @@ class CPE_AllocSpeedTest(AllocSpeedTestBase):
     hugepages = parameter(['no', '2M'])
     valid_systems = ['+remote -uenv']
     valid_prog_environs = ['+alloc_speed']
+    tags = {'production', 'craype'}
 
     @run_after('setup')
     def set_modules(self):
@@ -78,3 +79,4 @@ class UENV_AllocSpeedTest(AllocSpeedTestBase):
     hugepages = parameter(['no'])
     valid_systems = ['+remote +uenv']
     valid_prog_environs = ['+alloc_speed']
+    tags = {'production', 'uenv'}
