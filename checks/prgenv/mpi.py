@@ -22,7 +22,8 @@ class MpiInitTest(rfm.RegressionTest):
     executable = 'mpi_init_thread_single.exe'
     prebuild_cmds += ['module list']
     time_limit = '2m'
-    tags = {'production', 'craype'}
+    build_locally = False
+    tags = {'production', 'craype', 'uenv'}
 
     @run_before('run')
     def set_job_parameters(self):

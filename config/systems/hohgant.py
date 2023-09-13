@@ -157,10 +157,11 @@ site_configuration = {
             'name': 'PrgEnv-cray',
             'target_systems': ['hohgant'],
             'modules': ['cray', 'PrgEnv-cray'],
-            'features': ['serial', 'openmp', 'mpi', 'cuda', 'openacc',
+            'features': ['serial', 'openmp', 'mpi', 'cuda', 'openacc', 'hdf5',
                          'netcdf-hdf5parallel', 'pnetcdf', 'openmp', 'opencl'],
             'extras': {
-                'openmp_flags': ['-fopenmp']
+                'c_openmp_flags': ['-fopenmp'],
+                'f_openmp_flags': ['-homp']
             }
         },
         {
@@ -168,10 +169,10 @@ site_configuration = {
             'target_systems': ['hohgant'],
             'modules': ['cray', 'PrgEnv-gnu'],
             'features': ['serial', 'openmp', 'mpi', 'cuda', 'alloc_speed',
-                         'netcdf-hdf5parallel', 'pnetcdf', 'openmp'],
+                         'hdf5', 'netcdf-hdf5parallel', 'pnetcdf', 'openmp'],
             'extras': {
                 'hugepages2M': ['craype-hugepages2M'],
-                'openmp_flags': ['-fopenmp']
+                'c_openmp_flags': ['-fopenmp']
             }
         },
         {
@@ -179,10 +180,10 @@ site_configuration = {
             'target_systems': ['hohgant'],
             'modules': ['cray', 'PrgEnv-nvhpc'],
             'features': ['serial', 'openmp', 'mpi', 'cuda',
-                         'netcdf-hdf5parallel', 'pnetcdf', 'openmp'],
+                         'hdf5', 'netcdf-hdf5parallel', 'pnetcdf', 'openmp'],
             'extras': {
                 'launcher_options': ['--mpi=pmi2'],
-                'openmp_flags': ['-fopenmp']
+                'c_openmp_flags': ['-fopenmp']
             },
         },
         {
@@ -190,11 +191,12 @@ site_configuration = {
             'target_systems': ['hohgant'],
             'modules': ['cray', 'PrgEnv-nvidia'],
             'features': ['serial', 'openmp', 'mpi', 'cuda-fortran', 'openacc',
-                         'netcdf-hdf5parallel', 'pnetcdf', 'openmp', 'opencl'],
+                         'netcdf-hdf5parallel', 'pnetcdf', 'openmp', 'opencl'
+                         'hdf5'],
             'extras': {
                 # Workaround "MPIR_pmi_init(83)....: PMI2_Job_GetId returned 14" error
                 'launcher_options': ['--mpi=pmi2'],
-                'openmp_flags': ['-mp']
+                'c_openmp_flags': ['-mp']
             },
         },
     ],

@@ -7,15 +7,23 @@ import reframe as rfm
 import reframe.utility.sanity as sn
 
 
-@rfm.simple_test
-class OpenCLCheck(rfm.RegressionTest):
-    valid_systems = ['+nvgpu']
-    valid_prog_environs = ['+opencl']
+class OpenCLBase(rfm.RegressionTest):
+    build_locally = False
     build_system = 'SingleSource'
     sourcepath = 'vecAdd.c'
     sourcesdir = 'src/opencl'
     num_gpus_per_node = 1
     executable = 'vecAdd'
+
+    @run_before('sanity')
+    def set_sanity(self):
+        self.sanity_patterns = sn.assert_found('SUCCESS', self.stdout)
+
+
+@rfm.simple_test
+class CPE_OpenCLCheck(OpenCLBase):
+    valid_systems = ['+nvgpu -uenv']
+    valid_prog_environs = ['+cuda +opencl']
     tags = {'production', 'craype'}
 
     @run_after('setup')
@@ -29,6 +37,14 @@ class OpenCLCheck(rfm.RegressionTest):
         self.build_system.ldflags = ['$CRAY_CUDATOOLKIT_POST_LINK_OPTS',
                                      '-lOpenCL']
 
-    @run_before('sanity')
-    def set_sanity(self):
-        self.sanity_patterns = sn.assert_found('SUCCESS', self.stdout)
+
+@rfm.simple_test
+class UENV_OpenCLCheck(OpenCLBase):
+    valid_systems = ['+nvgpu +uenv']
+    valid_prog_environs = ['+cuda +opencl']
+    tags = {'production', 'uenv'}
+
+    @run_before('compile')
+    def setflags(self):
+        self.build_system.cflags = ['-I$CUDA_HOME/include']
+        self.build_system.ldflags = ['-L$CUDA_HOME/lib64', '-lOpenCL']

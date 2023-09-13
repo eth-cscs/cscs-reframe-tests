@@ -86,7 +86,8 @@ Here is an example how to use these features in a tests:
 
 | Extras | Description | Type | Example value |
 | --- | --- | --- | --- |
-| openmp_flags | | list[string] | [' -fopenmp'] |
+| c_openmp_flags | C OpenMP flags | list[string] | [' -fopenmp'] |
+| f_openmp_flags | Fortran OpenMP flags | list[string] | [' -homp'] |
 | launcher_options | | list[string] | ['--mpi=pmi2']
 
 ## How to use the processor/device specs in a test

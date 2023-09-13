@@ -22,8 +22,14 @@ ifeq ($(PE_ENV),AOCC)
 	NETCDF_DIR_PE = ${shell ls -d $(NETCDF_BASEDIR)/AOCC/*}
 endif
 
-INCP += -I $(NETCDF_DIR_PE)/include
-LDFLAGS += -L $(NETCDF_DIR_PE)/lib -Wl,-rpath,$(NETCDF_DIR_PE)/lib -lnetcdff
+ifeq ($(PE_ENV),UENV)
+	INCP += ${shell pkg-config --cflags netcdf-fortran}
+	LDFLAGS += ${shell pkg-config --libs netcdf-fortran} -Wl,-rpath,${shell pkg-config --variable=prefix netcdf-fortran}/lib -Wl,-rpath,${shell pkg-config --variable=prefix netcdf}/lib
+else	
+	INCP += -I $(NETCDF_DIR_PE)/include
+	LDFLAGS += -L $(NETCDF_DIR_PE)/lib -Wl,-rpath,$(NETCDF_DIR_PE)/lib -lnetcdff
+endif
+
 
 .SUFFIXES: .o .F90
 
