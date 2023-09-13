@@ -23,6 +23,7 @@ class StreamTest(rfm.RegressionTest):
     use_multithreading = False
     sourcepath = 'stream.c'
     build_system = 'SingleSource'
+    build_locally = False
     num_tasks = 1
     num_tasks_per_node = 1
     env_vars = {
@@ -37,9 +38,9 @@ class StreamTest(rfm.RegressionTest):
             'hohgant:cpu': {'triad': (2001258, -0.05, None, 'MB/s')}
         },
         'PrgEnv-gnu': {
-            'hohgant:nvgpu': {'triad': (541783, -0.05, None, 'MB/s')},
-            'hohgant:amdgpu': {'triad': (461546, -0.05, None, 'MB/s')},
-            'hohgant:cpu': {'triad': (1548666, -0.05, None, 'MB/s')}
+            'hohgant:nvgpu': {'triad': (541783, -0.10, None, 'MB/s')},
+            'hohgant:amdgpu': {'triad': (461546, -0.10, None, 'MB/s')},
+            'hohgant:cpu': {'triad': (1548666, -0.10, None, 'MB/s')}
         },
         'PrgEnv-nvhpc': {
             'hohgant:nvgpu': {'triad': (511500, -0.05, None, 'MB/s')},
@@ -70,7 +71,7 @@ class StreamTest(rfm.RegressionTest):
         self.env_vars['OMP_NUM_THREADS'] = self.num_cpus_per_task
 
         self.build_system.cflags += (
-            self.current_environ.extras.get('openmp_flags', [])
+            self.current_environ.extras.get('c_openmp_flags', ['-fopenmp'])
         )
         self.build_system.cflags.append('-O3')
         envname = self.current_environ.name

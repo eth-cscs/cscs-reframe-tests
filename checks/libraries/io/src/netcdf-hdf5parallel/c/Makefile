@@ -22,8 +22,13 @@ ifeq ($(PE_ENV),AOCC)
 	NETCDF_DIR_PE = ${shell ls -d $(NETCDF_BASEDIR)/AOCC/*}
 endif
 
-INCP += -I $(NETCDF_DIR_PE)/include -I include -DUSE_PARALLEL -w
-LDFLAGS += -L $(NETCDF_DIR_PE)/lib -Wl,-rpath,$(NETCDF_DIR_PE)/lib -lnetcdf
+ifeq ($(PE_ENV),UENV)
+	INCP += ${shell pkg-config --cflags netcdf} -I include -DUSE_PARALLEL -w
+	LDFLAGS += ${shell pkg-config --libs netcdf} -Wl,-rpath,${shell pkg-config --variable=prefix netcdf}/lib
+else	
+	INCP += -I $(NETCDF_DIR_PE)/include -I include -DUSE_PARALLEL -w
+	LDFLAGS += -L $(NETCDF_DIR_PE)/lib -Wl,-rpath,$(NETCDF_DIR_PE)/lib -lnetcdf
+endif
 
 .SUFFIXES: .o .c
 
