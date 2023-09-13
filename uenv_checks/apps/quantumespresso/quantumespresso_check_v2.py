@@ -5,6 +5,7 @@
 
 import reframe as rfm
 import reframe.utility.sanity as sn
+from extra_launcher_options import ExtraLauncherOptionsMixin
 
 qe_tests = {
     'Au-surf' : {
