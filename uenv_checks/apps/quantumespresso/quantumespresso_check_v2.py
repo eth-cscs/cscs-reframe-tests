@@ -9,7 +9,10 @@ import sys
 
 import reframe as rfm
 import reframe.utility.sanity as sn
-#from extra_launcher_options import ExtraLauncherOptionsMixin
+
+sys.path.append(str(pathlib.Path(__file__).parent.parent.parent / 'mixins'))
+from extra_launcher_options import ExtraLauncherOptionsMixin
+from sarus_extra_launcher_options import SarusExtraLauncherOptionsMixin
 
 qe_tests = {
     'Au-surf': {
@@ -44,21 +47,16 @@ qe_tests = {
     }
 }
 
-sys.path.append(str(pathlib.Path(__file__).parent.parent / 'mixins'))
-from extra_launcher_options import ExtraLauncherOptionsMixin
-
-
-class QuantumESPRESSOCheckBase(rfm.RunOnlyRegressionTest, ExtraLauncherOptionsMixin):
+class QuantumESPRESSOCheck(rfm.RunOnlyRegressionTest):
+    energy_tolerance = 1.0e-6
+    test_name = 'Au-surf'
     valid_systems = ['hohgant:cpu', 'hohgant:nvgpu', 'hohgant-uenv:cpu']
-    valid_prog_environs = ['builtin', '+quantum-espresso']
-    container_image = variable(str, value='NULL')
+    #valid_prog_environs = ['builtin', '+quantum-espresso']
     executable = 'pw.x'
     # TODO: tests should all have pw.in as input file
     executable_opts = ['-in', 'ausurf.in']
     strict_check = False
     maintainers = ['antonk']
-    # todo: which tags it should have?
-    tags = {'scs'}
 
     @sanity_function
     def assert_simulation_success(self):
@@ -75,20 +73,11 @@ class QuantumESPRESSOCheckBase(rfm.RunOnlyRegressionTest, ExtraLauncherOptionsMi
         return sn.extractsingle(r'electrons.+\s(?P<wtime>\S+)s WALL',
                                 self.stdout, 'wtime', float)
 
-
-@rfm.simple_test
-class QuantumESPRESSOCheck(QuantumESPRESSOCheckBase):
-    energy_tolerance = 1.0e-6
-    test_name = 'Au-surf'
-
     @run_after('init')
     def setup_test(self):
         self.descr = (f'QuantumESPRESSO ground state SCF check')
         self.env_vars = {
-            # 'MPICH_OFI_STARTUP_CONNECT': 1,
             'OMP_NUM_THREADS': '$SLURM_CPUS_PER_TASK'
-            # 'OMP_PLACES': 'cores',
-            # 'OMP_PROC_BIND': 'close'
         }
 
     @run_after('setup')
@@ -134,18 +123,13 @@ class QuantumESPRESSOCheck(QuantumESPRESSOCheckBase):
                            None, 0.10, 's')}
         }
 
-    # @run_before('run')
-    # def set_task_distribution(self):
-    #     #self.job.options = ['--distribution=block:block']
-    #     return
+@rfm.simple_test
+class SARUS_QuantumESPRESSOCheck(QuantumESPRESSOCheck, SarusExtraLauncherOptionsMixin):
+    tags = {'production', 'sarus'}
+    container_image = variable(str, value='NULL')
+    valid_prog_environs = ['builtin']
 
-    # @run_before('run')
-    # def set_job_launcher_options(self):
-    # --> ExtraLauncherOptionsMixin
-    #     # self.job.launcher.options =
-    #     # ['--cpu-bind=cores', ' --hint=nomultithread']
-    #     self.job.launcher.options = [' --hint=nomultithread']
-    #     # Sarus binds to nvhpc compilerd mpich which requires --mpi=pmi2 flag
-    #     if (self.current_system.name == 'hohgant' and
-    #        self.container_image != 'NULL'):
-    #         self.job.launcher.options += ['--mpi=pmi2']
+@rfm.simple_test
+class UENV_QuantumESPRESSOCheck(QuantumESPRESSOCheck, ExtraLauncherOptionsMixin):
+    tags = {'production', 'uenv'}
+    valid_prog_environs = ['+quantum-espresso']
