@@ -52,7 +52,6 @@ class QuantumESPRESSOCheck(rfm.RunOnlyRegressionTest):
     energy_tolerance = 1.0e-6
     test_name = 'Au-surf'
     valid_systems = ['hohgant:cpu', 'hohgant:nvgpu', 'hohgant-uenv:cpu']
-    #valid_prog_environs = ['builtin', '+quantum-espresso']
     executable = 'pw.x'
     # TODO: tests should all have pw.in as input file
     executable_opts = ['-in', 'ausurf.in']
@@ -122,6 +121,7 @@ class SARUS_QuantumESPRESSOCheck(QuantumESPRESSOCheck, SarusExtraLauncherOptions
             self.container_platform.command = (
                 f'{self.executable} {" ".join(self.executable_opts)}'
             )
+        #else stop here, container_image can't be empty
 
 
 @rfm.simple_test
