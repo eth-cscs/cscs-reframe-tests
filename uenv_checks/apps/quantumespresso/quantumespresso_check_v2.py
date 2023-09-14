@@ -88,25 +88,6 @@ class QuantumESPRESSOCheck(rfm.RunOnlyRegressionTest):
         )
 
     @run_after('setup')
-    def setup_container_platform(self):
-        # if container_image was provided then initialize a container execution
-        if self.container_image != 'NULL':
-            self.container_platform = 'Sarus'
-            self.container_platform.image = self.container_image
-            self.container_platform.with_mpi = False
-            self.container_platform.pull_image = False
-            self.container_platform.command = (
-                f'{self.executable} {" ".join(self.executable_opts)}'
-            )
-
-    @run_after('setup')
-    def setup_uenv_modules(self):
-        # for uenv we need modules, for containers no
-        if self.container_image == 'NULL':
-            # is self.modules needed here?
-            modules = ['quantum-espresso']
-
-    @run_after('setup')
     def setup_resources(self):
         self.num_tasks = self.ref_dict['performance_reference'][0]['R']
         self.num_cpus_per_task = self.ref_dict['performance_reference'][0]['T']
@@ -130,7 +111,26 @@ class SARUS_QuantumESPRESSOCheck(QuantumESPRESSOCheck, SarusExtraLauncherOptions
     container_image = variable(str, value='NULL')
     valid_prog_environs = ['builtin']
 
+    @run_after('setup')
+    def setup_container_platform(self):
+        # if container_image was provided then initialize a container execution
+        if self.container_image != 'NULL':
+            self.container_platform = 'Sarus'
+            self.container_platform.image = self.container_image
+            self.container_platform.with_mpi = False
+            self.container_platform.pull_image = False
+            self.container_platform.command = (
+                f'{self.executable} {" ".join(self.executable_opts)}'
+            )
+
+
 @rfm.simple_test
 class UENV_QuantumESPRESSOCheck(QuantumESPRESSOCheck, ExtraLauncherOptionsMixin, CudaVisibleDevicesAllMixin):
     tags = {'production', 'uenv'}
     valid_prog_environs = ['+quantum-espresso']
+
+    @run_after('setup')
+    def setup_uenv_modules(self):
+        # is self.modules needed here?
+        modules = ['quantum-espresso']
+
