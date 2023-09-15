@@ -136,5 +136,6 @@ class SARUS_QuantumESPRESSOCheck(QuantumESPRESSOBase,
             self.container_platform.command = (
                 f'{self.executable} {" ".join(self.executable_opts)}'
             )
-        # else stop here, container_image can't be empty
+        else:
+            raise ConfigError('container_image is not set')
 # }}}
