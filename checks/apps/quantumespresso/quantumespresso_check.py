@@ -54,11 +54,11 @@ class QuantumESPRESSOBase(rfm.RunOnlyRegressionTest):
         self.num_tasks = N * R
         self.num_cpus_per_task = T
         self.num_tasks_per_node = R
-        self.env_vars = {
-            'OMP_NUM_THREADS': '$SLURM_CPUS_PER_TASK',
-            'OMP_PLACES': 'cores',
-            'OMP_PROC_BIND': 'close',
-        }
+        if not self.env_vars:
+            self.env_vars = {}
+        self.env_vars['OMP_NUM_THREADS'] = '$SLURM_CPUS_PER_TASK'
+        self.env_vars['OMP_PLACES'] = 'cores'
+        self.env_vars['OMP_PROC_BIND'] = 'close'
 
     @sanity_function
     def assert_simulation_success(self):
