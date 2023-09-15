@@ -102,7 +102,7 @@ class SARUS_QuantumESPRESSOCheck(QuantumESPRESSOCheck, SarusExtraLauncherOptions
     tags = {'production', 'sarus'}
     container_image = variable(str, value='NULL')
     valid_prog_environs = ['builtin']
-    valid_systems = ['+nvgpu +cpu']
+    valid_systems = ['+nvgpu', '+cpu']
 
     @run_after('setup')
     def setup_container_platform(self):
@@ -122,7 +122,7 @@ class SARUS_QuantumESPRESSOCheck(QuantumESPRESSOCheck, SarusExtraLauncherOptions
 class UENV_QuantumESPRESSOCheck(QuantumESPRESSOCheck, ExtraLauncherOptionsMixin, CudaVisibleDevicesAllMixin):
     tags = {'production', 'uenv'}
     valid_prog_environs = ['+quantum-espresso']
-    valid_systems = ['+nvgpu +cpu +uenv']
+    valid_systems = ['+nvgpu +uenv', '+cpu +uenv']
 
     @run_after('setup')
     def setup_uenv_modules(self):
