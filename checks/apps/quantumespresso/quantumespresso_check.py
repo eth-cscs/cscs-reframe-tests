@@ -21,12 +21,12 @@ qe_tests = {
         'hohgant:cpu': {
             # hohgant-cpu: 2sockets, 8 numa, 16c/numa = 128c (no MT)
             'energy_reference': -11427.09017218,
-            'performance_reference': [{'N': 1, 'R': 32, 'T': 4, 'P': 55.4}]
+            'performance_reference': [{'N': 1, 'R': 32, 'T': 4, 'P': 102.0}]
         },
         'hohgant:nvgpu': {
             # hohgant-nvgpu: 1socket, 4 numa, 16c/numa = 64c (no MT)
             'energy_reference': -11427.09017218,
-            'performance_reference': [{'N': 1, 'R': 4, 'T': 16, 'P': 55.4}]
+            'performance_reference': [{'N': 1, 'R': 4, 'T': 16, 'P': 32.0}]
         }
     }
 }
