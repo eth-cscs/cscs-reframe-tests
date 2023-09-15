@@ -1,4 +1,4 @@
-# Copyright 2016-2022 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright 2016-2023 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -16,43 +16,56 @@ from sarus_extra_launcher_options import SarusExtraLauncherOptionsMixin
 from cuda_visible_devices_all import CudaVisibleDevicesAllMixin
 
 qe_tests = {
+    # N:number of nodes, R:ranks per node, T:threads per rank, P:walltime
     'Au-surf': {
         'hohgant:cpu': {
+            # hohgant-cpu: 2sockets, 8 numa, 16c/numa = 128c (no MT)
             'energy_reference': -11427.09017218,
-            'performance_reference': [{
-                'N': 1,    # number of nodes
-                'R': 32,   # ranks per node
-                'T': 4,    # threads per rank
-                'P': 55.4  # performance. here is time to solution
-                }
-            ]
+            'performance_reference': [{'N': 1, 'R': 32, 'T': 4, 'P': 55.4}]
         },
         'hohgant:nvgpu': {
+            # hohgant-nvgpu: 1socket, 4 numa, 16c/numa = 64c (no MT)
             'energy_reference': -11427.09017218,
-            'performance_reference': [{
-                'N': 1,    # number of nodes
-                'R': 4,    # ranks per node
-                'T': 16,   # threads per rank
-                'P': 55.4  # performance. here is time to solution
-                }
-            ]
+            'performance_reference': [{'N': 1, 'R': 4, 'T': 16, 'P': 55.4}]
         }
     }
 }
 
-class QuantumESPRESSOCheck(rfm.RunOnlyRegressionTest):
+
+# {{{ BASE
+class QuantumESPRESSOBase(rfm.RunOnlyRegressionTest):
     energy_tolerance = 1.0e-6
-    test_name = 'Au-surf'
     executable = 'pw.x'
     # TODO: tests should all have pw.in as input file
     executable_opts = ['-in', 'ausurf.in']
-    maintainers = ['antonk']
+
+    @run_after('init')
+    def set_description(self):
+        self.descr = f'QuantumESPRESSO {self.test_name} check'
+
+    @run_after('setup')
+    def set_runtime_resources(self):
+        self.ref_dict = (
+            qe_tests[self.test_name][self.current_partition.fullname]
+        )
+        N = self.ref_dict['performance_reference'][0]['N']
+        R = self.ref_dict['performance_reference'][0]['R']
+        T = self.ref_dict['performance_reference'][0]['T']
+        self.num_tasks = N * R
+        self.num_cpus_per_task = T
+        self.num_tasks_per_node = R
+        self.env_vars = {
+            'OMP_NUM_THREADS': '$SLURM_CPUS_PER_TASK',
+            'OMP_PLACES': 'cores',
+            'OMP_PROC_BIND': 'close',
+        }
 
     @sanity_function
     def assert_simulation_success(self):
+        self.energy_reference = self.ref_dict['energy_reference']
         energy = sn.extractsingle(r'!\s+total energy\s+=\s+(?P<energy>\S+) Ry',
                                   self.stdout, 'energy', float)
-        energy_diff = sn.abs(energy-self.energy_reference)
+        energy_diff = sn.abs(energy - self.energy_reference)
         return sn.all([
             sn.assert_found(r'convergence has been achieved', self.stdout),
             sn.assert_lt(energy_diff, self.energy_tolerance)
@@ -63,46 +76,54 @@ class QuantumESPRESSOCheck(rfm.RunOnlyRegressionTest):
         return sn.extractsingle(r'electrons.+\s(?P<wtime>\S+)s WALL',
                                 self.stdout, 'wtime', float)
 
-    @run_after('init')
-    def setup_test(self):
-        self.descr = (f'QuantumESPRESSO ground state SCF check')
-        self.env_vars = {
-            'OMP_NUM_THREADS': '$SLURM_CPUS_PER_TASK'
-        }
-
-    @run_after('setup')
-    def setup_reference_dict(self):
-        self.ref_dict = (
-            qe_tests[self.test_name][self.current_partition.fullname]
-        )
-
-    @run_after('setup')
-    def setup_resources(self):
-        N = self.ref_dict['performance_reference'][0]['N']
-        R = self.ref_dict['performance_reference'][0]['R']
-        T = self.ref_dict['performance_reference'][0]['T']
-
-        self.num_tasks = N * R
-        self.num_cpus_per_task = T
-        self.num_tasks_per_node = R
-
-    @run_before('sanity')
-    def set_sanity_reference(self):
-        self.energy_reference = self.ref_dict['energy_reference']
-
     @run_before('performance')
     def set_performance_reference(self):
         self.reference = {
             '*': {'time': (self.ref_dict['performance_reference'][0]['P'],
                            None, 0.10, 's')}
         }
+# }}}
 
+
+# {{{ UENV/GPU
 @rfm.simple_test
-class SARUS_QuantumESPRESSOCheck(QuantumESPRESSOCheck, SarusExtraLauncherOptionsMixin, CudaVisibleDevicesAllMixin):
-    tags = {'production', 'sarus'}
+class UENV_QuantumESPRESSO_GPU_Check(QuantumESPRESSOBase,
+                                     ExtraLauncherOptionsMixin,
+                                     CudaVisibleDevicesAllMixin):
+    valid_systems = ['+nvgpu +uenv']
+    valid_prog_environs = ['+quantum-espresso']
+    tags = {'production', 'uenv'}
+    energy_tolerance = 1.0e-6
+    test_name = parameter(['Au-surf'])
+# }}}
+
+
+# {{{ UENV/CPU
+# MPI_Abort @rfm.simple_test
+# MPI_Abort class UENV_QuantumESPRESSO_CPU_Check(QuantumESPRESSOBase,
+# MPI_Abort                                      ExtraLauncherOptionsMixin):
+# MPI_Abort     valid_systems = ['+cpu +uenv']
+# MPI_Abort     valid_prog_environs = ['+quantum-espresso']
+# MPI_Abort     tags = {'production', 'uenv'}
+# MPI_Abort     energy_tolerance = 1.0e-6
+# MPI_Abort     test_name = parameter(['Au-surf'])
+# }}}
+
+
+# {{{ SARUS
+@rfm.simple_test
+class SARUS_QuantumESPRESSOCheck(QuantumESPRESSOBase,
+                                 SarusExtraLauncherOptionsMixin,
+                                 CudaVisibleDevicesAllMixin):
+    """
+    jfrog=jfrog.svc.cscs.ch/docker-ci-ext/4931289112286619/apps
+    sarus pull --login $jfrog/9adaeeabb5e743e3-803e055e8eaa895a:latest
+    """
     container_image = variable(str, value='NULL')
     valid_prog_environs = ['builtin']
     valid_systems = ['+nvgpu', '+cpu']
+    test_name = parameter(['Au-surf'])
+    tags = {'production', 'sarus'}
 
     @run_after('setup')
     def setup_container_platform(self):
@@ -115,17 +136,5 @@ class SARUS_QuantumESPRESSOCheck(QuantumESPRESSOCheck, SarusExtraLauncherOptions
             self.container_platform.command = (
                 f'{self.executable} {" ".join(self.executable_opts)}'
             )
-        #else stop here, container_image can't be empty
-
-
-@rfm.simple_test
-class UENV_QuantumESPRESSOCheck(QuantumESPRESSOCheck, ExtraLauncherOptionsMixin, CudaVisibleDevicesAllMixin):
-    tags = {'production', 'uenv'}
-    valid_prog_environs = ['+quantum-espresso']
-    valid_systems = ['+nvgpu +uenv', '+cpu +uenv']
-
-    @run_after('setup')
-    def setup_uenv_modules(self):
-        # is self.modules needed here?
-        modules = ['quantum-espresso']
-
+        # else stop here, container_image can't be empty
+# }}}
