@@ -31,8 +31,6 @@ qe_tests = {
     }
 }
 
-
-# {{{ BASE
 class QuantumESPRESSOBase(rfm.RunOnlyRegressionTest):
     energy_tolerance = 1.0e-6
     executable = 'pw.x'
@@ -82,35 +80,18 @@ class QuantumESPRESSOBase(rfm.RunOnlyRegressionTest):
             '*': {'time': (self.ref_dict['performance_reference'][0]['P'],
                            None, 0.10, 's')}
         }
-# }}}
 
 
-# {{{ UENV/GPU
 @rfm.simple_test
-class UENV_QuantumESPRESSO_GPU_Check(QuantumESPRESSOBase,
-                                     ExtraLauncherOptionsMixin,
-                                     CudaVisibleDevicesAllMixin):
+class UENV_QuantumESPRESSOCheck(QuantumESPRESSOBase,
+                                ExtraLauncherOptionsMixin,
+                                CudaVisibleDevicesAllMixin):
     valid_systems = ['+nvgpu +uenv', '+cpu +uenv']
     valid_prog_environs = ['+quantum-espresso']
     tags = {'production', 'uenv'}
     energy_tolerance = 1.0e-6
     test_name = parameter(['Au-surf'])
-# }}}
 
-
-# {{{ UENV/CPU
-# MPI_Abort @rfm.simple_test
-# MPI_Abort class UENV_QuantumESPRESSO_CPU_Check(QuantumESPRESSOBase,
-# MPI_Abort                                      ExtraLauncherOptionsMixin):
-# MPI_Abort     valid_systems = ['+cpu +uenv']
-# MPI_Abort     valid_prog_environs = ['+quantum-espresso']
-# MPI_Abort     tags = {'production', 'uenv'}
-# MPI_Abort     energy_tolerance = 1.0e-6
-# MPI_Abort     test_name = parameter(['Au-surf'])
-# }}}
-
-
-# {{{ SARUS
 @rfm.simple_test
 class SARUS_QuantumESPRESSOCheck(QuantumESPRESSOBase,
                                  SarusExtraLauncherOptionsMixin,
@@ -138,4 +119,3 @@ class SARUS_QuantumESPRESSOCheck(QuantumESPRESSOBase,
             )
         else:
             raise ConfigError('container_image is not set')
-# }}}
