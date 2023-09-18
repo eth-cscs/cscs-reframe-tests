@@ -90,7 +90,7 @@ class QuantumESPRESSOBase(rfm.RunOnlyRegressionTest):
 class UENV_QuantumESPRESSO_GPU_Check(QuantumESPRESSOBase,
                                      ExtraLauncherOptionsMixin,
                                      CudaVisibleDevicesAllMixin):
-    valid_systems = ['+nvgpu +uenv']
+    valid_systems = ['+nvgpu +uenv', '+cpu +uenv']
     valid_prog_environs = ['+quantum-espresso']
     tags = {'production', 'uenv'}
     energy_tolerance = 1.0e-6
