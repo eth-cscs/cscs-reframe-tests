@@ -86,7 +86,7 @@ class QuantumESPRESSOBase(rfm.RunOnlyRegressionTest):
 class UENV_QuantumESPRESSOCheck(QuantumESPRESSOBase,
                                 ExtraLauncherOptionsMixin,
                                 CudaVisibleDevicesAllMixin):
-    valid_systems = ['+nvgpu +uenv', '+cpu +uenv']
+    valid_systems = ['+uenv -amdgpu']
     valid_prog_environs = ['+quantum-espresso']
     tags = {'production', 'uenv'}
     energy_tolerance = 1.0e-6
@@ -96,13 +96,9 @@ class UENV_QuantumESPRESSOCheck(QuantumESPRESSOBase,
 class SARUS_QuantumESPRESSOCheck(QuantumESPRESSOBase,
                                  SarusExtraLauncherOptionsMixin,
                                  CudaVisibleDevicesAllMixin):
-    """
-    jfrog=jfrog.svc.cscs.ch/docker-ci-ext/4931289112286619/apps
-    sarus pull --login $jfrog/9adaeeabb5e743e3-803e055e8eaa895a:latest
-    """
     container_image = variable(str, value='NULL')
     valid_prog_environs = ['builtin']
-    valid_systems = ['+nvgpu', '+cpu']
+    valid_systems = ['+remote']
     test_name = parameter(['Au-surf'])
     tags = {'production', 'sarus'}
 

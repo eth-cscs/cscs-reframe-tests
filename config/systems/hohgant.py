@@ -146,7 +146,7 @@ site_configuration = {
                             'options': ['--mem={mem_per_node}']
                         },
                     ],
-                    'features': ['cpu', 'remote', 'sarus', 'singularity'],
+                    'features': ['remote', 'sarus', 'singularity'],
                     'launcher': 'srun'
                 }
             ]

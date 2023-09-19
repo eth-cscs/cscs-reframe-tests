@@ -122,7 +122,7 @@ partitions = [
                 'options': ['--mem={mem_per_node}']
             },
         ],
-        'features': ['cpu', 'remote', 'uenv'],
+        'features': ['remote', 'uenv'],
         'launcher': 'srun'
     }
 ]
