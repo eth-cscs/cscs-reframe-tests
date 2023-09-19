@@ -11,7 +11,7 @@ from reframe.utility import import_module_from_file
 
 
 uenv_file = os.environ.get('UENV_FILE', None)
-systems_path = 'systems-uenv' if uenv_file else 'systems'
+systems_path = 'systems-uenv' if uenv_file is not None else 'systems'
 
 system_conf_files = glob.glob(
     os.path.join(os.path.dirname(__file__), systems_path, '*.py')
