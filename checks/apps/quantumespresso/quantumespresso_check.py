@@ -87,7 +87,7 @@ class UENV_QuantumESPRESSOCheck(QuantumESPRESSOBase,
                                 ExtraLauncherOptionsMixin,
                                 CudaVisibleDevicesAllMixin):
     valid_systems = ['+uenv -amdgpu']
-    valid_prog_environs = ['+quantum-espresso']
+    valid_prog_environs = ['+quantum-espresso', '+mpi', '+openmp']
     tags = {'production', 'uenv'}
     energy_tolerance = 1.0e-6
     test_name = parameter(['Au-surf'])
