@@ -13,7 +13,7 @@ import yaml
 from reframe.core.exceptions import ConfigError
 
 uenv_file = os.environ.get('UENV_FILE', None)
-uenv_mount = os.environ.get('UENV_MOUNT', '/user-environment')
+#uenv_mount = os.environ.get('UENV_MOUNT', '/user-environment')
 
 if uenv_file is None:
     raise ConfigError('UENV_FILE is not set')
@@ -25,7 +25,7 @@ if not image_path.exists():
 image_name = image_path.stem
 
 # Options for the Slurm plugin to mount the Squashfs uenv image
-uenv_access = [f'--uenv-file={uenv_file}', f'--uenv-mount={uenv_mount}']
+uenv_access = [f'--uenv={uenv_file}']
 
 try:
     rfm_meta = image_path.parent / f'{image_name}.yaml'
