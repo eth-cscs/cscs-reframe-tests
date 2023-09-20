@@ -16,17 +16,17 @@ from sarus_extra_launcher_options import SarusExtraLauncherOptionsMixin
 from cuda_visible_devices_all import CudaVisibleDevicesAllMixin
 
 qe_tests = {
-    # N:number of nodes, R:ranks per node, T:threads per rank, P:walltime
+    # R:total number of MPI ranks, T:threads per rank, P:walltime
     'Au-surf': {
-        'hohgant:cpu': {
-            # hohgant-cpu: 2sockets, 8 numa, 16c/numa = 128c (no MT)
+        'zen2': {
+            # zen2 cpu nodes: 2sockets, 8 numa, 16c/numa = 128c (no MT)
             'energy_reference': -11427.09017218,
-            'performance_reference': [{'N': 1, 'R': 32, 'T': 4, 'P': 102.0}]
+            'performance_reference': [{'R': 32, 'T': 4, 'P': 102.0}]
         },
-        'hohgant:nvgpu': {
-            # hohgant-nvgpu: 1socket, 4 numa, 16c/numa = 64c (no MT)
+        'zen3': {
+            # A100 nodes: 1socket, 4 numa, 16c/numa = 64c (no MT)
             'energy_reference': -11427.09017218,
-            'performance_reference': [{'N': 1, 'R': 4, 'T': 16, 'P': 32.0}]
+            'performance_reference': [{'R': 4, 'T': 16, 'P': 32.0}]
         }
     }
 }
@@ -41,17 +41,34 @@ class QuantumESPRESSOBase(rfm.RunOnlyRegressionTest):
     def set_description(self):
         self.descr = f'QuantumESPRESSO {self.test_name} check'
 
-    @run_after('setup')
-    def set_runtime_resources(self):
+    @run_before('run')
+    def set_parallel_resources(self):
+        self.skip_if_no_procinfo()
+        processor_info = self.current_partition.processor
+        # zen2, zen3, etc.
+        self.cpu_label = processor_info.arch
+        ## device label, for example 4x-gpu-sm_80
+        #dev_label = ''
+        #if self.current_partition.devices:
+        #    for e in self.current_partition.devices:
+        #        dev_label = dev_label + str(e.num_devices) + 'x-' + e.type + '-' + e.arch
+        #self.dev_label = dev_label
+        # for now use cpu label to identify node type
+        self.node_label = self.cpu_label
+
+        # number of physical cores
+        num_cores = int(processor_info.num_cpus / processor_info.num_cpus_per_core)
+
         self.ref_dict = (
-            qe_tests[self.test_name][self.current_partition.fullname]
+            qe_tests[self.test_name][self.node_label]
         )
-        N = self.ref_dict['performance_reference'][0]['N']
-        R = self.ref_dict['performance_reference'][0]['R']
+        # total number of ranks
+        self.num_tasks = self.ref_dict['performance_reference'][0]['R']
+        # threads / rank
         T = self.ref_dict['performance_reference'][0]['T']
-        self.num_tasks = N * R
         self.num_cpus_per_task = T
-        self.num_tasks_per_node = R
+        # ranks per node
+        self.num_tasks_per_node = int(num_cores / T)
         if not self.env_vars:
             self.env_vars = {}
         self.env_vars['OMP_NUM_THREADS'] = '$SLURM_CPUS_PER_TASK'

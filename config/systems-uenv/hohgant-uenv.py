@@ -13,7 +13,6 @@ import yaml
 from reframe.core.exceptions import ConfigError
 
 uenv_file = os.environ.get('UENV_FILE', None)
-#uenv_mount = os.environ.get('UENV_MOUNT', '/user-environment')
 
 if uenv_file is None:
     raise ConfigError('UENV_FILE is not set')
