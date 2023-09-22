@@ -45,10 +45,9 @@ class QuantumESPRESSOBase(rfm.RunOnlyRegressionTest):
     def set_parallel_resources(self):
         self.skip_if_no_procinfo()
         processor_info = self.current_partition.processor
-        # zen2, zen3, etc.
         self.node_label = processor_info.arch
-        # device label, for example 4x-gpu-sm_80
         if self.current_partition.devices:
+            # device label, for example 4x-gpu-sm_80
             dev_label = '-'
             for e in self.current_partition.devices:
                 dev_label = dev_label + str(e.num_devices) + 'x-' + e.type + '-' + e.arch
