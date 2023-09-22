@@ -102,7 +102,7 @@ class UENV_QuantumESPRESSOCheck(QuantumESPRESSOBase,
                                 ExtraLauncherOptionsMixin,
                                 CudaVisibleDevicesAllMixin):
     valid_systems = ['+uenv -amdgpu']
-    valid_prog_environs = ['+quantum-espresso', '+mpi', '+openmp']
+    valid_prog_environs = ['+quantum-espresso +mpi +openmp', '+mpi', '+openmp']
     tags = {'production', 'uenv'}
     energy_tolerance = 1.0e-6
     test_name = parameter(['Au-surf'])
@@ -111,7 +111,7 @@ class UENV_QuantumESPRESSOCheck(QuantumESPRESSOBase,
 class SARUS_QuantumESPRESSOCheck(QuantumESPRESSOBase,
                                  SarusExtraLauncherOptionsMixin,
                                  CudaVisibleDevicesAllMixin):
-    container_image = variable(str, value='NULL')
+    container_image = variable(str, type(None), value=None)
     valid_prog_environs = ['builtin']
     valid_systems = ['+remote']
     test_name = parameter(['Au-surf'])
@@ -120,7 +120,7 @@ class SARUS_QuantumESPRESSOCheck(QuantumESPRESSOBase,
     @run_after('setup')
     def setup_container_platform(self):
         # if container_image was provided then initialize a container execution
-        if self.container_image != 'NULL':
+        if self.container_image is not None:
             self.container_platform = 'Sarus'
             self.container_platform.image = self.container_image
             self.container_platform.with_mpi = False
