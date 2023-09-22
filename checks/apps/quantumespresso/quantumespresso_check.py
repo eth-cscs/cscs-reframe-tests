@@ -23,7 +23,7 @@ qe_tests = {
             'energy_reference': -11427.09017218,
             'performance_reference': [{'R': 32, 'T': 4, 'P': 102.0}]
         },
-        'zen3': {
+        'zen3-4x-gpu-sm_80': {
             # A100 nodes: 1socket, 4 numa, 16c/numa = 64c (no MT)
             'energy_reference': -11427.09017218,
             'performance_reference': [{'R': 4, 'T': 16, 'P': 32.0}]
@@ -46,15 +46,13 @@ class QuantumESPRESSOBase(rfm.RunOnlyRegressionTest):
         self.skip_if_no_procinfo()
         processor_info = self.current_partition.processor
         # zen2, zen3, etc.
-        self.cpu_label = processor_info.arch
-        ## device label, for example 4x-gpu-sm_80
-        #dev_label = ''
-        #if self.current_partition.devices:
-        #    for e in self.current_partition.devices:
-        #        dev_label = dev_label + str(e.num_devices) + 'x-' + e.type + '-' + e.arch
-        #self.dev_label = dev_label
-        # for now use cpu label to identify node type
-        self.node_label = self.cpu_label
+        self.node_label = processor_info.arch
+        # device label, for example 4x-gpu-sm_80
+        if self.current_partition.devices:
+            dev_label = '-'
+            for e in self.current_partition.devices:
+                dev_label = dev_label + str(e.num_devices) + 'x-' + e.type + '-' + e.arch
+            self.node_label = self.node_label + dev_label
 
         # number of physical cores
         num_cores = int(processor_info.num_cpus / processor_info.num_cpus_per_core)
