@@ -54,7 +54,8 @@ class QuantumESPRESSOBase(rfm.RunOnlyRegressionTest):
             self.node_label = self.node_label + dev_label
 
         # number of physical cores
-        num_cores = int(processor_info.num_cpus / processor_info.num_cpus_per_core)
+        num_cores = int(
+            processor_info.num_cpus / processor_info.num_cpus_per_core)
 
         self.ref_dict = (
             qe_tests[self.test_name][self.node_label]
