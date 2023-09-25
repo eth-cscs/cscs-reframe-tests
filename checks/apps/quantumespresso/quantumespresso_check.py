@@ -31,6 +31,7 @@ qe_tests = {
     }
 }
 
+
 class QuantumESPRESSOBase(rfm.RunOnlyRegressionTest):
     energy_tolerance = 1.0e-6
     executable = 'pw.x'
@@ -50,7 +51,8 @@ class QuantumESPRESSOBase(rfm.RunOnlyRegressionTest):
             # device label, for example 4x-gpu-sm_80
             dev_label = '-'
             for e in self.current_partition.devices:
-                dev_label = dev_label + str(e.num_devices) + 'x-' + e.type + '-' + e.arch
+                dev_label = dev_label + str(e.num_devices) + 'x-' + e.type +
+                '-' + e.arch
             self.node_label = self.node_label + dev_label
 
         # number of physical cores
@@ -106,6 +108,7 @@ class UENV_QuantumESPRESSOCheck(QuantumESPRESSOBase,
     tags = {'production', 'uenv'}
     energy_tolerance = 1.0e-6
     test_name = parameter(['Au-surf'])
+
 
 @rfm.simple_test
 class SARUS_QuantumESPRESSOCheck(QuantumESPRESSOBase,
