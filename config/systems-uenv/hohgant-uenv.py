@@ -12,7 +12,6 @@ import yaml
 
 from reframe.core.exceptions import ConfigError
 
-
 uenv = os.environ.get('UENV', None)
 
 if uenv is None:
@@ -35,7 +34,6 @@ if not image_path.exists():
 image_name = image_path.stem
 
 # Options for the Slurm plugin to mount the Squashfs uenv image
-
 uenv_access = [f'--uenv={uenv_file}:{image_mount}']
 
 try:
