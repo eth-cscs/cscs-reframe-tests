@@ -49,10 +49,9 @@ class QuantumESPRESSOBase(rfm.RunOnlyRegressionTest):
         self.node_label = processor_info.arch
         if self.current_partition.devices:
             # device label, for example 4x-gpu-sm_80
-            dev_label = '-'
+            dev_label = ''
             for e in self.current_partition.devices:
-                dev_label = dev_label + str(e.num_devices) + 'x-' + e.type +
-                '-' + e.arch
+                dev_label = f"-{dev_label}{e.num_devices}x-{e.type}-{e.arch}"
             self.node_label = self.node_label + dev_label
 
         # number of physical cores
