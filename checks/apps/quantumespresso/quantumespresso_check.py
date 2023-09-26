@@ -116,7 +116,7 @@ class SARUS_QuantumESPRESSOCheck(QuantumESPRESSOBase,
                                  CudaVisibleDevicesAllMixin):
     container_image = variable(str, type(None), value=None)
     valid_prog_environs = ['builtin']
-    valid_systems = ['+remote']
+    valid_systems = ['+sarus']
     test_name = parameter(['Au-surf'])
     tags = {'production', 'sarus'}
 
