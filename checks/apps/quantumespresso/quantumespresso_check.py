@@ -52,6 +52,7 @@ class QuantumESPRESSOBase(rfm.RunOnlyRegressionTest):
             dev_label = ''
             for e in self.current_partition.devices:
                 dev_label = f"-{dev_label}{e.num_devices}x-{e.type}-{e.arch}"
+
             self.node_label = self.node_label + dev_label
 
         # number of physical cores
