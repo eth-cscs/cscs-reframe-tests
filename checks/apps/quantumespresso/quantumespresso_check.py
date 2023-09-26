@@ -105,9 +105,9 @@ class UENV_QuantumESPRESSOCheck(QuantumESPRESSOBase,
                                 CudaVisibleDevicesAllMixin):
     valid_systems = ['+uenv -amdgpu']
     valid_prog_environs = ['+quantum-espresso +mpi +openmp', '+mpi', '+openmp']
-    tags = {'production', 'uenv'}
-    energy_tolerance = 1.0e-6
+    use_multithreading = False
     test_name = parameter(['Au-surf'])
+    tags = {'production', 'uenv'}
 
 
 @rfm.simple_test
@@ -115,8 +115,9 @@ class SARUS_QuantumESPRESSOCheck(QuantumESPRESSOBase,
                                  SarusExtraLauncherOptionsMixin,
                                  CudaVisibleDevicesAllMixin):
     container_image = variable(str, type(None), value=None)
-    valid_prog_environs = ['builtin']
     valid_systems = ['+sarus']
+    valid_prog_environs = ['builtin']
+    use_multithreading = False
     test_name = parameter(['Au-surf'])
     tags = {'production', 'sarus'}
 
