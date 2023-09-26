@@ -104,7 +104,7 @@ class UENV_QuantumESPRESSOCheck(QuantumESPRESSOBase,
                                 ExtraLauncherOptionsMixin,
                                 CudaVisibleDevicesAllMixin):
     valid_systems = ['+uenv -amdgpu']
-    valid_prog_environs = ['+quantum-espresso +mpi +openmp', '+mpi', '+openmp']
+    valid_prog_environs = ['+quantum-espresso +mpi +openmp']
     use_multithreading = False
     test_name = parameter(['Au-surf'])
     tags = {'production', 'uenv'}
