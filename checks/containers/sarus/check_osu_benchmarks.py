@@ -94,7 +94,7 @@ class SarusOSULatencyWithSshLauncher(BaseCheck):
     def setup_container_platform(self):
         self.container_platform.image = self.sarus_image
         self.container_platform.options = [
-            '--mount=src=$SCRATCH,dst=$SCRATCH,type=bind',
+            '--mount=src=${SCRATCH:-/scratch},dst=${SCRATCH:-/scratch},type=bind',
             '--ssh'
         ]
         self.container_platform.command = (
