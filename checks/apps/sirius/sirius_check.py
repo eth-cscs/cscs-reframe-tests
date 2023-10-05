@@ -32,6 +32,7 @@ class sirius_scf_base_test(rfm.RunOnlyRegressionTest):
         #}
 
         if self.current_system.name in {'hohgant'}:
+            self.num_tasks = 4
             self.num_tasks_per_node = 4
             self.num_cpus_per_task = 16
             self.num_tasks_per_core = 1
