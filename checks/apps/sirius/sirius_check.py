@@ -19,11 +19,8 @@ class sirius_scf_base_test(rfm.RunOnlyRegressionTest):
     use_multithreading = False
     maintainers = ['antonk']
     data_ref = 'output_ref.json'
-    fout = 'output.json'
-
-    def __init__(self, num_tasks):
-        self.num_tasks = num_tasks
-        self.executable_opts = ['--output=output.json']
+    output_file = 'output.json'
+    executable_opts = [f'--output={output_file}']
 
     @run_after('init')
     def setup_test(self):
@@ -49,12 +46,12 @@ class sirius_scf_base_test(rfm.RunOnlyRegressionTest):
     @run_before('sanity')
     def load_json_data(self):
         with osext.change_dir(self.stagedir):
-            with open(self.fout) as f:
+            with open(self.output_file) as f:
                 try:
                     self.output_data = json.load(f)
                 except json.JSONDecodeError as e:
                     raise SanityError(
-                        f'failed to parse JSON file {self.fout}') from e
+                        f'failed to parse JSON file {self.output_file}') from e
 
             with open(self.data_ref) as f:
                 try:
@@ -133,8 +130,6 @@ class SARUS_sirius_scf_check(sirius_scf_base_test,
         else:
             raise ConfigError('container_image is not set')
 
-    def __init__(self):
-        super().__init__(4)
 
 @rfm.simple_test
 class UENV_sirius_scf_check(sirius_scf_base_test,
@@ -143,43 +138,4 @@ class UENV_sirius_scf_check(sirius_scf_base_test,
     valid_systems = ['+uenv -amdgpu']
     valid_prog_environs = ['+sirius +mpi +openmp']
     tags = {'parallel_k'}
-    def __init__(self):
-        super().__init__(4)
-
-#@rfm.parameterized_test(*([test_folder] for test_folder in test_folders))
-#class sirius_scf_serial(sirius_scf_base_test):
-#    def __init__(self, test_folder):
-#        super().__init__(1, test_folder)
-#        self.tags = {'serial'}
-#
-#
-#@rfm.parameterized_test(*([test_folder] for test_folder in test_folders))
-#class sirius_scf_serial_parallel_k(sirius_scf_base_test):
-#    def __init__(self, test_folder):
-#        super().__init__(4, test_folder)
-#        self.tags = {'parallel_k'}
-
-
-#@rfm.parameterized_test(*([test_folder] for test_folder in test_folders))
-#class sirius_scf_serial_parallel_band_22(sirius_scf_base_test):
-#    def __init__(self, test_folder):
-#        super().__init__(4, test_folder)
-#        self.tags = {'parallel_band'}
-#        self.executable_opts.append('--mpi_grid=2:2')
-#
-#
-#@rfm.parameterized_test(*([test_folder] for test_folder in test_folders))
-#class sirius_scf_serial_parallel_band_12(sirius_scf_base_test):
-#    def __init__(self, test_folder):
-#        super().__init__(2, test_folder)
-#        self.tags = {'parallel_band'}
-#        self.executable_opts.append('--mpi_grid=1:2')
-#
-#
-#@rfm.parameterized_test(*([test_folder] for test_folder in test_folders))
-#class sirius_scf_serial_parallel_band_21(sirius_scf_base_test):
-#    def __init__(self, test_folder):
-#        super().__init__(2, test_folder)
-#        self.tags = {'parallel_band'}
-#        self.executable_opts.append('--mpi_grid=2:1')
 
