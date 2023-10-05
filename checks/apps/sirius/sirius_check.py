@@ -1,6 +1,5 @@
 import json
 import pathlib
-import re
 import sys
 
 import reframe as rfm
@@ -139,4 +138,3 @@ class UENV_sirius_scf_check(sirius_scf_base_test,
     valid_systems = ['+uenv -amdgpu']
     valid_prog_environs = ['+sirius +mpi +openmp']
     tags = {'parallel_k'}
-
