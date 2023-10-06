@@ -38,7 +38,7 @@ class NvidiaDeviceCountBase(CudaVisibleDevicesAllMixin,
     '''Checks that the number of Nvidia gpu devices detected by NVML is the
        same with the one detected by Cuda.
        The test can easily run in multiple nodes by using the cli argument
-       `-S 'NvidiaDeviceCountBase.num_tasks=<num_nodes>'`.
+       `-S '[CPE|UENV]_NvidiaDeviceCount.num_tasks=<num_nodes>'`.
        The above option can be combined with a particular nodelist to check
        the health of the nodes on demand.
     '''
