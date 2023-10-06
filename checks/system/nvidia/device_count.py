@@ -14,10 +14,10 @@ sys.path.append(str(pathlib.Path(__file__).parent.parent.parent / 'mixins'))
 from cuda_visible_devices_all import CudaVisibleDevicesAllMixin
 
 
-class build_device_count(rfm.CompileOnlyRegressionTest):
+class BuildDeviceCountBase(rfm.CompileOnlyRegressionTest):
     '''Fixture for building the device count binary'''
-    valid_systems = ['*']
     valid_prog_environs = ['+cuda']
+    build_locally = False
     build_system = 'SingleSource'
     sourcepath = 'deviceCount.cu'
     executable = 'deviceCount'
@@ -33,21 +33,18 @@ class build_device_count(rfm.CompileOnlyRegressionTest):
         return True
 
 
-@rfm.simple_test
-class NVIDIA_device_count(CudaVisibleDevicesAllMixin,
-                          rfm.RunOnlyRegressionTest):
-    '''Checks that the number of NVIDIA gpu devices detected by NVML is the
-       same with the one detected by CUDA.
+class NvidiaDeviceCountBase(CudaVisibleDevicesAllMixin,
+                            rfm.RunOnlyRegressionTest):
+    '''Checks that the number of Nvidia gpu devices detected by NVML is the
+       same with the one detected by Cuda.
        The test can easily run in multiple nodes by using the cli argument
-       `-S 'NVIDIA_device_count.num_tasks=<num_nodes>'`.
+       `-S 'NvidiaDeviceCountBase.num_tasks=<num_nodes>'`.
        The above option can be combined with a particular nodelist to check
        the health of the nodes on demand.
     '''
-    valid_systems = ['+remote +nvgpu']
     valid_prog_environs = ['+cuda']
     num_tasks_per_node = 1
     num_tasks = 1
-    device_count_bin = fixture(build_device_count, scope='environment')
 
     @property
     @deferrable
@@ -70,3 +67,44 @@ class NVIDIA_device_count(CudaVisibleDevicesAllMixin,
             sn.count(sn.findall(healthy_node_match, self.stdout)),
             self.num_tasks_assigned
         )
+
+
+class CPE_BuildDeviceCount(BuildDeviceCountBase):
+    valid_systems = ['-uenv']
+
+    # FIXME: version of clang compiler and default gcc not compatible
+    # with the default cudatoolkit (11.6)
+    @run_after('setup')
+    def skip_incompatible_envs_cuda(self):
+        if self.current_environ.name in {'PrgEnv-cray', 'PrgEnv-gnu'}:
+            self.skip(
+            f'environ {self.current_environ.name!r} incompatible with'
+            f'default cudatoolkit')
+
+    @run_before('compile')
+    def setup_modules(self):
+        if 'PrgEnv-nvhpc' != self.current_environ.name:
+            sm = self.current_partition.select_devices('gpu')[0].arch[-2:]
+            self.modules = ['cudatoolkit', f'craype-accel-nvidia{sm}']
+
+
+class UENV_BuildDeviceCount(BuildDeviceCountBase):
+    valid_systems = ['-uenv']
+
+
+@rfm.simple_test
+class CPE_NvidiaDeviceCount(NvidiaDeviceCountBase):
+    valid_systems = ['+nvgpu -uenv']
+    device_count_bin = fixture(CPE_BuildDeviceCount, scope='environment')
+
+    @run_after('setup')
+    def setup_modules(self):
+        if 'PrgEnv-nvhpc' != self.current_environ.name:
+            sm = self.current_partition.select_devices('gpu')[0].arch[-2:]
+            self.modules = ['cudatoolkit', f'craype-accel-nvidia{sm}']
+
+
+@rfm.simple_test
+class UENV_NvidiaDeviceCount(NvidiaDeviceCountBase):
+    valid_systems = ['+nvgpu +uenv']
+    device_count_bin = fixture(UENV_BuildDeviceCount, scope='environment')
