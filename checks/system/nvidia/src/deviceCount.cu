@@ -8,8 +8,6 @@
 
 #include <limits.h>
 
-
-
 int main() {
    char hostname[HOST_NAME_MAX];
    unsigned int nvmlCount = 0;
