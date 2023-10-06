@@ -2,7 +2,7 @@
 #include <unistd.h>
 #include <nvml.h>
 
-#ifndef __USE_POSIX 
+#ifndef __USE_POSIX
    #define __USE_POSIX
 #endif
 
@@ -42,17 +42,17 @@ int main() {
        printf("%s: CUDA error retrieving the device count:\n", hostname);
        nvml_return = nvmlShutdown();
        return -1;
-   } 
+   }
 
    if (deviceCount != nvmlCount) {
-       printf("%s: NVML device count '%d' != CUDA device count: '%d'\n", hostname,
+       printf("%s: NVML device count %d != CUDA device count: %d\n", hostname,
               nvmlCount, deviceCount);
        nvml_return = nvmlShutdown();
        return -1;
    }
 
    nvml_return = nvmlShutdown();
-   printf("%s: NVML device count == Cuda device count == '%d'\n", hostname,
+   printf("%s: NVML device count == Cuda device count == %d\n", hostname,
           deviceCount);
 
    return 0;
