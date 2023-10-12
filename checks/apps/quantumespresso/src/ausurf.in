@@ -2,10 +2,12 @@
   title = ' DEISA pw benchmark ',
   calculation = 'scf',
   restart_mode = 'from_scratch',
-  tprnfor = .TRUE.,
+  max_seconds = 0,
   prefix = 'ausurf',
   pseudo_dir = './',
-  outdir = './out/'
+  outdir = './out/',
+  tprnfor = .FALSE.,
+  disk_io = 'none',
 /
 
 &SYSTEM

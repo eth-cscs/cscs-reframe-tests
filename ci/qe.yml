@@ -1,0 +1,82 @@
+include:
+  - remote: 'https://gitlab.com/cscs-ci/recipes/-/raw/master/templates/v2/.ci-ext.yml'
+
+stages:
+  - test
+
+.run-reframe:
+  stage: test
+  tags: ['hohgant-login-baremetal']
+  variables:
+    SLURM_TIMELIMIT: 5
+  variables:
+    GIT_STRATEGY: fetch
+  script:
+    - rm -fr rfm_venv
+    - python3 -m venv rfm_venv
+    - source rfm_venv/bin/activate
+    - pip install reframe-hpc
+    - reframe --version
+    - git clone -b alpsjg https://github.com/jgphpc/cscs-reframe-tests.git cscs-reframe-tests.git
+    - reframe -C cscs-reframe-tests.git/config/cscs.py
+      --performance-report
+      --system=hohgant:nvgpu
+      --skip-prgenv-check -n UENV
+      -c $RFM_TEST
+      --report-junit=reframe_report.xml
+      -r
+    - deactivate
+  artifacts:
+    when: always
+    paths:
+    - reframe_report.xml
+    reports:
+      junit: reframe_report.xml
+
+.run-reframe-hohgant:
+  extends: .run-reframe
+  variables:
+    STACK_SYSTEM: hohgant
+
+.run-reframe-hohgant-a100:
+  extends: .run-reframe-hohgant
+  variables:
+    SLURM_PARTITION: nvgpu
+    UENV: '/scratch/e1000/piccinal/qe/jfrog/store.squashfs'
+    RFM_TEST: 'cscs-reframe-tests.gitchecks/apps/quantumespresso/quantumespresso_check.py'
+    RFM_HTTPJSON_URL: 'http://log.cscs.ch:31311/reframe' 
+    # ~/R -c checks/apps/quantumespresso/quantumespresso_check.py --system hohgant:nvgpu -r --skip-prgenv-check -n UENV
+
+#del run rfm_test:
+#del   extends: .container-runner-hohgant
+#del   stage: run
+#del   tags: ['hohgant-login-baremetal']
+#del   variables:
+#del     GIT_STRATEGY: fetch
+#del     UENV: '/scratch/e1000/piccinal/qe/jfrog/store.squashfs'
+#del     RFM_HTTPJSON_URL: 'http://log.cscs.ch:31311/reframe' 
+#del   script:
+#del     - rm -fr venv_reframe_cpe
+#del     - python3 -m venv venv_reframe_cpe
+#del     - source venv_reframe_cpe/bin/activate
+#del     - pip install reframe-hpc
+#del     - reframe -C config/cscs.py
+#del       --system hohgant
+#del       -c checks/prgenv/cuda/nvml_check.py
+#del       -c checks/prgenv/cuda-fortran/cuda_fortran_check.py
+#del       -c checks/prgenv/mpi.py
+#del       -c checks/prgenv/openacc_checks.py
+#del       -c checks/prgenv/helloworld.py
+#del       -c checks/libraries/io/hdf5.py
+#del       -c checks/libraries/io/netcdf.py
+#del       -c checks/libraries/io/pnetcdf.py
+#del       -c checks/containers/sarus
+#del       -c checks/microbenchmarks/cpu/alloc_speed/alloc_speed.py
+#del       --report-junit=reportcpe.xml -r
+#del     - deactivate
+#del   artifacts:
+#del     when: always
+#del     paths:
+#del       - reportcpe.xml
+#del     reports:
+#del       junit: reportcpe.xml
