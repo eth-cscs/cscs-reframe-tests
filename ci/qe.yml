@@ -17,7 +17,7 @@ stages:
     - source rfm_venv/bin/activate
     - pip install reframe-hpc
     - reframe --version
-    - git clone -b alpsjg https://github.com/jgphpc/cscs-reframe-tests.git cscs-reframe-tests.git
+    - git clone -b alpsjg https://github.com/eth-cscs/cscs-reframe-tests.git cscs-reframe-tests.git
     - reframe -C cscs-reframe-tests.git/config/cscs.py
       --performance-report
       --system=hohgant:nvgpu
