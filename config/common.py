@@ -57,12 +57,19 @@ site_configuration = {
                 },
                 {
                     'type': 'httpjson',
-                    'url': 'http://httpjson-server:12345/rfm',
+                    'url': 'http://log.cscs.ch:31311/reframe',
                     'level': 'info',
                     'extras': {
-                        'facility': 'reframe',
+                        # 'facility': 'reframe',
+                        'facility': 'logs-reframe.telemetry-alps',
                         'data-version': '1.0',
                     },
+# https://reframe-hpc.readthedocs.io/en/stable/config_reference.html#the-httpjson-log-handler
+# 'data_stream': {
+# 'type' :'logs',
+# 'dataset' :'reframe.telemetry',
+# 'namespace': 'alps'
+# }
                     'ignore_keys': ['check_perfvalues']
                 }
             ]
