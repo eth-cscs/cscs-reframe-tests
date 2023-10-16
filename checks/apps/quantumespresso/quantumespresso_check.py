@@ -93,7 +93,7 @@ class QuantumESPRESSOBase(rfm.RunOnlyRegressionTest):
 
     @performance_function('')
     def jid(self):
-        return sn.extractsingle(r'_SLURM_JOBID=(\d+)', self.stdout, 1, int)
+        return sn.extractsingle(r' SLURM_JOBID=(\d+)', self.stdout, 1, int)
 
     @run_before('performance')
     def set_performance_reference(self):
