@@ -38,7 +38,7 @@ stages:
   variables:
     STACK_SYSTEM: hohgant
 
-.run-reframe-hohgant-a100:
+run-reframe-hohgant-a100:
   extends: .run-reframe-hohgant
   variables:
     SLURM_PARTITION: nvgpu
