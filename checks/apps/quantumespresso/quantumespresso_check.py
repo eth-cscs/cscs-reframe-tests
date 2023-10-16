@@ -91,6 +91,10 @@ class QuantumESPRESSOBase(rfm.RunOnlyRegressionTest):
         return sn.extractsingle(r'PWSCF\s+:\s+(?P<wtime>\S+)s CPU',
                                 self.stdout, 'wtime', float)
 
+    @performance_function('')
+    def jid(self):
+        return sn.extractsingle(r'_SLURM_JOBID=(\d+)', self.stdout, 1, int)
+
     @run_before('performance')
     def set_performance_reference(self):
         self.reference = {
@@ -108,6 +112,7 @@ class UENV_QuantumESPRESSOCheck(QuantumESPRESSOBase,
     use_multithreading = False
     test_name = parameter(['Au-surf'])
     tags = {'production', 'uenv'}
+    prerun_cmds = ['echo "# SLURM_JOBID=$SLURM_JOBID"']
 
 
 @rfm.simple_test
