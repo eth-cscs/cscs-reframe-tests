@@ -17,7 +17,8 @@ stages:
     - source rfm_venv/bin/activate
     - pip install reframe-hpc
     - reframe --version
-    - git clone -b alpsjg https://github.com/eth-cscs/cscs-reframe-tests.git cscs-reframe-tests.git
+    - git checkout alpsjg
+    # - git clone -b alpsjg https://github.com/eth-cscs/cscs-reframe-tests.git cscs-reframe-tests.git
     - reframe -C cscs-reframe-tests.git/config/cscs.py
       --performance-report
       --system=hohgant:nvgpu
@@ -43,7 +44,7 @@ run-reframe-hohgant-a100:
   variables:
     SLURM_PARTITION: nvgpu
     UENV: '/scratch/e1000/piccinal/qe/jfrog/store.squashfs'
-    RFM_TEST: 'cscs-reframe-tests.gitchecks/apps/quantumespresso/quantumespresso_check.py'
+    RFM_TEST: '/cscs-reframe-tests.gitchecks/apps/quantumespresso/quantumespresso_check.py'
     RFM_HTTPJSON_URL: 'http://log.cscs.ch:31311/reframe' 
     # ~/R -c checks/apps/quantumespresso/quantumespresso_check.py --system hohgant:nvgpu -r --skip-prgenv-check -n UENV
 
