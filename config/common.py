@@ -65,7 +65,7 @@ site_configuration = {
                         'facility': 'logs-reframe.telemetry-alps',
                         'data-version': '1.0',
                     },
-                    'debug': true,
+                    'debug': 'true',
 # https://reframe-hpc.readthedocs.io/en/stable/config_reference.html#the-httpjson-log-handler
 # 'data_stream': {
 # 'type' :'logs',
