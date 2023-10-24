@@ -10,53 +10,10 @@ import reframe as rfm
 import reframe.utility.sanity as sn
 
 
-class fetch_ior_benchmarks(rfm.RunOnlyRegressionTest):
-    descr = 'Fetch IOR benchmarks'
-    version = variable(str, value='4.0.0')
-    executable = 'wget'
-    executable_opts = [
-        f'https://github.com/hpc/ior/releases/download/{version}/ior-{version}.tar.gz'  # noqa: E501
-    ]
-
-    @sanity_function
-    def validate_download(self):
-        return sn.assert_eq(self.job.exitcode, 0)
-
-
-class build_ior_benchmarks(rfm.CompileOnlyRegressionTest):
-    descr = 'Build IOR benchmarks'
-    build_system = 'Autotools'
-    build_prefix = variable(str)
-    ior_benchmarks = fixture(fetch_ior_benchmarks, scope='session')
-
-    # Build on the remote system for consistency
-    build_locally = False 
-
-    @run_after('init')
-    def load_cray_module(self):
-        if self.current_system.name in ['eiger', 'pilatus']:
-            self.modules = ['cray']
-
-    @run_before('compile')
-    def prepare_build(self):
-        tarball = f'ior-{self.ior_benchmarks.version}.tar.gz'
-        self.build_prefix = tarball[:-7]
-        fullpath = os.path.join(self.ior_benchmarks.stagedir, tarball)
-        self.prebuild_cmds = [
-            f'cp {fullpath} {self.stagedir}',
-            f'tar xzf {tarball}',
-            f'cd {self.build_prefix}'
-        ]
-
-    # FIXME this will not be needed in a ReFrame release including:
-    # https://github.com/reframe-hpc/reframe/pull/3157
-    @sanity_function
-    def validate_build(self):
-        return True
-
-
-class IorCheck(rfm.RunOnlyRegressionTest):
+class IorCheck(rfm.RegressionTest):
     base_dir = parameter(['/capstor/scratch/cscs',
+                          '/scratch/snx3000tds',
+                          '/scratch/snx3000',
                           '/scratch/shared/fulen',
                           '/users'])
     username = getpass.getuser()
