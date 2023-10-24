@@ -11,7 +11,7 @@ import reframe.utility.sanity as sn
 
 
 class IorCheck(rfm.RegressionTest):
-    base_dir = parameter(['/scratch/e1000',
+    base_dir = parameter(['/capstor/scratch/cscs',
                           '/scratch/snx3000tds',
                           '/scratch/snx3000',
                           '/scratch/shared/fulen',
@@ -32,7 +32,7 @@ class IorCheck(rfm.RegressionTest):
     @run_after('init')
     def set_fs_information(self):
         self.fs = {
-            '/scratch/e1000': {
+            '/capstor/scratch/cscs': {
                 'valid_systems': ['eiger:mc', 'pilatus:mc'],
                 'eiger': {
                     'num_tasks': 10,
