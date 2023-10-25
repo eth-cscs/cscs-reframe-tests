@@ -11,7 +11,7 @@ import reframe.utility.sanity as sn
 
 
 class IorCheck(rfm.RegressionTest):
-    base_dir = parameter(['/capstor/scratch/cscs',
+    base_dir = parameter(['${SCRATCH:-/captor/scratch/cscs}',
                           '/scratch/snx3000tds',
                           '/scratch/snx3000',
                           '/scratch/shared/fulen',
