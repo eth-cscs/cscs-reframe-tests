@@ -1,4 +1,4 @@
-# Copyright 2016-2022 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright 2016-2023 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -11,7 +11,7 @@ import reframe.utility.sanity as sn
 
 
 class IorCheck(rfm.RegressionTest):
-    base_dir = parameter(['/scratch/e1000',
+    base_dir = parameter(['${SCRATCH:-/captor/scratch/cscs}',
                           '/scratch/snx3000tds',
                           '/scratch/snx3000',
                           '/scratch/shared/fulen',
@@ -32,7 +32,7 @@ class IorCheck(rfm.RegressionTest):
     @run_after('init')
     def set_fs_information(self):
         self.fs = {
-            '/scratch/e1000': {
+            ''${SCRATCH:-/captor/scratch/cscs}': {
                 'valid_systems': ['eiger:mc', 'pilatus:mc'],
                 'eiger': {
                     'num_tasks': 10,
