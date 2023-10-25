@@ -33,7 +33,7 @@ class IorCheck(rfm.RegressionTest):
     @run_after('init')
     def set_fs_information(self):
         self.fs = {
-            '/capstor/scratch/cscs': {
+            ''${SCRATCH:-/captor/scratch/cscs}': {
                 'valid_systems': ['eiger:mc', 'pilatus:mc'],
                 'eiger': {
                     'num_tasks': 10,
