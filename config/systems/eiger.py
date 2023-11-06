@@ -12,7 +12,7 @@ import copy
 
 base_config = {
     'modules_system': 'lmod',
-    'resourcesdir': '/apps/common/UES/reframe/resources',
+    'resourcesdir': '/capstor/apps/cscs/common/regression/resources',
     'partitions': [
         {
             'name': 'login',
