@@ -54,6 +54,10 @@ class CPE_NVMLCheck(NvmlBase):
         self.build_system.cflags = ['-I $CUDATOOLKIT_HOME/include']
         self.build_system.ldflags = ['-L $CUDATOOLKIT_HOME/lib64 -lnvidia-ml']
 
+        # Address the __gxx_personality_v0 symbol issue in libmpi_gtl_cuda
+        if 'PrgEnv-gnu' == self.current_environ.name:
+            self.build_system.ldflags += ['-lstdc++']
+
 
 @rfm.simple_test
 class UENV_NVMLCheck(NvmlBase):
