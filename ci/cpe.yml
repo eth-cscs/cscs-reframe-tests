@@ -7,7 +7,7 @@ stages:
 run rfm_test:
   extends: .container-runner-hohgant
   stage: run
-  tags: ['hohgant-login-baremetal']
+  tags: ['clariden-login-baremetal']
   variables:
     GIT_STRATEGY: fetch
   script:
@@ -16,7 +16,7 @@ run rfm_test:
     - source venv_reframe_cpe/bin/activate
     - pip install reframe-hpc
     - reframe -C config/cscs.py
-      --system hohgant
+      --system clariden 
       -c checks/prgenv/cuda/nvml_check.py
       -c checks/prgenv/cuda-fortran/cuda_fortran_check.py
       -c checks/prgenv/mpi.py
