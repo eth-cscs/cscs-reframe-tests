@@ -11,8 +11,23 @@ from extra_launcher_options import ExtraLauncherOptionsMixin
 from sarus_extra_launcher_options import SarusExtraLauncherOptionsMixin
 from cuda_visible_devices_all import CudaVisibleDevicesAllMixin
 
-class sirius_scf_base_test(rfm.RunOnlyRegressionTest):
-    test_folder = parameter(['Si63Ge'])
+sirius_tests = {
+    # R:total number of MPI ranks, T:threads per rank, P:walltime
+    'Si63Ge': {
+        'zen2': {
+            # zen2 cpu nodes: 2sockets, 8 numa, 16c/numa = 128c (no MT)
+            'performance_reference': [{'R': 32, 'T': 4, 'P': 0}]
+        },
+        'zen3-4x-gpu-sm_80': {
+            # A100 nodes: 1socket, 4 numa, 16c/numa = 64c (no MT)
+            'performance_reference': [{'R': 4, 'T': 16, 'P': 0}]
+        }
+    }
+}
+
+class SIRIUSBase(rfm.RunOnlyRegressionTest):
+    test_name = parameter(['Si63Ge'])
+    descr = 'Sirius SCF check'
     executable = 'sirius.scf'
     strict_check = False
     use_multithreading = False
@@ -21,27 +36,43 @@ class sirius_scf_base_test(rfm.RunOnlyRegressionTest):
     output_file = 'output.json'
     executable_opts = [f'--output={output_file}']
 
-    @run_after('init')
-    def setup_test(self):
-        self.descr = 'Sirius SCF check'
-        #self.env_vars = {
-        #    'MPICH_OFI_STARTUP_CONNECT': 1,
-        #    'OMP_PLACES': 'cores',
-        #    'OMP_PROC_BIND': 'close'
-        #}
+    @run_before('run')
+    def set_parallel_resources(self):
+        self.skip_if_no_procinfo()
+        processor_info = self.current_partition.processor
+        self.node_label = processor_info.arch
+        if self.current_partition.devices:
+            # device label, for example 4x-gpu-sm_80
+            dev_label = ''
+            for e in self.current_partition.devices:
+                dev_label = f"-{dev_label}{e.num_devices}x-{e.type}-{e.arch}"
 
-        if self.current_system.name in {'hohgant'}:
-            self.num_tasks = 4
-            self.num_tasks_per_node = 4
-            self.num_cpus_per_task = 16
-            self.num_tasks_per_core = 1
-            self.env_vars = {
-                'OMP_NUM_THREADS': str(self.num_cpus_per_task)
-            }
+            self.node_label = self.node_label + dev_label
+
+        # number of physical cores
+        num_cores = int(
+            processor_info.num_cpus / processor_info.num_cpus_per_core)
+
+        self.ref_dict = (
+            sirius_tests[self.test_name][self.node_label]
+        )
+        # total number of ranks
+        self.num_tasks = self.ref_dict['performance_reference'][0]['R']
+        # threads / rank
+        T = self.ref_dict['performance_reference'][0]['T']
+        self.num_cpus_per_task = T
+        # ranks per node
+        self.num_tasks_per_node = int(num_cores / T)
+        if not self.env_vars:
+            self.env_vars = {}
+        self.env_vars['OMP_NUM_THREADS'] = '$SLURM_CPUS_PER_TASK'
+        self.env_vars['OMP_PLACES'] = 'cores'
+        self.env_vars['OMP_PROC_BIND'] = 'close'
+
 
     @run_after('setup')
     def set_test_dir(self):
-        self.sourcesdir = self.test_folder
+        self.sourcesdir = self.test_name
 
     @run_before('sanity')
     def load_json_data(self):
@@ -108,7 +139,7 @@ class sirius_scf_base_test(rfm.RunOnlyRegressionTest):
 
 
 @rfm.simple_test
-class SARUS_sirius_scf_check(sirius_scf_base_test,
+class SARUS_sirius_scf_check(SIRIUSBase,
                              SarusExtraLauncherOptionsMixin,
                              CudaVisibleDevicesAllMixin):
     container_image = variable(str, type(None), value=None)
@@ -132,7 +163,7 @@ class SARUS_sirius_scf_check(sirius_scf_base_test,
 
 
 @rfm.simple_test
-class UENV_sirius_scf_check(sirius_scf_base_test,
+class UENV_sirius_scf_check(SIRIUSBase,
                             ExtraLauncherOptionsMixin,
                             CudaVisibleDevicesAllMixin):
     valid_systems = ['+uenv -amdgpu']
