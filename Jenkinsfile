@@ -2,7 +2,7 @@
 
 def dirPrefix = 'ci-cscs-reframe-tests'
 def loginBash = '#!/bin/bash -l'
-def machinesList = ['hohgant']
+def machinesList = []
 def machinesToRun = machinesList
 def runTests = true
 def uniqueID
