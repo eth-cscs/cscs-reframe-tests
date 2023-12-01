@@ -51,7 +51,7 @@ environ_names =  ([f'{image_name}_{e}'for e in environs] or
 
 partitions = [
     {
-        'name': f'nvgpu',
+        'name': 'nvgpu',
         'scheduler': 'slurm',
         'time_limit': '10m',
         'environs': environ_names,
@@ -89,7 +89,7 @@ partitions = [
         'launcher': 'srun'
     },
     {
-        'name': f'amdgpu',
+        'name': 'amdgpu',
         'scheduler': 'slurm',
         'time_limit': '10m',
         'environs': environ_names,
@@ -112,7 +112,7 @@ partitions = [
         'launcher': 'srun'
     },
     {
-        'name': f'cpu',
+        'name': 'cpu',
         'scheduler': 'slurm',
         'time_limit': '10m',
         'environs': environ_names,
@@ -187,7 +187,7 @@ site_configuration = {
     'environments': actual_environs,
     'general': [
         {
-             'resolve_module_conflicts': False,
+             # 'resolve_module_conflicts': False,
              'target_systems': ['clariden']
         }
     ]
