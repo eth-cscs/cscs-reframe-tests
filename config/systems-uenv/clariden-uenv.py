@@ -34,7 +34,7 @@ if not image_path.exists():
 image_name = image_path.stem
 
 # Options for the Slurm plugin to mount the Squashfs uenv image
-uenv_access = [f'--uenv={uenv_file}:{image_mount}']
+uenv_access = [f'--uenv-file={uenv_file} --uenv-mount={image_mount}']
 
 try:
     rfm_meta = image_path.parent / f'{image_name}.yaml'
@@ -51,7 +51,7 @@ environ_names =  ([f'{image_name}_{e}'for e in environs] or
 
 partitions = [
     {
-        'name': f'nvgpu',
+        'name': 'nvgpu',
         'scheduler': 'slurm',
         'time_limit': '10m',
         'environs': environ_names,
@@ -89,7 +89,7 @@ partitions = [
         'launcher': 'srun'
     },
     {
-        'name': f'amdgpu',
+        'name': 'amdgpu',
         'scheduler': 'slurm',
         'time_limit': '10m',
         'environs': environ_names,
@@ -112,7 +112,7 @@ partitions = [
         'launcher': 'srun'
     },
     {
-        'name': f'cpu',
+        'name': 'cpu',
         'scheduler': 'slurm',
         'time_limit': '10m',
         'environs': environ_names,
@@ -161,7 +161,7 @@ site_configuration = {
     'systems': [
         {
             'name': 'clariden',
-            'descr': 'Clariden vcluster with uenv',
+            'descr': 'clariden vcluster with uenv',
             'hostnames': ['clariden'],
             'resourcesdir': '/apps/common/UES/reframe/resources/',
             'modules_system': 'nomod',
@@ -187,7 +187,7 @@ site_configuration = {
     'environments': actual_environs,
     'general': [
         {
-             'resolve_module_conflicts': False,
+             # 'resolve_module_conflicts': False,
              'target_systems': ['clariden']
         }
     ]
