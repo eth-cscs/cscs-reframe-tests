@@ -1,0 +1,39 @@
+name: "Pull request"
+description: Add/Update a test
+labels: [test]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: Describe the purpose of this pull request.<br>Add a link to the jira issue if it exists.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: |
+        Share the command line used to run the test, including full path to input files/images and/or environment variables
+      placeholder: |
+        ```console
+        $ reframe -r ...
+
+        ```
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: General information
+      options:
+        - label: My pull request originates from a branch in my `fork` of https://github.com/eth-cscs/cscs-reframe-tests
+          required: true
+        - label: I split different tests into different pull requests (make the reviewer(s) life easier please)
+          required: true
+        - label: My code explicitely mentions the `origin|license|version` of external source code
+          required: true
+        - label: I applied `coding conventions` to my code using for example [pycodestyle](https://github.com/PyCQA/pycodestyle) or [black](https://github.com/psf/black)
+          required: true
+
+Thank you for taking the time to contribute to `cscs-reframe-tests` !
