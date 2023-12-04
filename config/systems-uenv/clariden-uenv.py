@@ -34,7 +34,7 @@ if not image_path.exists():
 image_name = image_path.stem
 
 # Options for the Slurm plugin to mount the Squashfs uenv image
-uenv_access = [f'--uenv={uenv_file}:{image_mount}']
+uenv_access = [f'--uenv-file={uenv_file} --uenv-mount={image_mount}']
 
 try:
     rfm_meta = image_path.parent / f'{image_name}.yaml'
@@ -141,7 +141,7 @@ if image_environments:
 
 for k, v in image_environments.items():
     env = {
-        'target_systems': ['hohgant']
+        'target_systems': ['clariden']
     }
     env.update(v)
     activation_script = v['activation']
@@ -160,9 +160,9 @@ for k, v in image_environments.items():
 site_configuration = {
     'systems': [
         {
-            'name': 'hohgant',
-            'descr': 'Hohgant vcluster with uenv',
-            'hostnames': ['hohgant'],
+            'name': 'clariden',
+            'descr': 'clariden vcluster with uenv',
+            'hostnames': ['clariden'],
             'resourcesdir': '/apps/common/UES/reframe/resources/',
             'modules_system': 'nomod',
             'partitions': partitions
@@ -181,14 +181,14 @@ site_configuration = {
                 '--tag=production',
                 '--timestamp=%F_%H-%M-%S'
             ],
-            'target_systems': ['hohgant'],
+            'target_systems': ['clariden'],
         }
     ],
     'environments': actual_environs,
     'general': [
         {
              # 'resolve_module_conflicts': False,
-             'target_systems': ['hohgant']
+             'target_systems': ['clariden']
         }
     ]
 }
