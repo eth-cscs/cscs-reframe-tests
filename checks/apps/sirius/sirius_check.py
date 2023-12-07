@@ -145,7 +145,6 @@ class SARUS_sirius_scf_check(SIRIUSBase,
     container_image = variable(str, type(None), value=None)
     valid_systems = ['+sarus']
     valid_prog_environs = ['builtin']
-    tags = {'parallel_k'}
 
     @run_after('setup')
     def setup_container_platform(self):
@@ -168,4 +167,3 @@ class UENV_sirius_scf_check(SIRIUSBase,
                             CudaVisibleDevicesAllMixin):
     valid_systems = ['+uenv -amdgpu']
     valid_prog_environs = ['+sirius +mpi +openmp']
-    tags = {'parallel_k'}
