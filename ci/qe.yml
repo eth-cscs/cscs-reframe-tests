@@ -11,8 +11,7 @@ stages:
     SLURM_TIMELIMIT: 5
   variables:
     GIT_STRATEGY: fetch
-  script:
-    - echo UENV=$UENV
+  script:    
     - rm -fr rfm_venv
     - python3 -m venv rfm_venv
     - source rfm_venv/bin/activate
@@ -21,6 +20,9 @@ stages:
     # - git checkout alpsjg
     - git log --pretty=oneline -n1
     # - git clone -b alpsjg https://github.com/eth-cscs/cscs-reframe-tests.git cscs-reframe-tests.git
+    - ls -r config/*
+    - echo UENV=$UENV
+    - echo RFM_TEST=$RFM_TEST
     - reframe -C config/cscs.py
       --performance-report
       --system=clariden:nvgpu
