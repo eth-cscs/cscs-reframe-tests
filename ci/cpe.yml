@@ -7,7 +7,7 @@ stages:
 run rfm_test:
   extends: .container-runner-hohgant
   stage: run
-  tags: ['hohgant-login-baremetal']
+  tags: ['clariden-login-baremetal']
   variables:
     GIT_STRATEGY: fetch
   script:
@@ -15,19 +15,17 @@ run rfm_test:
     - python3 -m venv venv_reframe_cpe
     - source venv_reframe_cpe/bin/activate
     - pip install reframe-hpc
-    - reframe -C config/cscs.py
-      --system hohgant
-      -c checks/prgenv/cuda/nvml_check.py
-      -c checks/prgenv/cuda-fortran/cuda_fortran_check.py
-      -c checks/prgenv/mpi.py
-      -c checks/prgenv/openacc_checks.py
-      -c checks/prgenv/helloworld.py
-      -c checks/libraries/io/hdf5.py
-      -c checks/libraries/io/netcdf.py
-      -c checks/libraries/io/pnetcdf.py
-      -c checks/containers/sarus
-      -c checks/microbenchmarks/cpu/alloc_speed/alloc_speed.py
-      --report-junit=reportcpe.xml -r
+    - | 
+      changedtests=( $(git diff origin/alps...HEAD --name-only --oneline --no-merges | grep -e '^checks/.*\.py') )
+
+      if [ ${#changedtests[@]} -ne 0 ]; then
+          changedtests_path=""
+          for check in ${changedtests[@]}; do
+              changedtests_path="${changedchecks_path} -c ${check}"
+          done
+
+          reframe -C config/cscs.py ${changedtests_path} --report-junit=reportcpe.xml -r
+      fi
     - deactivate
   artifacts:
     when: always
@@ -35,11 +33,3 @@ run rfm_test:
       - reportcpe.xml
     reports:
       junit: reportcpe.xml
-
-# TODO: add
-#       -c checks/containers/sarus/check_osu_benchmarks.py \
-#       -c checks/containers/sarus/check_pull_command.py \
-#       -c checks/containers/sarus/check_cuda_nbody.py \
-#       -c checks/containers/sarus/check_osu_benchmarks.py \
-#ok     -c checks/containers/sarus/check_pyfr.py \
-#ok     -c checks/containers/sarus/check_root_squash_bind_mount.py \
