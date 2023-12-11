@@ -26,7 +26,7 @@ site_configuration = {
                         'PrgEnv-nvidia'
                     ],
                     'features': [
-                        'enroot'
+                        'enroot', 'scontrol'
                     ],
                     'descr': 'Login nodes',
                     'max_jobs': 4,
@@ -59,7 +59,7 @@ site_configuration = {
                         },
                     ],
                     'features': [
-                        'gpu', 'nvgpu', 'remote', 'enroot', 'pyxis'
+                        'gpu', 'nvgpu', 'remote', 'enroot', 'pyxis', 'buildah'
                     ],
                     'devices': [
                         {
@@ -95,7 +95,7 @@ site_configuration = {
                         },
                     ],
                     'features': [
-                        'gpu', 'amdgpu', 'remote', 'enroot', 'pyxis'
+                        'gpu', 'amdgpu', 'remote', 'enroot', 'pyxis', 'buildah'
                     ],
                     'launcher': 'srun'
                 },
