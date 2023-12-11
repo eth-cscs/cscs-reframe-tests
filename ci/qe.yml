@@ -18,10 +18,9 @@ stages:
     - pip install reframe-hpc
     - reframe --version
     # - git checkout alpsjg
-    - git log --pretty=oneline -n1
+    - git log --pretty=oneline -n2
     # - git clone -b alpsjg https://github.com/eth-cscs/cscs-reframe-tests.git cscs-reframe-tests.git
-    - git log --pretty=oneline -n 10
-    - ls -r config/*
+    # - ls -r config/*
     - echo UENV=$UENV
     - echo RFM_TEST=$RFM_TEST
     - reframe -C config/cscs.py

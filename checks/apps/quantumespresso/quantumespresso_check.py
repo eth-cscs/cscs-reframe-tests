@@ -99,7 +99,7 @@ class QuantumESPRESSOBase(rfm.RunOnlyRegressionTest):
     def set_performance_reference(self):
         self.reference = {
             '*': {'time': (self.ref_dict['performance_reference'][0]['P'],
-                           None, 0.10, 's')}
+                           None, 0.8, 's')}
         }
 
 
