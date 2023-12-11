@@ -111,29 +111,6 @@ partitions = [
         'features': ['gpu', 'amdgpu', 'remote', 'uenv'],
         'launcher': 'srun'
     },
-    {
-        'name': 'cpu',
-        'scheduler': 'slurm',
-        'time_limit': '10m',
-        'environs': environ_names,
-        'max_jobs': 100,
-        'extras': {
-            'cn_memory': 500,
-        },
-        'access': ['-pcpu'] + uenv_access ,
-        'resources': [
-            {
-                'name': 'switches',
-                'options': ['--switches={num_switches}']
-            },
-            {
-                'name': 'memory',
-                'options': ['--mem={mem_per_node}']
-            },
-        ],
-        'features': ['remote', 'uenv'],
-        'launcher': 'srun'
-    }
 ]
 
 if image_environments:
