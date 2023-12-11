@@ -23,6 +23,7 @@ stages:
     # - ls -r config/*
     - echo UENV=$UENV
     - echo RFM_TEST=$RFM_TEST
+    - echo RFM_HTTPJSON_URL=$RFM_HTTPJSON_URL
     - reframe -C config/cscs.py
       --performance-report
       --system=clariden:nvgpu
@@ -49,7 +50,7 @@ run-reframe-clariden-a100:
     SLURM_PARTITION: nvgpu
     UENV: '/iopsstor/scratch/cscs/piccinal/qe/jfrog/store.squashfs'
     RFM_TEST: 'checks/apps/quantumespresso/quantumespresso_check.py'
+    RFM_HTTPJSON_URL: 'http://log.cscs.ch:31311/reframe'
     # https://jfrog.svc.cscs.ch/artifactory/alps-uenv/build/1019353665/hohgant/quantumespresso-a100/store.squashfs
     # /user-environment/linux-sles15-zen3/nvhpc-22.11/quantum-espresso-7.1-vrlplseqnykcxh6jrppbkpknybxkpcvr/
-    # RFM_HTTPJSON_URL: 'http://log.cscs.ch:31311/reframe'
     # UENV=... ~/R -c checks/apps/quantumespresso/quantumespresso_check.py --system clariden:nvgpu -r --skip-prgenv-check -n UENV
