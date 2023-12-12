@@ -2,7 +2,7 @@
   title = ' DEISA pw benchmark ',
   calculation = 'scf',
   restart_mode = 'from_scratch',
-  max_seconds = 0,
+  max_seconds = 2,
   prefix = 'ausurf',
   pseudo_dir = './',
   outdir = './out/',
