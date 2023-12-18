@@ -9,8 +9,14 @@ import reframe.utility.sanity as sn
 
 @rfm.simple_test
 class SlurmGPUGresTest(rfm.RunOnlyRegressionTest):
-    '''Ensure that the Slurm GRES (Gereric REsource Scheduling) of the number 
+    '''Ensure that the Slurm GRES (Gereric REsource Scheduling) of the number
        of gpus is correctly set on all the nodes of each partition.
+
+       For the current partition, the test performs the following steps:
+       1) count the number of nodes (node_count)
+       2) count the number of nodes having Gres=gpu:N (gres_count) where
+          N=num_devices from the configuration
+       3) ensure that 1) and 2) match
     '''
 
     valid_systems = ['+scontrol +gpu']
@@ -30,7 +36,8 @@ class SlurmGPUGresTest(rfm.RunOnlyRegressionTest):
         node_count = sn.count(sn.extractall(part_re, self.stdout))
         gres_count = sn.count(
             sn.extractall(rf'{gres_re}.*{part_re}', self.stdout))
-        return sn.assert_eq(node_count, gres_count,
+        return sn.assert_eq(
+            node_count, gres_count,
             f'{gres_count}/{node_count} of '
             f'{partition_name} nodes satisfy Gres={gres_gpu}'
         )
