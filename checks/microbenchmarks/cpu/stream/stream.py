@@ -48,13 +48,14 @@ class StreamTest(rfm.RegressionTest):
         self.skip_if_no_procinfo()
 
         # Sort the caches by type alphabetically (L1 < L2 < L3 ...) and get
-        # the total cache size of the last-level cache
+        # the total cache size of the last-level cache, for example:
+        # last_level_cache = {'type': 'L3', 'size': 33554432, ...}
         caches = self.current_partition.processor.topology['caches']
         last_level_cache = max(caches, key=lambda c: c['type'])
-        cache_size_bytes = (int(last_level_cache['size']) * 
+        cache_size_bytes = (int(last_level_cache['size']) *
                             len(last_level_cache['cpusets']))
 
-        # Sizes of each array must be at least 4x the size of the sum of all 
+        # Sizes of each array must be at least 4x the size of the sum of all
         # the last-level caches, (double precision floating points are 8 bytes)
         array_size = 4 * cache_size_bytes // 8
         self.build_system.cppflags = [f'-DSTREAM_ARRAY_SIZE={array_size}']
