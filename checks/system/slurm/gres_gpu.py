@@ -15,6 +15,7 @@ class SlurmGPUGresTest(rfm.RunOnlyRegressionTest):
 
     valid_systems = ['+scontrol +gpu']
     valid_prog_environs = ['builtin']
+    sourcesdir = None
     num_tasks_per_node = 1
     executable = 'scontrol'
     executable_opts = ['show', 'nodes', '--oneliner']
