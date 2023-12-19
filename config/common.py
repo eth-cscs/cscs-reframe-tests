@@ -61,8 +61,8 @@ site_configuration = {
                     'level': 'info',
                     'extras': {
                         'data_stream': {
-                            'type' :'logs-performance',
-                            'dataset' :'reframe',
+                            'type' :'logs',
+                            'dataset' :'performance.reframe',
                             'namespace': 'alps'
                         },
                     },
