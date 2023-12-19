@@ -30,6 +30,9 @@ class StreamTest(rfm.RegressionTest):
         'OMP_PLACES': 'cores',
         'OMP_PROC_BIND': 'spread'
     }
+    stream_bw_reference = {
+        'zen3': (122000., -0.05, 0.05, 'MB/s')
+    }
 
     @sanity_function
     def assert_validation(self):
@@ -69,3 +72,13 @@ class StreamTest(rfm.RegressionTest):
 
         # This is typically needed for large array sizes
         self.build_system.cflags += ['-mcmodel=medium']
+
+    @run_before('performance')
+    def set_reference(self):
+        proc = self.current_partition.processor
+        try:
+            ref = self.stream_bw_reference[proc.arch]
+        except KeyError:
+            return
+        else:
+            self.reference = {'*': {'triad': ref}}
