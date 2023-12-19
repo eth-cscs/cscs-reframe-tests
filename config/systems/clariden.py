@@ -9,9 +9,9 @@
 site_configuration = {
     'systems': [
         {
-            'name': 'hohgant',
-            'descr': 'Hohgant vcluster',
-            'hostnames': ['hohgant'],
+            'name': 'clariden',
+            'descr': 'Clariden vcluster',
+            'hostnames': ['clariden'],
             'modules_system': 'lmod',
             'partitions': [
                 {
@@ -24,6 +24,9 @@ site_configuration = {
                         'PrgEnv-gnu',
                         'PrgEnv-nvhpc',
                         'PrgEnv-nvidia'
+                    ],
+                    'features': [
+                        'enroot'
                     ],
                     'descr': 'Login nodes',
                     'max_jobs': 4,
@@ -39,14 +42,6 @@ site_configuration = {
                         'PrgEnv-gnu',
                         'PrgEnv-nvhpc',
                         'PrgEnv-nvidia'
-                    ],
-                    'container_platforms': [
-                        {
-                            'type': 'Sarus',
-                        },
-                        {
-                            'type': 'Singularity',
-                        }
                     ],
                     'max_jobs': 100,
                     'extras': {
@@ -64,7 +59,7 @@ site_configuration = {
                         },
                     ],
                     'features': [
-                        'gpu', 'nvgpu', 'remote', 'sarus', 'singularity'
+                        'gpu', 'nvgpu', 'remote', 'enroot', 'pyxis'
                     ],
                     'devices': [
                         {
@@ -84,14 +79,6 @@ site_configuration = {
                         'PrgEnv-cray',
                         'PrgEnv-gnu'
                     ],
-                    'container_platforms': [
-                        {
-                            'type': 'Sarus',
-                        },
-                        {
-                            'type': 'Singularity',
-                        }
-                    ],
                     'max_jobs': 100,
                     'extras': {
                         'cn_memory': 500,
@@ -108,54 +95,17 @@ site_configuration = {
                         },
                     ],
                     'features': [
-                        'gpu', 'amdgpu', 'remote', 'sarus', 'singularity',
+                        'gpu', 'amdgpu', 'remote', 'enroot', 'pyxis'
                     ],
                     'launcher': 'srun'
                 },
-                {
-                    'name': 'cpu',
-                    'scheduler': 'slurm',
-                    'time_limit': '10m',
-                    'environs': [
-                        'builtin',
-                        'PrgEnv-cray',
-                        'PrgEnv-gnu',
-                        'PrgEnv-nvhpc',
-                        'PrgEnv-nvidia'
-                    ],
-                    'container_platforms': [
-                        {
-                            'type': 'Sarus',
-                        },
-                        {
-                            'type': 'Singularity',
-                        }
-                    ],
-                    'max_jobs': 100,
-                    'extras': {
-                        'cn_memory': 500,
-                    },
-                    'access': ['-pcpu'],
-                    'resources': [
-                        {
-                            'name': 'switches',
-                            'options': ['--switches={num_switches}']
-                        },
-                        {
-                            'name': 'memory',
-                            'options': ['--mem={mem_per_node}']
-                        },
-                    ],
-                    'features': ['remote', 'sarus', 'singularity'],
-                    'launcher': 'srun'
-                }
             ]
         },
     ],
     'environments': [
         {
             'name': 'PrgEnv-cray',
-            'target_systems': ['hohgant'],
+            'target_systems': ['clariden'],
             'modules': ['cray', 'PrgEnv-cray'],
             'features': ['serial', 'openmp', 'mpi', 'cuda', 'openacc', 'hdf5',
                          'netcdf-hdf5parallel', 'pnetcdf', 'openmp', 'opencl'],
@@ -166,7 +116,7 @@ site_configuration = {
         },
         {
             'name': 'PrgEnv-gnu',
-            'target_systems': ['hohgant'],
+            'target_systems': ['clariden'],
             'modules': ['cray', 'PrgEnv-gnu'],
             'features': ['serial', 'openmp', 'mpi', 'cuda', 'alloc_speed',
                          'hdf5', 'netcdf-hdf5parallel', 'pnetcdf', 'openmp'],
@@ -176,7 +126,7 @@ site_configuration = {
         },
         {
             'name': 'PrgEnv-nvhpc',
-            'target_systems': ['hohgant'],
+            'target_systems': ['clariden'],
             'modules': ['cray', 'PrgEnv-nvhpc'],
             'features': ['serial', 'openmp', 'mpi', 'cuda',
                          'hdf5', 'netcdf-hdf5parallel', 'pnetcdf', 'openmp'],
@@ -187,7 +137,7 @@ site_configuration = {
         },
         {
             'name': 'PrgEnv-nvidia',
-            'target_systems': ['hohgant'],
+            'target_systems': ['clariden'],
             'modules': ['cray', 'PrgEnv-nvidia'],
             'features': ['serial', 'openmp', 'mpi', 'cuda-fortran', 'openacc',
                          'netcdf-hdf5parallel', 'pnetcdf', 'openmp', 'opencl'
@@ -212,7 +162,7 @@ site_configuration = {
                 '--tag=production',
                 '--timestamp=%F_%H-%M-%S'
             ],
-            'target_systems': ['hohgant'],
+            'target_systems': ['clariden'],
         }
     ]
 }

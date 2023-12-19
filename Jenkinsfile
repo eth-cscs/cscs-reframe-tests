@@ -2,7 +2,7 @@
 
 def dirPrefix = 'ci-cscs-reframe-tests'
 def loginBash = '#!/bin/bash -l'
-def machinesList = ['hohgant']
+def machinesList = []
 def machinesToRun = machinesList
 def runTests = true
 def uniqueID
@@ -116,8 +116,8 @@ stage('Testing') {
                     def exitStatus = sh(returnStatus: true,
                                         script: """${loginBash}
                                                    ./bootstrap.sh
-                                                   export RFM_AUTODETECT_XTHOSTNAME=1
-                                                   ./bin/reframe -C ${configFile} --exec-policy=async --save-log-files -r -J account=jenscscs --flex-alloc-nodes=2 -t 'production|benchmark' $changedTestsOption""")
+                                                   export RFM_AUTODETECT_METHODS='cat /etc/xthostname,hostname'
+                                                   ./bin/reframe -C ${configFile} --exec-policy=async --save-log-files -r -J account=jenscscs --flex-alloc-nodes=2 $changedTestsOption""")
                     sh("exit $exitStatus")
                 }
             }

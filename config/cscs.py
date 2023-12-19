@@ -10,8 +10,11 @@ import os
 from reframe.utility import import_module_from_file
 
 
+uenv = os.environ.get('UENV', None)
+systems_path = 'systems-uenv' if uenv is not None else 'systems'
+
 system_conf_files = glob.glob(
-    os.path.join(os.path.dirname(__file__), 'systems', '*.py')
+    os.path.join(os.path.dirname(__file__), systems_path, '*.py')
 )
 config_files = [
     os.path.join(os.path.dirname(__file__), 'common.py')
