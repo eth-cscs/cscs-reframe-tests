@@ -556,8 +556,8 @@ site_configuration = {
     'general': [
         {
             'resolve_module_conflicts': False,
-            # 'use_login_shell': True,
-            # 'remote_detect': True,
+            'use_login_shell': True,
+            'remote_detect': False,
             'target_systems': ['daint', 'dom'],
         }
     ]
