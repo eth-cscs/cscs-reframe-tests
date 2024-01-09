@@ -10,8 +10,9 @@ import os
 from reframe.utility import import_module_from_file
 
 
+firecrest = os.environ.get('RFM_FIRECREST', None)
 uenv = os.environ.get('UENV', None)
-systems_path = 'systems-uenv' if uenv is not None else 'systems'
+systems_path = 'systems-firecrest' if firecrest is not None else 'systems-uenv' if uenv is not None else 'systems'
 
 system_conf_files = glob.glob(
     os.path.join(os.path.dirname(__file__), systems_path, '*.py')
