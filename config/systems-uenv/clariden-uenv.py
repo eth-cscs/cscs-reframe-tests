@@ -109,6 +109,13 @@ partitions = [
             },
         ],
         'features': ['gpu', 'amdgpu', 'remote', 'uenv'],
+        'devices': [
+            {
+                'type': 'gpu',
+                'arch': 'gfx90a',
+                'num_devices': 8
+            }
+        ],
         'launcher': 'srun'
     },
 ]
