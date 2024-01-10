@@ -26,7 +26,7 @@ qe_tests = {
         'zen3-4x-gpu-sm_80': {
             # A100 nodes: 1socket, 4 numa, 16c/numa = 64c (no MT)
             'energy_reference': -11427.09017218,
-            'performance_reference': [{'R': 4, 'T': 16, 'P': 0.05}]
+            'performance_reference': [{'R': 4, 'T': 16, 'P': 2.35}]
         }
     }
 }
