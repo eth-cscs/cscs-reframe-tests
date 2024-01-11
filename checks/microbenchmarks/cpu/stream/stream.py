@@ -27,29 +27,11 @@ class StreamTest(rfm.RegressionTest):
     num_tasks = 1
     num_tasks_per_node = 1
     env_vars = {
-        'OMP_PLACES': 'threads',
+        'OMP_PLACES': 'cores',
         'OMP_PROC_BIND': 'spread'
     }
-    tags = {'production', 'craype'}
     stream_bw_reference = {
-        'PrgEnv-cray': {
-            'hohgant:nvgpu': {'triad': (488656, -0.05, None, 'MB/s')},
-            'hohgant:amdgpu': {'triad': (427082, -0.05, None, 'MB/s')},
-            'hohgant:cpu': {'triad': (2001258, -0.05, None, 'MB/s')}
-        },
-        'PrgEnv-gnu': {
-            'hohgant:nvgpu': {'triad': (541783, -0.10, None, 'MB/s')},
-            'hohgant:amdgpu': {'triad': (461546, -0.10, None, 'MB/s')},
-            'hohgant:cpu': {'triad': (1548666, -0.10, None, 'MB/s')}
-        },
-        'PrgEnv-nvhpc': {
-            'hohgant:nvgpu': {'triad': (511500, -0.05, None, 'MB/s')},
-            'hohgant:cpu': {'triad': (1791161, -0.05, None, 'MB/s')}
-        },
-        'PrgEnv-nvidia': {
-            'hohgant:nvgpu': {'triad': (477077, -0.05, None, 'MB/s')},
-            'hohgant:cpu': {'triad': (1804001, -0.05, None, 'MB/s')}
-        }
+        'zen3': (122000., -0.05, 0.05, 'MB/s')
     }
 
     @sanity_function
@@ -67,16 +49,36 @@ class StreamTest(rfm.RegressionTest):
     @run_after('setup')
     def prepare_test(self):
         self.skip_if_no_procinfo()
+
+        # Sort the caches by type alphabetically (L1 < L2 < L3 ...) and get
+        # the total cache size of the last-level cache, for example:
+        # last_level_cache = {'type': 'L3', 'size': 33554432, ...}
+        caches = self.current_partition.processor.topology['caches']
+        last_level_cache = max(caches, key=lambda c: c['type'])
+        cache_size_bytes = (int(last_level_cache['size']) *
+                            len(last_level_cache['cpusets']))
+
+        # Sizes of each array must be at least 4x the size of the sum of all
+        # the last-level caches, (double precision floating points are 8 bytes)
+        array_size = 4 * cache_size_bytes // 8
+        self.build_system.cppflags = [f'-DSTREAM_ARRAY_SIZE={array_size}']
+
         self.num_cpus_per_task = int(self.current_partition.processor.num_cores)
         self.env_vars['OMP_NUM_THREADS'] = self.num_cpus_per_task
-
         self.build_system.cflags += (
             self.current_environ.extras.get('c_openmp_flags', ['-fopenmp'])
         )
         self.build_system.cflags.append('-O3')
-        envname = self.current_environ.name
 
+        # This is typically needed for large array sizes
+        self.build_system.cflags += ['-mcmodel=medium']
+
+    @run_before('performance')
+    def set_reference(self):
+        proc = self.current_partition.processor
         try:
-            self.reference = self.stream_bw_reference[envname]
+            ref = self.stream_bw_reference[proc.arch]
         except KeyError:
-            self.reference = self.stream_bw_reference['PrgEnv-gnu']
+            return
+        else:
+            self.reference = {'*': {'triad': ref}}
