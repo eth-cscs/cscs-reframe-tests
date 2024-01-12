@@ -13,6 +13,7 @@ import sys
 import itertools
 import os
 import re
+import stat
 import sys
 import time
 
@@ -99,14 +100,27 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
         return _SlurmFirecrestJob(*args, **kwargs)
 
     def _push_artefacts(self, job):
+        def _setup_permissions(local_file_path, remote_file_path):
+            permissions = oct(os.lstat(local_file_path)[stat.ST_MODE])[-3:]
+            self.client.chmod(
+                self._system_name,
+                remote_file_path,
+                permissions
+            )
+
         def _upload(local_path, remote_path):
             f_size = os.path.getsize(local_path)
+            remote_file_path = os.path.join(
+                remote_path,
+                os.path.basename(local_path)
+            )
             if f_size <= self._max_file_size_utilities:
                 self.client.simple_upload(
                     self._system_name,
                     local_path,
                     remote_path
                 )
+                _setup_permissions(local_path, remote_file_path)
             else:
                 self.log(
                     f'File {f} is {f_size} bytes, so it may take some time...'
@@ -117,7 +131,7 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
                     remote_path
                 )
                 up_obj.finish_upload()
-                return up_obj
+                return (up_obj, local_path, remote_file_path)
 
         for dirpath, dirnames, filenames in os.walk('.'):
             for d in dirnames:
@@ -136,8 +150,7 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
                 if (last_modtime != modtime):
                     self._local_filetimestamps[local_norm_path] = modtime
                     self.log(
-                        f'Uploading file {f} in '
-                        f'{join_and_normalize(job._remotedir, dirpath)}'
+                        f'Uploading file {f} in {remote_dir_path}'
                     )
                     up = _upload(
                         local_norm_path,
@@ -149,17 +162,19 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
             sleep_time = itertools.cycle([1, 5, 10])
             while async_uploads:
                 still_uploading = []
-                for element in async_uploads:
-                    upload_status = int(element.status)
+                for up_obj, local_file_path, remote_file_path in async_uploads:
+                    upload_status = int(up_obj.status)
                     if upload_status < 114:
-                        still_uploading.append(element)
-                        self.log(f'file is still uploafing, '
+                        still_uploading.append(up_obj)
+                        self.log(f'file is still uploading, '
                                  f'status: {upload_status}')
                     elif upload_status > 114:
                         raise JobSchedulerError(
                             'could not upload file to remote staging '
                             'area'
                         )
+                    else:
+                        _setup_permissions(local_file_path, remote_file_path)
 
                 async_uploads = still_uploading
                 t = next(sleep_time)
@@ -199,7 +214,7 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
             yield directory, dirs, nondirs
 
             for item in dirs:
-                item_path = f"{directory}/{item['name']}"
+                item_path = f"{directory}/{item}"
                 yield from firecrest_walk(item_path)
 
         def _download(remote_path, local_path, f_size):
@@ -220,6 +235,30 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
                 up_obj.finish_download(local_path)
                 return up_obj
 
+        if job.name == 'rfm-detect-job':
+            # We only need the topo.json file and the job's
+            # output and error files
+            for file_name in ('rfm-detect-job.out',
+                              'rfm-detect-job.err',
+                              'topo.json'):
+
+                remote_file_path = os.path.join(
+                    job._remotedir,
+                    file_name
+                )
+                local_file_path = os.path.join(
+                    job._localdir,
+                    file_name
+                )
+                self.log(f'Downloading file {file_name} in {job._localdir}')
+                _download(
+                    remote_file_path,
+                    local_file_path,
+                    0 # these files shoult be small enough for simple_download
+                )
+
+            return
+
         for dirpath, dirnames, files in firecrest_walk(job._remotedir):
             local_dirpath = join_and_normalize(
                 job._localdir,
@@ -231,7 +270,8 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
             for d in dirnames:
                 new_dir = join_and_normalize(local_dirpath, d)
                 self.log(f'Creating local directory {new_dir}')
-                os.makedirs(new_dir)
+                if not os.path.exists(new_dir):
+                    os.makedirs(new_dir)
 
             for (f, modtime, fsize) in files:
                 norm_path = join_and_normalize(dirpath, f)
@@ -250,10 +290,16 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
 
     def submit(self, job):
         job._localdir = os.getcwd()
-        job._remotedir = os.path.join(
-            self._remotedir_prefix,
-            os.path.relpath(os.getcwd(), job._stage_prefix)
-        )
+        if job.name == 'rfm-detect-job':
+            job._remotedir = os.path.join(
+                self._remotedir_prefix,
+                os.path.basename(os.getcwd())
+            )
+        else:
+            job._remotedir = os.path.join(
+                self._remotedir_prefix,
+                os.path.relpath(os.getcwd(), job._stage_prefix)
+            )
 
         if job._remotedir not in self._cleaned_remotedirs:
             # Create clean stage directory in the remote system
@@ -349,12 +395,11 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
             job._nodespec = ','.join(m['nodelist'] for m in jobarr_info)
 
     def wait(self, job):
-        # Quickly return in case we have finished already
-        self._pull_artefacts(job)
         if self.finished(job):
             if job.is_array:
                 self._merge_files(job)
 
+            self._pull_artefacts(job)
             return
 
         intervals = itertools.cycle([1, 2, 3])
@@ -557,6 +602,8 @@ site_configuration = {
         {
             'resolve_module_conflicts': False,
             'use_login_shell': True,
+            # Autodetection with this scheduler is really slow,
+            # so it's better to disable it.
             'remote_detect': False,
             'target_systems': ['daint', 'dom'],
         }
