@@ -48,7 +48,8 @@ class HPCGHookMixin(rfm.RegressionMixin):
 @rfm.simple_test
 class HPCGCheckRef(rfm.RegressionTest, HPCGHookMixin):
     descr = 'HPCG reference benchmark'
-    valid_systems = ['daint:mc', 'daint:gpu', 'dom:gpu', 'dom:mc']
+    valid_systems = ['+remote']
+    #valid_systems = ['daint:mc', 'daint:gpu', 'dom:gpu', 'dom:mc']
     valid_prog_environs = ['PrgEnv-gnu']
     build_system = 'Make'
     sourcesdir = 'https://github.com/hpcg-benchmark/hpcg.git'
@@ -123,7 +124,8 @@ class HPCGCheckRef(rfm.RegressionTest, HPCGHookMixin):
 @rfm.simple_test
 class HPCGCheckMKL(rfm.RegressionTest, HPCGHookMixin):
     descr = 'HPCG benchmark Intel MKL implementation'
-    valid_systems = ['daint:mc', 'dom:mc', 'daint:gpu', 'dom:gpu']
+    valid_systems = ['+remote']
+    #valid_systems = ['daint:mc', 'dom:mc', 'daint:gpu', 'dom:gpu']
     valid_prog_environs = ['PrgEnv-intel']
     modules = ['craype-hugepages8M']
     build_system = 'Make'

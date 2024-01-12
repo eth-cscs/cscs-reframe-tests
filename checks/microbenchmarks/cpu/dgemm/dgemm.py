@@ -14,9 +14,10 @@ class DGEMMTest(rfm.RegressionTest):
 
     # the perf patterns are automaticaly generated inside sanity
     perf_patterns = {}
-    valid_systems = ['daint:gpu', 'daint:mc', 'dom:gpu', 'dom:mc',
-                     'arolla:cn', 'arolla:pn', 'tsa:cn', 'tsa:pn',
-                     'eiger:mc', 'pilatus:mc']
+    valid_systems = ['+remote']
+    #valid_systems = ['daint:gpu', 'daint:mc', 'dom:gpu', 'dom:mc',
+    #                 'arolla:cn', 'arolla:pn', 'tsa:cn', 'tsa:pn',
+    #                 'eiger:mc', 'pilatus:mc']
     num_tasks = 0
     use_multithreading = False
     executable_opts = ['6144', '12288', '3072']
@@ -32,15 +33,16 @@ class DGEMMTest(rfm.RegressionTest):
 
     @run_after('init')
     def setup_filtering_criteria(self):
-        # FIXME: Revise this as soon as GH #1852 is addressed
-        if self.current_system.name in ('daint', 'dom'):
-            self.valid_prog_environs = ['PrgEnv-gnu', 'PrgEnv-intel']
-        elif self.current_system.name in ('arolla', 'tsa'):
-            self.valid_prog_environs = ['PrgEnv-gnu-nompi']
-        elif self.current_system.name in ('eiger', 'pilatus'):
-            self.valid_prog_environs = ['PrgEnv-gnu']
-        else:
-            self.valid_prog_environs = []
+        self.valid_prog_environs = ['PrgEnv-gnu']
+#         # FIXME: Revise this as soon as GH #1852 is addressed
+#         if self.current_system.name in ('daint', 'dom'):
+#             self.valid_prog_environs = ['PrgEnv-gnu', 'PrgEnv-intel']
+#         elif self.current_system.name in ('arolla', 'tsa'):
+#             self.valid_prog_environs = ['PrgEnv-gnu-nompi']
+#         elif self.current_system.name in ('eiger', 'pilatus'):
+#             self.valid_prog_environs = ['PrgEnv-gnu']
+#         else:
+#             self.valid_prog_environs = []
 
     @run_before('compile')
     def set_compile_flags(self):

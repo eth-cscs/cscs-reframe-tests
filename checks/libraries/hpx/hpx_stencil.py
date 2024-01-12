@@ -11,7 +11,8 @@ import reframe.utility.sanity as sn
 class Stencil4HPXCheck(rfm.RunOnlyRegressionTest):
     def __init__(self):
         self.descr = 'HPX 1d_stencil_4 check'
-        self.valid_systems = ['daint:gpu', 'daint:mc', 'dom:gpu', 'dom:mc']
+        self.valid_systems = ['+remote']
+        #self.valid_systems = ['daint:gpu', 'daint:mc', 'dom:gpu', 'dom:mc']
         self.valid_prog_environs = ['builtin']
 
         self.modules = ['HPX']
@@ -97,7 +98,8 @@ class Stencil4HPXCheck(rfm.RunOnlyRegressionTest):
 class Stencil8HPXCheck(rfm.RunOnlyRegressionTest):
     def __init__(self):
         self.descr = 'HPX 1d_stencil_8 check'
-        self.valid_systems = ['daint:gpu', 'daint:mc', 'dom:gpu', 'dom:mc']
+        self.valid_systems = ['+remote']
+        #self.valid_systems = ['daint:gpu', 'daint:mc', 'dom:gpu', 'dom:mc']
         self.valid_prog_environs = ['PrgEnv-gnu']
 
         self.modules = ['HPX']

@@ -11,9 +11,9 @@ import reframe.utility.sanity as sn
 class BoostPythonBindingsTest(rfm.RegressionTest):
     def __init__(self):
         self.descr = f'Test for Boost with Python bindings'
-        self.valid_systems = ['daint:gpu', 'daint:mc', 'dom:gpu', 'dom:mc',
-                              'eiger:mc', 'pilatus:mc']
-
+        self.valid_systems = ['+remote']
+        #self.valid_systems = ['daint:gpu', 'daint:mc', 'dom:gpu', 'dom:mc',
+        #                      'eiger:mc', 'pilatus:mc']
         if self.current_system.name in ['eiger', 'pilatus']:
             self.valid_prog_environs = ['cpeGNU']
         else:
