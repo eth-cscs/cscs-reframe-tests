@@ -42,14 +42,16 @@ class HDF5TestBase(rfm.RegressionTest):
 class CPE_HDF5Test(HDF5TestBase):
     modules = ['cray-hdf5']
     valid_prog_environs = ['+mpi +hdf5']
-    valid_systems = ['+remote -uenv']
+    valid_systems = ['+remote']
+    #valid_systems = ['+remote -uenv']
     tags = {'production', 'health', 'craype'}
 
 
 @rfm.simple_test
 class Uenv_HDF5Test(HDF5TestBase):
     valid_prog_environs = ['+mpi +hdf5']
-    valid_systems = ['+remote +uenv']
+    valid_systems = ['+remote']
+    #valid_systems = ['+remote +uenv']
     tags = {'production', 'health', 'uenv'}
 
     @run_before('compile')

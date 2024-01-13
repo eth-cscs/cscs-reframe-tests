@@ -15,11 +15,12 @@ from reframe.core.exceptions import SanityError
 
 @rfm.simple_test
 class CompileAffinityTool(rfm.CompileOnlyRegressionTest):
-    valid_systems = [
-        'daint:gpu', 'daint:mc', 'dom:gpu', 'dom:mc',
-        'eiger:mc', 'pilatus:mc', 'hohgant:nvgpu',
-        'ault:amdv100'
-    ]
+    valid_systems = ['+remote']
+#     valid_systems = [
+#         'daint:gpu', 'daint:mc', 'dom:gpu', 'dom:mc',
+#         'eiger:mc', 'pilatus:mc', 'hohgant:nvgpu',
+#         'ault:amdv100'
+#     ]
     valid_prog_environs = [
         'PrgEnv-gnu', 'PrgEnv-cray', 'PrgEnv-intel', 'PrgEnv-nvidia'
     ]
@@ -53,7 +54,8 @@ class CompileAffinityTool(rfm.CompileOnlyRegressionTest):
 
 @rfm.simple_test
 class CompileAffinityToolNoOmp(CompileAffinityTool):
-    valid_systems = ['eiger:mc', 'pilatus:mc', 'hohgant:nvgpu']
+    valid_systems = ['+remote']
+    #valid_systems = ['eiger:mc', 'pilatus:mc', 'hohgant:nvgpu']
 
     @run_before('compile')
     def set_build_opts(self):
@@ -88,11 +90,12 @@ class AffinityTestBase(rfm.RunOnlyRegressionTest):
     # }
     system = variable(dict, value={})
 
-    valid_systems = [
-        'daint:gpu', 'daint:mc', 'dom:gpu', 'dom:mc',
-        'eiger:mc', 'pilatus:mc', 'hohgant:nvgpu',
-        'ault:amdv100'
-    ]
+    valid_systems = ['+remote']
+    #valid_systems = [
+    #    'daint:gpu', 'daint:mc', 'dom:gpu', 'dom:mc',
+    #    'eiger:mc', 'pilatus:mc', 'hohgant:nvgpu',
+    #    'ault:amdv100'
+    #]
     valid_prog_environs = [
         'PrgEnv-gnu', 'PrgEnv-cray', 'PrgEnv-intel', 'PrgEnv-nvidia'
     ]
@@ -600,7 +603,8 @@ class OneTaskPerNumaNode(AffinityTestBase):
     Multithreading is disabled.
     '''
 
-    valid_systems = ['eiger:mc', 'pilatus:mc', 'hohgant:nvgpu']
+    valid_systems = ['+remote']
+    #valid_systems = ['eiger:mc', 'pilatus:mc', 'hohgant:nvgpu']
     use_multithreading = False
     num_cpus_per_task = required
 

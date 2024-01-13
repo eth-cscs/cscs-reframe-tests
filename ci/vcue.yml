@@ -1,0 +1,60 @@
+include:
+  - remote: 'https://gitlab.com/cscs-ci/recipes/-/raw/master/templates/v2/.ci-ext.yml'
+
+stages:
+  - run
+
+run rfm_test:
+  extends: .container-runner-clariden
+  stage: run
+  tags: ['clariden-login-baremetal']
+  variables:
+    GIT_STRATEGY: fetch
+  script:
+    - rm -fr venv_reframe_cpe
+    - python3 -m venv venv_reframe_cpe
+    - source venv_reframe_cpe/bin/activate
+    - pip install reframe-hpc
+    - reframe -C config/cscs.py
+      --system clariden:nvgpu
+      -c checks/prgenv/affinity_check.py
+      -c checks/prgenv/cpu_target_check.py
+      -c checks/prgenv/environ_check.py
+      -c checks/prgenv/helloworld.py
+      -c checks/prgenv/mpi.py
+      -c checks/prgenv/mpi_t.py
+      -c checks/prgenv/ssh_environ_check.py
+      -c checks/prgenv/ulimit_check.py
+      -c checks/microbenchmarks/cpu/alloc_speed/alloc_speed.py
+      -c checks/microbenchmarks/cpu/dgemm/dgemm.py
+      -c checks/microbenchmarks/cpu/fft/fftw_benchmark.py
+      -c checks/microbenchmarks/cpu/latency/latency.py
+      -c checks/microbenchmarks/cpu/stream/stream.py
+      -c checks/microbenchmarks/cpu/strided_bandwidth/strides.py
+      -c checks/microbenchmarks/hpcg/hpcg_benchmark.py
+      -c checks/microbenchmarks/mpi/osu/osu_run.py
+      -c checks/microbenchmarks/mpi/osu/osu_tests.py
+      -c checks/libraries/boost/boost_python_check.py
+      -c checks/libraries/hpx/hpx_hello_world.py
+      -c checks/libraries/hpx/hpx_stencil.py
+      -c checks/libraries/io/h5py_mpi.py
+      -c checks/libraries/io/hdf5.py
+      -c checks/libraries/io/netcdf.py
+      -c checks/libraries/io/pnetcdf.py
+      -c checks/libraries/magma/magma_checks.py
+      -c checks/libraries/math/scalapack_compile_run.py
+      -c checks/libraries/math/trilinos_compile_run.py
+      -c checks/libraries/petsc/petsc_helloworld.py
+      -c checks/compile/haswell_fma_check.py
+      -c checks/compile/libsci_resolve.py
+      -c checks/tools/io/cdo.py
+      -c checks/tools/io/nco.py      
+      --report-junit=reportvcue.xml
+      -r
+    - deactivate
+  artifacts:
+    when: always
+    paths:
+      - reportvcue.xml
+    reports:
+      junit: reportvcue.xml

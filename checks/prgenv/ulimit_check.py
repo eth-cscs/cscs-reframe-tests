@@ -11,9 +11,9 @@ import reframe.utility.sanity as sn
 class UlimitCheck(rfm.RegressionTest):
     def __init__(self):
         self.descr = 'Checking the output of ulimit -s in node.'
-        self.valid_systems = ['daint:gpu', 'daint:mc', 'dom:gpu', 'dom:mc',
-                              'eiger:mc', 'pilatus:mc', 'hohgant:nvgpu']
-
+        #self.valid_systems = ['daint:gpu', 'daint:mc', 'dom:gpu', 'dom:mc',
+        #                      'eiger:mc', 'pilatus:mc', 'hohgant:nvgpu']
+        self.valid_systems = ['+remote']
         self.valid_prog_environs = ['PrgEnv-aocc', 'PrgEnv-cray',
                                     'PrgEnv-gnu', 'PrgEnv-intel',
                                     'PrgEnv-pgi', 'PrgEnv-nvidia']

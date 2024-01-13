@@ -12,9 +12,11 @@ class SSHLoginEnvCheck(rfm.RunOnlyRegressionTest):
     def __init__(self):
         self.descr = ('Check the values of a set of environment variables '
                       'when accessing remotely over SSH')
-        self.valid_systems = ['daint:login', 'dom:login']
+        self.valid_systems = ['+remote']
+        self.valid_prog_environs = ['PrgEnv-gnu']
+        #self.valid_systems = ['daint:login', 'dom:login']
         self.sourcesdir = None
-        self.valid_prog_environs = ['PrgEnv-cray']
+        #self.valid_prog_environs = ['PrgEnv-cray']
         reference = {
             'CRAY_CPU_TARGET': ('haswell'),
             'CRAYPE_NETWORK_TARGET': 'aries',
