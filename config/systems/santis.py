@@ -70,7 +70,6 @@ site_configuration = {
                 'hdf5', 'netcdf-hdf5parallel', 'pnetcdf', 'cdo', 'nco'
             ],
             'extras': {
-                'hugepages2M': ['craype-hugepages2M'],
                 'c_openmp_flags': ['-fopenmp']
             }
         },
