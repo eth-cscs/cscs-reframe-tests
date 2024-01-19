@@ -94,36 +94,6 @@ partitions = [
         ],
         'launcher': 'srun'
     },
-#     {
-#         'name': 'amdgpu',
-#         'scheduler': 'slurm',
-#         'time_limit': '10m',
-#         'environs': environ_names,
-#         'max_jobs': 100,
-#         'extras': {
-#             'cn_memory': 500,
-#         },
-#         'access': ['-pamdgpu'] + uenv_access,
-#         'resources': [
-#             {
-#                 'name': 'switches',
-#                 'options': ['--switches={num_switches}']
-#             },
-#             {
-#                 'name': 'memory',
-#                 'options': ['--mem={mem_per_node}']
-#             },
-#         ],
-#         'features': ['gpu', 'amdgpu', 'remote', 'uenv'],
-#         'devices': [
-#             {
-#                 'type': 'gpu',
-#                 'arch': 'gfx90a',
-#                 'num_devices': 8
-#             }
-#         ],
-#         'launcher': 'srun'
-#     },
 ]
 
 if image_environments:
