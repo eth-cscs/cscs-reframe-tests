@@ -25,7 +25,11 @@ run rfm_test:
           done
 
           reframe -C config/cscs.py ${changedtests_path} --report-junit=reportcpe.xml -r
+      else
+          # Create empty report to please the CI
+          touch reportcpe.xml 
       fi
+
     - deactivate
   artifacts:
     when: always
