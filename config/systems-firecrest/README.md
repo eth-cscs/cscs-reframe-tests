@@ -21,4 +21,4 @@ FIRECREST_SYSTEM=daint
 FIRECREST_BASEDIR=
 ```
 
-The processor autodetection can be really slow, so we recommend to skip it for now. I also requires a version of Reframe with this bugfix: https://github.com/reframe-hpc/reframe/pull/3094
+The processor autodetection can be really slow, so we recommend to skip it for now. It also requires a version of Reframe with this bugfix: https://github.com/reframe-hpc/reframe/pull/3094
