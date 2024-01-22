@@ -607,5 +607,8 @@ site_configuration = {
             'remote_detect': False,
             'target_systems': ['daint', 'dom'],
         }
+    ],
+    'autodetect_methods': [
+        f'echo {os.environ.get("FIRECREST_SYSTEM")}'
     ]
 }
