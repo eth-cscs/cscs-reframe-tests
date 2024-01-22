@@ -26,6 +26,9 @@ FIRECREST_SYSTEM=daint
 
 # Select the base directory on the system where the tests will be running from
 FIRECREST_BASEDIR=
+
+# In case the tests need compilation you have to pass this in the command in order to build them in the remote partitions
+reframe ... -Sbuild_locally=0
 ```
 
 The processor autodetection can be really slow, so we recommend to skip it for now. It also requires a version of Reframe with this bugfix: https://github.com/reframe-hpc/reframe/pull/3094
