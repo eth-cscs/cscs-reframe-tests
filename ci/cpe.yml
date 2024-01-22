@@ -21,7 +21,7 @@ run rfm_test:
       if [ ${#changedtests[@]} -ne 0 ]; then
           changedtests_path=""
           for check in ${changedtests[@]}; do
-              changedtests_path="${changedchecks_path} -c ${check}"
+              changedtests_path="${changedtests_path} -c ${check}"
           done
 
           reframe -C config/cscs.py ${changedtests_path} --report-junit=reportcpe.xml -r
