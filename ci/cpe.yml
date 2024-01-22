@@ -15,7 +15,7 @@ run rfm_test:
     - python3 -m venv venv_reframe_cpe
     - source venv_reframe_cpe/bin/activate
     - pip install reframe-hpc
-    - | 
+    - > 
       changedtests=( $(git diff origin/alps...HEAD --name-only --oneline --no-merges | grep -e '^checks/.*\.py') )
 
       if [ ${#changedtests[@]} -ne 0 ]; then
@@ -25,14 +25,11 @@ run rfm_test:
           done
 
           reframe -C config/cscs.py ${changedtests_path} --report-junit=reportcpe.xml -r
-      else
-          # Create empty report to please the CI
-          touch reportcpe.xml 
       fi
 
     - deactivate
   artifacts:
-    when: always
+    when: on_failure 
     paths:
       - reportcpe.xml
     reports:
