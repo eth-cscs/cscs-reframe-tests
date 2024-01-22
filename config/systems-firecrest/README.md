@@ -1,5 +1,12 @@
 # How to run Reframe with the firecrest scheduler
 
+## Prerequisites
+
+- Firecrest client set up: https://user.cscs.ch/tools/firecrest/#oidc-client-registration-management
+- pyfirecrest installation: https://pypi.org/project/pyfirecrest/
+
+## Configuration Setup
+
 You can use the `config/cscs.py` config with the following env vars:
 ```bash
 # Select the firecrest configuration files that support the firecrest scheduler
