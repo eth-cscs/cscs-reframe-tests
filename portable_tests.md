@@ -35,6 +35,8 @@ class LoginNodesTest(rfm.RegressionTest):
 | sarus | Sarus is available in this partition | | |
 | singularity | Singularity is available in this partition | | |
 | uenv | Supports mounting and using user environments | |
+| ce | The partition supports a Container Engine(CE)
+
 
 ### Features for environments
 
@@ -123,6 +125,18 @@ class MemBandwidthTest(rfm.RunOnlyRegressionTest):
 
 Currently, ReFrame supports auto-detection of the local or remote processor information only.
 It does not support auto-detection of devices, in which cases users should explicitly specify this information using the `devices` [configuration option](https://reframe-hpc.readthedocs.io/en/stable/config_reference.html#config.systems.partitions.devices).
+
+## How to run Container Engine(CE) based tests
+
+To run a Container Engine (CE) based test, it's essential to create a test class inheriting from the `ContainerEngineMixin` and add the `ce` as one of the `valid_system` features. 
+The aforementioned mixin class handles the necessary complexity to create a .toml environment file.
+The only requirement is the assignment of an actual container image to the `container_image` class variable. 
+Furthermore, the following optional container related variables are also supported:
+
+* `container_workdir`: the working directory of the container (`/rfm_workdir` is used by default).
+* `container_mounts`: a list of container mount pairs of the form <src directory>:<target directory> (ReFrame will always mount the stage directory under `/rfm_workdir` inside the container).
+
+At the moment only `RunOnlyRegressionTest` type tests should be used for CE-based tests. 
 
 ## How to test containers
 
