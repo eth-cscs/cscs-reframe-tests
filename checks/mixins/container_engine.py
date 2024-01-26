@@ -4,35 +4,37 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import reframe as rfm
-
-from reframe.core.exceptions import SkipTestError
+import reframe.utility.typecheck as typ
 
 
 class ContainerEngineMixin(rfm.RegressionMixin):
+    #: The container image to use.
+    #:
+    #: :default: ``required``
+    container_image = variable(str)
+
+    #: The working directory of the container.
+    #:
+    #: :default: ``'/rfm_workdir/'``
+    container_workdir = variable(str, value='/rfm_workdir')
+
+    #: A list of the container mounts following the <src dir>:<target dir>
+    #: convention.
+    #: The test stage directory is always mounted on `/rfm_workdir`.
+    #:
+    #: :default: ``[]``
+    container_mounts = variable(typ.List[str], value=[])
+
     @run_after('setup')
     def create_env_file(self):
-        try:
-            image = self.container_image
-        except AttributeError: 
-            raise SkipTestError('a valid container image has to be defined')
-
-        try:
-            workdir = self.workdir
-        except AttributeError: 
-            workdir = "rfm_workdir"
-
-        try:
-            mounts = ',\n'.join(self.container_mounts)
-        except AttributeError: 
-            mounts = '' 
-
+        mounts = ',\n'.join(f'"{m}"' for m in self.container_mounts)
         toml_lines = [
-            f'image = "{image}"',
+            f'image = "{self.container_image}"',
             f'mounts = [',
-            f'"{self.stagedir}:/rfm_workdir"',
+            f'"{self.stagedir}:/rfm_workdir",',
             mounts,
             f']',
-            f'workdir = "{workdir}"'
+            f'workdir = "{self.container_workdir}"'
         ]
 
         self.env_file = f'{self.stagedir}/rfm_env.toml'

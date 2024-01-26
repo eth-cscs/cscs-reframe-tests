@@ -22,9 +22,7 @@ class CudaNBodyCheckCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     num_tasks = 1
     num_tasks_per_node = 1
     executable = '/cuda-samples/nbody'
-    container_image = variable(
-        str, value='nvcr.io#nvidia/k8s/cuda-sample:nbody-cuda11.7.1'
-    )
+    container_image = 'nvcr.io#nvidia/k8s/cuda-sample:nbody-cuda11.7.1'
     reference = {
         '*': {
             'gflops': (28000., -0.05, None, 'Gflop/s')
