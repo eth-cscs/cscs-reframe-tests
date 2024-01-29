@@ -59,7 +59,7 @@ site_configuration = {
                         },
                     ],
                     'features': [
-                        'gpu', 'nvgpu', 'remote', 'enroot', 'pyxis', 'buildah', 'scontrol'
+                        'gpu', 'nvgpu', 'remote', 'enroot', 'ce', 'buildah', 'scontrol'
                     ],
                     'devices': [
                         {
@@ -95,7 +95,7 @@ site_configuration = {
                         },
                     ],
                     'features': [
-                        'gpu', 'amdgpu', 'remote', 'enroot', 'pyxis', 'buildah', 'scontrol'
+                        'gpu', 'amdgpu', 'remote', 'enroot', 'ce', 'buildah', 'scontrol'
                     ],
                     'devices': [
                         {
