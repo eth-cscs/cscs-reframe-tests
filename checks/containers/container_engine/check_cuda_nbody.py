@@ -1,4 +1,4 @@
-# Copyright 2016-2023 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright 2024 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -42,7 +42,7 @@ class CudaNBodyCheckCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
             f'-benchmark', f'-fp64',
             f'-numbodies={self.num_bodies_per_gpu * self.num_gpus_per_node}',
             f'-numdevices={self.num_gpus_per_node}'
-        ] 
+        ]
 
     @sanity_function
     def assert_sanity(self):

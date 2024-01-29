@@ -128,7 +128,7 @@ It does not support auto-detection of devices, in which cases users should expli
 
 ## How to run Container Engine(CE) based tests
 
-To run a Container Engine (CE) based test, it's essential to create a test class inheriting from the `ContainerEngineMixin` and add the `ce` as one of the `valid_system` features. 
+To run a Container Engine (CE) based test, it is essential to create a test class inheriting from the `ContainerEngineMixin` and add the `ce` as one of the `valid_system` features.
 The aforementioned mixin class handles the necessary complexity to create a .toml environment file.
 The only requirement is the assignment of an actual container image to the `container_image` class variable. 
 Furthermore, the following optional container related variables are also supported:
