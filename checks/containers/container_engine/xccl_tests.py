@@ -46,7 +46,7 @@ class XCCLTestBase(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     @run_after('setup')
     def set_executable_opts(self):
         self.executable_opts = [
-            f'-w 10', '-n 20', f'-b 1024', f'-e 1024M',
+            f'-w 10', '-n 20', f'-b 1024M', f'-e 1024M',
             f'-g {self.num_gpus_per_node}' 
         ] 
 
