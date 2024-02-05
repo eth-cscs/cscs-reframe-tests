@@ -19,7 +19,7 @@ class pytorch_distr_cnn(rfm.RunOnlyRegressionTest):
     tags = {'production'}
 
     @run_after('setup')
-    def set_num_gpus_per_node(self):
+    def setup_test(self):
         curr_part = self.current_partition
         self.num_gpus_per_node = curr_part.select_devices('gpu')[0].num_devices
         self.num_tasks_per_node = self.num_gpus_per_node
