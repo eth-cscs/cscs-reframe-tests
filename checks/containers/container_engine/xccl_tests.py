@@ -17,21 +17,18 @@ from container_engine import ContainerEngineMixin  # noqa: E402
 class XCCLTestBase(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     valid_prog_environs = ['builtin']
     sourcesdir = None
-    num_tasks = 2 
-    num_tasks_per_node = 1
     test_name = parameter(['all_reduce', 'sendrecv'])
+    num_nodes = variable(int, value=2)
+    min_bytes = variable(str, value='1024M')
+    max_bytes = variable(str, value='1024M')
+    container_env_table = {
+        'annotations.com.hooks': {
+            'cxi.enabled': 'true',
+            'aws_ofi_nccl.enabled': 'true'
+        }
+    }
     env_vars = {
         'NCCL_DEBUG': 'Info',
-        'ENROOT_SLURM_HOOK': 1,
-        'ENROOT_CXI_HOOK': 1,
-        'NCCL_NET_PLUGIN': 'ofi',
-        'CXI_FORK_SAFE': 1,
-        'CXI_FORK_SAFE_HP': 1,
-        'FI_CXI_DISABLE_CQ_HUGETLB': 1,
-        'NCCL_CROSS_NIC': 1,
-        'NCCL_NET_GDR_LEVEL': 'PHB',
-        'FI_CXI_DISABLE_HOST_REGISTER': 1,
-        'FI_MR_CACHE_MONITOR': 'userfaultfd',
     }
 
     @run_after('setup')
@@ -42,13 +39,14 @@ class XCCLTestBase(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     def set_num_gpus_per_node(self):
         curr_part = self.current_partition
         self.num_gpus_per_node = curr_part.select_devices('gpu')[0].num_devices
+        self.num_tasks_per_node = self.num_gpus_per_node
+        self.num_tasks = self.num_nodes * self.num_gpus_per_node
 
     @run_after('setup')
     def set_executable_opts(self):
         self.executable_opts = [
-            f'-w 10', '-n 20', f'-b 1024M', f'-e 1024M',
-            f'-g {self.num_gpus_per_node}' 
-        ] 
+            f'-b {self.min_bytes}', f'-e {self.max_bytes}', f'-g 1'
+        ]
 
     @run_before('run')
     def set_pmi2(self):
@@ -101,11 +99,9 @@ class NCCLTestsCE(XCCLTestBase):
     def setup_ce(self):
         cuda_major = self.image_tag.split('.')[0]
         self.container_image = f'teojgo/nccl-tests:{self.image_tag}'
-        self.container_mounts = [ 
-            f'/opt/cscs/aws-ofi-ccl-plugin/{cuda_major}/libnccl-net.so:'
-            f'/usr/lib/libnccl-net-ofi.so'
-        ] 
-
+        self.container_env_table['annotations.com.hooks'].update({
+            'aws_ofi_nccl.variant': cuda_major
+        })
 
 @rfm.simple_test
 class RCCLTestCE(XCCLTestBase):
@@ -128,7 +124,6 @@ class RCCLTestCE(XCCLTestBase):
     def setup_ce(self):
         rocm_major = self.image_tag[:-1]
         self.container_image = f'teojgo/rccl-tests:{self.image_tag}'
-        self.container_mounts = [
-            f'/opt/cscs/aws-ofi-ccl-plugin/{rocm_major}/librccl-net.so:'
-            f'/usr/lib/librccl-net-ofi.so'
-        ]
+        self.container_env_table['annotations.com.hooks'].update({
+            'aws_ofi_nccl.variant': rocm_major
+        })
