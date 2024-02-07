@@ -130,13 +130,15 @@ It does not support auto-detection of devices, in which cases users should expli
 
 To run a Container Engine (CE) based test, it is essential to create a test class inheriting from the `ContainerEngineMixin` and add the `ce` as one of the `valid_system` features.
 The aforementioned mixin class handles the necessary complexity to create a .toml environment file.
-The only requirement is the assignment of an actual container image to the `container_image` class variable. 
+The only requirement is the assignment of an actual container image to the `container_image` class variable.
 Furthermore, the following optional container related variables are also supported:
 
 * `container_workdir`: the working directory of the container (`/rfm_workdir` is used by default).
 * `container_mounts`: a list of container mount pairs of the form <src directory>:<target directory> (ReFrame will always mount the stage directory under `/rfm_workdir` inside the container).
+* `container_env_key_values`: a dictionary of key value pairs to be passed to the TOML environment definition.
+* `container_env_table`: a dictionary where the keys are the headers of the TOML table and the values are dictionaries with key/value pairs of the corresponding table.
 
-At the moment only `RunOnlyRegressionTest` type tests should be used for CE-based tests. 
+At the moment only `RunOnlyRegressionTest` type tests should be used for CE-based tests.
 
 ## How to test containers
 
