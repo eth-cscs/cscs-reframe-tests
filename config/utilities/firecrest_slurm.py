@@ -299,7 +299,7 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
             # Create clean stage directory in the remote system
             try:
                 original_level = logging.getLogger().level
-                logging.getLogger("firecrest").setLevel(logging.critical)
+                logging.getLogger().setLevel(100)
                 self.client.simple_delete(self._system_name, job._remotedir)
             except fc.HeaderException:
                 # The delete request will raise an exception if it doesn't
@@ -307,7 +307,7 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
                 pass
             finally:
                 # Always revert the global logger level back to its original state
-                logging.getLogger("firecrest").setLevel(original_level)
+                logging.getLogger().setLevel(original_level)
 
             self._cleaned_remotedirs.add(job._remotedir)
 
