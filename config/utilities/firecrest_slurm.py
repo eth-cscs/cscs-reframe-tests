@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import itertools
+import logging
 import os
 import re
 import stat
@@ -297,11 +298,16 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
         if job._remotedir not in self._cleaned_remotedirs:
             # Create clean stage directory in the remote system
             try:
+                original_level = logging.getLogger().level
+                logging.getLogger("firecrest").setLevel(logging.critical)
                 self.client.simple_delete(self._system_name, job._remotedir)
             except fc.HeaderException:
                 # The delete request will raise an exception if it doesn't
                 # exist, but it can be ignored
                 pass
+            finally:
+                # Always revert the global logger level back to its original state
+                logging.getLogger("firecrest").setLevel(original_level)
 
             self._cleaned_remotedirs.add(job._remotedir)
 
