@@ -86,8 +86,7 @@ class PyTorchDdpCeNv(PyTorchTestBase, ContainerEngineMixin):
 
 
 class SetupAmdContainerVenv(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
-    """ Test Fixture to install missing python packages in a venv """
-    descr = ''
+    descr = 'Test Fixture to install missing python packages in a venv'
     valid_systems = ['+ce +amdgpu']
     valid_prog_environs = ['builtin']
     num_tasks = 1
