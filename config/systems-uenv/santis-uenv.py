@@ -1,4 +1,4 @@
-# Copyright 2016-2023 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright 2024 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -51,40 +51,23 @@ environ_names =  ([f'{image_name}_{e}'for e in environs] or
 
 partitions = [
     {
-        'name': 'mc',
-        'name': 'normal',
+        'name': 'nvgpu',
         'scheduler': 'slurm',
         'time_limit': '10m',
         'environs': environ_names,
-        'container_platforms': [
-            {
-                'type': 'Sarus',
-            },
-            {
-                'type': 'Singularity',
-            }
-        ],
         'max_jobs': 100,
-        'extras': {
-            'cn_memory': 500,
-        },
-        'access': ['-pnormal'] + uenv_access,
+        'access': uenv_access,
         'resources': [
-            {
-                'name': 'switches',
-                'options': ['--switches={num_switches}']
-            },
             {
                 'name': 'memory',
                 'options': ['--mem={mem_per_node}']
             },
         ],
-        'features': ['remote', 'uenv'],
-        # 'features': ['gpu', 'nvgpu', 'remote', 'uenv'],
+        'features': ['remote', 'uenv', 'nvgpu'],
         'devices': [
             {
                 'type': 'gpu',
-                'arch': 'sm_80',
+                'arch': 'sm_90',
                 'num_devices': 4
             }
         ],
@@ -119,7 +102,6 @@ site_configuration = {
             'name': 'santis',
             'descr': 'santis vcluster with uenv',
             'hostnames': ['santis'],
-            'resourcesdir': '/apps/common/UES/reframe/resources/',
             'modules_system': 'nomod',
             'partitions': partitions
         }
@@ -141,10 +123,4 @@ site_configuration = {
         }
     ],
     'environments': actual_environs,
-    'general': [
-        {
-             # 'resolve_module_conflicts': False,
-             'target_systems': ['santis']
-        }
-    ]
 }
