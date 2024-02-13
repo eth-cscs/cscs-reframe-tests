@@ -5,18 +5,14 @@ stages:
   - run
 
 run rfm_test:
-  extends: .container-runner-hohgant
   stage: run
   tags: ['clariden-login-baremetal']
-  variables:
-    GIT_STRATEGY: fetch
   script:
     - rm -fr venv_reframe_cpe
     - python3 -m venv venv_reframe_cpe
     - source venv_reframe_cpe/bin/activate
     - pip install reframe-hpc
     - | 
-
       # Use || true so that the following command does return exit code
       changedtests=( $(git diff origin/alps...HEAD --name-only --oneline --no-merges | grep -e '^checks/.*\.py' || true) )
 
