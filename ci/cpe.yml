@@ -5,18 +5,14 @@ stages:
   - run
 
 run rfm_test:
-  extends: .container-runner-clariden-a100
   stage: run
-  tags: ['clariden-container-runner']
-  # tags: ['clariden-login-baremetal']
-  variables:
-    GIT_STRATEGY: fetch
+  tags: ['clariden-login-baremetal']
   script:
     - rm -fr venv_reframe_cpe
     - python3 -m venv venv_reframe_cpe
     - source venv_reframe_cpe/bin/activate
     - pip install reframe-hpc
-    - | 
+    - |
       changedtests=( $(git diff origin/alps...HEAD --name-only --oneline --no-merges | grep -e '^checks/.*\.py') )
 
       if [ ${#changedtests[@]} -ne 0 ]; then
