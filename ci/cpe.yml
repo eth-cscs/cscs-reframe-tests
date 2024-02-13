@@ -12,7 +12,7 @@ run rfm_test:
     - python3 -m venv venv_reframe_cpe
     - source venv_reframe_cpe/bin/activate
     - pip install reframe-hpc
-    - | 
+    - |
       # Use || true so that the following command does return exit code
       changedtests=( $(git diff origin/alps...HEAD --name-only --oneline --no-merges | grep -e '^checks/.*\.py' || true) )
 
@@ -27,7 +27,7 @@ run rfm_test:
 
     - deactivate
   artifacts:
-    when: on_failure 
+    when: on_failure
     paths:
       - reportcpe.xml
     reports:
