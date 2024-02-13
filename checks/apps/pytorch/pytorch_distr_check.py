@@ -119,6 +119,7 @@ class SetupAmdContainerVenv(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
 class PyTorchDdpCeAmd(PyTorchTestBase, ContainerEngineMixin):
     valid_systems = ['+ce +amdgpu']
     throughput_per_gpu = 500
+    num_nodes = parameter([1, 3])
     venv = fixture(SetupAmdContainerVenv)
 
     @run_after('setup')
