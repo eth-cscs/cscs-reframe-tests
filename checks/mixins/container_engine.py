@@ -25,7 +25,7 @@ class ContainerEngineMixin(rfm.RegressionMixin):
     #: :default: ``[]``
     container_mounts = variable(typ.List[str], value=[])
 
-    @run_after('setup')
+    @run_before('run')
     def create_env_file(self):
         mounts = ',\n'.join(f'"{m}"' for m in self.container_mounts)
         toml_lines = [

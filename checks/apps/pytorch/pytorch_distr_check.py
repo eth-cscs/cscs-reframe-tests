@@ -8,13 +8,13 @@ sys.path.append(str(pathlib.Path(__file__).parent.parent.parent / 'mixins'))
 from container_engine import ContainerEngineMixin  # noqa: E402
 
 
-class pytorch_distr_cnn(rfm.RunOnlyRegressionTest):
+class PyTorchTestBase(rfm.RunOnlyRegressionTest):
     descr = 'Check the training throughput of a cnn with torch.distributed'
     valid_systems = ['+nvgpu']
     valid_prog_environs = ['builtin']
-    num_nodes = parameter([1, 2, 4, 8])
+    num_nodes = parameter([1, 3, 8])
     sourcesdir = 'src'
-    throughput_per_gpu = 800
+    throughput_per_gpu = 950
     executable = 'python cnn_distr.py'
     tags = {'production'}
 
@@ -54,20 +54,81 @@ class pytorch_distr_cnn(rfm.RunOnlyRegressionTest):
         ))
 
 
-@rfm.simple_test
-class PyTorchDdpCE(pytorch_distr_cnn, ContainerEngineMixin):
-    valid_systems = ['+ce +nvgpu']
-    container_image = 'nvcr.io#nvidia/pytorch:24.01-py3'
-
 
 @rfm.simple_test
-class PyTorchDdpSarus(pytorch_distr_cnn):
-    valid_systems = ['+nvgpu']
+class PyTorchDdpSarus(PyTorchTestBase):
+    valid_systems = ['+nvgpu +sarus']
     platform = 'Sarus'
 
     @run_before('run')
     def set_container_variables(self):
         self.container_platform = self.platform
         self.container_platform.command = self.executable
-        self.container_platform.image = 'nvcr.io/nvidia/pytorch:22.12-py3'  # cuda11.8
+        self.container_platform.image = 'nvcr.io/nvidia/pytorch:22.12-py3'  # cuda11.8 pt1.14.0
         self.job.launcher.options.append('--mpi=pmi2')
+
+
+
+@rfm.simple_test
+class PyTorchDdpCeNv(PyTorchTestBase, ContainerEngineMixin):
+    valid_systems = ['+ce +nvgpu']
+    image = parameter([
+        'nvcr.io#nvidia/pytorch:22.08-py3', # same as AMD   pt1.13.1
+        'nvcr.io#nvidia/pytorch:22.12-py3', # same as Sarus pt1.14.0
+        'nvcr.io#nvidia/pytorch:23.10-py3', # same as AMD   pt2.1.0
+        'nvcr.io#nvidia/pytorch:24.01-py3', # Latest        pt2.2.0
+    ])
+
+    @run_after('init')
+    def set_image(self):
+        self.container_image = self.image
+
+
+
+class SetupAmdContainerVenv(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
+    """ Test Fixture to install missing python packages in a venv """
+    descr = ''
+    valid_systems = ['+ce +amdgpu']
+    valid_prog_environs = ['builtin']
+    num_tasks = 1
+    tags = {'production'}
+    image = parameter([
+        'rocm/pytorch:rocm6.0_ubuntu20.04_py3.9_pytorch_1.13.1', # pt1.13.1
+        'rocm/pytorch:rocm6.0_ubuntu20.04_py3.9_pytorch_2.1.1',  # pt2.1.0
+    ])
+    executable = 'python -c \"import hostlist\"'
+    venv_name = 'pyenv'
+
+    @run_after('setup')
+    def create_venv(self):
+        self.container_mounts = [f'{self.stagedir}:{self.stagedir}']
+        self.path = os.path.join(self.stagedir, self.venv_name)
+        self.container_image = self.image
+        self.executable = f""" bash -exc '
+            python -m venv --system-site-packages {self.path}
+            source {self.path}/bin/activate
+            pip install python-hostlist
+            {self.executable}
+        ' """
+
+    @sanity_function
+    def assert_job_is_complete(self):
+        return sn.assert_found(r'Successfully installed python-hostlist', self.stdout)
+
+
+@rfm.simple_test
+class PyTorchDdpCeAmd(PyTorchTestBase, ContainerEngineMixin):
+    valid_systems = ['+ce +amdgpu']
+    throughput_per_gpu = 500
+    venv = fixture(SetupAmdContainerVenv)
+
+    @run_after('setup')
+    def activate_venv(self):
+        self.container_mounts = [f'{self.venv.stagedir}:{self.venv.stagedir}']
+        self.container_image = self.venv.image
+        self.executable = f""" bash -exc '
+            unset CUDA_VISIBLE_DEVICES;  #HACK: ROCR & CUDA devs cannot be both set
+            source {self.venv.path}/bin/activate;
+            {self.executable}
+        ' """
+        self.job.launcher.options.append('--container-writable')
