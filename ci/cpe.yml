@@ -16,7 +16,9 @@ run rfm_test:
     - source venv_reframe_cpe/bin/activate
     - pip install reframe-hpc
     - | 
-      changedtests=( $(git diff origin/alps...HEAD --name-only --oneline --no-merges | grep -e '^checks/.*\.py') )
+
+      # Use || true so that the following command does return exit code
+      changedtests=( $(git diff origin/alps...HEAD --name-only --oneline --no-merges | grep -e '^checks/.*\.py' || true) )
 
       if [ ${#changedtests[@]} -ne 0 ]; then
           changedtests_path=""
@@ -26,9 +28,10 @@ run rfm_test:
 
           reframe -C config/cscs.py ${changedtests_path} --report-junit=reportcpe.xml -r
       fi
+
     - deactivate
   artifacts:
-    when: always
+    when: on_failure 
     paths:
       - reportcpe.xml
     reports:
