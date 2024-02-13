@@ -5,9 +5,10 @@ stages:
   - run
 
 run rfm_test:
-  extends: .container-runner-hohgant
+  extends: .container-runner-clariden-a100
   stage: run
-  tags: ['clariden-login-baremetal']
+  tags: ['clariden-container-runner']
+  # tags: ['clariden-login-baremetal']
   variables:
     GIT_STRATEGY: fetch
   script:
