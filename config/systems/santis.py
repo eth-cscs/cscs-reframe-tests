@@ -12,7 +12,7 @@ site_configuration = {
             'name': 'santis',
             'descr': 'santis vcluster',
             'hostnames': ['santis'],
-            'modules_system': 'tmod',
+            'modules_system': 'nomod',
             'partitions': [
                 {
                     'name': 'login',
@@ -26,24 +26,14 @@ site_configuration = {
                     'launcher': 'local'
                 },
                 {
-                    'name': 'mc',
+                    'name': 'nvgpu',
                     'scheduler': 'slurm',
                     'time_limit': '10m',
                     'environs': [
                         'builtin',
-                        'PrgEnv-gnu',
                     ],
                     'max_jobs': 100,
-                    #'extras': {
-                    #    'cn_memory': 500,
-                    #},
-                    'access': ['-psantis'],
-                    'prepare_cmds': ['export PATH=$PATH:.'],
                     'resources': [
-                        {
-                            'name': 'switches',
-                            'options': ['--switches={num_switches}']
-                        },
                         {
                             'name': 'memory',
                             'options': ['--mem={mem_per_node}']
@@ -52,26 +42,9 @@ site_configuration = {
                     'features': [
                         'remote', 'scontrol'
                     ],
-                    'launcher': 'mpirun'
+                    'launcher': 'srun'
                 },
             ]
-        },
-    ],
-    'environments': [
-        {
-            'name': 'PrgEnv-gnu',
-            'target_systems': ['santis'],
-            'cc': 'mpicc',
-            'cxx': 'mpicxx',
-            'ftn': 'mpif90',
-            'modules': ['gnu-mpich'],
-            'features': [
-                'serial', 'openmp', 'mpi', 'alloc_speed',
-                'hdf5', 'netcdf-hdf5parallel', 'pnetcdf', 'cdo', 'nco'
-            ],
-            'extras': {
-                'c_openmp_flags': ['-fopenmp']
-            }
         },
     ],
     'modes': [
