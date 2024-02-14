@@ -5,7 +5,20 @@ python3 -m venv venv_reframe
 source venv_reframe/bin/activate
 pip install reframe-hpc
 
-reframe -c config/cscs.py -c checks/prgenv/mpi.py --report-junit=$REPORT -r
+CHECKS="\
+-c config/cscs.py
+-c checks/prgenv/cuda/nvml_check.py
+-c checks/prgenv/cuda-fortran/cuda_fortran_check.py
+-c checks/prgenv/mpi.py
+-c checks/prgenv/openacc_checks.py
+-c checks/prgenv/helloworld.py
+-c checks/libraries/io/hdf5.py
+-c checks/libraries/io/netcdf.py
+-c checks/libraries/io/pnetcdf.py
+-c checks/microbenchmarks/cpu/alloc_speed/alloc_speed.py 
+"
+
+reframe $(xargs <<< ${CHECKS}) --report-junit=$REPORT -r
 
 deactivate
 
