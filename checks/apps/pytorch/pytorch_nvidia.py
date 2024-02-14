@@ -1,13 +1,10 @@
-import os
 import sys
 import pathlib
 import reframe as rfm
-import reframe.utility.sanity as sn
 from pytorch_test_base import PyTorchTestBase
 
 sys.path.append(str(pathlib.Path(__file__).parent.parent.parent / 'mixins'))
 from container_engine import ContainerEngineMixin  # noqa: E402
-
 
 
 @rfm.simple_test

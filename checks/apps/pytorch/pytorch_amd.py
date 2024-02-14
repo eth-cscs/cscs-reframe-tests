@@ -9,7 +9,6 @@ sys.path.append(str(pathlib.Path(__file__).parent.parent.parent / 'mixins'))
 from container_engine import ContainerEngineMixin  # noqa: E402
 
 
-
 class SetupAmdContainerVenv(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     descr = 'Test Fixture to install missing python packages in a venv'
     valid_systems = ['+ce +amdgpu']
