@@ -42,7 +42,9 @@ try:
         image_environments = yaml.load(
             image_envs.read(), Loader=yaml.BaseLoader)
 except OSError as err:
-    raise ConfigError(f"problem loading the metadata from '{rfm_meta}'")
+    image_environments = {}
+    pass
+    #raise ConfigError(f"problem loading the metadata from '{rfm_meta}'")
 
 
 environs = image_environments.keys()
