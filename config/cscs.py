@@ -25,6 +25,12 @@ config_files += [s for s in system_conf_files if not os.path.islink(s)]
 system_configs = [
     import_module_from_file(f).site_configuration for f in config_files
 ]
+system_configs = []
+for f in config_files:
+    try:
+        system_configs.append( import_module_from_file(f).site_configuration )
+    except:
+        pass
 
 # Build the configuration dictionary from all the systems/*.py config files
 site_configuration = {}
