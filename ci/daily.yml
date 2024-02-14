@@ -8,8 +8,8 @@ run rfm_test:
   stage: run
   tags: ['santis-login-baremetal']
   variables:
-    UENV: Yes
-    REPORT: report_daily.xml 
+    UENV: 'Yes'
+    REPORT: 'report_daily.xml'
   script: ./run_login_baremetal_daily_checks $REPORT
   artifacts:
     when: on_failure 
