@@ -42,18 +42,59 @@ class SetupAmdContainerVenv(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
 
 @rfm.simple_test
 class PyTorchDdpCeAmd(PyTorchTestBase, ContainerEngineMixin):
+    descr = 'Check the training throughput using the ContainerEngine and ROCm images'
     valid_systems = ['+ce +amdgpu']
-    throughput_per_gpu = 500
-    num_nodes = parameter([1, 3])
+    throughput_per_gpu = 530
     venv = fixture(SetupAmdContainerVenv)
+    num_nodes = parameter([1, 3])
+    aws_ofi_nccl = parameter([True, False])
+    env_vars = {
+        'NCCL_DEBUG': 'Info',
+    }
 
     @run_after('setup')
     def activate_venv(self):
         self.container_mounts = [f'{self.venv.stagedir}:{self.venv.stagedir}']
         self.container_image = self.venv.image
+        self.job.launcher.options.append('--container-writable')
         self.executable = f""" bash -exc '
             unset CUDA_VISIBLE_DEVICES;  #HACK: ROCR & CUDA devs cannot be both set
             source {self.venv.path}/bin/activate;
             {self.executable}
         ' """
-        self.job.launcher.options.append('--container-writable')
+        if self.aws_ofi_nccl:
+            self.container_env_table = {
+                'annotations.com.hooks': {
+                    'aws_ofi_nccl.enabled': 'true',
+                    'aws_ofi_nccl.variant': 'rocm6',
+                },
+            }
+
+
+@rfm.simple_test
+class PyTorchDdpPipAmd(PyTorchTestBase):
+    descr = 'Check the training throughput with native cray-python and rocm'
+    valid_systems = ['+amdgpu']
+    modules = ['cray', 'rocm', 'cray-python']
+    throughput_per_gpu = 530
+    torch_version = parameter([
+        'torch==1.12.1 torchvision --index-url https://download.pytorch.org/whl/rocm5.0', # cray rocm
+        'torch==1.13.1 torchvision --index-url https://download.pytorch.org/whl/rocm5.2', # pt1.13.1
+        'torch torchvision --index-url https://download.pytorch.org/whl/rocm5.7', # Latest
+    ])
+    prerun_cmds = [
+        'python -m venv pyenv',
+        '. pyenv/bin/activate',
+        'pip install python-hostlist',
+    ]
+    env_vars = {
+        'MIOPEN_USER_DB_PATH': '/tmp',
+    }
+
+    @run_after('setup')
+    def activate_venv(self):
+        self.executable = f""" bash -exc '
+            unset CUDA_VISIBLE_DEVICES;  #HACK: ROCR & CUDA devs cannot be both set
+            {self.executable}
+        ' """
+        self.prerun_cmds.append(f'pip install {self.torch_version}')

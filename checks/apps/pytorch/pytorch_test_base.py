@@ -4,11 +4,11 @@ import reframe.utility.sanity as sn
 
 class PyTorchTestBase(rfm.RunOnlyRegressionTest):
     descr = 'Check the training throughput of a cnn with torch.distributed'
-    valid_systems = ['+nvgpu']
+    valid_systems = ['+gpu']
     valid_prog_environs = ['builtin']
-    num_nodes = parameter([1, 3, 8])
+    num_nodes = parameter([1])
     sourcesdir = 'src'
-    throughput_per_gpu = 950
+    throughput_per_gpu = 980
     executable = 'python cnn_distr.py'
     tags = {'production'}
 

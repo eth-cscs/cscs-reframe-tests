@@ -57,7 +57,7 @@ train_loader = DataLoader(
     shuffle=False,
     sampler=train_sampler,
     pin_memory=True,
-    num_workers=4
+    num_workers=2
 )
 
 
