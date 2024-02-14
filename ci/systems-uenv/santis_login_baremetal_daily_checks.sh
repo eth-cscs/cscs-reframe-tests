@@ -7,10 +7,10 @@ pip install reframe-hpc
 
 CHECKS="\
 -c config/cscs.py
--c checks/prgenv/cuda/nvml_check.py
--c checks/prgenv/cuda-fortran/cuda_fortran_check.py
+-c checks/prgenv/cuda_nvml.py
+-c checks/prgenv/cuda_fortran.py
 -c checks/prgenv/mpi.py
--c checks/prgenv/openacc_checks.py
+-c checks/prgenv/openacc.py
 -c checks/prgenv/helloworld.py
 -c checks/libraries/io/hdf5.py
 -c checks/libraries/io/netcdf.py
