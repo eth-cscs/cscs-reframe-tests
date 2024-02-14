@@ -10,7 +10,7 @@ run rfm_test:
   variables:
     UENV: 'Yes'
     REPORT: 'report_daily.xml'
-  script: ./systems-uenv/santis_login_baremetal_daily_checks $REPORT
+  script: ./ci/systems-uenv/santis_login_baremetal_daily_checks $REPORT
   artifacts:
     when: on_failure 
     paths:
