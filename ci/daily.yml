@@ -8,7 +8,7 @@ run rfm_test:
   stage: run
   tags: ['santis-login-baremetal']
   variables:
-    UENV: 'Yes'
+    UENV: '/bret/scratch/cscs/bcumming/images/prgenv-gnu-24.2-v2.squashfs'
     REPORT: 'report_daily.xml'
   script: ./ci/systems-uenv/santis_login_baremetal_daily_checks.sh $REPORT
   artifacts:
