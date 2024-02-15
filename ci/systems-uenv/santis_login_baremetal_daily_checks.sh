@@ -1,7 +1,7 @@
 #!/bin/bash -x
 
 CHECKS="\
--C config/cscs.py
+-c config/cscs.py
 -c checks/prgenv/cuda_nvml.py
 -c checks/prgenv/cuda_fortran.py
 -c checks/prgenv/mpi.py
