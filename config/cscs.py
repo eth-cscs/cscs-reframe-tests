@@ -30,6 +30,7 @@ system_configs = []
 for f in config_files:
     try:
         system_configs.append( import_module_from_file(f).site_configuration )
+        print(f'Found configuration file {f}')
     except:
         pass
 
