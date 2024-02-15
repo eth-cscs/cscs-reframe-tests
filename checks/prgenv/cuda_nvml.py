@@ -24,7 +24,7 @@ class NvmlBase(rfm.RegressionTest):
         cp = self.current_partition
         self.gpu_count = cp.select_devices('gpu')[0].num_devices
         regex_devices = rf'Found {self.gpu_count} devices'
-        regex_pciinfo = r'\d+. NVIDIA.*\[\S+\]'
+        regex_pciinfo = r'\d+.\s+(\S+\s+){2}\[\S+\]'
         regex_mode = 'Need root privileges to do that: Insufficient Permission'
         return sn.all([
             sn.assert_found(regex_devices, self.stdout),
