@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#Failed to loadbin/bash -x
 
 CHECKS="\
 -c config/cscs.py
@@ -109,7 +109,7 @@ export UENV
 export RFM_AUTODETECT_METHODS
 export RFM_USE_LOGIN_SHELL
 
-REFRAME_COMMAND="reframe $(xargs <<< ${CHECKS}) --report-junit=$REPORT -r --system=${RFM_SYSTEM}"
+REFRAME_COMMAND="reframe $(xargs <<< ${CHECKS}) --report-junit=$REPORT -r" # --system=${RFM_SYSTEM}"
 
 log "running reframe: ${REFRAME_COMMAND}"
 ${REFRAME_COMMAND}
