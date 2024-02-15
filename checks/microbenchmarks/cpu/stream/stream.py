@@ -77,7 +77,7 @@ class StreamTest(rfm.RegressionTest):
         mcmodel = 'medium'
         proc = self.current_partition.processor
 
-        # -mcmodel=medium is not available for AARCH64
+        # -mcmodel=medium is not available for AARCH64 on gcc
         if proc.arch == 'neoverse_v2':
             mcmodel = 'large'
 
