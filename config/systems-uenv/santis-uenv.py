@@ -56,6 +56,9 @@ partitions = [
         'time_limit': '10m',
         'environs': environ_names,
         'max_jobs': 100,
+        'extras': {
+            'cn_memory': 500,
+        },
         'access': uenv_access,
         'resources': [
             {

@@ -33,6 +33,9 @@ site_configuration = {
                         'builtin',
                     ],
                     'max_jobs': 100,
+                    'extras': {
+                        'cn_memory': 500,
+                    },
                     'resources': [
                         {
                             'name': 'memory',
