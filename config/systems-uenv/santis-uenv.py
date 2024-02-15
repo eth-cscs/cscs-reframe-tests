@@ -51,7 +51,7 @@ environ_names =  ([f'{image_name}_{e}'for e in environs] or
 
 partitions = [
     {
-        'name': 'nvgpu',
+        'name': 'normal',
         'scheduler': 'slurm',
         'time_limit': '10m',
         'environs': environ_names,

@@ -26,7 +26,7 @@ site_configuration = {
                     'launcher': 'local'
                 },
                 {
-                    'name': 'nvgpu',
+                    'name': 'normal',
                     'scheduler': 'slurm',
                     'time_limit': '10m',
                     'environs': [
@@ -39,8 +39,13 @@ site_configuration = {
                             'options': ['--mem={mem_per_node}']
                         },
                     ],
-                    'features': [
-                        'remote', 'scontrol'
+                    'features': ['remote', 'scontrol', 'nvgpu'],
+                    'devices': [
+                        {
+                            'type': 'gpu',
+                            'arch': 'sm_90',
+                            'num_devices': 4
+                        }
                     ],
                     'launcher': 'srun'
                 },
