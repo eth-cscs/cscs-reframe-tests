@@ -95,7 +95,7 @@ git clone ${RFM_TESTS_GIT} ${git_repo_name} && cd ${git_repo_name}
 # Grab the meta data from the uenv image
 #
 
-squashfs-mount ${UENV}:${STACK_MOUNT} cat ${STACK_MOUNT}/meta/recipe/extra/reframe.yaml > ${UENV_REFRAME_META}
+squashfs-mount ${UENV}:${STACK_MOUNT} -- cat ${STACK_MOUNT}/meta/recipe/extra/reframe.yaml > ${UENV_REFRAME_META}
 
 #
 # Start ReFrame
