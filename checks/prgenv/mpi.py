@@ -20,7 +20,6 @@ class MpiInitTest(rfm.RegressionTest):
     build_system = 'Make'
     sourcesdir = 'src/mpi_thread'
     executable = 'mpi_init_thread_single.exe'
-    prebuild_cmds += ['module list']
     time_limit = '2m'
     build_locally = False
     tags = {'production', 'craype', 'uenv'}
