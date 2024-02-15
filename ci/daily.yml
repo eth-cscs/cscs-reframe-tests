@@ -8,10 +8,18 @@ run rfm_test:
   stage: run
   tags: ['santis-login-baremetal']
   variables:
-    UENV: '/bret/scratch/cscs/bcumming/images/prgenv-gnu-24.2-v2.squashfs'
+    UENV:              '/bret/scratch/cscs/bcumming/images/prgenv-gnu-24.2-v2.squashfs'
     UENV_REFRAME_META: '/user-environment/meta/recipe/extra/reframe.yml'
-    REPORT: 'report_daily.xml'
-  script: ./ci/systems-uenv/santis_login_baremetal_daily_checks.sh $REPORT
+    REPORT:            'report_daily.xml'
+    RFM_GIT:           'https://github.com/reframe-hpc/reframe.git'
+    RFM_GIT_TAG:       'v4.5.0'
+    RFM_TESTS_GIT:     '-b alps https://github.com/eth-cscs/cscs-reframe-tests.git'
+    STACK_NAME:        "prgenv-gnu/24.2"
+    STACK_SYSTEM:      "santis"
+    STACK_UARCH:       "gh200"
+    STACK_MOUNT:       "/user-environment"
+    SLURM_PARTITION:   "normal"
+  script: ./ci/systems-uenv/santis_login_baremetal_daily_checks.sh 
   artifacts:
     when: on_failure 
     paths:
