@@ -9,7 +9,8 @@ run rfm_test:
   tags: ['santis-login-baremetal']
   variables:
     UENV:              '/bret/scratch/cscs/bcumming/images/prgenv-gnu-24.2-v2.squashfs'
-    UENV_REFRAME_META: '/user-environment/meta/recipe/extra/reframe.yml'
+        #UENV_REFRAME_META: '/user-environment/meta/recipe/extra/reframe.yml'
+    UENV_REFRAME_META: 'reframe.yaml'
     REPORT:            'report_daily.xml'
     RFM_GIT:           'https://github.com/reframe-hpc/reframe.git'
     RFM_GIT_TAG:       'v4.5.0'

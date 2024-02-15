@@ -65,7 +65,7 @@ log "set up a python venv and pip install reframe"
 [[ -z "${SLURM_PARTITION}" ]] && RFM_SYSTEM="${system}" || RFM_SYSTEM="${system}:${SLURM_PARTITION}"
 
 #
-#
+# Setup python environment
 #
 
 rm -rf rfm_venv
@@ -73,16 +73,16 @@ python3 -m venv rfm_venv
 source rfm_venv/bin/activate
 
 #
-#
+# Install ReFrame
 #
 
 git clone ${RFM_GIT}
 
-(cd reframe; git checkout ${RFM_GIT_TAG}; ./bootstrap.sh)
+(cd reframe && git checkout ${RFM_GIT_TAG} && ./bootstrap.sh)
 export PATH="$(pwd)/reframe/bin:$PATH"
 
 #
-#
+# Install Tests
 #
 
 git_repo_name=$(basename ${RFM_TESTS_GIT##* } .git)
@@ -92,7 +92,13 @@ rm -rf ${git_repo_name}
 git clone ${RFM_TESTS_GIT} ${git_repo_name} && cd ${git_repo_name}
 
 #
+# Grab the meta data from the uenv image
 #
+
+uenv run ${UENV}:${STACK_MOUNT} -- bash -c "cat ${STACK_MOUNT}/meta/recipe/extra/reframe.yaml" > ${UENV_REFRAME_META}
+
+#
+# Start ReFrame
 #
 
 : ${UENV:=${squashfs_path}:${mount}}
