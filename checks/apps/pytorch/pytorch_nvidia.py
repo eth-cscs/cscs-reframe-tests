@@ -60,7 +60,6 @@ class PyTorchDdpCeNvlarge(PyTorchDdpCeNv):
 class PyTorchDdpMambaNv(PyTorchTestBase):
     descr = 'Check the training throughput on bare-metal'
     valid_systems = ['+nvgpu']
-    exec_policy = 'serial'
     time_limit = '30m'
     torch_version = parameter([
         'pytorch torchvision nccl pytorch-cuda=11.8', # Latest cu11.8
