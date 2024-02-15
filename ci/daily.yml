@@ -9,6 +9,7 @@ run rfm_test:
   tags: ['santis-login-baremetal']
   variables:
     UENV: '/bret/scratch/cscs/bcumming/images/prgenv-gnu-24.2-v2.squashfs'
+    UENV_REFRAME_META: '/user-environment/meta/recipe/extra/reframe.yml'
     REPORT: 'report_daily.xml'
   script: ./ci/systems-uenv/santis_login_baremetal_daily_checks.sh $REPORT
   artifacts:

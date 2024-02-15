@@ -13,9 +13,12 @@ import yaml
 from reframe.core.exceptions import ConfigError
 
 uenv = os.environ.get('UENV', None)
+rfm_meta = os.environ.get('UENV_REFRAME_META', None)
 
-if uenv is None:
-    raise ConfigError('UENV is not set')
+if not uenv:
+    raise ConfigError('Enviroment variable UENV is missing or empty. Set to location of user environment to load.')
+#if not rfm_meta:
+#    raise ConfigError('Enviroment variable UENV_REFRAME_META is missing or empty. Set to location of ReFrame meta data for the user environment.')
 
 # FIXME: Only the first image:mount pair is currenty used
 uenv_list = uenv.split(',')
@@ -37,12 +40,14 @@ image_name = image_path.stem
 uenv_access = [f'--uenv={uenv_file}:{image_mount}']
 
 try:
-    rfm_meta = image_path.parent / f'{image_name}.yaml'
+    if not rfm_meta:
+        rfm_meta = image_path.parent / f'{image_name}.yaml'
     with open(rfm_meta) as image_envs:
         image_environments = yaml.load(
             image_envs.read(), Loader=yaml.BaseLoader)
 except OSError as err:
     image_environments = {}
+    print('WARNING: Unable to find ReFrame meta data for user environment f{image_name} in f{rfm_meta}.')
     pass
     #raise ConfigError(f"problem loading the metadata from '{rfm_meta}'")
 
