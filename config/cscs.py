@@ -32,6 +32,7 @@ for f in config_files:
         system_configs.append( import_module_from_file(f).site_configuration )
         print(f'Found configuration file {f}')
     except:
+        print(f'Failed to load configuration file {f}')
         pass
 
 # Build the configuration dictionary from all the systems/*.py config files
