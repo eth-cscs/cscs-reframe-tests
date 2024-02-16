@@ -17,7 +17,7 @@ if [[ -z "${CI_JOB_ID}" ]]; then
 fi
 
 CHECKS="\
--c config/cscs.py
+-C config/cscs.py
 -c checks/prgenv/cuda_nvml.py
 -c checks/prgenv/cuda_fortran.py
 -c checks/prgenv/mpi.py
