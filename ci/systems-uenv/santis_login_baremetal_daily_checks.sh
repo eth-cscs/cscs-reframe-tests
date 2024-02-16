@@ -1,4 +1,6 @@
-#Failed to loadbin/bash +x
+#Failed to loadbin/bash
+
+set -x
 
 if [[ -z "${CI_JOB_ID}" ]]; then
     UENV="${PWD}/x"
@@ -113,6 +115,8 @@ export PATH="$(pwd)/reframe/bin:$PATH"
 #
 
 squashfs-mount ${UENV}:${STACK_MOUNT} -- cat ${STACK_MOUNT}/meta/recipe/extra/reframe.yaml > ${UENV_REFRAME_META}
+
+cat ${UENV_REFRAME_META}
 
 #
 # Start ReFrame
