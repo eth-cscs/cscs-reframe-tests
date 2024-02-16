@@ -1,4 +1,18 @@
-#Failed to loadbin/bash -x
+#Failed to loadbin/bash +x
+
+if [[ -z "${CI_JOB_ID}" ]]; then
+    UENV="${PWD}/x"
+    UENV_REFRAME_META="reframe.yaml"
+    REPORT="report_daily.xml"
+    RFM_GIT="https://github.com/reframe-hpc/reframe.git"
+    RFM_GIT_TAG="v4.5.0"
+    RFM_TESTS_GIT="-b alps https://github.com/eth-cscs/cscs-reframe-tests.git"
+    STACK_NAME="prgenv-gnu/24.2"
+    STACK_SYSTEM="santis"
+    STACK_UARCH="gh200"
+    STACK_MOUNT="/user-environment"
+    SLURM_PARTITION="normal"
+fi
 
 CHECKS="\
 -c config/cscs.py
@@ -64,6 +78,9 @@ log "slurm part. ${SLURM_PARTITION}"
 log "set up a python venv and pip install reframe"
 [[ -z "${SLURM_PARTITION}" ]] && RFM_SYSTEM="${system}" || RFM_SYSTEM="${system}:${SLURM_PARTITION}"
 
+#rm -rf DAILY_TESTS_TMPDIR
+#mkdir -p DAILY_TESTS_TMPDIR && cd DAILY_TESTS_TMPDIR
+
 #
 # Setup python environment
 #
@@ -84,12 +101,12 @@ export PATH="$(pwd)/reframe/bin:$PATH"
 #
 # Install Tests
 #
-
-git_repo_name=$(basename ${RFM_TESTS_GIT##* } .git)
-
-log "clone ReFrame tests ${git_repo_name}"
-rm -rf ${git_repo_name}
-git clone ${RFM_TESTS_GIT} ${git_repo_name} && cd ${git_repo_name}
+#
+#git_repo_name=$(basename ${RFM_TESTS_GIT##* } .git)
+#
+#log "clone ReFrame tests ${git_repo_name}"
+#rm -rf ${git_repo_name}
+#git clone ${RFM_TESTS_GIT} ${git_repo_name} && cd ${git_repo_name}
 
 #
 # Grab the meta data from the uenv image
