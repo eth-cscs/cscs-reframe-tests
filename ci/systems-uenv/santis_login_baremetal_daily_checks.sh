@@ -125,8 +125,8 @@ ls -l
 #
 
 : ${UENV:=${squashfs_path}:${mount}}
-: ${RFM_AUTODETECT_METHODS:="cat /etc/xthostname,hostname"}
-: ${RFM_USE_LOGIN_SHELL:=1}
+#: ${RFM_AUTODETECT_METHODS:="cat /etc/xthostname,hostname"}
+#: ${RFM_USE_LOGIN_SHELL:=1}
 
 export UENV
 export RFM_AUTODETECT_METHODS
