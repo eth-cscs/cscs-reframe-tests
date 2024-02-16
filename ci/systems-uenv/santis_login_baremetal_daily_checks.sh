@@ -119,6 +119,7 @@ squashfs-mount ${UENV}:${STACK_MOUNT} -- cat ${STACK_MOUNT}/meta/recipe/extra/re
 cat ${UENV_REFRAME_META}
 
 ls -l
+echo ${PWD}
 
 #
 # Start ReFrame
