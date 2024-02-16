@@ -47,7 +47,7 @@ try:
             image_envs.read(), Loader=yaml.BaseLoader)
 except OSError as err:
     image_environments = {}
-    print(f'WARNING: Unable to find ReFrame meta data for user environment {image_name} in {rfm_meta} (OSError: {err}).')
+    print(f'WARNING: Unable to find ReFrame meta data for user environment {image_name} in {rfm_meta} (OSError: {err}, cwd:{os.getcwd()}).')
     pass
     #raise ConfigError(f"problem loading the metadata from '{rfm_meta}'")
 
