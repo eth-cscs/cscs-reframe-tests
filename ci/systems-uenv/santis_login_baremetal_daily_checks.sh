@@ -95,9 +95,11 @@ source rfm_venv/bin/activate
 # Install ReFrame
 #
 
-git clone ${RFM_GIT}
+GIT_FLAGS="--depth 1 ${RFM_GIT_TAG:+--branch ${RFM_GIT_TAG}} ${RFM_GIT}"
 
-(cd reframe && git checkout ${RFM_GIT_TAG} && ./bootstrap.sh)
+git clone ${GIT_FLAGS}
+
+(cd reframe && ./bootstrap.sh)
 export PATH="$(pwd)/reframe/bin:$PATH"
 
 #
