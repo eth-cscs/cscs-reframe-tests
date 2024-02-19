@@ -73,7 +73,7 @@ class PyTorchDdpMambaNv(PyTorchTestBase):
             'wget "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh"',
             'bash Miniforge3-$(uname)-$(uname -m).sh -b -p ./forge',
             '. forge/etc/profile.d/conda.sh',
-            'conda update --all -y',
+            'export PATH=$PWD/forge/bin:$PATH',
             f'conda create -p ./forge/envs/rfm {self.torch_version} -c pytorch -c nvidia -y',
             'conda activate ./forge/envs/rfm',
             'pip install python-hostlist',
