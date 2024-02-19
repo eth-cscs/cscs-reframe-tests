@@ -69,9 +69,11 @@ class PyTorchDdpMambaNv(PyTorchTestBase):
     @run_after('setup')
     def activate_venv(self):
         self.prerun_cmds = [
+            'set -xe',
             'wget "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh"',
             'bash Miniforge3-$(uname)-$(uname -m).sh -b -p ./forge',
             '. forge/etc/profile.d/conda.sh',
+            'conda update --all -y',
             f'conda create -p ./forge/envs/rfm {self.torch_version} -c pytorch -c nvidia -y',
             'conda activate ./forge/envs/rfm',
             'pip install python-hostlist',
