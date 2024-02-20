@@ -98,7 +98,8 @@ class NCCLTestsCE(XCCLTestBase):
     @run_after('init')
     def setup_ce(self):
         cuda_major = self.image_tag.split('.')[0]
-        self.container_image = f'teojgo/nccl-tests:{self.image_tag}'
+        self.container_image = (f'jfrog.svc.cscs.ch#reframe-oci/nccl-tests:'
+                                f'{self.image_tag}')
         self.container_env_table['annotations.com.hooks'].update({
             'aws_ofi_nccl.variant': cuda_major
         })
@@ -123,7 +124,8 @@ class RCCLTestCE(XCCLTestBase):
     @run_after('init')
     def setup_ce(self):
         rocm_major = self.image_tag[:-1]
-        self.container_image = f'teojgo/rccl-tests:{self.image_tag}'
+        self.container_image = (f'jfrog.svc.cscs.ch#reframe-oci/rccl-tests:'
+                                f'{self.image_tag}')
         self.container_env_table['annotations.com.hooks'].update({
             'aws_ofi_nccl.variant': rocm_major
         })
