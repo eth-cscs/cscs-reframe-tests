@@ -47,7 +47,7 @@ class PnetCDFTest(rfm.RegressionTest, ExtraLauncherOptionsMixin):
             self.build_system.fflags = [
                 '-w', '-fallow-argument-mismatch', 'utils.F90'
             ]
-        elif ((cdt_version != 'N/A' or cdt_version >= '23.05') and
+        elif (cdt_version != 'N/A' and cdt_version >= '23.05' and
               self.lang == 'f90' and
               self.current_environ.name == 'PrgEnv-cray'):
             self.build_system.fflags = [
@@ -59,7 +59,7 @@ class PnetCDFTest(rfm.RegressionTest, ExtraLauncherOptionsMixin):
             self.build_system.fflags = ['utils.F90']
 
         # FIXME: hidden symbol `_Unwind_Resume' ...  is referenced by DSO
-        if ((cdt_version != 'N/A' or cdt_version >= '23.05') and
+        if (cdt_version != 'N/A' and cdt_version >= '23.05' and
             self.lang == 'f90' and
             self.current_environ.name == 'PrgEnv-cray'):
             self.build_system.ldlags = [
