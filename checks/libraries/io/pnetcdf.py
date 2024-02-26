@@ -42,12 +42,14 @@ class PnetCDFTest(rfm.RegressionTest, ExtraLauncherOptionsMixin):
 
     @run_before('compile')
     def setflags(self):
+        cdt_version = osext.cray_cdt_version() or 'N/A'
         if self.lang == 'f90' and self.current_environ.name == 'PrgEnv-gnu':
             self.build_system.fflags = [
                 '-w', '-fallow-argument-mismatch', 'utils.F90'
             ]
-        elif (osext.cray_cdt_version() >= '23.05' and self.lang == 'f90'
-              and self.current_environ.name == 'PrgEnv-cray'):
+        elif ((cdt_version != 'N/A' or cdt_version >= '23.05') and
+              self.lang == 'f90' and
+              self.current_environ.name == 'PrgEnv-cray'):
             self.build_system.fflags = [
                 '-L/opt/cray/pe/cce/16.0.0/cce-clang/x86_64/lib/'
                 'x86_64-unknown-linux-gnu -lunwind',
@@ -57,8 +59,9 @@ class PnetCDFTest(rfm.RegressionTest, ExtraLauncherOptionsMixin):
             self.build_system.fflags = ['utils.F90']
 
         # FIXME: hidden symbol `_Unwind_Resume' ...  is referenced by DSO
-        if (osext.cray_cdt_version() >= '23.05' and self.lang == 'f90'
-            and self.current_environ.name == 'PrgEnv-cray'):
+        if ((cdt_version != 'N/A' or cdt_version >= '23.05') and
+            self.lang == 'f90' and
+            self.current_environ.name == 'PrgEnv-cray'):
             self.build_system.ldlags = [
                 '-L/opt/cray/pe/cce/16.0.0/cce-clang/x86_64/lib/'
                 'x86_64-unknown-linux-gnu -lunwind',
