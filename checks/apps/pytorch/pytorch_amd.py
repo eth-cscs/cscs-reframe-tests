@@ -18,9 +18,8 @@ class SetupAmdContainerVenv(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     image = parameter([
         # 'rocm/pytorch:rocm5.5_ubuntu20.04_py3.8_pytorch_1.13.1',
         'rocm/pytorch:rocm5.6_ubuntu20.04_py3.8_pytorch_1.13.1',
-        # 'rocm/pytorch:rocm5.7_ubuntu20.04_py3.9_pytorch_1.13.1',
-        # 'rocm/pytorch:rocm5.7_ubuntu20.04_py3.9_pytorch_2.0.1',  # F.conv2d/run_backward RuntimeError: miopenStatusUnknownError
-        # 'rocm/pytorch:rocm5.7_ubuntu22.04_py3.10_pytorch_2.0.1',  # F.conv2d RuntimeError: miopenStatusUnknownError
+        # 'rocm/pytorch:rocm5.7_ubuntu20.04_py3.9_pytorch_1.13.1', # miopenStatusUnknownError
+        # 'rocm/pytorch:rocm5.7_ubuntu22.04_py3.10_pytorch_2.0.1', # miopenStatusUnknownError
         # 'rocm/pytorch:rocm6.0_ubuntu20.04_py3.9_pytorch_2.1.1',  # flacky segfaults
     ])
     executable = 'python -c \"import hostlist\"'
