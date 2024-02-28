@@ -9,6 +9,45 @@ sys.path.append(str(pathlib.Path(__file__).parent.parent.parent / 'mixins'))
 from container_engine import ContainerEngineMixin  # noqa: E402
 
 
+class PyTorchAmdTestBase(PyTorchTestBase):
+    descr = 'Check the training throughput on AMD MI250'
+    valid_systems = ['+amdgpu']
+    throughput_per_gpu = 530
+    env_vars = {
+        'MIOPEN_CUSTOM_CACHE_DIR': '/tmp/rfm',
+        'MIOPEN_USER_DB_PATH': '/tmp/rfm',
+        'MIOPEN_CACHE_DIR': '/tmp/rfm',
+        'NCCL_DEBUG': 'Info',
+    }
+
+
+@rfm.simple_test
+class PyTorchDdpPipAmd(PyTorchAmdTestBase):
+    descr = 'Check the training throughput with native cray-python and rocm'
+    valid_systems = ['+amdgpu']
+    modules = ['cray', 'rocm', 'cray-python']
+    torch_version = parameter([
+        'torch torchvision --index-url https://download.pytorch.org/whl/rocm5.0', # match cray rocm
+        'torch torchvision --index-url https://download.pytorch.org/whl/rocm5.2', # pt1.13.1
+        # 'torch torchvision --index-url https://download.pytorch.org/whl/rocm5.7', # Latest; rccl mismatch!
+    ])
+    prerun_cmds = [
+        'python -m venv pyenv',
+        '. pyenv/bin/activate',
+        '. activate_ofi.sh rocm5 $ROCM_PATH/lib',
+        'pip install python-hostlist',
+    ]
+    postrun_cmds = ['rm -rf pyenv']
+
+    @run_after('setup')
+    def activate_venv(self):
+        self.executable = f""" bash -exc '
+            unset CUDA_VISIBLE_DEVICES;  #HACK: ROCR & CUDA devs cannot be both set
+            {self.executable}
+        ' """
+        self.prerun_cmds.append(f'pip install {self.torch_version}')
+
+
 class SetupAmdContainerVenv(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     descr = 'Test Fixture to install missing python packages in a venv'
     valid_systems = ['+ce +amdgpu']
@@ -41,21 +80,13 @@ class SetupAmdContainerVenv(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     def assert_job_is_complete(self):
         return sn.assert_found(r'Successfully installed python-hostlist', self.stdout)
 
-
 @rfm.simple_test
-class PyTorchDdpCeAmd(PyTorchTestBase, ContainerEngineMixin):
+class PyTorchDdpCeAmd(PyTorchAmdTestBase, ContainerEngineMixin):
     descr = 'Check the training throughput using the ContainerEngine and ROCm images'
     valid_systems = ['+ce +amdgpu']
-    throughput_per_gpu = 530
     venv = fixture(SetupAmdContainerVenv)
     num_nodes = parameter([1, 3])
     aws_ofi_nccl = parameter([True, False])
-    env_vars = {
-        'MIOPEN_CUSTOM_CACHE_DIR': '/tmp/rfm',
-        'MIOPEN_USER_DB_PATH': '/tmp/rfm',
-        'MIOPEN_CACHE_DIR': '/tmp/rfm',
-        'NCCL_DEBUG': 'Info',
-    }
 
     @run_after('setup')
     def activate_venv(self):
@@ -67,6 +98,7 @@ class PyTorchDdpCeAmd(PyTorchTestBase, ContainerEngineMixin):
             source {self.venv.path}/bin/activate;
             {self.executable}
         ' """
+        self.postrun_cmds = [f'rm -rf {self.venv.path}']
         if self.aws_ofi_nccl:
             rocm_major = 'rocm6' if 'rocm6' in self.venv.image else 'rocm5'
             self.container_env_table = {
@@ -75,36 +107,3 @@ class PyTorchDdpCeAmd(PyTorchTestBase, ContainerEngineMixin):
                     'aws_ofi_nccl.variant': rocm_major,
                 },
             }
-
-
-@rfm.simple_test
-class PyTorchDdpPipAmd(PyTorchTestBase):
-    descr = 'Check the training throughput with native cray-python and rocm'
-    valid_systems = ['+amdgpu']
-    modules = ['cray', 'rocm', 'cray-python']
-    throughput_per_gpu = 530
-    torch_version = parameter([
-        'torch torchvision --index-url https://download.pytorch.org/whl/rocm5.0', # match cray rocm
-        'torch torchvision --index-url https://download.pytorch.org/whl/rocm5.2', # pt1.13.1
-        # 'torch torchvision --index-url https://download.pytorch.org/whl/rocm5.7', # Latest; rccl mismatch!
-    ])
-    prerun_cmds = [
-        'python -m venv pyenv',
-        '. pyenv/bin/activate',
-        '. activate_ofi.sh rocm5 $ROCM_PATH/lib',
-        'pip install python-hostlist',
-    ]
-    env_vars = {
-        'MIOPEN_CUSTOM_CACHE_DIR': '/tmp/rfm',
-        'MIOPEN_USER_DB_PATH': '/tmp/rfm',
-        'MIOPEN_CACHE_DIR': '/tmp/rfm',
-        'NCCL_DEBUG': 'Info',
-    }
-
-    @run_after('setup')
-    def activate_venv(self):
-        self.executable = f""" bash -exc '
-            unset CUDA_VISIBLE_DEVICES;  #HACK: ROCR & CUDA devs cannot be both set
-            {self.executable}
-        ' """
-        self.prerun_cmds.append(f'pip install {self.torch_version}')
