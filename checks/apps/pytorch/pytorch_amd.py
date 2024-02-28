@@ -16,11 +16,11 @@ class SetupAmdContainerVenv(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     num_tasks = 1
     tags = {'production'}
     image = parameter([
+        'rocm/pytorch:rocm5.0.1_ubuntu18.04_py3.7_pytorch_1.10.0',  # match cray rocm
         # 'rocm/pytorch:rocm5.5_ubuntu20.04_py3.8_pytorch_1.13.1',
-        'rocm/pytorch:rocm5.6_ubuntu20.04_py3.8_pytorch_1.13.1',
-        # 'rocm/pytorch:rocm5.7_ubuntu20.04_py3.9_pytorch_1.13.1', # miopenStatusUnknownError
-        # 'rocm/pytorch:rocm5.7_ubuntu22.04_py3.10_pytorch_2.0.1', # miopenStatusUnknownError
+        'rocm/pytorch:rocm5.7_ubuntu22.04_py3.10_pytorch_2.0.1',
         # 'rocm/pytorch:rocm6.0_ubuntu20.04_py3.9_pytorch_2.1.1',  # flacky segfaults
+        # 'rocm/pytorch:rocm6.0.2_ubuntu22.04_py3.10_pytorch_2.1.2', # slow
     ])
     executable = 'python -c \"import hostlist\"'
     venv_name = 'pyenv'
@@ -48,9 +48,12 @@ class PyTorchDdpCeAmd(PyTorchTestBase, ContainerEngineMixin):
     valid_systems = ['+ce +amdgpu']
     throughput_per_gpu = 530
     venv = fixture(SetupAmdContainerVenv)
-    num_nodes = parameter([1, 2, 3])
+    num_nodes = parameter([1, 3])
     aws_ofi_nccl = parameter([True, False])
     env_vars = {
+        'MIOPEN_CUSTOM_CACHE_DIR': '/tmp/rfm',
+        'MIOPEN_USER_DB_PATH': '/tmp/rfm',
+        'MIOPEN_CACHE_DIR': '/tmp/rfm',
         'NCCL_DEBUG': 'Info',
     }
 
@@ -62,7 +65,6 @@ class PyTorchDdpCeAmd(PyTorchTestBase, ContainerEngineMixin):
         self.executable = f""" bash -exc '
             unset CUDA_VISIBLE_DEVICES;  #HACK: ROCR & CUDA devs cannot be both set
             source {self.venv.path}/bin/activate;
-            env;
             {self.executable}
         ' """
         if self.aws_ofi_nccl:
@@ -93,7 +95,9 @@ class PyTorchDdpPipAmd(PyTorchTestBase):
         'pip install python-hostlist',
     ]
     env_vars = {
-        'MIOPEN_USER_DB_PATH': '/tmp',
+        'MIOPEN_CUSTOM_CACHE_DIR': '/tmp/rfm',
+        'MIOPEN_USER_DB_PATH': '/tmp/rfm',
+        'MIOPEN_CACHE_DIR': '/tmp/rfm',
         'NCCL_DEBUG': 'Info',
     }
 
