@@ -24,8 +24,8 @@ class PyTorchAmdTestBase(PyTorchTestBase):
 @rfm.simple_test
 class PyTorchDdpPipAmd(PyTorchAmdTestBase):
     descr = 'Check the training throughput with native cray-python and rocm'
-    valid_systems = ['+amdgpu']
     modules = ['cray', 'rocm', 'cray-python']
+    valid_prog_environs = ['builtin']
     torch_version = parameter([
         'torch torchvision --index-url https://download.pytorch.org/whl/rocm5.0', # match cray rocm
         'torch torchvision --index-url https://download.pytorch.org/whl/rocm5.2', # pt1.13.1
@@ -50,8 +50,6 @@ class PyTorchDdpPipAmd(PyTorchAmdTestBase):
 
 class SetupAmdContainerVenv(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     descr = 'Test Fixture to install missing python packages in a venv'
-    valid_systems = ['+ce +amdgpu']
-    valid_prog_environs = ['builtin']
     num_tasks = 1
     tags = {'production'}
     image = parameter([
