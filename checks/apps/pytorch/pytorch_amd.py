@@ -26,10 +26,10 @@ class PyTorchDdpPipAmd(PyTorchAmdTestBase):
     descr = 'Check the training throughput with native cray-python and rocm'
     modules = ['cray', 'rocm', 'cray-python']
     valid_prog_environs = ['builtin']
-    torch_version = parameter([
-        'torch torchvision --index-url https://download.pytorch.org/whl/rocm5.0', # match cray rocm
-        'torch torchvision --index-url https://download.pytorch.org/whl/rocm5.2', # pt1.13.1
-        # 'torch torchvision --index-url https://download.pytorch.org/whl/rocm5.7', # Latest; rccl mismatch!
+    rocm_version = parameter([
+        '5.0', # match cray rocm
+        '5.2', # pt1.13.1
+        # '5.7', # Latest; rccl mismatch!
     ])
     prerun_cmds = [
         'python -m venv pyenv',
@@ -45,7 +45,10 @@ class PyTorchDdpPipAmd(PyTorchAmdTestBase):
             unset CUDA_VISIBLE_DEVICES;  #HACK: ROCR & CUDA devs cannot be both set
             {self.executable}
         ' """
-        self.prerun_cmds.append(f'pip install {self.torch_version}')
+        self.prerun_cmds.append(
+            'pip install torch torchvision --index-url '
+            f'https://download.pytorch.org/whl/rocm{self.rocm_version}'
+        )
 
 
 class SetupAmdContainerVenv(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
