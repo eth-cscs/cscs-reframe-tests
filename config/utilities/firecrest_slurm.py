@@ -10,6 +10,7 @@ import re
 import stat
 import sys
 import time
+from packaging.version import Version
 
 import reframe.core.runtime as rt
 import reframe.core.schedulers as sched
@@ -321,11 +322,18 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
         while True:
             try:
                 # Make request for submission
-                submission_result = self.client.submit(
-                    self._system_name,
-                    os.path.join(job._remotedir, job.script_filename),
-                    local_file=False
-                )
+                if Version(fc.__version__) >= Version("2.1.0"):
+                    submission_result = self.client.submit(
+                        self._system_name,
+                        script_remote_path=os.path.join(job._remotedir, job.script_filename)
+                    )
+                else:
+                    submission_result = self.client.submit(
+                        self._system_name,
+                        os.path.join(job._remotedir, job.script_filename),
+                        local_file=False
+                    )
+
                 break
             except fc.FirecrestException as e:
                 stderr = e.responses[-1].json().get('error', '')
