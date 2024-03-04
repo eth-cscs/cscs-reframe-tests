@@ -46,7 +46,7 @@ class PyTorchDdpPipAmd(PyTorchAmdTestBase):
             {self.executable}
         ' """
         self.prerun_cmds.append(
-            'pip install torch torchvision --index-url '
+            f'pip install torch torchvision --index-url '
             f'https://download.pytorch.org/whl/rocm{self.rocm_version}'
         )
 
