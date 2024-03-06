@@ -1,10 +1,13 @@
-# Copyright 2016-2023 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright 2024 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
 # ReFrame CSCS settings
 #
+
+import os
+
 
 site_configuration = {
     'systems': [
@@ -15,26 +18,8 @@ site_configuration = {
             'modules_system': 'lmod',
             'partitions': [
                 {
-                    'name': 'login',
-                    'scheduler': 'local',
-                    'time_limit': '10m',
-                    'environs': [
-                        'builtin',
-                        'PrgEnv-cray',
-                        'PrgEnv-gnu',
-                        'PrgEnv-nvhpc',
-                        'PrgEnv-nvidia'
-                    ],
-                    'features': [
-                        'enroot'
-                    ],
-                    'descr': 'Login nodes',
-                    'max_jobs': 4,
-                    'launcher': 'local'
-                },
-                {
                     'name': 'nvgpu',
-                    'scheduler': 'slurm',
+                    'scheduler': 'firecrest-slurm',
                     'time_limit': '10m',
                     'environs': [
                         'builtin',
@@ -59,7 +44,7 @@ site_configuration = {
                         },
                     ],
                     'features': [
-                        'gpu', 'nvgpu', 'remote', 'enroot', 'ce', 'buildah', 'scontrol'
+                        'gpu', 'nvgpu', 'remote', 'enroot', 'pyxis', 'buildah', 'scontrol'
                     ],
                     'devices': [
                         {
@@ -72,7 +57,7 @@ site_configuration = {
                 },
                 {
                     'name': 'amdgpu',
-                    'scheduler': 'slurm',
+                    'scheduler': 'firecrest-slurm',
                     'time_limit': '10m',
                     'environs': [
                         'builtin',
@@ -95,7 +80,7 @@ site_configuration = {
                         },
                     ],
                     'features': [
-                        'gpu', 'amdgpu', 'remote', 'enroot', 'ce', 'buildah', 'scontrol'
+                        'gpu', 'amdgpu', 'remote', 'enroot', 'pyxis', 'buildah', 'scontrol'
                     ],
                     'devices': [
                         {
@@ -128,6 +113,7 @@ site_configuration = {
             'features': ['serial', 'openmp', 'mpi', 'cuda', 'alloc_speed',
                          'hdf5', 'netcdf-hdf5parallel', 'pnetcdf', 'openmp'],
             'extras': {
+                'hugepages2M': ['craype-hugepages2M'],
                 'c_openmp_flags': ['-fopenmp']
             }
         },
@@ -156,15 +142,26 @@ site_configuration = {
             },
         },
     ],
+    'general': [
+        {
+            'resolve_module_conflicts': False,
+            'use_login_shell': True,
+            # Autodetection with this scheduler is really slow,
+            # so it's better to disable it.
+            'remote_detect': False,
+            'target_systems': ['clariden'],
+            'pipeline_timeout': 1000 # https://reframe-hpc.readthedocs.io/en/stable/pipeline.html#tweaking-the-throughput-and-interactivity-of-test-jobs-in-the-asynchronous-execution-policy
+        }
+    ],
+    'autodetect_methods': [
+        f'echo {os.environ.get("FIRECREST_SYSTEM")}'
+    ],
     'modes': [
         {
             'name': 'production',
             'options': [
-                '--unload-module=reframe',
                 '--exec-policy=async',
                 '-Sstrict_check=1',
-                '--prefix=$SCRATCH/regression/production',
-                '--report-file=$SCRATCH/regression/production/reports/prod_report_{sessionid}.json',
                 '--save-log-files',
                 '--tag=production',
                 '--timestamp=%F_%H-%M-%S'

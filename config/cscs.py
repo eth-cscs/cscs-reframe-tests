@@ -1,4 +1,4 @@
-# Copyright 2016-2023 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright 2016 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -7,11 +7,19 @@
 #
 import glob
 import os
+import sys
 from reframe.utility import import_module_from_file
 
+base_dir = os.path.dirname(os.path.abspath(__file__))
+utilities_path = os.path.join(base_dir, 'utilities')
+sys.path.append(utilities_path)
 
+import firecrest_slurm
+
+
+firecrest = os.environ.get('RFM_FIRECREST', None)
 uenv = os.environ.get('UENV', None)
-systems_path = 'systems-uenv' if uenv is not None else 'systems'
+systems_path = 'systems-firecrest' if firecrest is not None else 'systems-uenv' if uenv is not None else 'systems'
 
 system_conf_files = glob.glob(
     os.path.join(os.path.dirname(__file__), systems_path, '*.py')

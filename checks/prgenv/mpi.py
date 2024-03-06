@@ -1,4 +1,4 @@
-# Copyright 2016-2023 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright 2016-2024 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -20,7 +20,6 @@ class MpiInitTest(rfm.RegressionTest):
     build_system = 'Make'
     sourcesdir = 'src/mpi_thread'
     executable = 'mpi_init_thread_single.exe'
-    prebuild_cmds += ['module list']
     time_limit = '2m'
     build_locally = False
     tags = {'production', 'craype', 'uenv'}

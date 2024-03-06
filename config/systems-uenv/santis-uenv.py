@@ -1,4 +1,4 @@
-# Copyright 2016-2023 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright 2024 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -34,7 +34,7 @@ if not image_path.exists():
 image_name = image_path.stem
 
 # Options for the Slurm plugin to mount the Squashfs uenv image
-uenv_access = [f'--uenv-file={uenv_file} --uenv-mount={image_mount}']
+uenv_access = [f'--uenv={uenv_file}:{image_mount}']
 
 try:
     rfm_meta = image_path.parent / f'{image_name}.yaml'
@@ -51,69 +51,27 @@ environ_names =  ([f'{image_name}_{e}'for e in environs] or
 
 partitions = [
     {
-        'name': 'nvgpu',
+        'name': 'normal',
         'scheduler': 'slurm',
         'time_limit': '10m',
         'environs': environ_names,
-        'container_platforms': [
-            {
-                'type': 'Sarus',
-            },
-            {
-                'type': 'Singularity',
-            }
-        ],
         'max_jobs': 100,
         'extras': {
             'cn_memory': 500,
         },
-        'access': ['-pnvgpu'] + uenv_access,
+        'access': uenv_access,
         'resources': [
-            {
-                'name': 'switches',
-                'options': ['--switches={num_switches}']
-            },
             {
                 'name': 'memory',
                 'options': ['--mem={mem_per_node}']
             },
         ],
-        'features': ['gpu', 'nvgpu', 'remote', 'uenv'],
+        'features': ['remote', 'uenv', 'nvgpu'],
         'devices': [
             {
                 'type': 'gpu',
-                'arch': 'sm_80',
+                'arch': 'sm_90',
                 'num_devices': 4
-            }
-        ],
-        'launcher': 'srun'
-    },
-    {
-        'name': 'amdgpu',
-        'scheduler': 'slurm',
-        'time_limit': '10m',
-        'environs': environ_names,
-        'max_jobs': 100,
-        'extras': {
-            'cn_memory': 500,
-        },
-        'access': ['-pamdgpu'] + uenv_access,
-        'resources': [
-            {
-                'name': 'switches',
-                'options': ['--switches={num_switches}']
-            },
-            {
-                'name': 'memory',
-                'options': ['--mem={mem_per_node}']
-            },
-        ],
-        'features': ['gpu', 'amdgpu', 'remote', 'uenv'],
-        'devices': [
-            {
-                'type': 'gpu',
-                'arch': 'gfx90a',
-                'num_devices': 8
             }
         ],
         'launcher': 'srun'
@@ -125,7 +83,7 @@ if image_environments:
 
 for k, v in image_environments.items():
     env = {
-        'target_systems': ['clariden']
+        'target_systems': ['santis']
     }
     env.update(v)
     activation_script = v['activation']
@@ -144,10 +102,9 @@ for k, v in image_environments.items():
 site_configuration = {
     'systems': [
         {
-            'name': 'clariden',
-            'descr': 'clariden vcluster with uenv',
-            'hostnames': ['clariden'],
-            'resourcesdir': '/apps/common/UES/reframe/resources/',
+            'name': 'santis',
+            'descr': 'santis vcluster with uenv',
+            'hostnames': ['santis'],
             'modules_system': 'nomod',
             'partitions': partitions
         }
@@ -165,14 +122,8 @@ site_configuration = {
                 '--tag=production',
                 '--timestamp=%F_%H-%M-%S'
             ],
-            'target_systems': ['clariden'],
+            'target_systems': ['santis'],
         }
     ],
     'environments': actual_environs,
-    'general': [
-        {
-             # 'resolve_module_conflicts': False,
-             'target_systems': ['clariden']
-        }
-    ]
 }

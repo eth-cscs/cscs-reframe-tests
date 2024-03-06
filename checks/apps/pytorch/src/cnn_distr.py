@@ -14,7 +14,7 @@ from pt_distr_env import DistributedEnviron
 
 num_warmup_epochs = 2
 num_epochs = 5
-batch_size_per_gpu = 1024
+batch_size_per_gpu = 512
 num_iters = 25
 model_name = 'resnet50'
 
@@ -56,14 +56,17 @@ train_loader = DataLoader(
     batch_size=batch_size_per_gpu,
     shuffle=False,
     sampler=train_sampler,
-    num_workers=32
+    pin_memory=True,
+    num_workers=2
 )
 
 
 def benchmark_step(model, imgs, labels):
+    imgs = imgs.to(device, non_blocking=True)
+    labels = labels.to(device, non_blocking=True)
     optimizer.zero_grad()
-    output = model(imgs.to(device))
-    loss = F.cross_entropy(output, labels.to(device))
+    output = model(imgs)
+    loss = F.cross_entropy(output, labels)
     loss.backward()
     optimizer.step()
 

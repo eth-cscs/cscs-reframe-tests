@@ -10,6 +10,7 @@ import os
 import pathlib
 import yaml
 
+import reframe.utility.osext as osext
 from reframe.core.exceptions import ConfigError
 
 uenv = os.environ.get('UENV', None)
@@ -51,7 +52,7 @@ environ_names =  ([f'{image_name}_{e}'for e in environs] or
 
 partitions = [
     {
-        'name': 'nvgpu',
+        'name': 'mc',
         'scheduler': 'slurm',
         'time_limit': '10m',
         'environs': environ_names,
@@ -67,7 +68,11 @@ partitions = [
         'extras': {
             'cn_memory': 500,
         },
-        'access': ['-pnvgpu'] + uenv_access,
+        'access': [
+            '-pnormal',
+            '-Cmc',
+            f'--account={osext.osgroup()}'
+        ] + uenv_access,
         'resources': [
             {
                 'name': 'switches',
@@ -78,42 +83,13 @@ partitions = [
                 'options': ['--mem={mem_per_node}']
             },
         ],
-        'features': ['gpu', 'nvgpu', 'remote', 'uenv'],
+        'features': ['remote', 'uenv'],
+        # 'features': ['gpu', 'nvgpu', 'remote', 'uenv'],
         'devices': [
             {
                 'type': 'gpu',
                 'arch': 'sm_80',
                 'num_devices': 4
-            }
-        ],
-        'launcher': 'srun'
-    },
-    {
-        'name': 'amdgpu',
-        'scheduler': 'slurm',
-        'time_limit': '10m',
-        'environs': environ_names,
-        'max_jobs': 100,
-        'extras': {
-            'cn_memory': 500,
-        },
-        'access': ['-pamdgpu'] + uenv_access,
-        'resources': [
-            {
-                'name': 'switches',
-                'options': ['--switches={num_switches}']
-            },
-            {
-                'name': 'memory',
-                'options': ['--mem={mem_per_node}']
-            },
-        ],
-        'features': ['gpu', 'amdgpu', 'remote', 'uenv'],
-        'devices': [
-            {
-                'type': 'gpu',
-                'arch': 'gfx90a',
-                'num_devices': 8
             }
         ],
         'launcher': 'srun'
@@ -125,7 +101,7 @@ if image_environments:
 
 for k, v in image_environments.items():
     env = {
-        'target_systems': ['clariden']
+        'target_systems': ['pilatus']
     }
     env.update(v)
     activation_script = v['activation']
@@ -144,9 +120,9 @@ for k, v in image_environments.items():
 site_configuration = {
     'systems': [
         {
-            'name': 'clariden',
-            'descr': 'clariden vcluster with uenv',
-            'hostnames': ['clariden'],
+            'name': 'pilatus',
+            'descr': 'pilatus vcluster with uenv',
+            'hostnames': ['pilatus'],
             'resourcesdir': '/apps/common/UES/reframe/resources/',
             'modules_system': 'nomod',
             'partitions': partitions
@@ -165,14 +141,14 @@ site_configuration = {
                 '--tag=production',
                 '--timestamp=%F_%H-%M-%S'
             ],
-            'target_systems': ['clariden'],
+            'target_systems': ['pilatus'],
         }
     ],
     'environments': actual_environs,
     'general': [
         {
              # 'resolve_module_conflicts': False,
-             'target_systems': ['clariden']
+             'target_systems': ['pilatus']
         }
     ]
 }
