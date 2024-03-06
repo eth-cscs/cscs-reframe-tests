@@ -1,4 +1,4 @@
-# Copyright 2016-2022 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright 2016 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -10,6 +10,7 @@ import reframe.utility.sanity as sn
 class AllocSpeedTestBase(rfm.RegressionTest):
     sourcepath = 'alloc_speed.cpp'
     build_system = 'SingleSource'
+    valid_prog_environs = ['*']
 
     @run_after('init')
     def set_descr(self):
@@ -29,24 +30,12 @@ class AllocSpeedTestBase(rfm.RegressionTest):
         base_perf = 0.2
         sys_reference = {
             'no': {
-                'hohgant:nvgpu': {
-                    'time': (base_perf, None, 0.15, 's')
-                },
-                'hohgant:amdgpu': {
-                    'time': (base_perf, None, 0.15, 's')
-                },
-                'hohgant:cpu': {
+                '*': {
                     'time': (base_perf, None, 0.15, 's')
                 }
             },
             '2M': {
-                'hohgant:nvgpu': {
-                    'time': (base_perf/2, None, 0.15, 's')
-                },
-                'hohgant:amdgpu': {
-                    'time': (base_perf/2, None, 0.15, 's')
-                },
-                'hohgant:cpu': {
+                '*': {
                     'time': (base_perf/2, None, 0.15, 's')
                 }
             },
@@ -63,7 +52,6 @@ class AllocSpeedTestBase(rfm.RegressionTest):
 class CPE_AllocSpeedTest(AllocSpeedTestBase):
     hugepages = parameter(['no', '2M'])
     valid_systems = ['+remote -uenv']
-    valid_prog_environs = ['+alloc_speed']
     tags = {'production', 'craype'}
 
     @run_after('setup')
@@ -78,5 +66,4 @@ class CPE_AllocSpeedTest(AllocSpeedTestBase):
 class UENV_AllocSpeedTest(AllocSpeedTestBase):
     hugepages = parameter(['no'])
     valid_systems = ['+remote +uenv']
-    valid_prog_environs = ['+alloc_speed']
     tags = {'production', 'uenv'}
