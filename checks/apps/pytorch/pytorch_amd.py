@@ -38,6 +38,7 @@ class PyTorchDdpPipAmd(PyTorchAmdTestBase):
         'pip install python-hostlist',
     ]
     postrun_cmds = ['rm -rf pyenv']
+    tags = {'production'}
 
     @run_after('setup')
     def activate_venv(self):
@@ -54,7 +55,6 @@ class PyTorchDdpPipAmd(PyTorchAmdTestBase):
 class SetupAmdContainerVenv(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     descr = 'Test Fixture to install missing python packages in a venv'
     num_tasks = 1
-    tags = {'production'}
     image = parameter([
         'rocm/pytorch:rocm5.0.1_ubuntu18.04_py3.7_pytorch_1.10.0',  # match cray rocm
         # 'rocm/pytorch:rocm5.5_ubuntu20.04_py3.8_pytorch_1.13.1',
@@ -88,6 +88,7 @@ class PyTorchDdpCeAmd(PyTorchAmdTestBase, ContainerEngineMixin):
     venv = fixture(SetupAmdContainerVenv)
     num_nodes = parameter([1, 3])
     aws_ofi_nccl = parameter([True, False])
+    tags = {'production', 'ce'}
 
     @run_after('setup')
     def activate_venv(self):

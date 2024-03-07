@@ -96,6 +96,7 @@ class UENV_BuildDeviceCount(BuildDeviceCountBase):
 class CPE_NvidiaDeviceCount(NvidiaDeviceCountBase):
     valid_systems = ['+nvgpu -uenv']
     device_count_bin = fixture(CPE_BuildDeviceCount, scope='environment')
+    tags = {'production'}
 
     @run_after('setup')
     def setup_modules(self):
@@ -108,3 +109,4 @@ class CPE_NvidiaDeviceCount(NvidiaDeviceCountBase):
 class UENV_NvidiaDeviceCount(NvidiaDeviceCountBase):
     valid_systems = ['+nvgpu +uenv']
     device_count_bin = fixture(UENV_BuildDeviceCount, scope='environment')
+    tags = {'production'}

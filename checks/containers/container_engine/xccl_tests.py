@@ -30,6 +30,7 @@ class XCCLTestBase(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     env_vars = {
         'NCCL_DEBUG': 'Info',
     }
+    tags = {'production', 'ce'}
 
     @run_after('setup')
     def set_executable(self):
