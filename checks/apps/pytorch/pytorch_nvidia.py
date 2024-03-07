@@ -34,6 +34,7 @@ class PyTorchDdpCeNv(PyTorchTestBase, ContainerEngineMixin):
     env_vars = {
         'NCCL_DEBUG': 'Info',
     }
+    tags = {'production', 'ce'}
 
     @run_after('init')
     def set_image(self):
@@ -65,6 +66,7 @@ class PyTorchDdpMambaNv(PyTorchTestBase):
         'pytorch torchvision nccl pytorch-cuda=11.8', # Latest cu11.8
         # 'pytorch torchvision nccl pytorch-cuda=12.1', # Latest cu12.1; incompatible driver
     ])
+    tags = {'production'}
 
     @run_after('setup')
     def activate_venv(self):
