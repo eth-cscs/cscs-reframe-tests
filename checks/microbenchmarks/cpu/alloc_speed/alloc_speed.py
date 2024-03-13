@@ -67,3 +67,4 @@ class UENV_AllocSpeedTest(AllocSpeedTestBase):
     hugepages = parameter(['no'])
     valid_systems = ['+remote +uenv']
     tags = {'production', 'uenv'}
+    build_locally = False
