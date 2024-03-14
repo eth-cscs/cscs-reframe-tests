@@ -50,6 +50,10 @@ class _SlurmFirecrestJob(sched.Job):
     def is_cancelling(self):
         return self._is_cancelling
 
+    @property
+    def remotedir(self):
+        return self._remotedir
+
 
 @register_scheduler('firecrest-slurm')
 class SlurmFirecrestJobScheduler(SlurmJobScheduler):
