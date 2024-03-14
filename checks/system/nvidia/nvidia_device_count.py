@@ -1,4 +1,4 @@
-# Copyright 2016-2023 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright 2016 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -53,8 +53,14 @@ class NvidiaDeviceCountBase(CudaVisibleDevicesAllMixin,
 
     @run_before('run')
     def set_executable(self):
+        scheduler = self.device_count_bin.current_partition.scheduler.registered_name
+        if scheduler != 'firecrest-slurm':
+            remote_stagedir = self.device_count_bin.stagedir
+        else:
+            remote_stagedir = self.device_count_bin.build_job.remotedir
+
         self.executable = os.path.join(
-            self.device_count_bin.stagedir, self.device_count_bin.executable
+            remote_stagedir, self.device_count_bin.executable
         )
 
     @sanity_function
@@ -78,7 +84,7 @@ class CPE_BuildDeviceCount(BuildDeviceCountBase):
     def skip_incompatible_envs_cuda(self):
         if self.current_environ.name in {'PrgEnv-cray', 'PrgEnv-gnu'}:
             self.skip(
-            f'environ {self.current_environ.name!r} incompatible with'
+            f'environ {self.current_environ.name!r} incompatible with '
             f'default cudatoolkit')
 
     @run_before('compile')
