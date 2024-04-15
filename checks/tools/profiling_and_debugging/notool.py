@@ -66,7 +66,7 @@ class JacobiNoToolHybrid(rfm.RegressionTest):
             'PrgEnv-cray': ['-O2', '-g',
                             '-homp' if self.lang == 'F90' else '-fopenmp'],
             'PrgEnv-gnu': ['-O2', '-g', '-fopenmp',
-                            '-fallow-argument-mismatch' if self.lang == 'F90' else ''],
+                           '-fallow-argument-mismatch' if self.lang == 'F90' else ''],
             'PrgEnv-intel': ['-O2', '-g', '-qopenmp'],
             'PrgEnv-pgi': ['-O2', '-g', '-mp'],
             'PrgEnv-nvidia': ['-O2', '-g', '-mp']
