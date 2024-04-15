@@ -11,8 +11,9 @@ basename = os.getenv('SCRATCH')
 if basename is None:
     basename = "/tmp"
 
-Version = (str(servermanager.vtkSMProxyManager.GetVersionMajor()) + "." +
-           str(servermanager.vtkSMProxyManager.GetVersionMinor()))
+Version = (servermanager.vtkSMProxyManager.GetVersionMajor(),
+           servermanager.vtkSMProxyManager.GetVersionMinor(),
+           servermanager.vtkSMProxyManager.GetVersionPatch())
 
 info = vtkPVOpenGLInformation()
 info.CopyFromObject(None)
@@ -49,19 +50,19 @@ sphere = Sphere()
 sphere.ThetaResolution = 1024
 sphere.PhiResolution = 1024
 
-if Version == '5.12.0':
-  pidscal = GenerateProcessIds(Input=sphere)
-else:
+if Version <= (5, 11, 2):
   pidscal = ProcessIdScalars(sphere)
+else:
+  pidscal = GenerateProcessIds(Input=sphere)
 
 rep = Show(pidscal, view)
 
-if Version == '5.12.0':
-  ColorBy(rep, ('POINTS', 'PointProcessIds'))
-  processIdLUT = GetColorTransferFunction('PointProcessIds')
-else:
+if Version <= (5, 11, 2):
   ColorBy(rep, 'ProcessId')
   processIdLUT = GetColorTransferFunction('ProcessId')
+else:
+  ColorBy(rep, ('POINTS', 'PointProcessIds'))
+  processIdLUT = GetColorTransferFunction('PointProcessIds')
 
 processIdLUT.AnnotationsInitialized = 1
 processIdLUT.InterpretValuesAsCategories = 1
@@ -104,6 +105,7 @@ view.Background = [.7, .7, .7]
 view.ViewSize = [1024, 1024]
 
 # change the pathname to a place where you have write access
-filename = basename + "/coloredSphere_v" + Version + "." + Vendor + ".png"
+SourceVersion = servermanager.vtkSMProxyManager.GetParaViewSourceVersion()
+filename = basename + "/coloredSphere_v" + SourceVersion.split()[-1] + "." + Vendor + ".png"
 SaveScreenshot(filename=filename, view=view)
 print("writing ", filename)
