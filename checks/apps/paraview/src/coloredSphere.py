@@ -49,11 +49,20 @@ sphere = Sphere()
 sphere.ThetaResolution = 1024
 sphere.PhiResolution = 1024
 
-pidscal = ProcessIdScalars(sphere)
+if Version == '5.12.0':
+  pidscal = GenerateProcessIds(Input=sphere)
+else:
+  pidscal = ProcessIdScalars(sphere)
 
 rep = Show(pidscal, view)
-ColorBy(rep, 'ProcessId')
-processIdLUT = GetColorTransferFunction('ProcessId')
+
+if Version == '5.12.0':
+  ColorBy(rep, ('POINTS', 'PointProcessIds'))
+  processIdLUT = GetColorTransferFunction('PointProcessIds')
+else:
+  ColorBy(rep, 'ProcessId')
+  processIdLUT = GetColorTransferFunction('ProcessId')
+
 processIdLUT.AnnotationsInitialized = 1
 processIdLUT.InterpretValuesAsCategories = 1
 
