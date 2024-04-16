@@ -1,4 +1,4 @@
-# Copyright 2016-2024 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright 2016 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -48,10 +48,10 @@ class build_ior_benchmarks(rfm.CompileOnlyRegressionTest):
             f'cd {self.build_prefix}'
         ]
 
+    # FIXME this will not be needed in a ReFrame release including:
+    # https://github.com/reframe-hpc/reframe/pull/3157
     @sanity_function
     def validate_build(self):
-        # If compilation fails, the test would fail in any case, so nothing to
-        # further validate here.
         return True
 
 
