@@ -1,4 +1,4 @@
-# Copyright 2016-2023 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright 2016-2024 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -10,7 +10,47 @@ import reframe as rfm
 import reframe.utility.sanity as sn
 
 
-class IorCheck(rfm.RegressionTest):
+class fetch_ior_benchmarks(rfm.RunOnlyRegressionTest):
+    descr = 'Fetch IOR benchmarks'
+    version = variable(str, value='4.0.0')
+    executable = 'wget'
+    executable_opts = [
+        f'https://github.com/hpc/ior/releases/download/{version}/ior-{version}.tar.gz'  # noqa: E501
+    ]
+
+    @sanity_function
+    def validate_download(self):
+        return sn.assert_eq(self.job.exitcode, 0)
+
+
+class build_ior_benchmarks(rfm.CompileOnlyRegressionTest):
+    descr = 'Build IOR benchmarks'
+    build_system = 'Autotools'
+    build_prefix = variable(str)
+    ior_benchmarks = fixture(fetch_ior_benchmarks, scope='session')
+
+    # Build on the remote system for consistency
+    build_locally = False 
+
+    @run_before('compile')
+    def prepare_build(self):
+        tarball = f'ior-{self.ior_benchmarks.version}.tar.gz'
+        self.build_prefix = tarball[:-7]
+        fullpath = os.path.join(self.ior_benchmarks.stagedir, tarball)
+        self.prebuild_cmds = [
+            f'cp {fullpath} {self.stagedir}',
+            f'tar xzf {tarball}',
+            f'cd {self.build_prefix}'
+        ]
+
+    @sanity_function
+    def validate_build(self):
+        # If compilation fails, the test would fail in any case, so nothing to
+        # further validate here.
+        return True
+
+
+class IorCheck(rfm.RunOnlyRegressionTest):
     base_dir = parameter(['/capstor/scratch/cscs',
                           '/scratch/snx3000tds',
                           '/scratch/snx3000',
@@ -18,8 +58,9 @@ class IorCheck(rfm.RegressionTest):
                           '/users'])
     username = getpass.getuser()
     time_limit = '5m'
-    maintainers = ['SO', 'GLR']
-    tags = {'ops', 'production', 'external-resources'}
+    ior_binaries = fixture(build_ior_benchmarks, scope='environment')
+    maintainers = ['SO', 'TM']
+    tags = {'ops', 'production'}
 
     @run_after('init')
     def set_description(self):
@@ -108,19 +149,10 @@ class IorCheck(rfm.RegressionTest):
         self.num_tasks = self.fs[self.base_dir][cur_sys].get('num_tasks', 1)
         self.num_tasks_per_node = tpn
 
-        self.sourcesdir = os.path.join(self.current_system.resourcesdir, 'IOR')
-
     @run_after('init')
     def load_cray_module(self):
         if self.current_system.name in ['eiger', 'pilatus']:
             self.modules = ['cray']
-
-    @run_before('compile')
-    def prepare_build(self):
-        self.build_system = 'Make'
-        self.build_system.options = ['posix', 'mpiio']
-        self.build_system.max_concurrency = 1
-        self.num_gpus_per_node = 0
 
     @run_before('run')
     def prepare_run(self):
@@ -131,14 +163,22 @@ class IorCheck(rfm.RegressionTest):
         test_file = os.path.join(test_dir,
                                  f'.ior.{self.current_partition.name}')
         self.prerun_cmds = [f'mkdir -p {test_dir}']
-        self.executable = os.path.join('src', 'C', 'IOR')
+        self.executable = os.path.join(
+            self.ior_binaries.stagedir,
+            self.ior_binaries.build_prefix,
+            'src', 'ior'
+        )
 
         # executable options depends on the file system
         block_size = self.fs[self.base_dir]['ior_block_size']
         access_type = self.fs[self.base_dir]['ior_access_type']
-        self.executable_opts = ['-B', '-F', '-C ', '-Q 1', '-t 4m', '-D 30',
+        self.executable_opts = ['-F', '-C ', '-Q 1', '-t 4m', '-D 30',
                                 '-b', block_size, '-a', access_type,
-                                '-o', test_file]
+                                '-o', test_file, '--posix.odirect']
+
+    @sanity_function
+    def assert_finished(self):
+        return sn.assert_found(r'^Finished\s+:', self.stdout)
 
 
 @rfm.simple_test
@@ -146,15 +186,11 @@ class IorWriteCheck(IorCheck):
     executable_opts += ['-w', '-k']
     tags |= {'write'}
 
-    @sanity_function
-    def assert_output(self):
-        return sn.assert_found(r'^Max Write: ', self.stdout)
-
     @run_after('init')
     def set_perf_patterns(self):
         self.perf_patterns = {
             'write_bw': sn.extractsingle(
-                r'^Max Write:\s+(?P<write_bw>\S+) MiB/sec', self.stdout,
+                r'^Operation(.*\n)*^write\s+(?P<write_bw>\S+)', self.stdout,
                 'write_bw', float)
         }
 
@@ -164,15 +200,11 @@ class IorReadCheck(IorCheck):
     executable_opts += ['-r']
     tags |= {'read'}
 
-    @sanity_function
-    def assert_output(self):
-        return sn.assert_found(r'^Max Read: ', self.stdout)
-
     @run_after('init')
     def set_perf_patterns(self):
         self.perf_patterns = {
             'read_bw': sn.extractsingle(
-                r'^Max Read:\s+(?P<read_bw>\S+) MiB/sec', self.stdout,
+                r'^Operation(.*\n)*^read\s+(?P<read_bw>\S+)', self.stdout,
                 'read_bw', float)
         }
 
