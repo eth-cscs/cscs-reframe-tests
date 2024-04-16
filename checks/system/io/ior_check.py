@@ -1,4 +1,4 @@
-# Copyright 2016-2023 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright 2016-2024 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -10,7 +10,47 @@ import reframe as rfm
 import reframe.utility.sanity as sn
 
 
-class IorCheck(rfm.RegressionTest):
+class fetch_ior_benchmarks(rfm.RunOnlyRegressionTest):
+    descr = 'Fetch IOR benchmarks'
+    version = variable(str, value='4.0.0')
+    executable = 'wget'
+    executable_opts = [
+        f'https://github.com/hpc/ior/releases/download/{version}/ior-{version}.tar.gz'  # noqa: E501
+    ]
+
+    @sanity_function
+    def validate_download(self):
+        return sn.assert_eq(self.job.exitcode, 0)
+
+
+class build_ior_benchmarks(rfm.CompileOnlyRegressionTest):
+    descr = 'Build IOR benchmarks'
+    build_system = 'Autotools'
+    build_prefix = variable(str)
+    ior_benchmarks = fixture(fetch_ior_benchmarks, scope='session')
+
+    # Build on the remote system for consistency
+    build_locally = False 
+
+    @run_before('compile')
+    def prepare_build(self):
+        tarball = f'ior-{self.ior_benchmarks.version}.tar.gz'
+        self.build_prefix = tarball[:-7]
+        fullpath = os.path.join(self.ior_benchmarks.stagedir, tarball)
+        self.prebuild_cmds = [
+            f'cp {fullpath} {self.stagedir}',
+            f'tar xzf {tarball}',
+            f'cd {self.build_prefix}'
+        ]
+
+    @sanity_function
+    def validate_build(self):
+        # If compilation fails, the test would fail in any case, so nothing to
+        # further validate here.
+        return True
+
+
+class IorCheck(rfm.RunOnlyRegressionTest):
     base_dir = parameter(['/capstor/scratch/cscs',
                           '/scratch/snx3000tds',
                           '/scratch/snx3000',
