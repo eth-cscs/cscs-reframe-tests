@@ -32,6 +32,11 @@ class build_ior_benchmarks(rfm.CompileOnlyRegressionTest):
     # Build on the remote system for consistency
     build_locally = False 
 
+    @run_after('init')
+    def load_cray_module(self):
+        if self.current_system.name in ['eiger', 'pilatus']:
+            self.modules = ['cray']
+
     @run_before('compile')
     def prepare_build(self):
         tarball = f'ior-{self.ior_benchmarks.version}.tar.gz'
