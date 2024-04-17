@@ -138,6 +138,12 @@ class NamdBuildTest(rfm.CompileOnlyRegressionTest):
     build_locally = False
     tags = {'uenv'}
 
+        # Fix threads per task on Pilatus with Slurm 23.02.7
+        if self.current_system.name in ['pilatus']:
+            self.env_vars = {
+                'SRUN_CPUS_PER_TASK': '2'
+            }
+
     @run_before('compile')
     def prepare_build(self):
         self.uarch = uenv.uarch(self.current_partition)
