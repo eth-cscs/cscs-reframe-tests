@@ -77,6 +77,12 @@ class NamdCheck(rfm.RunOnlyRegressionTest):
                 self.num_tasks = 16
                 self.num_tasks_per_node = 1
 
+        # Fix threads per task on Pilatus with Slurm 23.02.7
+        if self.current_system.name in ['pilatus']:
+            self.env_vars = {
+                'SRUN_CPUS_PER_TASK': '2'
+            }
+
     @run_before('compile')
     def prepare_build(self):
         # Reset sources dir relative to the SCS apps prefix
