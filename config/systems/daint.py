@@ -197,14 +197,12 @@ site_configuration = {
             'name': 'PrgEnv-gnu',
             'modules': ['PrgEnv-gnu'],
             'target_systems': ['daint', 'dom'],
-            'prepare_cmds': ['module unload PrgEnv-cray'],
             'features': ['mpi', 'openmp']
         },
         {
             'name': 'PrgEnv-intel',
             'modules': ['PrgEnv-intel'],
             'target_systems': ['daint', 'dom'],
-            'prepare_cmds': ['module unload PrgEnv-cray'],
             'features': ['mpi', 'openmp']
         },
         {
@@ -212,7 +210,6 @@ site_configuration = {
             'modules': ['PrgEnv-nvidia'],
             'features': ['cuda', 'mpi', 'openmp'],
             'target_systems': ['daint', 'dom'],
-            'prepare_cmds': ['module unload PrgEnv-cray'],
         }
     ],
 }
