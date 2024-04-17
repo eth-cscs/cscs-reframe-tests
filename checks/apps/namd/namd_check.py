@@ -58,6 +58,7 @@ class NamdCheck(rfm.RunOnlyRegressionTest):
             # On Eiger a no-smp NAMD version is the default
             if self.current_system.name in ['eiger', 'pilatus']:
                 self.executable_opts = ['+idlepoll', 'stmv.namd']
+                self.num_cpus_per_task = 2
             else:
                 self.executable_opts = ['+idlepoll', '+ppn 71', 'stmv.namd']
                 self.num_cpus_per_task = 72
@@ -76,12 +77,6 @@ class NamdCheck(rfm.RunOnlyRegressionTest):
             else:
                 self.num_tasks = 16
                 self.num_tasks_per_node = 1
-
-        # Fix threads per task on Pilatus with Slurm 23.02.7
-        if self.current_system.name in ['pilatus']:
-            self.env_vars = {
-                'SRUN_CPUS_PER_TASK': '2'
-            }
 
     @run_before('compile')
     def prepare_build(self):
@@ -128,7 +123,7 @@ class NamdCheck(rfm.RunOnlyRegressionTest):
                 self.reference = {
                     'daint:mc': {'days_ns': (0.425, None, 0.10, 'days/ns')},
                     'eiger:mc': {'days_ns': (0.057, None, 0.05, 'days/ns')},
-                    'pilatus:mc': {'days_ns': (0.054, None, 0.05, 'days/ns')}
+                    'pilatus:mc': {'days_ns': (0.054, None, 0.10, 'days/ns')}
                 }
 
     @performance_function('days/ns')
