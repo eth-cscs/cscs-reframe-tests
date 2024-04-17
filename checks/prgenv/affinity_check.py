@@ -5,7 +5,6 @@
 
 
 import os
-import json
 
 import reframe as rfm
 import reframe.utility.sanity as sn
@@ -582,9 +581,7 @@ class OneTaskPerNumaNode(AffinityTestBase):
     @run_before('run')
     def set_tasks(self):
         self.num_tasks = self.num_numa_nodes
-        if self.current_partition.fullname in {'eiger:mc', 'pilatus:mc',
-                                               'hohgant:nvgpu'}:
-            self.num_cpus_per_task = 16
+        self.num_cpus_per_task = int(self.num_cpus / self.num_numa_nodes / self.num_cpus_per_core)
 
     @run_before('sanity')
     def consume_cpu_set(self):
