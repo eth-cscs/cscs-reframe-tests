@@ -167,13 +167,12 @@ class AffinityTestBase(rfm.RunOnlyRegressionTest):
         if by is None:
             raise ReframeError('must specify the sibling level')
         else:
-            # by not in {'core', 'socket', 'node'}:
             if by=='core':
                 for cpu_set in self.cores:
                     if cpuid in cpu_set:
                         return cpu_set
             elif by=='socket':
-                for cpu_set in self.cores:
+                for cpu_set in self.sockets:
                     if cpuid in cpu_set:
                         return cpu_set
             elif by=='node':
