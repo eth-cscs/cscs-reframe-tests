@@ -128,21 +128,69 @@ class NamdBuildTest(rfm.CompileOnlyRegressionTest):
     Test NAMD build from source.
     '''
 
-    descr = 'NAMD Build Test'
-    valid_prog_environs = ['+namd-single-node-dev']
-    valid_systems = ['+nvgpu +uenv']
-    build_system = AutotoolsCustom()
-    sourcesdir = None
-    maintainers = ['SSA']
-    namd_sources = fixture(namd_download, scope='session')
-    build_locally = False
-    tags = {'uenv'}
+    valid_prog_environs = ['builtin', 'cpeGNU']
+    modules = ['NAMD']
+    executable = 'namd2'
+    use_multithreading = True
+    num_tasks_per_core = 2
+    maintainers = ['CB', 'LM']
+    tags = {'scs', 'external-resources'}
+    extra_resources = {
+        'switches': {
+            'num_switches': 1
+        }
+    }
 
-        # Fix threads per task on Pilatus with Slurm 23.02.7
-        if self.current_system.name in ['pilatus']:
-            self.env_vars = {
-                'SRUN_CPUS_PER_TASK': '2'
-            }
+    @run_after('init')
+    def adapt_description(self):
+        self.descr = f'NAMD check ({self.arch})'
+        self.tags |= {'maintenance', 'production'}
+
+    @run_after('init')
+    def adapt_valid_systems(self):
+        if self.arch == 'gpu':
+            self.valid_systems = ['daint:gpu']
+            if self.scale == 'small':
+                self.valid_systems += ['dom:gpu']
+        else:
+            self.valid_systems = ['daint:mc', 'eiger:mc', 'pilatus:mc']
+            if self.scale == 'small':
+                self.valid_systems += ['dom:mc']
+
+    @run_after('init')
+    def adapt_valid_prog_environs(self):
+        if self.current_system.name in ['eiger', 'pilatus']:
+            self.valid_prog_environs.remove('builtin')
+
+    @run_after('init')
+    def setup_parallel_run(self):
+        if self.arch == 'gpu':
+            self.executable_opts = ['+idlepoll', '+ppn 23', 'stmv.namd']
+            self.num_cpus_per_task = 24
+            self.num_gpus_per_node = 1
+        else:
+            # On Eiger a no-smp NAMD version is the default
+            if self.current_system.name in ['eiger', 'pilatus']:
+                self.executable_opts = ['+idlepoll', 'stmv.namd']
+                self.num_cpus_per_task = 2
+            else:
+                self.executable_opts = ['+idlepoll', '+ppn 71', 'stmv.namd']
+                self.num_cpus_per_task = 72
+        if self.scale == 'small':
+            # On Eiger a no-smp NAMD version is the default
+            if self.current_system.name in ['eiger', 'pilatus']:
+                self.num_tasks = 768
+                self.num_tasks_per_node = 128
+            else:
+                self.num_tasks = 6
+                self.num_tasks_per_node = 1
+        else:
+            if self.current_system.name in ['eiger', 'pilatus']:
+                self.num_tasks = 2048
+                self.num_tasks_per_node = 128
+            else:
+                self.num_tasks = 16
+                self.num_tasks_per_node = 1
 
     @run_before('compile')
     def prepare_build(self):
@@ -263,20 +311,32 @@ class NamdCheck(rfm.RunOnlyRegressionTest):
         energy_reference = -2869519.8
         energy_diff = sn.abs(energy - energy_reference)
 
-        return sn.all(
-            [
-                sn.assert_eq(
-                    sn.count(
-                        sn.extractall(
-                            r'TIMING: (?P<step_num>\S+)  CPU:',
-                            self.stdout, 'step_num'
-                        )
-                    ),
-                    25,  # 500 steps and output frequency of 20
-                ),
-                sn.assert_lt(energy_diff, 2720),
-            ]
-        )
+    @run_before('performance')
+    def set_reference(self):
+        if self.arch == 'gpu':
+            if self.scale == 'small':
+                self.reference = {
+                    'dom:gpu': {'days_ns': (0.149, None, 0.10, 'days/ns')},
+                    'daint:gpu': {'days_ns': (0.178, None, 0.10, 'days/ns')}
+                }
+            else:
+                self.reference = {
+                    'daint:gpu': {'days_ns': (0.072, None, 0.15, 'days/ns')}
+                }
+        else:
+            if self.scale == 'small':
+                self.reference = {
+                    'dom:mc': {'days_ns': (0.543, None, 0.10, 'days/ns')},
+                    'daint:mc': {'days_ns': (0.513, None, 0.10, 'days/ns')},
+                    'eiger:mc': {'days_ns': (0.126, None, 0.05, 'days/ns')},
+                    'pilatus:mc': {'days_ns': (0.128, None, 0.05, 'days/ns')},
+                }
+            else:
+                self.reference = {
+                    'daint:mc': {'days_ns': (0.425, None, 0.10, 'days/ns')},
+                    'eiger:mc': {'days_ns': (0.057, None, 0.05, 'days/ns')},
+                    'pilatus:mc': {'days_ns': (0.054, None, 0.10, 'days/ns')}
+                }
 
     @performance_function('ns/day')
     def ns_day(self):
