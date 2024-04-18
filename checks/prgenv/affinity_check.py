@@ -52,7 +52,7 @@ class CompileAffinityToolNoOmp(CompileAffinityTool):
 class AffinityTestBase(rfm.RunOnlyRegressionTest):
     '''Base class for the affinity checks.
 
-    It setus up the processor's topology, based on the configuration.
+    It sets up the processor's topology, based on the configuration.
     '''
 
     # Variables to control the hint and binding options on the launcher.
