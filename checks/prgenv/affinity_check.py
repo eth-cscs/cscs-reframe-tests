@@ -86,11 +86,15 @@ class AffinityTestBase(rfm.RunOnlyRegressionTest):
 
     @run_before('run')
     def add_launcher_opts_from_env_extras(self):
-        self.job.launcher.options += self.current_environ.extras.get('launcher_options', [])
+        self.job.launcher.options += (
+            self.current_environ.extras.get('launcher_options', [])
+        )
 
     @run_before('run')
     def set_executable(self):
-        scheduler = self.affinity_tool.current_partition.scheduler.registered_name
+        scheduler = (
+            self.affinity_tool.current_partition.scheduler.registered_name
+        )
         if scheduler != 'firecrest-slurm':
             remote_stagedir = self.affinity_tool.stagedir
         else:
@@ -138,20 +142,23 @@ class AffinityTestBase(rfm.RunOnlyRegressionTest):
 
         # Build the numa sets
         self.numa_nodes = [
-            set(self.bitmask_to_list(i)) for i in processor_info.topology['numa_nodes']
+            set(self.bitmask_to_list(i))
+            for i in processor_info.topology['numa_nodes']
         ]
         self.num_numa_nodes = len(self.numa_nodes)
 
         # Build the core sets
         self.num_cpus_per_core = processor_info.num_cpus_per_core
         self.cores = [
-            set(self.bitmask_to_list(i)) for i in processor_info.topology['cores']
+            set(self.bitmask_to_list(i))
+            for i in processor_info.topology['cores']
         ]
 
         # Build the socket sets
         self.num_sockets = processor_info.num_sockets
         self.sockets = [
-            set(self.bitmask_to_list(i)) for i in processor_info.topology['sockets']
+            set(self.bitmask_to_list(i))
+            for i in processor_info.topology['sockets']
         ]
 
     def get_sibling_cpus(self, cpuid, by=None):
@@ -167,22 +174,23 @@ class AffinityTestBase(rfm.RunOnlyRegressionTest):
         if by is None:
             raise ReframeError('must specify the sibling level')
         else:
-            if by=='core':
+            if by == 'core':
                 for cpu_set in self.cores:
                     if cpuid in cpu_set:
                         return cpu_set
-            elif by=='socket':
+            elif by == 'socket':
                 for cpu_set in self.sockets:
                     if cpuid in cpu_set:
                         return cpu_set
-            elif by=='node':
+            elif by == 'node':
                 for cpu_set in self.numa_nodes:
                     if cpuid in cpu_set:
                         return cpu_set
             else:
                 raise ReframeError('invalid sibling level')
 
-            return ReframeError(f'could not find the siblings by {by} for cpu {cpuid}')
+            return ReframeError(f'could not find the siblings by {by} '
+                                f'for cpu {cpuid}')
 
     @sanity_function
     def assert_consumed_cpu_set(self):
@@ -564,10 +572,11 @@ class OneTaskPerNumaNode(AffinityTestBase):
     num_cpus_per_task = required
     affinity_tool = fixture(CompileAffinityToolNoOmp, scope='environment')
 
-
     @run_before('run')
     def set_executable(self):
-        scheduler = self.affinity_tool.current_partition.scheduler.registered_name
+        scheduler = (
+            self.affinity_tool.current_partition.scheduler.registered_name
+        )
         if scheduler != 'firecrest-slurm':
             remote_stagedir = self.affinity_tool.stagedir
         else:
@@ -580,7 +589,8 @@ class OneTaskPerNumaNode(AffinityTestBase):
     @run_before('run')
     def set_tasks(self):
         self.num_tasks = self.num_numa_nodes
-        self.num_cpus_per_task = int(self.num_cpus / self.num_numa_nodes / self.num_cpus_per_core)
+        self.num_cpus_per_task = int(self.num_cpus / self.num_numa_nodes
+                                     / self.num_cpus_per_core)
 
     @run_before('sanity')
     def consume_cpu_set(self):
