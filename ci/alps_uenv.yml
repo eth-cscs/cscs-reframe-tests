@@ -1,0 +1,24 @@
+include:
+  - remote: 'https://gitlab.com/cscs-ci/recipes/-/raw/master/templates/v2/.ci-ext.yml'
+
+stages:
+  - reframe
+
+# https://github.com/finkandreas/benchpark/blob/develop/.ci/cscs.yml
+run rfm_test:
+  stage: reframe
+  # tags: ['eiger-login-baremetal']
+  tags: ['baremetal-runner-eiger-mc-f7t']
+  variables:
+    GIT_STRATEGY: fetch
+  script:
+    - export RFM_AUTODETECT_XTHOSTNAME=1
+    - pwd
+    - ls -la
+#del       - ./bin/reframe -C ../config/cscs-uenv.py ../checks/uenv --report-junit=../report.xml -r
+#del   artifacts:
+#del     when: always
+#del     paths:
+#del       - report.xml
+#del     reports:
+#del       junit: report.xml
