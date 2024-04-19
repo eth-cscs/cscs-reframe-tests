@@ -8,10 +8,12 @@ stages:
 run rfm_test:
   stage: reframe
   # tags: ['eiger-login-baremetal']
-  tags: ['baremetal-runner-eiger-mc-f7t']
+  # tags: ['baremetal-runner-eiger-mc-f7t']
+  tags: ['f7t-runner']
   variables:
     GIT_STRATEGY: fetch
   script:
+    - uname -a
     - export RFM_AUTODETECT_XTHOSTNAME=1
     - pwd
     - ls -la
