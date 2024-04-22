@@ -51,9 +51,9 @@ check_uenv_oras() {
 # {{{ jfrog_login 
 jfrog_login() {
     creds_json=$(curl --retry 5 --retry-connrefused --fail --silent "$jfrog_request")
-    oras_creds="$(echo ${creds_json} | jq --join-output '"--username " + .container_registry.username + " --password " +.container_registry.password')"
-    jfrog_u="$(echo ${creds_json} | jq -r '.container_registry.username')"
-    jfrog_p="$(echo ${creds_json} | jq -r '.container_registry.password')"
+    oras_creds="$(echo ${creds_json} | /usr/bin/jq --join-output '"--username " + .container_registry.username + " --password " +.container_registry.password')"
+    jfrog_u="$(echo ${creds_json} | /usr/bin/jq -r '.container_registry.username')"
+    jfrog_p="$(echo ${creds_json} | /usr/bin/jq -r '.container_registry.password')"
     ## Create a unique credentials path for this job,
     ## because by default credentials are stored in ~/.docker/config.json which
     ## causes conflicts for concurrent jobs (https://github.com/eth-cscs/alps-uenv)
