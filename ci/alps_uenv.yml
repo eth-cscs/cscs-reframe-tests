@@ -24,9 +24,9 @@ run rfm_test:
     GIT_STRATEGY: fetch
   script:
     - pwd
-    - oras_path=$(./ci/scripts/alps_uenv.sh setup_oras)
-    - export PATH=$oras_path:$PATH
-    - oras version
+    - ./ci/scripts/alps_uenv.sh setup_oras
+    - export PATH=$PWD:$PATH
+    # - oras version
     - ./ci/scripts/alps_uenv.sh setup_jq
     - ./ci/scripts/alps_uenv.sh jfrog_login
     # - echo "PATH=$PATH" | tr : "\n"

@@ -34,15 +34,15 @@ setup_oras() {
   oras_version=1.1.0
   oras_file=oras_${oras_version}_linux_${oras_arch}.tar.gz
   oras_url=https://github.com/oras-project/oras/releases/download/v${oras_version}/${oras_file}
-  (cd $oras_tmp && wget --quiet "$oras_url" && tar zxf $oras_file && rm -f *.tar.gz)
+  (wget --quiet "$oras_url" && tar zxf $oras_file && rm -f *.tar.gz)
   # export PATH="$oras_tmp:$PATH"
-  echo $oras_tmp
-  # oras version
+  # echo $PWD
+  ./oras version
 }
 # }}}
 # {{{ setup_jq 
 setup_jq() {
-  cd $oras_tmp 
+  # cd $oras_tmp 
   wget --quiet https://github.com/jqlang/jq/releases/download/jq-1.6/jq-linux64
   chmod 700 jq-linux64
   mv jq-linux64 jq
