@@ -34,7 +34,11 @@ setup_oras() {
   oras_version=1.1.0
   oras_file=oras_${oras_version}_linux_${oras_arch}.tar.gz
   oras_url=https://github.com/oras-project/oras/releases/download/v${oras_version}/${oras_file}
-  (cd "$oras_tmp"; wget --quiet "$oras_url"; tar -xzf $oras_file; rm *.tar.gz)
+  # (cd "$oras_tmp" && wget --quiet "$oras_url" && tar zxf $oras_file && rm -f *.tar.gz)
+  cd $oras_tmp
+  wget "$oras_url"
+  tar -xzf $oras_file
+  rm -f *.tar.gz
   export PATH="$oras_tmp:$PATH"
   # oras version
 }
