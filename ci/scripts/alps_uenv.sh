@@ -172,7 +172,7 @@ case $in in
     setup_oras) setup_oras;;
     setup_jq) setup_jq;;
     check_uenv_oras) check_uenv_oras;;
-    jfrog_login) jfrog_login;;
+    jfrog_login) jfrog_login "$jfrog_creds_path";;
     *) echo "unknown arg=$in";;
 esac
 #old pwd
