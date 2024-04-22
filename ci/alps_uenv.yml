@@ -24,8 +24,10 @@ run rfm_test:
     GIT_STRATEGY: fetch
   script:
     - pwd
-    - export PATH=$(./ci/scripts/alps_uenv.sh setup_oras):$PATH
+    - oras_path=$(./ci/scripts/alps_uenv.sh setup_oras)
+    - export PATH=$oras_path:$PATH
     - echo "PATH=$PATH"
+    - ls -l $oras_path/
     # - echo "PATH=$PATH" | tr : "\n"
     # - which oras
     # - uenv --version
