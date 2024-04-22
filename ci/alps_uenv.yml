@@ -24,14 +24,12 @@ run rfm_test:
     GIT_STRATEGY: fetch
   script:
     - pwd
-    - ls -la
-    - id
-    - env |sort
     - echo "before"
-    - ./ci/scripts/alps_uenv.sh check_uenv_oras
+    - ./ci/scripts/alps_uenv.sh setup_oras
+    - find . -name oras
     - which oras
-    - uenv --version
-    - export RFM_AUTODETECT_XTHOSTNAME=1
+      # - uenv --version
+      # - export RFM_AUTODETECT_XTHOSTNAME=1
   variables:
     SLURM_CONSTRAINT: mc
     SLURM_PARTITION: debug

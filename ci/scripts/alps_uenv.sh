@@ -1,8 +1,9 @@
 #!/bin/bash
 
 # {{{ input parameters <--- 
-oras="$UENV_PREFIX/libexec/uenv-oras"  # /users/piccinal/.local/ on eiger
+# oras="$UENV_PREFIX/libexec/uenv-oras"  # /users/piccinal/.local/ on eiger
 oras_tmp=`mktemp -d`
+oras="$oras_tmp/oras"
 # oras_path=`mktemp -d`
 rfm_meta_yaml="$oras_tmp/meta/extra/reframe.yaml"
 # artifact_path=$PWD  # "$oras_tmp"
@@ -157,6 +158,7 @@ launch_reframe() {
 # {{{ main
 in=$1
 case $in in
+    setup_oras) setup_oras;;
     check_uenv_oras) check_uenv_oras;;
     *) echo "unknown arg=$in";;
 esac
