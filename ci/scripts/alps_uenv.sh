@@ -50,6 +50,21 @@ setup_jq() {
   ./jq --version
 }
 # }}}
+# {{{ setup_uenv 
+setup_uenv() {
+  # cd $oras_tmp 
+  uenv_repo=https://github.com/eth-cscs/uenv
+  uenv_version=4.0.1
+  (wget --quiet $uenv_repo/archive/refs/tags/v$uenv_version.tar.gz && \
+  tar xf v$uenv_version.tar.gz && cd uenv-$uenv_version/ && \
+  echo N | ./install --prefix=$PWD/.. --local && \
+  rm -f v$uenv_version.tar.gz uenv-$uenv_version)
+  # ls -lrt bin/activate-uenv
+  # /users/piccinal/cscs-reframe-tests.git/ci/DEL/uenv/bin/activate-uenv
+  # ./jq --version
+}
+# }}}
+
 # {{{ check_uenv_oras 
 check_uenv_oras() {
     # [[ -x $UENV_PREFIX ]] || { echo "UENV_PREFIX=$UENV_PREFIX is not set, exiting"; exit 1; }
@@ -170,6 +185,7 @@ launch_reframe() {
 in=$1
 case $in in
     setup_oras) setup_oras;;
+    setup_uenv) setup_uenv;;
     setup_jq) setup_jq;;
     check_uenv_oras) check_uenv_oras;;
     jfrog_login) jfrog_login "$jfrog_creds_path";;
