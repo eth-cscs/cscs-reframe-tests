@@ -40,6 +40,15 @@ setup_oras() {
   # oras version
 }
 # }}}
+# {{{ setup_jq 
+setup_jq() {
+  cd $oras_tmp 
+  wget --quiet https://github.com/jqlang/jq/releases/download/jq-1.6/jq-linux64
+  chmod 700 jq-linux64
+  mv jq-linux64 jq
+  ./jq --version
+}
+# }}}
 # {{{ check_uenv_oras 
 check_uenv_oras() {
     # [[ -x $UENV_PREFIX ]] || { echo "UENV_PREFIX=$UENV_PREFIX is not set, exiting"; exit 1; }
@@ -51,9 +60,9 @@ check_uenv_oras() {
 # {{{ jfrog_login 
 jfrog_login() {
     creds_json=$(curl --retry 5 --retry-connrefused --fail --silent "$jfrog_request")
-    oras_creds="$(echo ${creds_json} | /usr/bin/jq --join-output '"--username " + .container_registry.username + " --password " +.container_registry.password')"
-    jfrog_u="$(echo ${creds_json} | /usr/bin/jq -r '.container_registry.username')"
-    jfrog_p="$(echo ${creds_json} | /usr/bin/jq -r '.container_registry.password')"
+    oras_creds="$(echo ${creds_json} | jq --join-output '"--username " + .container_registry.username + " --password " +.container_registry.password')"
+    jfrog_u="$(echo ${creds_json} | jq -r '.container_registry.username')"
+    jfrog_p="$(echo ${creds_json} | jq -r '.container_registry.password')"
     ## Create a unique credentials path for this job,
     ## because by default credentials are stored in ~/.docker/config.json which
     ## causes conflicts for concurrent jobs (https://github.com/eth-cscs/alps-uenv)
@@ -160,6 +169,7 @@ launch_reframe() {
 in=$1
 case $in in
     setup_oras) setup_oras;;
+    setup_jq) setup_jq;;
     check_uenv_oras) check_uenv_oras;;
     jfrog_login) jfrog_login;;
     *) echo "unknown arg=$in";;
