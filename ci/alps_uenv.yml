@@ -8,9 +8,9 @@ stages:
 
 variables:
   MODE: 'f7t-controller'
-  # FIRECREST_SYSTEM: 'eiger'
   WORKSPACE: '$${CI_CACHE_FOLDER}/rfm_workspace'
   JOB_NAME: rfm-$CI_PIPELINE_ID
+  # FIRECREST_SYSTEM: 'eiger'
 # https://github.com/finkandreas/benchpark/blob/develop/.ci/cscs.yml
 
 run rfm_test:
@@ -25,17 +25,11 @@ run rfm_test:
   script:
     - pwd
     - export PATH=$(./ci/scripts/alps_uenv.sh setup_oras):$PATH
-    - echo "PATH=$PATH" | tr : "\n"
-      # - which oras
-      # - uenv --version
-      # - export RFM_AUTODETECT_XTHOSTNAME=1
+    - echo "PATH=$PATH"
+    # - echo "PATH=$PATH" | tr : "\n"
+    # - which oras
+    # - uenv --version
+    # - export RFM_AUTODETECT_XTHOSTNAME=1
   variables:
     SLURM_CONSTRAINT: mc
     SLURM_PARTITION: debug
-#del       - ./bin/reframe -C ../config/cscs-uenv.py ../checks/uenv --report-junit=../report.xml -r
-#del   artifacts:
-#del     when: always
-#del     paths:
-#del       - report.xml
-#del     reports:
-#del       junit: report.xml
