@@ -7,19 +7,20 @@ stages:
   - reframe
 
 variables:
-  MODE: 'f7t-controller'
   # FIRECREST_SYSTEM: 'eiger'
   WORKSPACE: '$${CI_CACHE_FOLDER}/rfm_workspace'
   JOB_NAME: rfm-$CI_PIPELINE_ID
 # https://github.com/finkandreas/benchpark/blob/develop/.ci/cscs.yml
 
 run rfm_test:
-  extends: .f7t-baremetal-runner
+  # extends: .f7t-baremetal-runner
+  extends: .f7t-runner
   stage: reframe
   # tags: ['eiger-login-baremetal']
   # tags: ['baremetal-runner-eiger-mc-f7t']
   tags: ['f7t-runner']
   variables:
+    MODE: 'f7t-controller'
     GIT_STRATEGY: fetch
   script:
     - echo "before"
