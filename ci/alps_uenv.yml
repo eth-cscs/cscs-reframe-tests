@@ -25,9 +25,9 @@ run rfm_test:
   script:
     - pwd
     - echo $SHELL
-    - bash -x ./ci/scripts/alps_uenv.sh setup_oras
-    - find . -name oras
-    - which oras
+    - export PATH=`./ci/scripts/alps_uenv.sh setup_oras`:$PATH
+    - echo "PATH=$PATH" | tr : "\n"
+      # - which oras
       # - uenv --version
       # - export RFM_AUTODETECT_XTHOSTNAME=1
   variables:
