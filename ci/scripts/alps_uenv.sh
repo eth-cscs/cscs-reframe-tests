@@ -161,6 +161,7 @@ in=$1
 case $in in
     setup_oras) setup_oras;;
     check_uenv_oras) check_uenv_oras;;
+    jfrog_login) jfrog_login;;
     *) echo "unknown arg=$in";;
 esac
 #old pwd
