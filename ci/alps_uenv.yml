@@ -8,7 +8,7 @@ stages:
 
 variables:
   MODE: 'f7t-controller'
-  FIRECREST_SYSTEM: 'eiger'
+  # FIRECREST_SYSTEM: 'eiger'
   WORKSPACE: '$${CI_CACHE_FOLDER}/rfm_workspace'
   JOB_NAME: rfm-$CI_PIPELINE_ID
 # https://github.com/finkandreas/benchpark/blob/develop/.ci/cscs.yml
@@ -22,14 +22,11 @@ run rfm_test:
   variables:
     GIT_STRATEGY: fetch
   script:
-    - WORKSPACE="$(eval echo $WORKSPACE)"
-    - echo "Using WORKSPACE=$WORKSPACE"
-    - uname -a
+    - echo "before"
+    - ./ci/scripts/alps_uenv.sh check_uenv_oras
+    - which oras
+    - uenv --version
     - export RFM_AUTODETECT_XTHOSTNAME=1
-    - env
-    - pwd
-    - ls -la
-    - firecrest --version
   variables:
     SLURM_CONSTRAINT: mc
     SLURM_PARTITION: debug
