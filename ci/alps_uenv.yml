@@ -24,8 +24,8 @@ run rfm_test:
     GIT_STRATEGY: fetch
   script:
     - pwd
-    - echo "before"
-    - ./ci/scripts/alps_uenv.sh setup_oras
+    - echo $SHELL
+    - bash -x ./ci/scripts/alps_uenv.sh setup_oras
     - find . -name oras
     - which oras
       # - uenv --version
