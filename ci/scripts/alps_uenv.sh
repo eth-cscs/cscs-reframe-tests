@@ -57,7 +57,7 @@ setup_uenv() {
   uenv_version=4.0.1
   (wget --quiet $uenv_repo/archive/refs/tags/v$uenv_version.tar.gz && \
   tar xf v$uenv_version.tar.gz && cd uenv-$uenv_version/ && \
-  echo N | ./install --prefix=$PWD/.. --local && \
+  echo N | ./install --prefix=$PWD --local && \
   rm -f v$uenv_version.tar.gz uenv-$uenv_version)
   # ls -lrt bin/activate-uenv
   # /users/piccinal/cscs-reframe-tests.git/ci/DEL/uenv/bin/activate-uenv
