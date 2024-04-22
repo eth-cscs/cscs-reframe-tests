@@ -13,6 +13,7 @@ run rfm_test:
     GIT_STRATEGY: fetch
   script:
     - export RFM_AUTODETECT_XTHOSTNAME=1
+    - env
     - pwd
     - ls -la
 #del       - ./bin/reframe -C ../config/cscs-uenv.py ../checks/uenv --report-junit=../report.xml -r
