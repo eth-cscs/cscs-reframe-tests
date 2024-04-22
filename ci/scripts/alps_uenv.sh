@@ -2,7 +2,8 @@
 
 # {{{ input parameters <--- 
 # oras="$UENV_PREFIX/libexec/uenv-oras"  # /users/piccinal/.local/ on eiger
-oras_tmp=`mktemp -d`
+# oras_tmp=`mktemp -d`
+oras_tmp=$PWD
 oras="$oras_tmp/oras"
 # oras_path=`mktemp -d`
 rfm_meta_yaml="$oras_tmp/meta/extra/reframe.yaml"
