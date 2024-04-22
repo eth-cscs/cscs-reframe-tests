@@ -28,7 +28,7 @@ run rfm_test:
     - export PATH=$PWD:$PATH
     # - oras version
     - ./ci/scripts/alps_uenv.sh setup_jq
-    - bash -x ./ci/scripts/alps_uenv.sh jfrog_login
+    - ./ci/scripts/alps_uenv.sh jfrog_login
     # - echo "PATH=$PATH" | tr : "\n"
     # - which oras
     # - uenv --version
