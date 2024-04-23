@@ -9,7 +9,8 @@ oras="uenv-oras"
 rfm_meta_yaml="$oras_tmp/meta/extra/reframe.yaml"
 # artifact_path=$PWD  # "$oras_tmp"
 jfrog_creds_path="${oras_tmp}/docker/config.json"
-jfrog_request="$CSCS_CI_MW_URL/credentials?token=$CI_JOB_TOKEN&creds=container_registry"
+jfrog_request="$CSCS_CI_MW_URL/credentials&token=$CI_JOB_TOKEN&job_id=$CI_JOB_ID&creds=container_registry"
+# https://cicd-ext-mw.cscs.ch/ci
 # system="santis" ; uarch="gh200"
 system="eiger" ; uarch="zen2"
 #del name=`echo $in |cut -d: -f1`
