@@ -63,6 +63,7 @@ run reframe:
     FIRECREST_SYSTEM: "eiger"
   script:
     - pwd
+    - ./ci/scripts/alps_uenv.sh setup_uenv_and_oras &> setup_uenv_and_oras.log
     - source ./uenv-4.0.1/bin/activate-uenv
     - imgs=$(./ci/scripts/alps_uenv.sh uenv_image_find)
     - echo "imgs=$imgs"
