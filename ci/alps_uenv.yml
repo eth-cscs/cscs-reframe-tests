@@ -42,9 +42,9 @@ setup and pull:
     # - oras version
     - ./ci/scripts/alps_uenv.sh setup_jq
     - ./ci/scripts/alps_uenv.sh setup_uenv_and_oras &> setup_uenv_and_oras.log
-      #    - oras="$(dirname $UENV_CMD)"/oras_
     - source ./uenv-4.0.1/bin/activate-uenv
     - uenv --version
+    - export oras="$UENV_PREFIX/libexec/uenv-oras"
     - ./ci/scripts/alps_uenv.sh jfrog_login
     # - echo "PATH=$PATH" | tr : "\n"
     # - which oras
