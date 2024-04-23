@@ -113,8 +113,8 @@ oras_pull_meta_dir() {
     meta_digest=`$oras discover --output json --artifact-type 'uenv/meta' $jfrog/$name:$tag \
     | jq -r '.manifests[0].digest'`
     #
-    $oras --registry-config $jfrog_creds_path \
-    pull --output "${oras_tmp}" "$jfrog/$name@$meta_digest"
+    # $oras --registry-config $jfrog_creds_path \
+    $oras pull --output "${oras_tmp}" "$jfrog/$name@$meta_digest"
     #
     [[ $? -eq 0 ]] || { echo "failed to download $jfrog/$name@$meta_digest, exiting"; exit 1; }
 }
