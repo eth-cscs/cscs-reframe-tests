@@ -101,7 +101,7 @@ uenv_image_find() {
     uenv image find |grep -v 'uenv/version:' |awk '{print $1}'
 }
 # }}}
-# {{{ oras_pull_meta 
+# {{{ oras_pull_meta_dir
 oras_pull_meta_dir() {
     img=$1
     name=`echo "$img" |cut -d: -f1`

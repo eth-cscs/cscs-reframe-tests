@@ -47,7 +47,7 @@ setup and pull:
     - echo "imgs=$imgs"
     - img0=$(echo $imgs | cut -d" " -f1)
     - echo "img0=$img0"
-    - ./ci/scripts/alps_uenv.sh oras_pull_meta_dir "$img0"
+    - bash -x ./ci/scripts/alps_uenv.sh oras_pull_meta_dir "$img0"
     - bash -x ./ci/scripts/alps_uenv.sh uenv_pull_sqfs "$img0"
     - rfm_path=$(./ci/scripts/alps_uenv.sh install_reframe)
     - export PATH=$rfm_path:$PATH
