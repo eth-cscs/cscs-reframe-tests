@@ -20,7 +20,7 @@ system="eiger" ; uarch="zen2"
 jfrog=jfrog.svc.cscs.ch/uenv/deploy/$system/$uarch
 jfrog_u="piccinal"
 [[ -z "${SLURM_PARTITION}" ]] && RFM_SYSTEM="${system}" || RFM_SYSTEM="${system}:${SLURM_PARTITION}"
-# }}}
+ # }}}
 
 # {{{ setup_jq 
 setup_jq() {
@@ -194,7 +194,7 @@ launch_reframe() {
     # export RFM_AUTODETECT_XTHOSTNAME=1
     # reframe -C cscs-reframe-tests/config/cscs.py --report-junit=report.xml -c cscs-reframe-tests/checks/ -r --system=${RFM_SYSTEM}
     reframe -V
-    reframe -C cscs-reframe-tests/config/cscs.py --report-junit=report.xml -c cscs-reframe-tests/checks/ -r --system=
+    reframe -C ./config/cscs.py --report-junit=report.xml -c ./checks/ -r --system=$system
 }
 # }}}
 
