@@ -103,8 +103,9 @@ uenv_image_find() {
 # }}}
 # {{{ oras_pull_meta 
 oras_pull_meta_dir() {
-    name=$1
-    tag=$2
+    img=$1
+    name=`echo "$img" |cut -d: -f1`
+    tag=`echo "$img" |cut -d: -f2`
     #
     meta_digest=`$oras --registry-config $jfrog_creds_path \
     discover --output json --artifact-type 'uenv/meta' $jfrog/$name:$tag \
@@ -159,17 +160,20 @@ install_reframe() {
     python3 -m venv rfm_venv
     source rfm_venv/bin/activate
     # pip install --upgrade reframe-hpc
-    git clone -b v4.5.2 --depth 1 https://github.com/reframe-hpc/reframe.git
-    (cd reframe; ./bootstrap.sh)
-    # TODO: https://github.com/reframe-hpc/reframe/archive/refs/tags/v4.5.2.tar.gz
-    # (cd reframe; git checkout v4.5.0; ./bootstrap.sh)
-    export PATH="$(pwd)/reframe/bin:$PATH"
+    # git clone -b v4.5.2 --depth 1 https://github.com/reframe-hpc/reframe.git
+    (wget --quiet "https://github.com/reframe-hpc/reframe/archive/refs/tags/v4.5.2.tar.gz" && \
+    tar xf v4.5.2.tar.gz && \
+    cd reframe-4.5.2 && \
+    ./bootstrap.sh)
+    echo "$PWD/reframe-4.5.2/bin"
+    # export PATH="$(pwd)/reframe/bin:$PATH"
 }    
 # }}}
 # {{{ install_reframe_tests (alps branch) 
 install_reframe_tests() {
     rm -fr cscs-reframe-tests
     git clone -b alps https://github.com/eth-cscs/cscs-reframe-tests.git
+    # no need
 }
 # }}}
 # {{{ launch_reframe 
@@ -184,6 +188,7 @@ launch_reframe() {
 
 # {{{ main
 in=$1
+img=$2
 case $in in
     setup_jq) setup_jq;;
     setup_uenv_and_oras) setup_uenv_and_oras;;
@@ -191,31 +196,14 @@ case $in in
     check_uenv_oras) check_uenv_oras;;
     jfrog_login) jfrog_login "$jfrog_creds_path";;
     uenv_image_find) uenv_image_find;;
-    oras_pull_meta_dir) oras_pull_meta_dir;;
+    oras_pull_meta_dir) oras_pull_meta_dir "$img";;
     oras_pull_sqfs) oras_pull_sqfs;;
-    uenv_pull_sqfs) uenv_pull_sqfs;;
+    uenv_pull_sqfs) uenv_pull_sqfs "$img";;
     install_reframe) install_reframe;;
     install_reframe_tests) install_reframe_tests;;
     launch_reframe) launch_reframe;;
     *) echo "unknown arg=$in";;
 esac
-#old pwd
-#old ls -la
-#old check_uenv_oras
-#old echo
-#old 
-#old jfrog_login "$jfrog_creds_path" # "$jfrog_u" "$XXX"
-#old echo
-#old 
-#old imgs=`uenv_image_find`
-#old # echo $imgs
-#old # for ii in `echo $imgs |cut -d" " -f1` ;do e $ii ;done
-#old img0=`echo $imgs |cut -d" " -f1`
-#old name=`echo $img0 |cut -d: -f1`
-#old tag=`echo $img0 |cut -d: -f2`
-#old oras_pull_meta_dir $name $tag
-#old echo
-#old 
 #old uenv_pull_sqfs "$name:$tag"
 #old echo
 #old 
