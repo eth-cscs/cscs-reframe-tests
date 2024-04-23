@@ -167,7 +167,7 @@ install_reframe() {
     tar xf v4.5.2.tar.gz && \
     cd reframe-4.5.2 && \
     ./bootstrap.sh)
-    echo "$PWD/reframe-4.5.2/bin"
+    # echo "$PWD/reframe-4.5.2/bin"
     # export PATH="$(pwd)/reframe/bin:$PATH"
 }    
 # }}}
