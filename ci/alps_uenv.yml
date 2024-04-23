@@ -26,13 +26,13 @@ setup and pull:
     # STACK_NAME:       "prgenv-gnu/23.11"
     # STACK_SYSTEM:     "eiger"
     # STACK_UARCH:      "zen2"
-    SLURM_PARTITION:  "debug"
+    SLURM_PARTITION: "debug"
     SLURM_CONSTRAINT: "mc"
     F7T_TOKEN_URL: "https://auth.cscs.ch/auth/realms/firecrest-clients/protocol/openid-connect/token"
     F7T_URL: "https://firecrest.cscs.ch"
     MODE: "baremetal"
     SLURM_ACCOUNT: "csstaff"
-    FIRECREST_SYSTEM: "eiger"    
+    FIRECREST_SYSTEM: "eiger"
   script:
     - id
     - pwd
@@ -44,10 +44,15 @@ setup and pull:
     - ./ci/scripts/alps_uenv.sh setup_uenv_and_oras &> setup_uenv_and_oras.log
     - source ./uenv-4.0.1/bin/activate-uenv
     - uenv --version
-    - export oras="$UENV_PREFIX/libexec/uenv-oras"
+    - export PATH=$UENV_PREFIX/libexec:$PATH
+    - uenv-oras version
     - ./ci/scripts/alps_uenv.sh jfrog_login
+    - imgs=$(uenv_image_find)
+    - echo "imgs=$imgs"
+    - img0=$(echo $imgs | cut -d' ' -f1)
+    - echo "img0=$img0"
+    # - oras_pull_meta_dir
     # - echo "PATH=$PATH" | tr : "\n"
     # - which oras
     # - uenv --version
     # - export RFM_AUTODETECT_XTHOSTNAME=1
-

@@ -4,7 +4,7 @@
 # oras="$UENV_PREFIX/libexec/uenv-oras"  # /users/piccinal/.local/ on eiger
 # oras_tmp=`mktemp -d`
 oras_tmp=$PWD
-oras="$oras_tmp/oras"
+oras="uenv-oras"
 # oras_path=`mktemp -d`
 rfm_meta_yaml="$oras_tmp/meta/extra/reframe.yaml"
 # artifact_path=$PWD  # "$oras_tmp"
@@ -22,25 +22,27 @@ jfrog_u="piccinal"
 
 # {{{ setup_jq 
 setup_jq() {
-  # cd $oras_tmp 
-  wget --quiet https://github.com/jqlang/jq/releases/download/jq-1.6/jq-linux64
-  chmod 700 jq-linux64
-  mv jq-linux64 jq
-  ./jq --version
+  if [ ! -x /usr/bin/jq ] ;then
+    wget --quiet https://github.com/jqlang/jq/releases/download/jq-1.6/jq-linux64
+    chmod 700 jq-linux64
+    mv jq-linux64 jq
+    ./jq --version
+  fi
 }
 # }}}
 # {{{ setup_uenv_and_oras 
 setup_uenv_and_oras() {
   # cd $oras_tmp 
-  uenv_repo=https://github.com/eth-cscs/uenv
-  uenv_version=4.0.1
-  (wget --quiet $uenv_repo/archive/refs/tags/v$uenv_version.tar.gz && \
-  tar xf v$uenv_version.tar.gz && cd uenv-$uenv_version/ && \
-  echo N | ./install --prefix=$PWD --local && \
-  rm -f v$uenv_version.tar.gz uenv-$uenv_version)
-  # ls -lrt bin/activate-uenv
-  # /users/piccinal/cscs-reframe-tests.git/ci/DEL/uenv/bin/activate-uenv
-  # ./jq --version
+  if [ -z $UENV_PREFIX ] ;then
+    uenv_repo=https://github.com/eth-cscs/uenv
+    uenv_version=4.0.1
+    (wget --quiet $uenv_repo/archive/refs/tags/v$uenv_version.tar.gz && \
+    tar xf v$uenv_version.tar.gz && cd uenv-$uenv_version/ && \
+    echo N | ./install --prefix=$PWD --local && \
+    rm -f v$uenv_version.tar.gz uenv-$uenv_version)
+  fi    
+  # source ./uenv-4.0.1/bin/activate-uenv
+  # export oras="$UENV_PREFIX/libexec/uenv-oras"
 }
 # }}}
 # {{{ setup_oras_without_uenv 
