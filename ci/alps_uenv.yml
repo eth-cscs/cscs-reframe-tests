@@ -50,4 +50,4 @@ setup and pull and run:
     - rfm_path=$(./ci/scripts/alps_uenv.sh install_reframe)
     - export PATH=$PWD/reframe-4.5.2/bin:$PATH
     - img0_path=$(./ci/scripts/alps_uenv.sh uenv_sqfs_fullpath "$img0")
-    - ./ci/scripts/alps_uenv.sh launch_reframe
+    - ./ci/scripts/alps_uenv.sh launch_reframe "$img0_path"
