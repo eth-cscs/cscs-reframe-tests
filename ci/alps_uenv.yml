@@ -52,7 +52,4 @@ setup and pull:
     - rfm_path=$(./ci/scripts/alps_uenv.sh install_reframe)
     - export PATH=$rfm_path:$PATH
     - ./ci/scripts/alps_uenv.sh launch_reframe
-    # - echo "PATH=$PATH" | tr : "\n"
-    # - which oras
-    # - uenv --version
     # - export RFM_AUTODETECT_XTHOSTNAME=1
