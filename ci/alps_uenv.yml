@@ -34,19 +34,15 @@ setup and pull:
     SLURM_ACCOUNT: "csstaff"
     FIRECREST_SYSTEM: "eiger"
   script:
-    - id
     - pwd
-    - uname -a
-    # - ./ci/scripts/alps_uenv.sh setup_oras
     - export PATH=$PWD:$PATH
-    # - oras version
     - ./ci/scripts/alps_uenv.sh setup_jq
     - ./ci/scripts/alps_uenv.sh setup_uenv_and_oras &> setup_uenv_and_oras.log
     - source ./uenv-4.0.1/bin/activate-uenv
     - uenv --version
     - export PATH=$UENV_PREFIX/libexec:$PATH
     - uenv-oras version
-    - ./ci/scripts/alps_uenv.sh jfrog_login
+    - bash -x ./ci/scripts/alps_uenv.sh jfrog_login
     - imgs=$(./ci/scripts/alps_uenv.sh uenv_image_find)
     - echo "imgs=$imgs"
     - img0=$(echo $imgs | cut -d" " -f1)
