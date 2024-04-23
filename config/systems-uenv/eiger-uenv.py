@@ -53,7 +53,8 @@ environ_names =  ([f'{image_name}_{e}'for e in environs] or
 partitions = [
     {
         'name': 'mc',
-        'scheduler': 'slurm',
+        'scheduler': 'squeue',
+        # 'scheduler': 'slurm',
         'time_limit': '10m',
         'environs': environ_names,
         'container_platforms': [
