@@ -2,6 +2,7 @@ include:
   - remote: 'https://gitlab.com/cscs-ci/recipes/-/raw/master/templates/v2/.ci-ext.yml'
 
 stages:
+  - pull
   - run
 
 variables:
@@ -11,10 +12,10 @@ variables:
   # FIRECREST_SYSTEM: 'eiger'
 # https://github.com/finkandreas/benchpark/blob/develop/.ci/cscs.yml
 
-setup and pull and run:
+setup and pull:
   # extends: .f7t-baremetal-runner
   # extends: .f7t-runner
-  stage: run
+  stage: pull
   tags: ['f7t-runner']
   # tags: ['eiger-login-baremetal']
   # tags: ['baremetal-runner-eiger-mc-f7t']
@@ -47,7 +48,23 @@ setup and pull and run:
     - echo "img0=$img0"
     - ./ci/scripts/alps_uenv.sh oras_pull_meta_dir "$img0"
     - ./ci/scripts/alps_uenv.sh uenv_pull_sqfs "$img0"
+
+run reframe:
+  stage: run
+  tags: ['f7t-runner']
+  variables:
+    GIT_STRATEGY: "fetch"
+    SLURM_PARTITION: "debug"
+    SLURM_CONSTRAINT: "mc"
+    F7T_TOKEN_URL: "https://auth.cscs.ch/auth/realms/firecrest-clients/protocol/openid-connect/token"
+    F7T_URL: "https://firecrest.cscs.ch"
+    MODE: "baremetal"
+    SLURM_ACCOUNT: "csstaff"
+    FIRECREST_SYSTEM: "eiger"
+  script:
+    - pwd
     - rfm_path=$(./ci/scripts/alps_uenv.sh install_reframe)
     - export PATH=$PWD/reframe-4.5.2/bin:$PATH
     - img0_path=$(./ci/scripts/alps_uenv.sh uenv_sqfs_fullpath "$img0")
     - bash -x ./ci/scripts/alps_uenv.sh launch_reframe "$img0_path"
+
