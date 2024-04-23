@@ -34,17 +34,18 @@ setup and pull:
     SLURM_ACCOUNT: "csstaff"
     FIRECREST_SYSTEM: "eiger"    
   script:
+    - id
     - pwd
-      # - ./ci/scripts/alps_uenv.sh setup_oras
+    - uname -a
+    # - ./ci/scripts/alps_uenv.sh setup_oras
     - export PATH=$PWD:$PATH
     # - oras version
     - ./ci/scripts/alps_uenv.sh setup_jq
-    - ./ci/scripts/alps_uenv.sh setup_uenv &> setup_uenv.log
+    - ./ci/scripts/alps_uenv.sh setup_uenv_and_oras &> setup_uenv_and_oras.log
       #    - oras="$(dirname $UENV_CMD)"/oras_
     - source ./uenv-4.0.1/bin/activate-uenv
     - uenv --version
     - ./ci/scripts/alps_uenv.sh jfrog_login
-    - uname -a
     # - echo "PATH=$PATH" | tr : "\n"
     # - which oras
     # - uenv --version

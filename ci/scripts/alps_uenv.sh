@@ -64,7 +64,6 @@ setup_oras_without_uenv() {
   ./oras version
 }
 # }}}
-
 # {{{ check_uenv_oras 
 check_uenv_oras() {
     # [[ -x $UENV_PREFIX ]] || { echo "UENV_PREFIX=$UENV_PREFIX is not set, exiting"; exit 1; }
@@ -184,11 +183,18 @@ launch_reframe() {
 # {{{ main
 in=$1
 case $in in
+    setup_jq) setup_jq;;
     setup_uenv_and_oras) setup_uenv_and_oras;;
     setup_oras_without_uenv) setup_oras_without_uenv;;
-    setup_jq) setup_jq;;
     check_uenv_oras) check_uenv_oras;;
     jfrog_login) jfrog_login "$jfrog_creds_path";;
+    uenv_image_find) uenv_image_find;;
+    oras_pull_meta_dir) oras_pull_meta_dir;;
+    oras_pull_sqfs) oras_pull_sqfs;;
+    uenv_pull_sqfs) uenv_pull_sqfs;;
+    install_reframe) install_reframe;;
+    install_reframe_tests) install_reframe_tests;;
+    launch_reframe) launch_reframe;;
     *) echo "unknown arg=$in";;
 esac
 #old pwd
