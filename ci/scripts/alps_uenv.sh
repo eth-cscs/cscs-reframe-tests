@@ -20,8 +20,31 @@ jfrog_u="piccinal"
 [[ -z "${SLURM_PARTITION}" ]] && RFM_SYSTEM="${system}" || RFM_SYSTEM="${system}:${SLURM_PARTITION}"
 # }}}
 
-# {{{ setup_oras 
-setup_oras() {
+# {{{ setup_jq 
+setup_jq() {
+  # cd $oras_tmp 
+  wget --quiet https://github.com/jqlang/jq/releases/download/jq-1.6/jq-linux64
+  chmod 700 jq-linux64
+  mv jq-linux64 jq
+  ./jq --version
+}
+# }}}
+# {{{ setup_uenv_and_oras 
+setup_uenv_and_oras() {
+  # cd $oras_tmp 
+  uenv_repo=https://github.com/eth-cscs/uenv
+  uenv_version=4.0.1
+  (wget --quiet $uenv_repo/archive/refs/tags/v$uenv_version.tar.gz && \
+  tar xf v$uenv_version.tar.gz && cd uenv-$uenv_version/ && \
+  echo N | ./install --prefix=$PWD --local && \
+  rm -f v$uenv_version.tar.gz uenv-$uenv_version)
+  # ls -lrt bin/activate-uenv
+  # /users/piccinal/cscs-reframe-tests.git/ci/DEL/uenv/bin/activate-uenv
+  # ./jq --version
+}
+# }}}
+# {{{ setup_oras_without_uenv 
+setup_oras_without_uenv() {
   case "$(uname -m)" in
     aarch64)
       get_arch="arm64"
@@ -39,29 +62,6 @@ setup_oras() {
   # export PATH="$oras_tmp:$PATH"
   # echo $PWD
   ./oras version
-}
-# }}}
-# {{{ setup_jq 
-setup_jq() {
-  # cd $oras_tmp 
-  wget --quiet https://github.com/jqlang/jq/releases/download/jq-1.6/jq-linux64
-  chmod 700 jq-linux64
-  mv jq-linux64 jq
-  ./jq --version
-}
-# }}}
-# {{{ setup_uenv 
-setup_uenv() {
-  # cd $oras_tmp 
-  uenv_repo=https://github.com/eth-cscs/uenv
-  uenv_version=4.0.1
-  (wget --quiet $uenv_repo/archive/refs/tags/v$uenv_version.tar.gz && \
-  tar xf v$uenv_version.tar.gz && cd uenv-$uenv_version/ && \
-  echo N | ./install --prefix=$PWD --local && \
-  rm -f v$uenv_version.tar.gz uenv-$uenv_version)
-  # ls -lrt bin/activate-uenv
-  # /users/piccinal/cscs-reframe-tests.git/ci/DEL/uenv/bin/activate-uenv
-  # ./jq --version
 }
 # }}}
 
@@ -184,8 +184,8 @@ launch_reframe() {
 # {{{ main
 in=$1
 case $in in
-    setup_oras) setup_oras;;
-    setup_uenv) setup_uenv;;
+    setup_uenv_and_oras) setup_uenv_and_oras;;
+    setup_oras_without_uenv) setup_oras_without_uenv;;
     setup_jq) setup_jq;;
     check_uenv_oras) check_uenv_oras;;
     jfrog_login) jfrog_login "$jfrog_creds_path";;

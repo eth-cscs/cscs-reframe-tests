@@ -13,29 +13,40 @@ variables:
   # FIRECREST_SYSTEM: 'eiger'
 # https://github.com/finkandreas/benchpark/blob/develop/.ci/cscs.yml
 
-run rfm_test:
+setup and pull:
   # extends: .f7t-baremetal-runner
-  extends: .f7t-runner
-  stage: reframe
+  # extends: .f7t-runner
+  stage: pull
+  tags: ['f7t-runner']
   # tags: ['eiger-login-baremetal']
   # tags: ['baremetal-runner-eiger-mc-f7t']
-  tags: ['f7t-runner']
   variables:
-    GIT_STRATEGY: fetch
+    GIT_STRATEGY: "fetch"
+    # STACK_MOUNT:      "/user-environment"
+    # STACK_NAME:       "prgenv-gnu/23.11"
+    # STACK_SYSTEM:     "eiger"
+    # STACK_UARCH:      "zen2"
+    SLURM_PARTITION:  "debug"
+    SLURM_CONSTRAINT: "mc"
+    F7T_TOKEN_URL: "https://auth.cscs.ch/auth/realms/firecrest-clients/protocol/openid-connect/token"
+    F7T_URL: "https://firecrest.cscs.ch"
+    MODE: "baremetal"
+    SLURM_ACCOUNT: "csstaff"
+    FIRECREST_SYSTEM: "eiger"    
   script:
     - pwd
-    - ./ci/scripts/alps_uenv.sh setup_oras
+      # - ./ci/scripts/alps_uenv.sh setup_oras
     - export PATH=$PWD:$PATH
     # - oras version
     - ./ci/scripts/alps_uenv.sh setup_jq
-    - ./ci/scripts/alps_uenv.sh setup_uenv
+    - ./ci/scripts/alps_uenv.sh setup_uenv &> setup_uenv.log
+      #    - oras="$(dirname $UENV_CMD)"/oras_
     - source ./uenv-4.0.1/bin/activate-uenv
     - uenv --version
     - ./ci/scripts/alps_uenv.sh jfrog_login
+    - uname -a
     # - echo "PATH=$PATH" | tr : "\n"
     # - which oras
     # - uenv --version
     # - export RFM_AUTODETECT_XTHOSTNAME=1
-  variables:
-    SLURM_CONSTRAINT: mc
-    SLURM_PARTITION: debug
+
