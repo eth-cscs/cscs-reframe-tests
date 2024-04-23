@@ -6,7 +6,7 @@ stages:
   - run
 
 variables:
-  MODE: 'f7t-controller'
+  # MODE: 'f7t-controller'
   WORKSPACE: '$${CI_CACHE_FOLDER}/rfm_workspace'
   JOB_NAME: rfm-$CI_PIPELINE_ID
   # FIRECREST_SYSTEM: 'eiger'

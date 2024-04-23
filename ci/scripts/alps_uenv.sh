@@ -193,9 +193,10 @@ launch_reframe() {
     export RFM_USE_LOGIN_SHELL=1
     # export RFM_AUTODETECT_XTHOSTNAME=1
     # reframe -C cscs-reframe-tests/config/cscs.py --report-junit=report.xml -c cscs-reframe-tests/checks/ -r --system=${RFM_SYSTEM}
-    reframe -V
-    find config -type f
-    reframe -C ./config/cscs.py --report-junit=report.xml -c ./checks/ -r --system=$system -v
+    # reframe -V
+    # find config -type f
+    reframe -C ./config/cscs.py --report-junit=report.xml -c ./checks/ \
+    -r --system=$system -v -n HelloWorldTestMPIOpenMP
 }
 # }}}
 
