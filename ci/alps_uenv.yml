@@ -42,7 +42,7 @@ setup and pull:
     - uenv --version
     - export PATH=$UENV_PREFIX/libexec:$PATH
     - uenv-oras version
-    - ./ci/scripts/alps_uenv.sh jfrog_login
+    - bash -x ./ci/scripts/alps_uenv.sh jfrog_login
     - imgs=$(./ci/scripts/alps_uenv.sh uenv_image_find)
     - echo "imgs=$imgs"
     - img0=$(echo $imgs | cut -d" " -f1)
