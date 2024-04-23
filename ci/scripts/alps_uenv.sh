@@ -178,17 +178,27 @@ install_reframe_tests() {
     # no need
 }
 # }}}
+# {{{ uenv_sqfs_fullpath
+uenv_sqfs_fullpath() {
+    img="$1"
+    uenv image inspect $img --format {sqfs}
+}   
+# }}}
 # {{{ launch_reframe 
 launch_reframe() {
-    export UENV="${squashfs_path}:${mount}"
+    img=$1
+    # export UENV="${squashfs_path}:${mount}"
+    export UENV="$img"
     export RFM_AUTODETECT_METHODS="cat /etc/xthostname,hostname"
     export RFM_USE_LOGIN_SHELL=1
+    # export RFM_AUTODETECT_XTHOSTNAME=1
     # reframe -C cscs-reframe-tests/config/cscs.py --report-junit=report.xml -c cscs-reframe-tests/checks/ -r --system=${RFM_SYSTEM}
     reframe -V
+    reframe -C cscs-reframe-tests/config/cscs.py --report-junit=report.xml -c cscs-reframe-tests/checks/ -r --system=
 }
 # }}}
 
-# {{{ main
+# {{{ main 
 in=$1
 img=$2
 case $in in
@@ -203,7 +213,8 @@ case $in in
     uenv_pull_sqfs) uenv_pull_sqfs "$img";;
     install_reframe) install_reframe;;
     install_reframe_tests) install_reframe_tests;;
-    launch_reframe) launch_reframe;;
+    uenv_sqfs_fullpath) uenv_sqfs_fullpath "$img";;
+    launch_reframe) launch_reframe "$img";;
     *) echo "unknown arg=$in";;
 esac
 #old uenv_pull_sqfs "$name:$tag"
