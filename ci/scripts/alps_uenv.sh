@@ -9,8 +9,8 @@ oras="uenv-oras"
 rfm_meta_yaml="$oras_tmp/meta/extra/reframe.yaml"
 # artifact_path=$PWD  # "$oras_tmp"
 jfrog_creds_path="${oras_tmp}/docker/config.json"
-jfrog_request="$CSCS_CI_MW_URL/credentials&token=$CI_JOB_TOKEN&job_id=$CI_JOB_ID&creds=container_registry"
-jfrog_request_nojobid="$CSCS_CI_MW_URL/credentials&token=$CI_JOB_TOKEN&creds=container_registry"
+jfrog_request="$CSCS_CI_MW_URL/credentials?token=$CI_JOB_TOKEN&job_id=$CI_JOB_ID&creds=container_registry"
+# jfrog_request_nojobid="$CSCS_CI_MW_URL/credentials&token=$CI_JOB_TOKEN&creds=container_registry"
 # https://cicd-ext-mw.cscs.ch/ci
 # system="santis" ; uarch="gh200"
 system="eiger" ; uarch="zen2"
@@ -78,7 +78,7 @@ check_uenv_oras() {
 # }}}
 # {{{ jfrog_login 
 jfrog_login() {
-    creds_json=$(curl --retry 5 --retry-connrefused --fail --silent "$jfrog_request_nojobid")
+    creds_json=$(curl --retry 5 --retry-connrefused --fail --silent "$jfrog_request")
     oras_creds="$(echo ${creds_json} | jq --join-output '"--username " + .container_registry.username + " --password " +.container_registry.password')"
     jfrog_u="$(echo ${creds_json} | jq -r '.container_registry.username')"
     jfrog_p="$(echo ${creds_json} | jq -r '.container_registry.password')"
