@@ -107,6 +107,9 @@ oras_pull_meta_dir() {
     name=`echo "$img" |cut -d: -f1`
     tag=`echo "$img" |cut -d: -f2`
     #
+    $oras --registry-config $jfrog_creds_path \
+    discover --output json --artifact-type 'uenv/meta' $jfrog/$name:$tag
+    #
     meta_digest=`$oras --registry-config $jfrog_creds_path \
     discover --output json --artifact-type 'uenv/meta' $jfrog/$name:$tag \
     | jq -r '.manifests[0].digest'`
