@@ -109,6 +109,7 @@ for k, v in image_environments.items():
         'uenv view default',
         # loading the view prgenv-gnu:default with activation script /user-environment/env/default/activate.sh
         # UENV_VIEW=/user-environment:prgenv-gnu:default
+        # workaround for https://jira.cscs.ch/browse/VCUE-236:
         f'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$UENV_MOUNT_POINT/env/$(echo $UENV_VIEW |cut -d: -f3)/lib'
         # f'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$UENV_MOUNT_POINT/env/{os.environ.get("UENV_VIEW", None).split(":")[-1]}/lib'
         # f'source {activation_script}',
