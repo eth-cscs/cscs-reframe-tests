@@ -40,7 +40,7 @@ setup and pull:
     - imgs=$(./ci/scripts/alps_uenv.sh uenv_image_find)
   script: |
     for img in $imgs; do
-      echo "Pulling img=$img"
+      echo "----- Pulling img=$img"
       pwd
       export PATH=$PWD:$PATH
       ./ci/scripts/alps_uenv.sh setup_jq
@@ -77,16 +77,12 @@ run reframe:
     rfm_path=$(./ci/scripts/alps_uenv.sh install_reframe)
     export PATH=$PWD/reframe-4.5.2/bin:$PATH
     for img in $imgs; do
+      echo "----- Testing img=$img"
       echo "PWD=$PWD"
       ./ci/scripts/alps_uenv.sh setup_uenv_and_oras &> setup_uenv_and_oras.log
       source ./uenv-4.0.1/bin/activate-uenv
-      echo
       uenv image inspect $img
-      echo
-      # imgs=$(./ci/scripts/alps_uenv.sh uenv_image_find)
-      # echo "imgs=$imgs"
-      # img0=$(echo $imgs | cut -d" " -f1)
-      # echo "img0=$img0"
+      echo "----------------------"
       img_path=$(./ci/scripts/alps_uenv.sh uenv_sqfs_fullpath "$img")
       echo "img_path=$img_path"
       ./ci/scripts/alps_uenv.sh launch_reframe "$img_path"
