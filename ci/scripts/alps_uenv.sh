@@ -192,11 +192,10 @@ launch_reframe() {
     export RFM_AUTODETECT_METHODS="cat /etc/xthostname,hostname"
     export RFM_USE_LOGIN_SHELL=1
     # export RFM_AUTODETECT_XTHOSTNAME=1
-    # reframe -C cscs-reframe-tests/config/cscs.py --report-junit=report.xml -c cscs-reframe-tests/checks/ -r --system=${RFM_SYSTEM}
     # reframe -V
-    # find config -type f
     reframe -C ./config/cscs.py --report-junit=report.xml -c ./checks/ \
-    -r --system=$system -v -n HelloWorldTestMPIOpenMP
+    -r --system=$system -v 
+    # -n HelloWorldTestMPIOpenMP
 }
 # }}}
 
@@ -219,20 +218,6 @@ case $in in
     launch_reframe) launch_reframe "$img";;
     *) echo "unknown arg=$in";;
 esac
-#old uenv_pull_sqfs "$name:$tag"
-#old echo
-#old 
-#old install_reframe
-#old echo
-#old 
-#old install_reframe_tests
-#old echo
-#old 
-#old launch_reframe
-#old echo
-#old # set -x
-#old # set +x
-#old 
 #old [[ -d $oras_tmp ]] && { echo "cleaning $oras_tmp"; rm -fr $oras_tmp; }
 # }}}
 

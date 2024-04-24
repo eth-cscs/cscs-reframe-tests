@@ -105,7 +105,14 @@ for k, v in image_environments.items():
                 f'activation script of {k!r} is not consistent '
                 f'with the mount point: {image_mount!r}')
 
-    env['prepare_cmds'] = [f'source {activation_script}']
+    env['prepare_cmds'] = [
+        'uenv view default',
+        # loading the view prgenv-gnu:default with activation script /user-environment/env/default/activate.sh
+        # UENV_VIEW=/user-environment:prgenv-gnu:default
+        f'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$UENV_MOUNT_POINT/env/$(echo $UENV_VIEW |cut -d: -f3)/lib'
+        # f'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$UENV_MOUNT_POINT/env/{os.environ.get("UENV_VIEW", None).split(":")[-1]}/lib'
+        # f'source {activation_script}',
+    ]
     env['name'] = f'{image_name}_{k}'
     del env['activation']
     actual_environs.append(env)
