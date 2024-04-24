@@ -107,6 +107,7 @@ for k, v in image_environments.items():
 
     env['prepare_cmds'] = [
         'myview=$(uenv --no-color view |grep -m1 "uenv view")',
+        'echo myview=$myview',
         'eval $myview',
         # --- workaround for https://jira.cscs.ch/browse/VCUE-236:
         f'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$UENV_MOUNT_POINT/env/$(echo $UENV_VIEW |cut -d: -f3)/lib'
