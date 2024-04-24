@@ -37,24 +37,26 @@ setup and pull:
     - source ./uenv-4.0.1/bin/activate-uenv
     - uenv --version
     - imgs=$(./ci/scripts/alps_uenv.sh uenv_image_find)
-    - for xx in $imgs; do echo xx=$xx ; done
-  script:
-    - pwd
-    - export PATH=$PWD:$PATH
-    - ./ci/scripts/alps_uenv.sh setup_jq
-    - ./ci/scripts/alps_uenv.sh setup_uenv_and_oras &> setup_uenv_and_oras.log
-    - source ./uenv-4.0.1/bin/activate-uenv
-    - uenv --version
-    - export PATH=$UENV_PREFIX/libexec:$PATH
-    - uenv-oras version
-    - ./ci/scripts/alps_uenv.sh jfrog_login
-    - imgs=$(./ci/scripts/alps_uenv.sh uenv_image_find)
-    - echo "imgs=$imgs"
-    - img0=$(echo $imgs | cut -d" " -f1)
-    - echo "img0=$img0"
-    - ./ci/scripts/alps_uenv.sh oras_pull_meta_dir "$img0"
-    - ./ci/scripts/alps_uenv.sh uenv_pull_sqfs "$img0"
-
+    # - for xx in $imgs; do echo xx=$xx ; done
+  script: |
+    for img in $imgs; do
+      echo "img=$img"
+#       pwd
+#       export PATH=$PWD:$PATH
+#       ./ci/scripts/alps_uenv.sh setup_jq
+#       ./ci/scripts/alps_uenv.sh setup_uenv_and_oras &> setup_uenv_and_oras.log
+#       source ./uenv-4.0.1/bin/activate-uenv
+#       uenv --version
+#       export PATH=$UENV_PREFIX/libexec:$PATH
+#       uenv-oras version
+#       ./ci/scripts/alps_uenv.sh jfrog_login
+#       imgs=$(./ci/scripts/alps_uenv.sh uenv_image_find)
+#       echo "imgs=$imgs"
+#       img0=$(echo $imgs | cut -d" " -f1)
+#       echo "img0=$img0"
+#       ./ci/scripts/alps_uenv.sh oras_pull_meta_dir "$img0"
+#       ./ci/scripts/alps_uenv.sh uenv_pull_sqfs "$img0"
+    done
 # run reframe:
 #   stage: run
 #   tags: ['f7t-runner']
