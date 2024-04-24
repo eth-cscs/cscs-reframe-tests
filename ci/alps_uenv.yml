@@ -38,49 +38,53 @@ setup and pull:
     - source ./uenv-4.0.1/bin/activate-uenv
     - uenv --version
     - imgs=$(./ci/scripts/alps_uenv.sh uenv_image_find)
-    # - for xx in $imgs; do echo xx=$xx ; done
   script: |
     for img in $imgs; do
-      echo "img=$img"
+      echo "Pulling img=$img"
+      pwd
+      export PATH=$PWD:$PATH
+      ./ci/scripts/alps_uenv.sh setup_jq
+      ./ci/scripts/alps_uenv.sh setup_uenv_and_oras &> setup_uenv_and_oras.log
+      source ./uenv-4.0.1/bin/activate-uenv
+      uenv --version
+      export PATH=$UENV_PREFIX/libexec:$PATH
+      uenv-oras version
+      ./ci/scripts/alps_uenv.sh jfrog_login
+      # img0=$(echo $imgs | cut -d" " -f1)
+      # echo "img0=$img0"
+      ./ci/scripts/alps_uenv.sh oras_pull_meta_dir "$img"
+      ./ci/scripts/alps_uenv.sh uenv_pull_sqfs "$img"
     done
-#       pwd
-#       export PATH=$PWD:$PATH
-#       ./ci/scripts/alps_uenv.sh setup_jq
-#       ./ci/scripts/alps_uenv.sh setup_uenv_and_oras &> setup_uenv_and_oras.log
-#       source ./uenv-4.0.1/bin/activate-uenv
-#       uenv --version
-#       export PATH=$UENV_PREFIX/libexec:$PATH
-#       uenv-oras version
-#       ./ci/scripts/alps_uenv.sh jfrog_login
-#       imgs=$(./ci/scripts/alps_uenv.sh uenv_image_find)
-#       echo "imgs=$imgs"
-#       img0=$(echo $imgs | cut -d" " -f1)
-#       echo "img0=$img0"
-#       ./ci/scripts/alps_uenv.sh oras_pull_meta_dir "$img0"
-#       ./ci/scripts/alps_uenv.sh uenv_pull_sqfs "$img0"
-#     done
-# run reframe:
-#   stage: run
-#   tags: ['f7t-runner']
-#   variables:
-#     GIT_STRATEGY: "fetch"
-#     SLURM_PARTITION: "debug"
-#     SLURM_CONSTRAINT: "mc"
-#     F7T_TOKEN_URL: "https://auth.cscs.ch/auth/realms/firecrest-clients/protocol/openid-connect/token"
-#     F7T_URL: "https://firecrest.cscs.ch"
-#     MODE: "baremetal"
-#     SLURM_ACCOUNT: "csstaff"
-#     FIRECREST_SYSTEM: "eiger"
-#   script:
-#     - pwd
-#     - ./ci/scripts/alps_uenv.sh setup_uenv_and_oras &> setup_uenv_and_oras.log
-#     - source ./uenv-4.0.1/bin/activate-uenv
-#     - imgs=$(./ci/scripts/alps_uenv.sh uenv_image_find)
-#     - echo "imgs=$imgs"
-#     - img0=$(echo $imgs | cut -d" " -f1)
-#     - echo "img0=$img0"
-#     - rfm_path=$(./ci/scripts/alps_uenv.sh install_reframe)
-#     - export PATH=$PWD/reframe-4.5.2/bin:$PATH
-#     - img0_path=$(./ci/scripts/alps_uenv.sh uenv_sqfs_fullpath "$img0")
-#     - echo "img0_path=$img0_path"
-#     - ./ci/scripts/alps_uenv.sh launch_reframe "$img0_path"
+
+run reframe:
+  stage: run
+  tags: ['f7t-runner']
+  variables:
+    GIT_STRATEGY: "fetch"
+    SLURM_PARTITION: "debug"
+    SLURM_CONSTRAINT: "mc"
+    F7T_TOKEN_URL: "https://auth.cscs.ch/auth/realms/firecrest-clients/protocol/openid-connect/token"
+    F7T_URL: "https://firecrest.cscs.ch"
+    MODE: "baremetal"
+    SLURM_ACCOUNT: "csstaff"
+    FIRECREST_SYSTEM: "eiger"
+  before_script:
+    - ./ci/scripts/alps_uenv.sh setup_uenv_and_oras &> setup_uenv_and_oras.log
+    - source ./uenv-4.0.1/bin/activate-uenv
+    - uenv --version
+    - imgs=$(./ci/scripts/alps_uenv.sh uenv_image_find)
+  script: |
+    for img in $imgs; do
+      pwd
+      ./ci/scripts/alps_uenv.sh setup_uenv_and_oras &> setup_uenv_and_oras.log
+      source ./uenv-4.0.1/bin/activate-uenv
+      imgs=$(./ci/scripts/alps_uenv.sh uenv_image_find)
+      # echo "imgs=$imgs"
+      # img0=$(echo $imgs | cut -d" " -f1)
+      # echo "img0=$img0"
+      rfm_path=$(./ci/scripts/alps_uenv.sh install_reframe)
+      export PATH=$PWD/reframe-4.5.2/bin:$PATH
+      img_path=$(./ci/scripts/alps_uenv.sh uenv_sqfs_fullpath "$img")
+      echo "img_path=$img_path"
+      ./ci/scripts/alps_uenv.sh launch_reframe "$img_path"
+    done
