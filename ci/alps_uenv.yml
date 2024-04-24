@@ -1,5 +1,7 @@
+---
 include:
-  - remote: 'https://gitlab.com/cscs-ci/recipes/-/raw/master/templates/v2/.ci-ext.yml'
+  - remote: |
+      'https://gitlab.com/cscs-ci/recipes/-/raw/master/templates/v2/.ci-ext.yml'
 
 stages:
   - pull
@@ -41,6 +43,7 @@ setup and pull:
   script: |
     for img in $imgs; do
       echo "img=$img"
+    done
 #       pwd
 #       export PATH=$PWD:$PATH
 #       ./ci/scripts/alps_uenv.sh setup_jq
@@ -56,7 +59,7 @@ setup and pull:
 #       echo "img0=$img0"
 #       ./ci/scripts/alps_uenv.sh oras_pull_meta_dir "$img0"
 #       ./ci/scripts/alps_uenv.sh uenv_pull_sqfs "$img0"
-    done
+#     done
 # run reframe:
 #   stage: run
 #   tags: ['f7t-runner']
