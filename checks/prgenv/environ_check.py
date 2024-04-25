@@ -94,9 +94,9 @@ class CrayVariablesCheckDaint(CrayVariablesCheck):
 @rfm.simple_test
 class CrayVariablesCheckEiger(CrayVariablesCheck):
     cray_module = parameter([
-        'cray-fftw', 'cray-hdf5', 'cray-hdf5-parallel', 'cray-libsci',
+        'cray-fftw', 'cray-hdf5', 'cray-hdf5-parallel',
         'cray-mpich', 'cray-openshmemx', 'cray-parallel-netcdf', 'cray-pmi',
-        'cray-python', 'cray-R', 'gcc', 'papi'
+        'cray-python', 'cray-R', 'papi'
     ])
     valid_systems = ['eiger:login', 'pilatus:login', 'hohgant:login']
 
@@ -108,5 +108,5 @@ class CrayVariablesCheckEiger(CrayVariablesCheck):
     @run_after('init')
     def skip_modules(self):
         # FIXME: These modules should be fixed in later releases
-        if self.cray_module in {'cray-fftw', 'cray-python'}:
+        if self.cray_module in {'cray-fftw', 'cray-libsci', 'cray-python'}:
             self.valid_systems = []
