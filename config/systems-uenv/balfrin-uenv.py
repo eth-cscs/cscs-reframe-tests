@@ -79,7 +79,7 @@ partitions = [
                 'options': ['--mem={mem_per_node}']
             },
         ],
-        'features': ['gpu', 'nvgpu', 'remote', 'uenv', 'osu-micro-benchmarks', 'mpi', 'scontrol', 'sarus'],
+        'features': ['gpu', 'nvgpu', 'remote', 'uenv', 'scontrol', 'sarus'],
         'devices': [
             {
                 'type': 'gpu',
@@ -117,7 +117,7 @@ partitions = [
                 'options': ['--mem={mem_per_node}']
             },
         ],
-        'features': ['remote', 'uenv', 'sarus'],
+        'features': ['remote', 'uenv', 'scontrol', 'sarus'],
         'launcher': 'srun'
     }
 ]
