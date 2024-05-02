@@ -17,7 +17,8 @@ setup and pull:
   stage: pull
   tags: ['f7t-runner']
   variables:
-    MODE: "baremetal"
+    MODE: "firecrest-controller"  # santis
+    # MODE: "baremetal"  # eiger
     GIT_STRATEGY: "fetch"
     # STACK_SYSTEM:     "santis"
     SLURM_PARTITION: "normal"
@@ -58,7 +59,7 @@ run reframe:
   tags: ['f7t-runner']
   needs: ['setup and pull']
   variables:
-    MODE: "baremetal"
+    MODE: "baremetal"  # eiger
     GIT_STRATEGY: "fetch"
     # SLURM_PARTITION: "debug"
     # SLURM_CONSTRAINT: "mc"
