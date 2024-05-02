@@ -1,15 +1,11 @@
 # Copyright 2024 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
-# ReFrame Project Developers. See the top-level LICENSE file for details.
-#
-# SPDX-License-Identifier: BSD-3-Clause
-#
-# ReFrame CSCS settings
-#
+
 
 import os
 import pathlib
 import yaml
 
+import reframe.utility.osext as osext
 from reframe.core.exceptions import ConfigError
 
 uenv = os.environ.get('UENV', None)
@@ -17,87 +13,74 @@ uenv = os.environ.get('UENV', None)
 if uenv is None:
     raise ConfigError('UENV is not set')
 
-# FIXME: Only the first image:mount pair is currenty used
+uenv_environments = []
+environ_names = []
 uenv_list = uenv.split(',')
-uenv_first = uenv_list[0]
 
-uenv_file, *image_mount = uenv_first.split(':')
-if len(image_mount) > 0:
-    image_mount = image_mount[0]
-else:
-    image_mount = '/user-environment'
+for uenv in uenv_list:
+    uenv_file, *image_mount = uenv.split(':')
 
-image_path = pathlib.Path(uenv_file)
-if not image_path.exists():
-    raise ConfigError(f"uenv image: '{image_path}' does not exist")
+    if len(image_mount) > 0:
+        image_mount = image_mount[0]
+    else:
+        image_mount = '/user-environment'
 
-image_name = image_path.stem
+    image_path = pathlib.Path(uenv_file)
+    if not image_path.exists():
+        raise ConfigError(f"uenv image: '{image_path}' does not exist")
 
-# Options for the Slurm plugin to mount the Squashfs uenv image
-uenv_access = [f'--uenv={uenv_file}:{image_mount}']
+    image_name = str(image_path).replace('/', '_')
 
-try:
-    rfm_meta = image_path.parent / f'{image_name}.yaml'
-    with open(rfm_meta) as image_envs:
-        image_environments = yaml.load(
-            image_envs.read(), Loader=yaml.BaseLoader)
-except OSError as err:
-    raise ConfigError(f"problem loading the metadata from '{rfm_meta}'")
+    try:
+        rfm_meta = image_path.parent / f'{image_path.stem}.yaml'
+        with open(rfm_meta) as image_envs:
+            image_environments = yaml.load(
+                image_envs.read(), Loader=yaml.BaseLoader)
+            print(f"# --- loading the metadata from '{rfm_meta}'")
+    except OSError as err:
+        raise ConfigError(f"# SANTIS: problem loading the metadata from '{rfm_meta}'")
+        # print(f"# SANTIS: --- problem loading the metadata from '{rfm_meta}'")
+        # pass
 
+    environs = image_environments.keys()
+    environ_names.extend([f'{image_name}_{e}'for e in environs] or
+                         [f'{image_name}_builtin'])
 
-environs = image_environments.keys()
-environ_names =  ([f'{image_name}_{e}'for e in environs] or
-                  [f'{image_name}_builtin'])
+    # import pdb; pdb.set_trace()
+    for k, v in image_environments.items():
+        env = {
+            'target_systems': ['santis']
+        }
+        env.update(v)
+        activation_script = v['activation']
 
-partitions = [
-    {
-        'name': 'normal',
-        'scheduler': 'slurm',
-        'time_limit': '10m',
-        'environs': environ_names,
-        'max_jobs': 100,
-        'extras': {
-            'cn_memory': 500,
-        },
-        'access': uenv_access,
-        'resources': [
-            {
-                'name': 'memory',
-                'options': ['--mem={mem_per_node}']
-            },
-        ],
-        'features': ['remote', 'uenv', 'nvgpu'],
-        'devices': [
-            {
-                'type': 'gpu',
-                'arch': 'sm_90',
-                'num_devices': 4
+        # FIXME: Handle the activation script based on the image mount point
+        if not activation_script.startswith(image_mount):
+            raise ConfigError(
+                    f'activation script of {k!r} is not consistent '
+                    f'with the mount point: {image_mount!r}')
+
+        env['resources'] = {
+            'uenv': {
+                'mount': image_mount,
+                'file': uenv_file,
             }
-        ],
-        'launcher': 'srun'
-    },
-]
+        }
 
-if image_environments:
-    actual_environs = []
+        # view_path = activation_script.replace('activate.sh', '')
+        # view_path = activation_script.parent
+        env['prepare_cmds'] = [
+            f'source {activation_script}',
+            # --- workaround for https://jira.cscs.ch/browse/VCUE-236:
+            # f'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:{view_path}/lib'
+        ]
+        env['name'] = f'{image_name}_{k}'
 
-for k, v in image_environments.items():
-    env = {
-        'target_systems': ['santis']
-    }
-    env.update(v)
-    activation_script = v['activation']
+        # Added as a prepare_cmd for the environment
+        del env['activation']
 
-    # FIXME: Handle the activation script based on the image mount point
-    if not activation_script.startswith(image_mount):
-        raise ConfigError(
-                f'activation script of {k!r} is not consistent '
-                f'with the mount point: {image_mount!r}')
+        uenv_environments.append(env)
 
-    env['prepare_cmds'] = [f'source {activation_script}']
-    env['name'] = f'{image_name}_{k}'
-    del env['activation']
-    actual_environs.append(env)
 
 site_configuration = {
     'systems': [
@@ -105,11 +88,55 @@ site_configuration = {
             'name': 'santis',
             'descr': 'santis vcluster with uenv',
             'hostnames': ['santis'],
+            'resourcesdir': '/apps/common/UES/reframe/resources/',
             'modules_system': 'nomod',
-            'partitions': partitions
+            'partitions': [
+                {
+                    'name': 'normal',
+                    'scheduler': 'slurm',
+                    'time_limit': '10m',
+                    'environs': environ_names,
+                    'container_platforms': [
+                        {
+                            'type': 'Sarus',
+                        },
+                        {
+                            'type': 'Singularity',
+                        }
+                    ],
+                    'max_jobs': 100,
+                    'extras': {
+                        'cn_memory': 500,
+                    },
+                    'access': [
+                        # '-pdebug',
+                        # '-pnormal',
+                        # '-Cmc',
+                        f'--account={osext.osgroup()}'
+                    ],
+                    'resources': [
+                        {
+                            'name': 'switches',
+                            'options': ['--switches={num_switches}']
+                        },
+                        {
+                            'name': 'memory',
+                            'options': ['--mem={mem_per_node}']
+                        },
+                        {
+                            'name': 'uenv',
+                            'options': [
+                                '--uenv={file}:{mount}',
+                            ]
+                        }
+                    ],
+                    'features': ['remote', 'uenv'],
+                    'launcher': 'srun'
+                },
+            ]
         }
-     ],
-     'modes': [
+    ],
+    'modes': [
         {
             'name': 'production',
             'options': [
@@ -125,5 +152,11 @@ site_configuration = {
             'target_systems': ['santis'],
         }
     ],
-    'environments': actual_environs,
+    'environments': uenv_environments,
+    'general': [
+        {
+             # 'resolve_module_conflicts': False,
+             'target_systems': ['santis']
+        }
+    ]
 }
