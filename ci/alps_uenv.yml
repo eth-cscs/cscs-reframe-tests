@@ -17,7 +17,8 @@ setup and pull:
   stage: pull
   tags: ['f7t-runner']
   variables:
-    MODE: "firecrest-controller"  # santis
+    # Valid MODE=('container-runner', 'baremetal', 'f7t-controller')
+    MODE: "f7t-controller"  # santis
     # MODE: "baremetal"  # eiger
     GIT_STRATEGY: "fetch"
     # STACK_SYSTEM:     "santis"
