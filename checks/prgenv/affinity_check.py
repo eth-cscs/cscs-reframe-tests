@@ -13,10 +13,6 @@ from reframe.core.exceptions import SanityError, ReframeError
 
 
 class CompileAffinityTool(rfm.CompileOnlyRegressionTest):
-    valid_systems = [
-        '*'
-    ]
-    valid_prog_environs = ['+mpi']
     build_system = 'Make'
     build_locally = False
 
@@ -41,9 +37,6 @@ class CompileAffinityTool(rfm.CompileOnlyRegressionTest):
 
 
 class CompileAffinityToolNoOmp(CompileAffinityTool):
-    valid_systems = ['*']
-    valid_prog_environs = ['+mpi +openmp']
-
     @run_before('compile')
     def set_build_opts(self):
         self.build_system.options = ['MPI=1', 'OPENMP=0']
@@ -74,14 +67,8 @@ class AffinityTestBase(rfm.RunOnlyRegressionTest):
     #     }
     # }
     system = variable(dict, value={})
-
-    valid_systems = [
-        '+remote'
-    ]
-    valid_prog_environs = [
-        '+openmp'
-    ]
-
+    valid_systems = ['+remote']
+    valid_prog_environs = ['+mpi']
     tags = {'production', 'scs', 'maintenance', 'craype'}
 
     @run_before('run')
@@ -253,6 +240,7 @@ class AffinityOpenMPBase(AffinityTestBase):
     many threads as sockets).
     '''
 
+    valid_prog_environs = ['+openmp +mpi']
     omp_bind = variable(str)
     omp_proc_bind = variable(str, value='spread')
     num_tasks = 1
@@ -567,7 +555,6 @@ class OneTaskPerNumaNode(AffinityTestBase):
     Multithreading is disabled.
     '''
 
-    valid_systems = ['+remote']
     use_multithreading = False
     num_cpus_per_task = required
     affinity_tool = fixture(CompileAffinityToolNoOmp, scope='environment')
