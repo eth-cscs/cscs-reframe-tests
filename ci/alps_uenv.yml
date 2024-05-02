@@ -51,6 +51,7 @@ setup and pull:
       UENV+="$img_path,"
     done
     - UENV=${UENV%?}
+    - echo "stage1: UENV=$UENV"
 
 run reframe:
   stage: run
