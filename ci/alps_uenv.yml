@@ -81,6 +81,7 @@ run reframe:
     # FIRECREST_SYSTEM: "santis"
     FIRECREST_SYSTEM: "${FIRECREST_SYSTEM}"
   before_script:
+    - echo $FIRECREST_SYSTEM / $CLUSTER_NAME / $RFM_MODE
     - pwd
     - uname -a
     - ./ci/scripts/alps_uenv.sh setup_uenv_and_oras &> setup_uenv_and_oras.log
