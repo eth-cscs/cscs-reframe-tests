@@ -38,15 +38,12 @@ for uenv in uenv_list:
                 image_envs.read(), Loader=yaml.BaseLoader)
             print(f"# --- loading the metadata from '{rfm_meta}'")
     except OSError as err:
-        raise ConfigError(f"# SANTIS: problem loading the metadata from '{rfm_meta}'")
-        # print(f"# SANTIS: --- problem loading the metadata from '{rfm_meta}'")
-        # pass
+        raise ConfigError(f"problem loading the metadata from '{rfm_meta}'")
 
     environs = image_environments.keys()
     environ_names.extend([f'{image_name}_{e}'for e in environs] or
                          [f'{image_name}_builtin'])
 
-    # import pdb; pdb.set_trace()
     for k, v in image_environments.items():
         env = {
             'target_systems': ['santis']

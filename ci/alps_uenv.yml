@@ -24,7 +24,7 @@ setup and pull:
     MODE: "f7t-controller"  # santis
     GIT_STRATEGY: "fetch"
     # STACK_SYSTEM:     "santis"
-    SLURM_PARTITION: "${SLURM_PARTITION}"
+    # SLURM_PARTITION: "${SLURM_PARTITION}"
     # SLURM_CONSTRAINT: "mc"
     F7T_TOKEN_URL: "https://auth.cscs.ch/auth/realms/firecrest-clients/protocol/openid-connect/token"
     F7T_URL: "https://firecrest.cscs.ch"
@@ -70,7 +70,7 @@ run reframe:
     MODE: "f7t-controller"  # santis
     # MODE: "baremetal"  # eiger
     GIT_STRATEGY: "fetch"
-    SLURM_PARTITION: "${SLURM_PARTITION}"
+    # SLURM_PARTITION: "${SLURM_PARTITION}"
     # SLURM_PARTITION: "debug"
     # SLURM_CONSTRAINT: "mc"
     F7T_TOKEN_URL: "https://auth.cscs.ch/auth/realms/firecrest-clients/protocol/openid-connect/token"
