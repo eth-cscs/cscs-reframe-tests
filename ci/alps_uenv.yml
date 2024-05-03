@@ -1,4 +1,5 @@
 ---
+# TODO: https://github.com/finkandreas/benchpark/blob/develop/.ci/cscs.yml
 include:
   - remote: 'https://gitlab.com/cscs-ci/recipes/-/raw/master/templates/v2/.ci-ext.yml'
 
@@ -7,31 +8,28 @@ stages:
   - run
 
 variables:
-  # MODE: 'f7t-controller'
   WORKSPACE: '$${CI_CACHE_FOLDER}/rfm_workspace'
   JOB_NAME: rfm-$CI_PIPELINE_ID
-  FIRECREST_SYSTEM: 'santis'
-  CLUSTER_NAME: 'santis'
-  UARCH: 'gh200'
-# https://github.com/finkandreas/benchpark/blob/develop/.ci/cscs.yml
+  # FIRECREST_SYSTEM: 'santis'
+  # CLUSTER_NAME: 'santis'
+  # UARCH: 'gh200'
 
 setup and pull:
   stage: pull
-  tags: ["santis-login-baremetal"]
+  tags: ["$TAG"]
   # tags: ['f7t-runner']
   # tags: ["santis-spack-stack-builder"]
   variables:
     # Valid MODE=('container-runner', 'baremetal', 'f7t-controller')
     MODE: "f7t-controller"  # santis
-    # MODE: "baremetal"  # eiger
     GIT_STRATEGY: "fetch"
     # STACK_SYSTEM:     "santis"
-    SLURM_PARTITION: "normal"
+    SLURM_PARTITION: "${SLURM_PARTITION}"
     # SLURM_CONSTRAINT: "mc"
     F7T_TOKEN_URL: "https://auth.cscs.ch/auth/realms/firecrest-clients/protocol/openid-connect/token"
     F7T_URL: "https://firecrest.cscs.ch"
     SLURM_ACCOUNT: "csstaff"
-    FIRECREST_SYSTEM: "santis"
+    FIRECREST_SYSTEM: "${FIRECREST_SYSTEM}"
   before_script:
     - pwd
     - uname -a
@@ -46,17 +44,10 @@ setup and pull:
     uenv --version
     export PATH=$UENV_PREFIX/libexec:$PATH
     uenv-oras version
+    # get list of uenv to test and set $UENV
     for img in $imgs; do
       echo "----- Pulling img=$img metadata & sqfs"
-      pwd
-      # ./ci/scripts/alps_uenv.sh setup_jq
-      # ./ci/scripts/alps_uenv.sh setup_uenv_and_oras &> setup_uenv_and_oras.log
-      # source ./uenv-4.0.1/bin/activate-uenv
-      # ./ci/scripts/alps_uenv.sh jfrog_login
-      # img0=$(echo $imgs | cut -d" " -f1)
-      # echo "img0=$img0"
       ./ci/scripts/alps_uenv.sh oras_pull_meta_dir "$img"
-      #
       img_path=$(./ci/scripts/alps_uenv.sh uenv_sqfs_fullpath "$img")
       UENV+="$img_path,"
       echo
@@ -70,7 +61,8 @@ setup and pull:
 
 run reframe:
   stage: run
-  tags: ["santis-login-baremetal"]
+  # tags: ["santis-login-baremetal"]
+  tags: ["$TAG"]
   # tags: ['f7t-runner']
   needs: ['setup and pull']
   variables:
@@ -78,12 +70,14 @@ run reframe:
     MODE: "f7t-controller"  # santis
     # MODE: "baremetal"  # eiger
     GIT_STRATEGY: "fetch"
+    SLURM_PARTITION: "${SLURM_PARTITION}"
     # SLURM_PARTITION: "debug"
     # SLURM_CONSTRAINT: "mc"
     F7T_TOKEN_URL: "https://auth.cscs.ch/auth/realms/firecrest-clients/protocol/openid-connect/token"
     F7T_URL: "https://firecrest.cscs.ch"
     SLURM_ACCOUNT: "csstaff"
-    FIRECREST_SYSTEM: "santis"
+    # FIRECREST_SYSTEM: "santis"
+    FIRECREST_SYSTEM: "${FIRECREST_SYSTEM}"
   before_script:
     - pwd
     - uname -a
