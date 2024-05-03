@@ -22,6 +22,7 @@ setup and pull:
   variables:
     # Valid MODE=('container-runner', 'baremetal', 'f7t-controller')
     MODE: "${RFM_MODE}"
+    # no runner match tags:eiger-login-baremetal
     # MODE: "f7t-controller"
     GIT_STRATEGY: "fetch"
     # SLURM_PARTITION: "${SLURM_PARTITION}"
