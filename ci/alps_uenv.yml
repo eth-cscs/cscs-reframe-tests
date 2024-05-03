@@ -10,6 +10,7 @@ stages:
 variables:
   WORKSPACE: '$${CI_CACHE_FOLDER}/rfm_workspace'
   JOB_NAME: rfm-$CI_PIPELINE_ID
+  CLUSTER_NAME: "${CLUSTER_NAME}"
 
 setup and pull:
   stage: pull
@@ -28,11 +29,8 @@ setup and pull:
     F7T_URL: "https://firecrest.cscs.ch"
     SLURM_ACCOUNT: "csstaff"
     FIRECREST_SYSTEM: "${FIRECREST_SYSTEM}"
-#del   rules:
-#del     - if: "${CLUSTER_NAME}" == "eiger"
-#del       variables:
-#del         SLURM_CONSTRAINT: "mc"
   before_script:
+    - echo $FIRECREST_SYSTEM / $CLUSTER_NAME / $RFM_MODE
     - pwd
     - uname -a
     - ./ci/scripts/alps_uenv.sh setup_uenv_and_oras &> setup_uenv_and_oras.log
