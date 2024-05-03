@@ -90,9 +90,10 @@ run reframe:
     - ./ci/scripts/alps_uenv.sh setup_uenv_and_oras &> setup_uenv_and_oras.log
     - source ./uenv-4.0.1/bin/activate-uenv
     - uenv --version
-    - echo "UENV=$UENV"
+    - echo "UENV=$UENV" | tr , "\n"
   script:
     - rfm_path=$(./ci/scripts/alps_uenv.sh install_reframe)
+    - export PATH=$rfm_path:$PATH
     - reframe -V
     - ./ci/scripts/alps_uenv.sh launch_reframe "$img_path"
 #del    # export PATH=$PWD/reframe-4.5.2/bin:$PATH

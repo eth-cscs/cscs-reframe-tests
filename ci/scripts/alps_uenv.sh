@@ -167,6 +167,7 @@ install_reframe() {
     (wget --quiet "https://github.com/reframe-hpc/reframe/archive/refs/heads/develop.zip" && \
     unzip "develop.zip" && cd reframe-develop && ./bootstrap.sh)
     export PATH="$(pwd)/reframe-develop/bin:$PATH"
+    echo "$(pwd)/reframe-develop/bin"
     # (wget --quiet "https://github.com/reframe-hpc/reframe/archive/refs/tags/v4.5.2.tar.gz" && \
     # tar xf v4.5.2.tar.gz && \
     # cd reframe-4.5.2 && \
