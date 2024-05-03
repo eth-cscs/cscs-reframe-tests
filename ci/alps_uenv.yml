@@ -84,13 +84,30 @@ run reframe:
     F7T_URL: "https://firecrest.cscs.ch"
     SLURM_ACCOUNT: "csstaff"
     FIRECREST_SYSTEM: "santis"
-  script:
+  before_script:
+    - pwd
+    - uname -a
+    - ./ci/scripts/alps_uenv.sh setup_uenv_and_oras &> setup_uenv_and_oras.log
+    - source ./uenv-4.0.1/bin/activate-uenv
+    - uenv --version
     - echo "UENV=$UENV"
-#   before_script:
-#     - ./ci/scripts/alps_uenv.sh setup_uenv_and_oras &> setup_uenv_and_oras.log
-#     - source ./uenv-4.0.1/bin/activate-uenv
-#     - uenv --version
-#     - imgs=$(./ci/scripts/alps_uenv.sh uenv_image_find)
+  script:
+    - rfm_path=$(./ci/scripts/alps_uenv.sh install_reframe)
+    - reframe -V
+    - ./ci/scripts/alps_uenv.sh launch_reframe "$img_path"
+#del    # export PATH=$PWD/reframe-4.5.2/bin:$PATH
+#del    for img in $imgs; do
+#del      echo "----- Testing img=$img"
+#del      echo "PWD=$PWD"
+#del      ./ci/scripts/alps_uenv.sh setup_uenv_and_oras &> setup_uenv_and_oras.log
+#del      source ./uenv-4.0.1/bin/activate-uenv
+#del      uenv image inspect $img
+#del      echo "----------------------"
+#del      img_path=$(./ci/scripts/alps_uenv.sh uenv_sqfs_fullpath "$img")
+#del      echo "img_path=$img_path"
+#del      ./ci/scripts/alps_uenv.sh launch_reframe "$img_path"
+#del    done
+
 #   script: |
 #     rfm_path=$(./ci/scripts/alps_uenv.sh install_reframe)
 #     export PATH=$PWD/reframe-4.5.2/bin:$PATH

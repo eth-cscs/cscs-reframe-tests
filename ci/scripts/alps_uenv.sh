@@ -162,11 +162,15 @@ install_reframe() {
     python3 -m venv rfm_venv
     source rfm_venv/bin/activate
     # pip install --upgrade reframe-hpc
-    # git clone -b v4.5.2 --depth 1 https://github.com/reframe-hpc/reframe.git
-    (wget --quiet "https://github.com/reframe-hpc/reframe/archive/refs/tags/v4.5.2.tar.gz" && \
-    tar xf v4.5.2.tar.gz && \
-    cd reframe-4.5.2 && \
-    ./bootstrap.sh)
+    # git clone --depth 1 https://github.com/reframe-hpc/reframe.git
+    # multi-uenv support only in reframe > v4.5.2:
+    (wget --quiet "https://github.com/reframe-hpc/reframe/archive/refs/heads/develop.zip" && \
+    unzip "develop.zip" && cd reframe-develop && ./bootstrap.sh)
+    export PATH="$(pwd)/reframe-develop/bin:$PATH"
+    # (wget --quiet "https://github.com/reframe-hpc/reframe/archive/refs/tags/v4.5.2.tar.gz" && \
+    # tar xf v4.5.2.tar.gz && \
+    # cd reframe-4.5.2 && \
+    # ./bootstrap.sh)
     # echo "$PWD/reframe-4.5.2/bin"
     # export PATH="$(pwd)/reframe/bin:$PATH"
 }    
@@ -184,11 +188,22 @@ uenv_sqfs_fullpath() {
     uenv image inspect $img --format {sqfs}
 }   
 # }}}
-# {{{ launch_reframe 
-launch_reframe() {
+# {{{ launch_reframe_1img 
+launch_reframe_1img() {
     img=$1
     # export UENV="${squashfs_path}:${mount}"
     export UENV="$img"
+    export RFM_AUTODETECT_METHODS="cat /etc/xthostname,hostname"
+    export RFM_USE_LOGIN_SHELL=1
+    # export RFM_AUTODETECT_XTHOSTNAME=1
+    # reframe -V
+    reframe -C ./config/cscs.py --report-junit=report.xml -c ./checks/ \
+    -r --system=$system
+    # -n HelloWorldTestMPIOpenMP
+}
+# }}}
+# {{{ launch_reframe 
+launch_reframe() {
     export RFM_AUTODETECT_METHODS="cat /etc/xthostname,hostname"
     export RFM_USE_LOGIN_SHELL=1
     # export RFM_AUTODETECT_XTHOSTNAME=1
@@ -215,7 +230,8 @@ case $in in
     install_reframe) install_reframe;;
     install_reframe_tests) install_reframe_tests;;
     uenv_sqfs_fullpath) uenv_sqfs_fullpath "$img";;
-    launch_reframe) launch_reframe "$img";;
+    launch_reframe_1img) launch_reframe_1img "$img";;
+    launch_reframe) launch_reframe;;
     *) echo "unknown arg=$in";;
 esac
 #old [[ -d $oras_tmp ]] && { echo "cleaning $oras_tmp"; rm -fr $oras_tmp; }
