@@ -59,9 +59,10 @@ setup and pull:
       #
       ./ci/scripts/alps_uenv.sh uenv_pull_sqfs "$img"
       UENV+="$img_path,"
+      echo "$img: UENV=$UENV"
     done
-    - UENV=${UENV%?}
-    - echo "stage1: UENV=$UENV"
+    UENV=${UENV%?}
+    echo "UENV=$UENV"
 
 run reframe:
   stage: run
