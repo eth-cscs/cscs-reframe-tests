@@ -31,10 +31,10 @@ setup and pull:
     F7T_URL: "https://firecrest.cscs.ch"
     SLURM_ACCOUNT: "csstaff"
     FIRECREST_SYSTEM: "${FIRECREST_SYSTEM}"
-  rules:
-    - if: "${CLUSTER_NAME}" == "eiger"
-      variables:
-        SLURM_CONSTRAINT: "mc"
+#del   rules:
+#del     - if: "${CLUSTER_NAME}" == "eiger"
+#del       variables:
+#del         SLURM_CONSTRAINT: "mc"
   before_script:
     - pwd
     - uname -a
@@ -44,6 +44,7 @@ setup and pull:
     # - uenv image repo $SCRATCH/.uenv-images
     - imgs=$(./ci/scripts/alps_uenv.sh uenv_image_find)
   script: |
+    if [ "${CLUSTER_NAME}" == "eiger" ] ; then export SLURM_CONSTRAINT="mc"; fi
     echo "imgs=$imgs"
     export PATH=$PWD:$PATH
     uenv --version
@@ -84,10 +85,6 @@ run reframe:
     SLURM_ACCOUNT: "csstaff"
     # FIRECREST_SYSTEM: "santis"
     FIRECREST_SYSTEM: "${FIRECREST_SYSTEM}"
-  rules:
-    - if: $CLUSTER_NAME == "eiger"
-      variables:
-        SLURM_CONSTRAINT: "mc"
   before_script:
     - pwd
     - uname -a
