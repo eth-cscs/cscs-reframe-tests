@@ -63,6 +63,10 @@ setup and pull:
     done
     UENV=${UENV%?}
     echo "UENV=$UENV" | tr , "\n"
+    echo "UENV=$UENV" > rfm_uenv.env
+  artifacts:
+    reports:
+      dotenv: rfm_uenv.env
 
 run reframe:
   stage: run
