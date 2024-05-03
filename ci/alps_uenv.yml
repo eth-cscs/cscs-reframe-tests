@@ -38,7 +38,9 @@ setup and pull:
     - source ./uenv-4.0.1/bin/activate-uenv
     - uenv --version
     - imgs=$(./ci/scripts/alps_uenv.sh uenv_image_find)
+    - echo "imgs=$imgs"
   script: |
+    echo "imgs=$imgs"
     for img in $imgs; do
       echo "----- Pulling img=$img metadata & sqfs"
       pwd
