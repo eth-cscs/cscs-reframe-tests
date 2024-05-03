@@ -92,7 +92,7 @@ run reframe:
     - uenv --version
     - echo "UENV=$UENV" | tr , "\n"
   script:
-    - rfm_path=$(./ci/scripts/alps_uenv.sh install_reframe)
+    - rfm_path=$(bash -x ./ci/scripts/alps_uenv.sh install_reframe)
     - export PATH=$rfm_path:$PATH
     - reframe -V
     - ./ci/scripts/alps_uenv.sh launch_reframe "$img_path"
