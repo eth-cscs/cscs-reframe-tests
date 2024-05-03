@@ -14,7 +14,6 @@ variables:
   # CLUSTER_NAME: 'santis'
   # UARCH: 'gh200'
 
-
 setup and pull:
   stage: pull
   tags: ["$TAG"]
@@ -33,7 +32,7 @@ setup and pull:
     SLURM_ACCOUNT: "csstaff"
     FIRECREST_SYSTEM: "${FIRECREST_SYSTEM}"
   rules:
-    - if: $CLUSTER_NAME == "eiger"
+    - if: "${CLUSTER_NAME}" == "eiger"
       variables:
         SLURM_CONSTRAINT: "mc"
   before_script:
