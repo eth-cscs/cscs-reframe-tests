@@ -11,6 +11,7 @@ variables:
   WORKSPACE: '$${CI_CACHE_FOLDER}/rfm_workspace'
   JOB_NAME: rfm-$CI_PIPELINE_ID
   FIRECREST_SYSTEM: 'santis'
+  CLUSTER_NAME: 'santis'
 # https://github.com/finkandreas/benchpark/blob/develop/.ci/cscs.yml
 
 setup and pull:
@@ -31,6 +32,8 @@ setup and pull:
     SLURM_ACCOUNT: "csstaff"
     FIRECREST_SYSTEM: "santis"
   before_script:
+    - pwd
+    - uname -a
     - ./ci/scripts/alps_uenv.sh setup_uenv_and_oras &> setup_uenv_and_oras.log
     - source ./uenv-4.0.1/bin/activate-uenv
     - uenv --version
