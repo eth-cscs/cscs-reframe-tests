@@ -38,7 +38,7 @@ setup and pull:
     - ./ci/scripts/alps_uenv.sh setup_uenv_and_oras &> setup_uenv_and_oras.log
     - source ./uenv-4.0.1/bin/activate-uenv
     - uenv --version
-    - uenv image repo $SCRATCH/.uenv-images
+    # - uenv image repo $SCRATCH/.uenv-images
     - imgs=$(./ci/scripts/alps_uenv.sh uenv_image_find)
   script: |
     echo "imgs=$imgs"
