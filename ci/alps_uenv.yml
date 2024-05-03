@@ -92,35 +92,14 @@ run reframe:
     - uenv --version
     - echo "UENV=$UENV" | tr , "\n"
   script:
-    - rfm_path=$(bash -x ./ci/scripts/alps_uenv.sh install_reframe)
+    - rfm_path=$(./ci/scripts/alps_uenv.sh install_reframe)
     - echo "rfm_path=$rfm_path"
     - export PATH=$rfm_path:$PATH
     - reframe -V
     - ./ci/scripts/alps_uenv.sh launch_reframe "$img_path"
-#del    # export PATH=$PWD/reframe-4.5.2/bin:$PATH
-#del    for img in $imgs; do
-#del      echo "----- Testing img=$img"
-#del      echo "PWD=$PWD"
-#del      ./ci/scripts/alps_uenv.sh setup_uenv_and_oras &> setup_uenv_and_oras.log
-#del      source ./uenv-4.0.1/bin/activate-uenv
-#del      uenv image inspect $img
-#del      echo "----------------------"
-#del      img_path=$(./ci/scripts/alps_uenv.sh uenv_sqfs_fullpath "$img")
-#del      echo "img_path=$img_path"
-#del      ./ci/scripts/alps_uenv.sh launch_reframe "$img_path"
-#del    done
-
-#   script: |
-#     rfm_path=$(./ci/scripts/alps_uenv.sh install_reframe)
-#     export PATH=$PWD/reframe-4.5.2/bin:$PATH
-#     for img in $imgs; do
-#       echo "----- Testing img=$img"
-#       echo "PWD=$PWD"
-#       ./ci/scripts/alps_uenv.sh setup_uenv_and_oras &> setup_uenv_and_oras.log
-#       source ./uenv-4.0.1/bin/activate-uenv
-#       uenv image inspect $img
-#       echo "----------------------"
-#       img_path=$(./ci/scripts/alps_uenv.sh uenv_sqfs_fullpath "$img")
-#       echo "img_path=$img_path"
-#       ./ci/scripts/alps_uenv.sh launch_reframe "$img_path"
-#     done
+  artifacts:
+    when: on_failure
+    paths:
+      - report.xml
+    reports:
+      junit: report.xml

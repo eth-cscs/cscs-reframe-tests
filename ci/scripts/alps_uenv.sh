@@ -211,7 +211,7 @@ launch_reframe() {
     # export RFM_AUTODETECT_XTHOSTNAME=1
     # reframe -V
     reframe -C ./config/cscs.py --report-junit=report.xml -c ./checks/ \
-    -r --system=$system
+    -r --system=$system -J reservation=all_nodes
     # -n HelloWorldTestMPIOpenMP
 }
 # }}}
