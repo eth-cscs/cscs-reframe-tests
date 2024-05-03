@@ -14,6 +14,7 @@ variables:
   # CLUSTER_NAME: 'santis'
   # UARCH: 'gh200'
 
+
 setup and pull:
   stage: pull
   tags: ["$TAG"]
@@ -31,6 +32,10 @@ setup and pull:
     F7T_URL: "https://firecrest.cscs.ch"
     SLURM_ACCOUNT: "csstaff"
     FIRECREST_SYSTEM: "${FIRECREST_SYSTEM}"
+  rules:
+    - if: $CLUSTER_NAME == "eiger"
+      variables:
+        SLURM_CONSTRAINT: "mc"
   before_script:
     - pwd
     - uname -a
@@ -80,6 +85,10 @@ run reframe:
     SLURM_ACCOUNT: "csstaff"
     # FIRECREST_SYSTEM: "santis"
     FIRECREST_SYSTEM: "${FIRECREST_SYSTEM}"
+  rules:
+    - if: $CLUSTER_NAME == "eiger"
+      variables:
+        SLURM_CONSTRAINT: "mc"
   before_script:
     - pwd
     - uname -a
