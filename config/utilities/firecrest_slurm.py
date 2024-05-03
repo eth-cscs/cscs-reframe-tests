@@ -7,8 +7,10 @@ import itertools
 import logging
 import os
 import re
+import shutil
 import stat
 import sys
+import tarfile
 import time
 from packaging.version import Version
 
@@ -97,6 +99,53 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
 
     def make_job(self, *args, **kwargs):
         return _SlurmFirecrestJob(*args, **kwargs)
+
+    def _push_compressed_artifacts(self, job):
+        # Compress locally the files
+        self.log('Compressing local stage directory')
+        local_path = shutil.make_archive(
+            base_name="stage_dir_archive_push",
+            format="gztar",
+            root_dir=".",
+            base_dir=".",
+        )
+
+        # Upload
+        remote_path = job._remotedir
+        f_size = os.path.getsize(local_path)
+        remote_file_path = os.path.join(
+            remote_path,
+            os.path.basename(local_path)
+        )
+        if f_size <= self._max_file_size_utilities:
+            self.client.simple_upload(
+                self._system_name,
+                local_path,
+                remote_path
+            )
+        else:
+            self.log(
+                f'Archive file is {f_size} bytes, so it may take some time...'
+            )
+            up_obj = self.client.external_upload(
+                self._system_name,
+                local_path,
+                remote_path
+            )
+            up_obj.finish_upload()
+
+        # Extract stagedir
+        self.log(f'Extracting {remote_file_path} to {remote_path}')
+        self.client.extract(
+            self._system_name,
+            remote_file_path,
+            remote_path
+        )
+
+        # Remove the archives
+        self.log('Removing local and remote archives')
+        os.remove(local_path)
+        self.client.simple_delete(self._system_name, remote_file_path)
 
     def _push_artefacts(self, job):
         def _setup_permissions(local_file_path, remote_file_path):
@@ -194,6 +243,42 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
                 self._remote_filetimestamps[local_norm_path] = (
                     f['last_modified']
                 )
+
+    def _pull_compressed_artifacts(self, job):
+        # Compress remote files
+        self.log('Compressing remote stage directory')
+        remote_achive_path = os.path.join(
+            job._remotedir,
+            'stage_dir_archive_pull.tar.gz'
+        )
+        self.client.compress(
+            self._system_name,
+            job._remotedir,
+            remote_achive_path
+        )
+
+        # Download the remote directory
+        # TODO: get real file size
+        local_archive_path = os.path.join(
+            job._localdir,
+            'stage_dir_archive_pull.tar.gz'
+        )
+        self.log(f'Downloading file {remote_achive_path} in {job._localdir}')
+        self.client.simple_download(
+            self._system_name,
+            remote_achive_path,
+            local_archive_path
+        )
+
+        # Extract the files locally
+        self.log(f'Extracting {local_archive_path} to {job._localdir}')
+        with tarfile.open(local_archive_path, 'r:gz') as tar:
+            tar.extractall(os.path.dirname(job._localdir))
+
+        # Remove the remote and local archives
+        self.log('Removing local and remote archives')
+        os.remove(local_archive_path)
+        self.client.simple_delete(self._system_name, remote_achive_path)
 
     def _pull_artefacts(self, job):
         def firecrest_walk(directory):
@@ -311,7 +396,8 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
                 # exist, but it can be ignored
                 pass
             finally:
-                # Always revert the global logger level back to its original state
+                # Always revert the global logger level back to its original
+                # state
                 logging.getLogger().setLevel(original_level)
 
             self._cleaned_remotedirs.add(job._remotedir)
@@ -320,7 +406,7 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
         self.log(f'Creating remote directory {job._remotedir} in '
                  f'{self._system_name}')
 
-        self._push_artefacts(job)
+        self._push_compressed_artifacts(job)
 
         intervals = itertools.cycle([1, 2, 3])
         while True:
@@ -410,7 +496,7 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
             if job.is_array:
                 self._merge_files(job)
 
-            self._pull_artefacts(job)
+            self._pull_compressed_artifacts(job)
             return
 
         intervals = itertools.cycle([1, 2, 3])
