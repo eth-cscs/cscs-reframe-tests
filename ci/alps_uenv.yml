@@ -16,7 +16,8 @@ variables:
 setup and pull:
   stage: pull
   # tags: ['f7t-runner']
-  tags: ["santis-spack-stack-builder"]
+  # tags: ["santis-spack-stack-builder"]
+  tags: ["santis-login-baremetal"]
   variables:
     # Valid MODE=('container-runner', 'baremetal', 'f7t-controller')
     MODE: "f7t-controller"  # santis
