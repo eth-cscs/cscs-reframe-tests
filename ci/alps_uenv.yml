@@ -21,9 +21,9 @@ setup and pull:
   # tags: ["santis-spack-stack-builder"]
   variables:
     # Valid MODE=('container-runner', 'baremetal', 'f7t-controller')
-    MODE: "f7t-controller"  # santis
+    MODE: "${RFM_MODE}"
+    # MODE: "f7t-controller"
     GIT_STRATEGY: "fetch"
-    # STACK_SYSTEM:     "santis"
     # SLURM_PARTITION: "${SLURM_PARTITION}"
     # SLURM_CONSTRAINT: "mc"
     F7T_TOKEN_URL: "https://auth.cscs.ch/auth/realms/firecrest-clients/protocol/openid-connect/token"
@@ -67,7 +67,8 @@ run reframe:
   needs: ['setup and pull']
   variables:
     # Valid MODE=('container-runner', 'baremetal', 'f7t-controller')
-    MODE: "f7t-controller"  # santis
+    MODE: "${RFM_MODE}"
+    # MODE: "f7t-controller"  # santis
     # MODE: "baremetal"  # eiger
     GIT_STRATEGY: "fetch"
     # SLURM_PARTITION: "${SLURM_PARTITION}"
