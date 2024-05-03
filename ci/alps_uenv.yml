@@ -10,9 +10,6 @@ stages:
 variables:
   WORKSPACE: '$${CI_CACHE_FOLDER}/rfm_workspace'
   JOB_NAME: rfm-$CI_PIPELINE_ID
-  # FIRECREST_SYSTEM: 'santis'
-  # CLUSTER_NAME: 'santis'
-  # UARCH: 'gh200'
 
 setup and pull:
   stage: pull
@@ -44,7 +41,7 @@ setup and pull:
     # - uenv image repo $SCRATCH/.uenv-images
     - imgs=$(./ci/scripts/alps_uenv.sh uenv_image_find)
   script: |
-    if [ "${CLUSTER_NAME}" == "eiger" ] ; then export SLURM_CONSTRAINT="mc"; fi
+    # if [ "${CLUSTER_NAME}" == "eiger" ] ; then export SLURM_CONSTRAINT="mc"; fi
     echo "imgs=$imgs"
     export PATH=$PWD:$PATH
     uenv --version
