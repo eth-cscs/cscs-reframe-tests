@@ -12,6 +12,7 @@ variables:
   JOB_NAME: rfm-$CI_PIPELINE_ID
   FIRECREST_SYSTEM: 'santis'
   CLUSTER_NAME: 'santis'
+  UARCH: 'gh200'
 # https://github.com/finkandreas/benchpark/blob/develop/.ci/cscs.yml
 
 setup and pull:
@@ -38,19 +39,18 @@ setup and pull:
     - source ./uenv-4.0.1/bin/activate-uenv
     - uenv --version
     - imgs=$(./ci/scripts/alps_uenv.sh uenv_image_find)
-    - echo "imgs=$imgs"
   script: |
     echo "imgs=$imgs"
+    export PATH=$PWD:$PATH
+    uenv --version
+    export PATH=$UENV_PREFIX/libexec:$PATH
+    uenv-oras version
     for img in $imgs; do
       echo "----- Pulling img=$img metadata & sqfs"
       pwd
-      export PATH=$PWD:$PATH
       # ./ci/scripts/alps_uenv.sh setup_jq
       # ./ci/scripts/alps_uenv.sh setup_uenv_and_oras &> setup_uenv_and_oras.log
       # source ./uenv-4.0.1/bin/activate-uenv
-      uenv --version
-      export PATH=$UENV_PREFIX/libexec:$PATH
-      uenv-oras version
       # ./ci/scripts/alps_uenv.sh jfrog_login
       # img0=$(echo $imgs | cut -d" " -f1)
       # echo "img0=$img0"

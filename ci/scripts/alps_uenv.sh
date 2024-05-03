@@ -13,7 +13,7 @@ jfrog_request="$CSCS_CI_MW_URL/credentials?token=$CI_JOB_TOKEN&job_id=$CI_JOB_ID
 # jfrog_request_nojobid="$CSCS_CI_MW_URL/credentials&token=$CI_JOB_TOKEN&creds=container_registry"
 # https://cicd-ext-mw.cscs.ch/ci
 # system="santis" ; uarch="gh200"
-system="eiger" ; uarch="zen2"
+system="$FIRECREST_SYSTEM" ; uarch="$UARCH"
 #del name=`echo $in |cut -d: -f1`
 #del tag=`echo $in |cut -d: -f2`
 #del jfrog=jfrog.svc.cscs.ch/uenv/deploy/$system/$uarch/$name
