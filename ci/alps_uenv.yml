@@ -17,9 +17,9 @@ variables:
 
 setup and pull:
   stage: pull
+  tags: ["santis-login-baremetal"]
   # tags: ['f7t-runner']
   # tags: ["santis-spack-stack-builder"]
-  tags: ["santis-login-baremetal"]
   variables:
     # Valid MODE=('container-runner', 'baremetal', 'f7t-controller')
     MODE: "f7t-controller"  # santis
@@ -59,17 +59,20 @@ setup and pull:
       #
       img_path=$(./ci/scripts/alps_uenv.sh uenv_sqfs_fullpath "$img")
       UENV+="$img_path,"
-      echo "$img: UENV=$UENV"
+      echo
     done
     UENV=${UENV%?}
-    echo "UENV=$UENV"
+    echo "UENV=$UENV" | tr , "\n"
 
 run reframe:
   stage: run
-  tags: ['f7t-runner']
+  tags: ["santis-login-baremetal"]
+  # tags: ['f7t-runner']
   needs: ['setup and pull']
   variables:
-    MODE: "baremetal"  # eiger
+    # Valid MODE=('container-runner', 'baremetal', 'f7t-controller')
+    MODE: "f7t-controller"  # santis
+    # MODE: "baremetal"  # eiger
     GIT_STRATEGY: "fetch"
     # SLURM_PARTITION: "debug"
     # SLURM_CONSTRAINT: "mc"
