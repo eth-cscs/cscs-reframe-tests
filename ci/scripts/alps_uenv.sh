@@ -158,6 +158,7 @@ uenv_pull_sqfs() {
 # }}}
 # {{{ install_reframe 
 install_reframe() {
+    # all must be quiet because of last echo
     rm -fr rfm_venv reframe
     python3 -m venv rfm_venv
     source rfm_venv/bin/activate
@@ -165,7 +166,7 @@ install_reframe() {
     # git clone --depth 1 https://github.com/reframe-hpc/reframe.git
     # multi-uenv support only in reframe > v4.5.2:
     (wget --quiet "https://github.com/reframe-hpc/reframe/archive/refs/heads/develop.zip" && \
-    unzip "develop.zip" && cd reframe-develop && ./bootstrap.sh)
+    unzip -qq "develop.zip" && cd reframe-develop && ./bootstrap.sh &> /dev/null)
     export PATH="$(pwd)/reframe-develop/bin:$PATH"
     echo "$(pwd)/reframe-develop/bin"
     # (wget --quiet "https://github.com/reframe-hpc/reframe/archive/refs/tags/v4.5.2.tar.gz" && \
