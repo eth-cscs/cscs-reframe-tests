@@ -3,6 +3,7 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
+import hostlist
 import itertools
 import logging
 import os
@@ -18,7 +19,8 @@ import reframe.core.runtime as rt
 import reframe.core.schedulers as sched
 from reframe.core.backends import register_scheduler
 from reframe.core.schedulers.slurm import (SlurmJobScheduler,
-                                           slurm_state_completed)
+                                           slurm_state_completed,
+                                           _SlurmNode)
 from reframe.core.exceptions import JobSchedulerError
 
 if sys.version_info >= (3, 7):
@@ -55,6 +57,14 @@ class _SlurmFirecrestJob(sched.Job):
     @property
     def remotedir(self):
         return self._remotedir
+
+    @property
+    def nodelist(self):
+        # Generate the nodelist only after the job is finished
+        if slurm_state_completed(self.state):
+            self._nodelist = hostlist.expand_hostlist(self._nodespec)
+
+        return self._nodelist
 
 
 @register_scheduler('firecrest-slurm')
@@ -100,7 +110,7 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
     def make_job(self, *args, **kwargs):
         return _SlurmFirecrestJob(*args, **kwargs)
 
-    def _push_compressed_artifacts(self, job):
+    def _push_compressed_artefacts(self, job):
         # Compress locally the files
         self.log('Compressing local stage directory')
         local_path = shutil.make_archive(
@@ -244,7 +254,7 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
                     f['last_modified']
                 )
 
-    def _pull_compressed_artifacts(self, job):
+    def _pull_compressed_artefacts(self, job):
         # Compress remote files
         self.log('Compressing remote stage directory')
         remote_achive_path = os.path.join(
@@ -406,7 +416,8 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
         self.log(f'Creating remote directory {job._remotedir} in '
                  f'{self._system_name}')
 
-        self._push_compressed_artifacts(job)
+        self._push_compressed_artefacts(job)
+        # self._push_artefacts(job)
 
         intervals = itertools.cycle([1, 2, 3])
         while True:
@@ -444,13 +455,67 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
         job._submit_time = time.time()
 
     def allnodes(self):
-        raise NotImplementedError('firecrest slurm backend does not support '
-                                  'node listing')
+        nodes = set()
+        try:
+            node_descriptions = self.client.nodes(self._system_name)
+        except fc.FirecrestException as e:
+            raise JobSchedulerError(
+                'could not retrieve node information') from e
 
-    def filternodes(self, job, nodes):
-        raise NotImplementedError(
-            'firecrest slurm backend does not support node filtering'
-        )
+        for node_descr in node_descriptions:
+            nodes.add(_FirecrestSlurmNode(node_descr))
+
+        return nodes
+
+    def _get_nodes_by_name(self, nodespec):
+        nodes = set()
+        try:
+            node_descriptions = self.client.nodes(
+                self._system_name, [nodespec]
+            )
+        except fc.FirecrestException as e:
+            raise JobSchedulerError(
+                'could not retrieve node information') from e
+
+        for node_descr in node_descriptions:
+            nodes.add(_FirecrestSlurmNode(node_descr))
+
+        return nodes
+
+    def _get_default_partition(self):
+        try:
+            part_descriptions = self.client.partitions(self._system_name)
+        except fc.FirecrestException as e:
+            raise JobSchedulerError('could not extract the partitions') from e
+
+        for part in part_descriptions:
+            if part['Default'] == 'YES':
+                return part['PartitionName']
+
+        return None
+
+    def _get_reservation_nodes(self, reservation):
+        try:
+            res_descr = self.client.reservations(
+                self._system_name, [reservation]
+            )[0]
+        except (fc.FirecrestException, IndexError) as e:
+            raise JobSchedulerError(f"could not extract the node names for "
+                                    f"reservation '{reservation}'") from e
+
+        try:
+            node_descriptions = self.client.nodes(
+                self._system_name, [res_descr['Nodes']]
+            )
+        except fc.FirecrestException as e:
+            raise JobSchedulerError(f"could not extract the node for "
+                                    f"reservation '{reservation}'") from e
+
+        nodes = set()
+        for node_descr in node_descriptions:
+            nodes.add(_FirecrestSlurmNode(node_descr))
+
+        return nodes
 
     def poll(self, *jobs):
         '''Update the status of the jobs.'''
@@ -496,7 +561,8 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
             if job.is_array:
                 self._merge_files(job)
 
-            self._pull_compressed_artifacts(job)
+            # self._pull_artefacts(job)
+            self._pull_compressed_artefacts(job)
             return
 
         intervals = itertools.cycle([1, 2, 3])
@@ -504,10 +570,22 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
             self.poll(job)
             time.sleep(next(intervals))
 
-        self._pull_artefacts(job)
+        # self._pull_artefacts(job)
+        self._pull_compressed_artefacts(job)
         if job.is_array:
             self._merge_files(job)
 
     def cancel(self, job):
         self.client.cancel(job.system_name, job.jobid)
         job._is_cancelling = True
+
+
+class _FirecrestSlurmNode(_SlurmNode):
+    '''Class representing a Slurm node.'''
+
+    def __init__(self, node_descr):
+        self._name = node_descr['NodeName']
+        self._partitions = set(node_descr['Partitions'])
+        self._active_features = set(node_descr['ActiveFeatures'])
+        self._states = set(node_descr['State'])
+        self._descr = node_descr

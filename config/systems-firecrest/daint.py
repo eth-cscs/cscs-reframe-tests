@@ -161,10 +161,15 @@ daint_sys['name'] = 'daint'
 daint_sys['descr'] = 'Piz Daint'
 daint_sys['hostnames'] = ['daint']
 
+dom_sys = copy.deepcopy(base_config)
+dom_sys['name'] = 'dom'
+dom_sys['descr'] = 'Piz Daint tds'
+dom_sys['hostnames'] = ['dom']
 
 site_configuration = {
     'systems': [
-        daint_sys
+        daint_sys,
+        dom_sys
     ],
     'environments': [
         {
