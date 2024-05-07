@@ -111,6 +111,59 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
         return _SlurmFirecrestJob(*args, **kwargs)
 
     def _push_compressed_artefacts(self, job):
+        def _extract(archive_path, dir_path):
+            intervals = itertools.cycle([1, 2, 3])
+            try:
+                self.client.extract(
+                    self._system_name,
+                    archive_path,
+                    dir_path
+                )
+            except fc.FirecrestException as e:
+                stderr = e.responses[-1].json().get('error', '')
+                # This command has a timeout so it may fail
+                if stderr != 'Command has finished with timeout signal':
+                    raise e
+
+                self.log('The directory is too big to extract directly, '
+                         'will try with a job... It may time some time.')
+
+                extract_job = self.client.submit_extract_job(
+                    self._system_name,
+                    dir_path,
+                    archive_path
+                )
+                jobid = extract_job['jobid']
+                active_jobs = self.client.poll(
+                    self._system_name,
+                    [jobid]
+                )
+                self.log(f'Extract job ID: {jobid}')
+                while (
+                    active_jobs and
+                    slurm_state_completed(active_jobs[0]['state'])
+                ):
+                    time.sleep(next(intervals))
+                    active_jobs = self.client.poll_active(
+                        self._system_name,
+                        [jobid]
+                    )
+
+                if active_jobs[0]['state'] != 'COMPLETED':
+                    raise JobSchedulerError(
+                        f"extract job (jobid={jobid}) finished with"
+                        f"state {active_jobs[0]['state']}"
+                    )
+
+                err_output = self.client.head(
+                    self._system_name,
+                    extract_job['job_file_err']
+                )
+                if (err_output != ''):
+                    raise JobSchedulerError(
+                        f'extract job has failed: {err_output}'
+                    )
+
         # Compress locally the files
         self.log('Compressing local stage directory')
         local_path = shutil.make_archive(
@@ -146,8 +199,7 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
 
         # Extract stagedir
         self.log(f'Extracting {remote_file_path} to {remote_path}')
-        self.client.extract(
-            self._system_name,
+        _extract(
             remote_file_path,
             remote_path
         )
@@ -255,13 +307,66 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
                 )
 
     def _pull_compressed_artefacts(self, job):
+        def _compress(dir_path, archive_path):
+            intervals = itertools.cycle([1, 2, 3])
+            try:
+                self.client.compress(
+                    self._system_name,
+                    dir_path,
+                    archive_path
+                )
+            except fc.FirecrestException as e:
+                stderr = e.responses[-1].json().get('error', '')
+                # This command has a timeout so it may fail
+                if stderr != 'Command has finished with timeout signal':
+                    raise e
+
+                self.log('The directory is too big to compress directly, '
+                         'will try with a job... It may time some time.')
+
+                compression_job = self.client.submit_compress_job(
+                    self._system_name,
+                    dir_path,
+                    archive_path
+                )
+                jobid = compression_job['jobid']
+                active_jobs = self.client.poll(
+                    self._system_name,
+                    [jobid]
+                )
+                self.log(f'Compression job ID: {jobid}')
+                while (
+                    active_jobs and
+                    slurm_state_completed(active_jobs[0]['state'])
+                ):
+                    time.sleep(next(intervals))
+                    active_jobs = self.client.poll_active(
+                        self._system_name,
+                        [jobid]
+                    )
+
+                if active_jobs[0]['state'] != 'COMPLETED':
+                    raise JobSchedulerError(
+                        f"compression job (jobid={jobid}) finished with"
+                        f"state {active_jobs[0]['state']}"
+                    )
+
+                err_output = self.client.head(
+                    self._system_name,
+                    compression_job['job_file_err']
+                )
+                if (err_output != ''):
+                    raise JobSchedulerError(
+                        'compression job has failed: {err_output}'
+                    )
+
         # Compress remote files
         self.log('Compressing remote stage directory')
         remote_achive_path = os.path.join(
-            job._remotedir,
+            self._remotedir_prefix,
             'stage_dir_archive_pull.tar.gz'
         )
-        self.client.compress(
+        _compress(
             self._system_name,
             job._remotedir,
             remote_achive_path
