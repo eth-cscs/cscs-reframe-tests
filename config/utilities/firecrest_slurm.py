@@ -367,7 +367,6 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
             'stage_dir_archive_pull.tar.gz'
         )
         _compress(
-            self._system_name,
             job._remotedir,
             remote_achive_path
         )
