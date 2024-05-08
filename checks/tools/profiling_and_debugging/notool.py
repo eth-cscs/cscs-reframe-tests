@@ -15,8 +15,7 @@ class JacobiNoToolHybrid(rfm.RegressionTest):
     time_limit = '10m'
     valid_systems = ['daint:gpu', 'daint:mc', 'dom:gpu', 'dom:mc',
                      'eiger:mc', 'pilatus:mc']
-    valid_prog_environs = ['PrgEnv-aocc', 'PrgEnv-cray', 'PrgEnv-gnu',
-                           'PrgEnv-intel', 'PrgEnv-pgi', 'PrgEnv-nvidia']
+    valid_prog_environs = ['PrgEnv-gnu', 'PrgEnv-cray']
     build_system = 'Make'
     executable = './jacobi'
     num_tasks = 3
@@ -32,14 +31,11 @@ class JacobiNoToolHybrid(rfm.RegressionTest):
     def set_descr_name(self):
         self.descr = f'Jacobi (without tool) {self.lang} check'
 
+    # keeping as a reminder:
     @run_after('init')
     def remove_buggy_prgenv(self):
-        # let's keep it simple:
-        self.valid_prog_environs.remove('PrgEnv-intel')
-        self.valid_prog_environs.remove('PrgEnv-aocc')
-        # FIXME: skipping to avoid "Fatal error in PMPI_Init_thread"
-        if self.current_system.name in ('eiger', 'pilatus'):
-            self.valid_prog_environs.remove('PrgEnv-nvidia')
+        # skipping to avoid "Fatal error in PMPI_Init_thread"
+        self.valid_prog_environs.remove('PrgEnv-nvidia')
 
     @run_before('compile')
     def set_sources_dir(self):
