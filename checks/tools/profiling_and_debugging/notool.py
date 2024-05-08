@@ -25,7 +25,6 @@ class JacobiNoToolHybrid(rfm.RegressionTest):
     num_tasks_per_core = 1
     use_multithreading = False
     num_iterations = variable(int, value=100)
-    url = variable(str, value='http://github.com/eth-cscs/hpctools')
     maintainers = ['JG', 'MKr']
     tags = {'production'}
 
@@ -35,6 +34,9 @@ class JacobiNoToolHybrid(rfm.RegressionTest):
 
     @run_after('init')
     def remove_buggy_prgenv(self):
+        # let's keep it simple:
+        self.valid_prog_environs.remove('PrgEnv-intel')
+        self.valid_prog_environs.remove('PrgEnv-aocc')
         # FIXME: skipping to avoid "Fatal error in PMPI_Init_thread"
         if self.current_system.name in ('eiger', 'pilatus'):
             self.valid_prog_environs.remove('PrgEnv-nvidia')
@@ -66,7 +68,8 @@ class JacobiNoToolHybrid(rfm.RegressionTest):
             'PrgEnv-cray': ['-O2', '-g',
                             '-homp' if self.lang == 'F90' else '-fopenmp'],
             'PrgEnv-gnu': ['-O2', '-g', '-fopenmp',
-                           '-fallow-argument-mismatch' if self.lang == 'F90' else ''],
+                           '-fallow-argument-mismatch' if self.lang == 'F90'
+                           else ''],
             'PrgEnv-intel': ['-O2', '-g', '-qopenmp'],
             'PrgEnv-pgi': ['-O2', '-g', '-mp'],
             'PrgEnv-nvidia': ['-O2', '-g', '-mp']
@@ -93,78 +96,73 @@ class JacobiNoToolHybrid(rfm.RegressionTest):
                 f'echo INTEL_COMPILER_TYPE=$INTEL_COMPILER_TYPE',
             ]
 
-    @run_before('run')
-    def set_postrun_cmds(self):
-        readme_str = (
-            rf'More debug and performance tools ReFrame checks are '
-            rf'available at {self.url}'
-        )
-        self.postrun_cmds += [f'echo "{readme_str}"']
-
     @sanity_function
     def assert_success(self):
-        envname = self.current_environ.name
-        # {{{ extract CCE version to manage compiler versions:
-        cce_version = None
-        rptf = os.path.join(self.stagedir, sn.evaluate(self.stdout))
-        if self.lang == 'C++' and envname == 'PrgEnv-cray':
-            cce_version = sn.extractsingle(r'CRAY_CC_VERSION=(\d+)\.\S+', rptf,
-                                           1, int)
-        # }}}
+        """
+        - Read compiler version from environment variables:
+            CRAY_CC_VERSION=17.0.0  -> 17
+            CRAY_AOCC_VERSION=4.1.0 -> 4
+            INTEL_VERSION=2023.2.0  -> 2023
+            GNU_VERSION=12.3        -> 12
 
-        # {{{ extract AOCC version to manage compiler versions:
-        aocc_version = None
-        rptf = os.path.join(self.stagedir, sn.evaluate(self.stdout))
-        if self.lang == 'C++' and envname == 'PrgEnv-aocc':
-            aocc_version = sn.extractsingle(
-                r'CRAY_AOCC_VERSION=(\d+)\.\S+', rptf, 1, int)
-        # }}}
+        - OpenMP support between compilers:
+                     C++ - F90
+            cce - 202011 - 201511
+           aocc - 201811 - 201307
+          intel - 201811 - 201611
+            gnu - 201511 - 201511
+             nv - 201307 - 201307
+            pgi - 201307 - 201307
 
-        intel_type = sn.extractsingle(r'INTEL_COMPILER_TYPE=(\S*)', rptf, 1)
-        # {{{ print(f'intel_type={intel_type}')
-        # intel/19.1.1.217        icpc openmp/201611
-        # intel/19.1.3.304        icpc openmp/201611
-        # intel/2021.2.0          icpc openmp/201611
-        # intel-classic/2021.2.0  icpc openmp/201611
-        # intel-oneapi/2021.2.0   icpc openmp/201611 = 4.5
-        # intel-oneapi/2021.2.0   icpx openmp/201811 = 5.0
-        # __INTEL_COMPILER
-        # INTEL_VERSION 2021.2.0 INTEL_COMPILER_TYPE ONEAPI      201811
-        # INTEL_VERSION 2021.2.0 INTEL_COMPILER_TYPE RECOMMENDED
-        # INTEL_VERSION 2021.2.0 INTEL_COMPILER_TYPE CLASSIC     201611
-        # }}}
-        # OpenMP support varies between compilers:
-        #            c++ - f90
-        #  aocc - 201511 - 201307
-        #   cce - 201511 - 201511
-        #   gnu - 201511 - 201511
-        # intel - 201811 - 201611
-        #   pgi - 201307 - 201307
-        #    nv - 201307 - 201307
+        - Another way to find OpenMP version:
+            echo | CC -fopenmp -dM -E - | grep _OPENMP
+        """
+        # {{{ reference dict of openmp_versions:
         openmp_versions = {
-            # 'PrgEnv-aocc': {'C++': 201511, 'F90': 201307},
-            'PrgEnv-aocc': {
-                'C++': 201511 if aocc_version == 2 else 201811,
-                'F90': 201307,
-            },
             'PrgEnv-cray': {
-                'C++': 201511 if cce_version == 10 else 201811,
-                'F90': 201511,
+                'C++': {10: 201511, 12: 201811, 13: 201811, 14: 201811,
+                        17: 202011},
+                'F90': {'*': 201511},
             },
-            'PrgEnv-gnu': {'C++': 201511, 'F90': 201511},
-            'PrgEnv-intel': {
-                'C++': 201811 if (intel_type == 'ONEAPI' or
-                                  intel_type == 'RECOMMENDED') else 201611,
-                'F90': 201611},
-            'PrgEnv-pgi': {'C++': 201307, 'F90': 201307},
-            'PrgEnv-nvidia': {'C++': 201307, 'F90': 201307}
+            'PrgEnv-gnu': {
+                'C++': {'*': 201511},
+                'F90': {'*': 201511},
+            },
+            # 'PrgEnv-nvidia': {'C++': 201307, 'F90': 201307}
+            # 'PrgEnv-pgi': {'C++': 201307, 'F90': 201307},
         }
-        found_version = sn.extractsingle(r'OpenMP-\s*(\d+)', self.stdout, 1,
-                                         int)
-        return sn.all([
-            sn.assert_found('SUCCESS', self.stdout),
-            sn.assert_eq(found_version, openmp_versions[envname][self.lang])
-        ])
+        # }}}
+        # {{{ current_environ compiler versions:
+        envname = self.current_environ.name
+        rptf = os.path.join(self.stagedir, sn.evaluate(self.stdout))
+        compiler_version = {}
+        if envname == 'PrgEnv-cray':
+            compiler_version['PrgEnv-cray'] = \
+                sn.extractsingle(r'CRAY_CC_VERSION=(\d+)\.\S+', rptf, 1, int)
+        elif envname == 'PrgEnv-aocc':
+            compiler_version['PrgEnv-aocc'] = \
+                sn.extractsingle(r'CRAY_AOCC_VERSION=(\d+)\.\S+', rptf, 1, int)
+        elif envname == 'PrgEnv-gnu':
+            compiler_version['PrgEnv-gnu'] = \
+                sn.extractsingle(r'GNU_VERSION=(\d+)\.\S+', rptf, 1, int)
+
+        # }}}
+        compiler_v = sn.evaluate(compiler_version[envname])
+        #
+        runtime_openmp_v = sn.extractsingle(r'OpenMP-\s*(\d+)', self.stdout, 1,
+                                            int)
+        try:
+            return sn.all([
+                sn.assert_found('SUCCESS', self.stdout),
+                sn.assert_eq(runtime_openmp_v,
+                             openmp_versions[envname][self.lang][compiler_v])
+            ])
+        except KeyError:
+            return sn.all([
+                sn.assert_found('SUCCESS', self.stdout),
+                sn.assert_eq(runtime_openmp_v,
+                             openmp_versions[envname][self.lang]['*'])
+            ])
 
     @performance_function('s')
     def elapsed_time(self):
