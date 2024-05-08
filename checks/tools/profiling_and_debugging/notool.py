@@ -32,10 +32,10 @@ class JacobiNoToolHybrid(rfm.RegressionTest):
         self.descr = f'Jacobi (without tool) {self.lang} check'
 
     # keeping as a reminder:
-    @run_after('init')
-    def remove_buggy_prgenv(self):
-        # skipping to avoid "Fatal error in PMPI_Init_thread"
-        self.valid_prog_environs.remove('PrgEnv-nvidia')
+    # @run_after('init')
+    # def remove_buggy_prgenv(self):
+    #     # skipping to avoid "Fatal error in PMPI_Init_thread"
+    #     self.valid_prog_environs.remove('PrgEnv-nvidia')
 
     @run_before('compile')
     def set_sources_dir(self):
