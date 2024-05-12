@@ -3,6 +3,7 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
+import functools
 import hostlist
 import itertools
 import logging
@@ -11,7 +12,6 @@ import re
 import shutil
 import stat
 import sys
-import tarfile
 import time
 from packaging.version import Version
 
@@ -22,9 +22,12 @@ from reframe.core.schedulers.slurm import (SlurmJobScheduler,
                                            slurm_state_completed,
                                            _SlurmNode)
 from reframe.core.exceptions import JobSchedulerError
+import reframe.utility.osext as osext
 
 if sys.version_info >= (3, 7):
     import firecrest as fc
+
+_run_strict = functools.partial(osext.run_command, check=True)
 
 
 def join_and_normalize(*args):
@@ -114,15 +117,23 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
         def _extract(archive_path, dir_path):
             intervals = itertools.cycle([1, 2, 3])
             try:
+                original_level = logging.getLogger().level
+                logging.getLogger().setLevel(100)
                 self.client.extract(
                     self._system_name,
                     archive_path,
                     dir_path
                 )
             except fc.FirecrestException as e:
-                stderr = e.responses[-1].json().get('error', '')
+                # Revert the global logger level back to its original
+                # state
+                logging.getLogger().setLevel(original_level)
+                timeout_str = 'Command has finished with timeout signal'
                 # This command has a timeout so it may fail
-                if stderr != 'Command has finished with timeout signal':
+                if (
+                    e.responses[-1].status_code == 400 and
+                    e.responses[-1].json().get('error', '') != timeout_str
+                ):
                     raise e
 
                 self.log('The directory is too big to extract directly, '
@@ -130,26 +141,31 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
 
                 extract_job = self.client.submit_extract_job(
                     self._system_name,
-                    dir_path,
-                    archive_path
+                    archive_path,
+                    dir_path
                 )
                 jobid = extract_job['jobid']
                 active_jobs = self.client.poll(
                     self._system_name,
                     [jobid]
                 )
-                self.log(f'Extract job ID: {jobid}')
+                self.log(f'Extract job ID {jobid})')
                 while (
                     active_jobs and
-                    slurm_state_completed(active_jobs[0]['state'])
+                    not slurm_state_completed(active_jobs[0]['state'])
                 ):
+                    self.log(f"Extract job (jobid={jobid}) with state: "
+                             f"{active_jobs[0]['state']}")
                     time.sleep(next(intervals))
                     active_jobs = self.client.poll_active(
                         self._system_name,
                         [jobid]
                     )
 
-                if active_jobs[0]['state'] != 'COMPLETED':
+                if (
+                    active_jobs and
+                    active_jobs[0]['state'] != 'COMPLETED'
+                ):
                     raise JobSchedulerError(
                         f"extract job (jobid={jobid}) finished with"
                         f"state {active_jobs[0]['state']}"
@@ -163,6 +179,10 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
                     raise JobSchedulerError(
                         f'extract job has failed: {err_output}'
                     )
+            finally:
+                # Always revert the global logger level back to its original
+                # state
+                logging.getLogger().setLevel(original_level)
 
         # Compress locally the files
         self.log('Compressing local stage directory')
@@ -196,6 +216,14 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
                 remote_path
             )
             up_obj.finish_upload()
+            sleep_time = itertools.cycle([1, 5, 10])
+            while up_obj.in_progress:
+                t = next(sleep_time)
+                self.log(
+                    f'Archive is not yet in the filesystem, will sleep '
+                    f'for {t} sec'
+                )
+                time.sleep(t)
 
         # Extract stagedir
         self.log(f'Extracting {remote_file_path} to {remote_path}')
@@ -219,6 +247,7 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
             )
 
         def _upload(local_path, remote_path):
+            sleep_time = itertools.cycle([1, 5, 10])
             f_size = os.path.getsize(local_path)
             remote_file_path = os.path.join(
                 remote_path,
@@ -241,6 +270,14 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
                     remote_path
                 )
                 up_obj.finish_upload()
+                while up_obj.in_progress:
+                    t = next(sleep_time)
+                    self.log(
+                        f'File {f} is not yet in the filesystem, will sleep '
+                        f'for {t} sec'
+                    )
+                    time.sleep(t)
+
                 return (up_obj, local_path, remote_file_path)
 
         for dirpath, dirnames, filenames in os.walk('.'):
@@ -310,15 +347,21 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
         def _compress(dir_path, archive_path):
             intervals = itertools.cycle([1, 2, 3])
             try:
+                original_level = logging.getLogger().level
+                logging.getLogger().setLevel(100)
                 self.client.compress(
                     self._system_name,
                     dir_path,
                     archive_path
                 )
             except fc.FirecrestException as e:
-                stderr = e.responses[-1].json().get('error', '')
+                logging.getLogger().setLevel(original_level)
+                timeout_str = 'Command has finished with timeout signal'
                 # This command has a timeout so it may fail
-                if stderr != 'Command has finished with timeout signal':
+                if (
+                    e.responses[-1].status_code == 400 and
+                    e.responses[-1].json().get('error', '') != timeout_str
+                ):
                     raise e
 
                 self.log('The directory is too big to compress directly, '
@@ -337,7 +380,7 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
                 self.log(f'Compression job ID: {jobid}')
                 while (
                     active_jobs and
-                    slurm_state_completed(active_jobs[0]['state'])
+                    not slurm_state_completed(active_jobs[0]['state'])
                 ):
                     time.sleep(next(intervals))
                     active_jobs = self.client.poll_active(
@@ -345,7 +388,10 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
                         [jobid]
                     )
 
-                if active_jobs[0]['state'] != 'COMPLETED':
+                if (
+                    active_jobs and
+                    active_jobs[0]['state'] != 'COMPLETED'
+                ):
                     raise JobSchedulerError(
                         f"compression job (jobid={jobid}) finished with"
                         f"state {active_jobs[0]['state']}"
@@ -359,6 +405,29 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
                     raise JobSchedulerError(
                         'compression job has failed: {err_output}'
                     )
+            finally:
+                # Always revert the global logger level back to its original
+                # state
+                logging.getLogger().setLevel(original_level)
+
+        def _download(remote_path, local_path, f_size):
+            if f_size <= self._max_file_size_utilities:
+                self.client.simple_download(
+                    self._system_name,
+                    remote_path,
+                    local_path
+                )
+            else:
+                self.log(
+                    f'File {remote_path} is {f_size} bytes, so it may take '
+                    f'some time...'
+                )
+                up_obj = self.client.external_download(
+                    self._system_name,
+                    remote_path
+                )
+                up_obj.finish_download(local_path)
+                return up_obj
 
         # Compress remote files
         self.log('Compressing remote stage directory')
@@ -372,22 +441,28 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
         )
 
         # Download the remote directory
-        # TODO: get real file size
+        file_size = self.client.stat(
+            self._system_name,
+            remote_achive_path
+        )['size']
         local_archive_path = os.path.join(
-            job._localdir,
+            os.path.dirname(job._localdir),
             'stage_dir_archive_pull.tar.gz'
         )
         self.log(f'Downloading file {remote_achive_path} in {job._localdir}')
-        self.client.simple_download(
-            self._system_name,
+        _download(
             remote_achive_path,
-            local_archive_path
+            local_archive_path,
+            file_size
         )
 
         # Extract the files locally
         self.log(f'Extracting {local_archive_path} to {job._localdir}')
-        with tarfile.open(local_archive_path, 'r:gz') as tar:
-            tar.extractall(os.path.dirname(job._localdir))
+        cmd = (
+            f'tar -xzf {local_archive_path} -C '
+            f'{os.path.dirname(job._localdir)}'
+        )
+        _run_strict(cmd)
 
         # Remove the remote and local archives
         self.log('Removing local and remote archives')
@@ -452,7 +527,7 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
                 _download(
                     remote_file_path,
                     local_file_path,
-                    0 # these files shoult be small enough for simple_download
+                    0  # these files shoult be small enough for simple_download
                 )
 
             return
@@ -530,7 +605,9 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
                 if Version(fc.__version__) >= Version("2.1.0"):
                     submission_result = self.client.submit(
                         self._system_name,
-                        script_remote_path=os.path.join(job._remotedir, job.script_filename)
+                        script_remote_path=os.path.join(
+                            job._remotedir, job.script_filename
+                        )
                     )
                 else:
                     submission_result = self.client.submit(
