@@ -641,6 +641,10 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
         job._submit_time = time.time()
 
     def allnodes(self):
+        if self._firecrest_api_version <= Version('1.16.0'):
+            raise NotImplementedError('firecrest slurm backend does not '
+                                      'support node listing')
+
         nodes = set()
         try:
             node_descriptions = self.client.nodes(self._system_name)
