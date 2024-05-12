@@ -94,9 +94,11 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
         self._remotedir_prefix = set_mandatory_var('FIRECREST_BASEDIR')
         # FIXME: This is not mandatory, but it is recommended to set until
         # FirecREST v1.16.0 is available in all systems
-        self._firecrest_api_version = os.environ.get(
-            'FIRECREST_API_VERSION',
-            default='1.15.0'
+        self._firecrest_api_version = Version(
+            os.environ.get(
+                'FIRECREST_API_VERSION',
+                default='1.15.0'
+            )
         )
 
         # Setup the client for the specific account
@@ -253,7 +255,6 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
             )
 
         def _upload(local_path, remote_path):
-            sleep_time = itertools.cycle([1, 5, 10])
             f_size = os.path.getsize(local_path)
             remote_file_path = os.path.join(
                 remote_path,
@@ -266,6 +267,7 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
                     remote_path
                 )
                 _setup_permissions(local_path, remote_file_path)
+                return None
             else:
                 self.log(
                     f'File {f} is {f_size} bytes, so it may take some time...'
@@ -276,14 +278,8 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
                     remote_path
                 )
                 up_obj.finish_upload()
-                while up_obj.in_progress:
-                    t = next(sleep_time)
-                    self.log(
-                        f'File {f} is not yet in the filesystem, will sleep '
-                        f'for {t} sec'
-                    )
-                    time.sleep(t)
-
+                # We will set up the permission after the files are available
+                # on the remote filesystem
                 return (up_obj, local_path, remote_file_path)
 
         for dirpath, dirnames, filenames in os.walk('.'):
@@ -318,7 +314,9 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
                 for up_obj, local_file_path, remote_file_path in async_uploads:
                     upload_status = int(up_obj.status)
                     if upload_status < 114:
-                        still_uploading.append(up_obj)
+                        still_uploading.append(
+                            (up_obj, local_file_path, remote_file_path)
+                        )
                         self.log(f'file is still uploading, '
                                  f'status: {upload_status}')
                     elif upload_status > 114:
@@ -512,7 +510,6 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
                     remote_path
                 )
                 up_obj.finish_download(local_path)
-                return up_obj
 
         if job.name == 'rfm-detect-job':
             # We only need the topo.json file and the job's
@@ -601,7 +598,7 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
         self.log(f'Creating remote directory {job._remotedir} in '
                  f'{self._system_name}')
 
-        if self._firecrest_api_version <= '1.15.0':
+        if self._firecrest_api_version <= Version('1.15.0'):
             self._push_artefacts(job)
         else:
             self._push_compressed_artefacts(job)
@@ -750,7 +747,7 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
             if job.is_array:
                 self._merge_files(job)
 
-            if self._firecrest_api_version <= '1.15.0':
+            if self._firecrest_api_version <= Version('1.15.0'):
                 self._pull_artefacts(job)
             else:
                 self._pull_compressed_artefacts(job)
@@ -762,7 +759,7 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
             self.poll(job)
             time.sleep(next(intervals))
 
-        if self._firecrest_api_version <= '1.15.0':
+        if self._firecrest_api_version <= Version('1.15.0'):
             self._pull_artefacts(job)
         else:
             self._pull_compressed_artefacts(job)
