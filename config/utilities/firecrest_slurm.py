@@ -86,12 +86,18 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
                                     'python>=3.7')
 
         super().__init__(*args, **kwargs)
-        client_id = set_mandatory_var("FIRECREST_CLIENT_ID")
-        client_secret = set_mandatory_var("FIRECREST_CLIENT_SECRET")
-        token_uri = set_mandatory_var("AUTH_TOKEN_URL")
-        firecrest_url = set_mandatory_var("FIRECREST_URL")
-        self._system_name = set_mandatory_var("FIRECREST_SYSTEM")
+        client_id = set_mandatory_var('FIRECREST_CLIENT_ID')
+        client_secret = set_mandatory_var('FIRECREST_CLIENT_SECRET')
+        token_uri = set_mandatory_var('AUTH_TOKEN_URL')
+        firecrest_url = set_mandatory_var('FIRECREST_URL')
+        self._system_name = set_mandatory_var('FIRECREST_SYSTEM')
         self._remotedir_prefix = set_mandatory_var('FIRECREST_BASEDIR')
+        # FIXME: This is not mandatory, but it is recommended to set until
+        # FirecREST v1.16.0 is available in all systems
+        self._firecrest_api_version = os.environ.get(
+            'FIRECREST_API_VERSION',
+            default='1.15.0'
+        )
 
         # Setup the client for the specific account
         self.client = fc.Firecrest(
@@ -187,10 +193,10 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
         # Compress locally the files
         self.log('Compressing local stage directory')
         local_path = shutil.make_archive(
-            base_name="stage_dir_archive_push",
-            format="gztar",
-            root_dir=".",
-            base_dir=".",
+            base_name='stage_dir_archive_push',
+            format='gztar',
+            root_dir='.',
+            base_dir='.',
         )
 
         # Upload
@@ -481,13 +487,13 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
                     dirs.append(item['name'])
                 else:
                     nondirs.append((item['name'],
-                                    item["last_modified"],
+                                    item['last_modified'],
                                     int(item['size'])))
 
             yield directory, dirs, nondirs
 
             for item in dirs:
-                item_path = f"{directory}/{item}"
+                item_path = f'{directory}/{item}'
                 yield from firecrest_walk(item_path)
 
         def _download(remote_path, local_path, f_size):
@@ -595,14 +601,16 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
         self.log(f'Creating remote directory {job._remotedir} in '
                  f'{self._system_name}')
 
-        self._push_compressed_artefacts(job)
-        # self._push_artefacts(job)
+        if self._firecrest_api_version <= '1.15.0':
+            self._push_artefacts(job)
+        else:
+            self._push_compressed_artefacts(job)
 
         intervals = itertools.cycle([1, 2, 3])
         while True:
             try:
                 # Make request for submission
-                if Version(fc.__version__) >= Version("2.1.0"):
+                if Version(fc.__version__) >= Version('2.1.0'):
                     submission_result = self.client.submit(
                         self._system_name,
                         script_remote_path=os.path.join(
@@ -742,8 +750,11 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
             if job.is_array:
                 self._merge_files(job)
 
-            # self._pull_artefacts(job)
-            self._pull_compressed_artefacts(job)
+            if self._firecrest_api_version <= '1.15.0':
+                self._pull_artefacts(job)
+            else:
+                self._pull_compressed_artefacts(job)
+
             return
 
         intervals = itertools.cycle([1, 2, 3])
@@ -751,8 +762,11 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
             self.poll(job)
             time.sleep(next(intervals))
 
-        # self._pull_artefacts(job)
-        self._pull_compressed_artefacts(job)
+        if self._firecrest_api_version <= '1.15.0':
+            self._pull_artefacts(job)
+        else:
+            self._pull_compressed_artefacts(job)
+
         if job.is_array:
             self._merge_files(job)
 
