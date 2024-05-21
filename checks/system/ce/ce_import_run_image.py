@@ -36,7 +36,7 @@ class enroot_import_image_dockerhub(enroot_import_image):
 
 class enroot_import_image_ngc(enroot_import_image):
     image = variable(
-        str, value='docker://nvcr.io#nvidia/k8s/cuda-sample:nbody'
+        str, value='docker://nvcr.io#nvidia/hpc-benchmarks:24.03'
     )
 
 
@@ -66,11 +66,11 @@ class RunNVGPUJobCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     valid_prog_environs = ['builtin']
     container_image = '' # Defined after setup
     enroot_image = fixture(enroot_import_image_ngc, scope='session')
-    executable = '/cuda-samples/nbody'
-    num_bodies_per_gpu = variable(int, value=200000)
+    stream_array_size = variable(int, value=100000000)
+    executable = '/workspace/stream-gpu-linux-$(uname -m)/stream_test'
     reference = {
         '*': {
-            'gflops': (27200., -0.05, None, 'Gflop/s')
+            'MB/s': (3705000., -0.05, None, 'MB/s')
         }
     }
     tags = {'production', 'ce'}
@@ -91,17 +91,14 @@ class RunNVGPUJobCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     @run_before('run')
     def set_executable_opts(self):
         self.executable_opts = [
-            '-benchmark', '-fp64',
-            f'-numbodies={self.num_bodies_per_gpu * self.num_gpus_per_node}',
-            f'-numdevices={self.num_gpus_per_node}'
+            f'-d0', f'-n{self.stream_array_size}',
         ]
 
     @sanity_function
     def assert_sanity(self):
-        return sn.assert_found(r'.+double-precision GFLOP/s.+', self.stdout)
+        return sn.assert_found(r'^Triad:\s+\S+', self.stdout)
 
-    @performance_function('Gflop/s')
-    def gflops(self):
+    @performance_function('MB/s')
+    def bandwidth(self):
         return sn.extractsingle(
-            r'= (?P<gflops>\S+)\sdouble-precision GFLOP/s.+',
-            self.stdout, 'gflops', float)
+            r'^Triad:\s+(?P<mbs>\S+)', self.stdout, 'mbs', float)
