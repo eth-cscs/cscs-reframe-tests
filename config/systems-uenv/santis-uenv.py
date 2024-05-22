@@ -33,12 +33,13 @@ for uenv in uenv_list:
 
     try:
         rfm_meta = image_path.parent / f'{image_path.stem}.yaml'
+        print(f"# --- trying to load the metadata from '{rfm_meta}'")
         with open(rfm_meta) as image_envs:
-            print(f"# --- loading the metadata from '{rfm_meta}'")
             image_environments = yaml.load(
                 image_envs.read(), Loader=yaml.BaseLoader)
+            print("# --- loaded")
     except OSError as err:
-        raise ConfigError(f"problem loading the metadata from '{rfm_meta}'")
+        raise ConfigError(f"# problem loading the metadata from '{rfm_meta}'")
 
     environs = image_environments.keys()
     environ_names.extend([f'{image_name}_{e}'for e in environs] or
