@@ -153,7 +153,7 @@ site_configuration = {
     'general': [
         {
              # 'resolve_module_conflicts': False,
-             'target_systems': ['santis']
+             # 'target_systems': ['santis']
         }
     ]
 }

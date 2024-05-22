@@ -83,7 +83,7 @@ site_configuration = {
     'systems': [
         {
             'name': 'eiger',
-            'descr': 'eigervcluster with uenv',
+            'descr': 'eiger vcluster with uenv',
             'hostnames': ['eiger'],
             'resourcesdir': '/apps/common/UES/reframe/resources/',
             'modules_system': 'nomod',
@@ -153,7 +153,7 @@ site_configuration = {
     'general': [
         {
              # 'resolve_module_conflicts': False,
-             'target_systems': ['eiger']
+             # 'target_systems': ['eiger']
         }
     ]
 }
