@@ -52,7 +52,7 @@ setup and pull:
       echo
     done
     UENV=${UENV%?}
-    echo "UENV=$UENV" | tr , "\n"
+    echo "UENV=$UENV" | sed 's-,,--g' | tr , "\n"
     echo "UENV=$UENV" > rfm_uenv.env
   artifacts:
     reports:
