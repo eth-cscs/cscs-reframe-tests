@@ -19,7 +19,7 @@ class enroot_import_image(rfm.RunOnlyRegressionTest):
     archive_name = 'test_image.sqsh'
     executable = 'enroot'
     valid_systems = ['+ce']
-    valid_prog_environs= ['builtin']
+    valid_prog_environs = ['builtin']
 
     @run_before('run')
     def set_executable_opts(self):
@@ -44,7 +44,7 @@ class enroot_import_image_ngc(enroot_import_image):
 class RunJobCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     valid_systems = ['+ce']
     valid_prog_environs = ['builtin']
-    container_image = '' # Defined after setup
+    container_image = ''  # Defined after setup
     enroot_image = fixture(enroot_import_image_dockerhub, scope='session')
     executable = 'cat'
     executable_opts = ['/etc/os-release']
@@ -64,7 +64,7 @@ class RunJobCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
 class RunNVGPUJobCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     valid_systems = ['+ce +nvgpu']
     valid_prog_environs = ['builtin']
-    container_image = '' # Defined after setup
+    container_image = ''  # Defined after setup
     enroot_image = fixture(enroot_import_image_ngc, scope='session')
     stream_array_size = variable(int, value=100000000)
     executable = '/workspace/stream-gpu-linux-$(uname -m)/stream_test'
