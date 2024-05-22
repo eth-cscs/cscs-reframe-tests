@@ -33,6 +33,7 @@ for uenv in uenv_list:
 
     try:
         rfm_meta = image_path.parent / f'{image_path.stem}.yaml'
+        print(f"# EI --- image_path = {image_path.parent}")
         print(f"# EI --- trying to load the metadata from '{rfm_meta}'")
         with open(rfm_meta) as image_envs:
             image_environments = yaml.load(
