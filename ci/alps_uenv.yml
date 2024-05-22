@@ -22,9 +22,9 @@ setup and pull:
     MODE: "${RFM_MODE}"
     # no runner match tags:eiger-login-baremetal
     # MODE: "f7t-controller"
-    GIT_STRATEGY: "fetch"
     # SLURM_PARTITION: "${SLURM_PARTITION}"
     # SLURM_CONSTRAINT: "mc"
+    GIT_STRATEGY: "fetch"
     SLURM_ACCOUNT: "csstaff"
     FIRECREST_SYSTEM: "${FIRECREST_SYSTEM}"
   before_script:
@@ -52,7 +52,8 @@ setup and pull:
       echo
     done
     UENV=${UENV%?}
-    echo "UENV=$UENV" | sed 's-,,-,-g' > rfm_uenv.env
+    echo "$UENV" | sed 's-,,-,-g' | sort -u | awk '{print "UENV="$0}' > rfm_uenv.env
+    echo "UENV=$UENV"                                                >> rfm_uenv.env
     cat rfm_uenv.env | tr , "\n"
   artifacts:
     reports:
@@ -70,12 +71,12 @@ run reframe:
     # MODE: "f7t-controller"  # santis
     # MODE: "baremetal"  # eiger
     GIT_STRATEGY: "fetch"
+    SLURM_ACCOUNT: "csstaff"
+    FIRECREST_SYSTEM: "${FIRECREST_SYSTEM}"
     # SLURM_PARTITION: "${SLURM_PARTITION}"
     # SLURM_PARTITION: "debug"
     # SLURM_CONSTRAINT: "mc"
-    SLURM_ACCOUNT: "csstaff"
     # FIRECREST_SYSTEM: "santis"
-    FIRECREST_SYSTEM: "${FIRECREST_SYSTEM}"
   before_script:
     - echo $FIRECREST_SYSTEM / $CLUSTER_NAME / $RFM_MODE
     - pwd
@@ -89,7 +90,7 @@ run reframe:
     - echo "rfm_path=$rfm_path"
     - export PATH=$rfm_path:$PATH
     - reframe -V
-    - ./ci/scripts/alps_uenv.sh launch_reframe "$img_path"
+    - ./ci/scripts/alps_uenv.sh launch_reframe
   artifacts:
     when: on_failure
     paths:

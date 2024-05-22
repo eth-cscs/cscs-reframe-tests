@@ -210,8 +210,12 @@ launch_reframe() {
     export RFM_USE_LOGIN_SHELL=1
     # export RFM_AUTODETECT_XTHOSTNAME=1
     # reframe -V
-    reframe -C ./config/cscs.py --report-junit=report.xml -c ./checks/ \
-    -r --system=$system 
+    echo "UENV=$UENV"
+    reframe -C ./config/cscs.py \
+        --report-junit=report.xml \
+        -c ./checks/ \
+        --system=$system \
+        -r
     # -J reservation=all_nodes
     # -n HelloWorldTestMPIOpenMP
 }
