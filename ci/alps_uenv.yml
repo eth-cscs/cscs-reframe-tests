@@ -48,12 +48,12 @@ setup and pull:
       echo "----- Pulling img=$img metadata & sqfs"
       ./ci/scripts/alps_uenv.sh oras_pull_meta_dir "$img"
       img_path=$(./ci/scripts/alps_uenv.sh uenv_sqfs_fullpath "$img")
-      UENV+="$img_path,"
+      UENVA+="$img_path,"
       echo
     done
-    UENV=${UENV%?}
-    echo "$UENV" | sed 's-,,-,-g' | sort -u | awk '{print "UENV="$0}' > rfm_uenv.env
-    echo "UENV=$UENV"                                                >> rfm_uenv.env
+    UENVA=${UENVA%?}
+    UENV=`echo ${UENVA} | sed 's-,,-,-g' | sort -u`
+    echo "UENV=$UENV" > rfm_uenv.env
     cat rfm_uenv.env | tr , "\n"
   artifacts:
     reports:
