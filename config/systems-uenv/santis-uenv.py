@@ -33,13 +33,12 @@ for uenv in uenv_list:
 
     try:
         rfm_meta = image_path.parent / f'{image_path.stem}.yaml'
-        print(f"# SA --- trying to load the metadata from '{rfm_meta}'")
         with open(rfm_meta) as image_envs:
             image_environments = yaml.load(
                 image_envs.read(), Loader=yaml.BaseLoader)
-            print("# SA --- loaded")
+            print(f"# --- loading the metadata from '{rfm_meta}'")
     except OSError as err:
-        raise ConfigError(f"# SA problem loading metadata from '{rfm_meta}'")
+        raise ConfigError(f"problem loading the metadata from '{rfm_meta}'")
 
     environs = image_environments.keys()
     environ_names.extend([f'{image_name}_{e}'for e in environs] or
@@ -94,22 +93,11 @@ site_configuration = {
                     'scheduler': 'slurm',
                     'time_limit': '10m',
                     'environs': environ_names,
-                    'container_platforms': [
-                        {
-                            'type': 'Sarus',
-                        },
-                        {
-                            'type': 'Singularity',
-                        }
-                    ],
                     'max_jobs': 100,
                     'extras': {
                         'cn_memory': 500,
                     },
                     'access': [
-                        # '-pdebug',
-                        # '-pnormal',
-                        # '-Cmc',
                         f'--account={osext.osgroup()}'
                     ],
                     'resources': [
@@ -128,7 +116,14 @@ site_configuration = {
                             ]
                         }
                     ],
-                    'features': ['remote', 'uenv'],
+                    'features': ['nvgpu', 'remote', 'scontrol', 'uenv'],
+                    'devices': [
+                        {
+                            'type': 'gpu',
+                            'arch': 'sm_90',
+                            'num_devices': 4
+                        }
+                    ],
                     'launcher': 'srun'
                 },
             ]
@@ -152,9 +147,5 @@ site_configuration = {
     ],
     'environments': uenv_environments,
     'general': [
-        {
-             # 'resolve_module_conflicts': False,
-             # 'target_systems': ['santis']
-        }
     ]
 }
