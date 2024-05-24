@@ -23,6 +23,8 @@ class CudaNBodyCheckCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     num_tasks_per_node = 1
     executable = 'nbody'
     container_image = 'jfrog.svc.cscs.ch#reframe-oci/cuda_samples:nbody-12.3'
+
+    # Allow running with an older Cuda driver
     env_vars = {
         'NVIDIA_DISABLE_REQUIRE': 1
     }
