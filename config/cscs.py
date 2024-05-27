@@ -25,7 +25,7 @@ def is_var_true(var):
 
 firecrest = os.environ.get('RFM_FIRECREST', None)
 uenv = os.environ.get('UENV', None)
-systems_path = 'systems-firecrest' if is_var_true(firecrest) else 'systems-uenv' if is_var_true(uenv) else 'systems'
+systems_path = 'systems-firecrest' if is_var_true(firecrest) else 'systems-uenv' if uenv else 'systems'
 
 system_conf_files = glob.glob(
     os.path.join(os.path.dirname(__file__), systems_path, '*.py')

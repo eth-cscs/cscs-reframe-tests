@@ -93,14 +93,6 @@ site_configuration = {
                     'scheduler': 'slurm',
                     'time_limit': '10m',
                     'environs': environ_names,
-                    'container_platforms': [
-                        {
-                            'type': 'Sarus',
-                        },
-                        {
-                            'type': 'Singularity',
-                        }
-                    ],
                     'max_jobs': 100,
                     'extras': {
                         'cn_memory': 500,
@@ -124,7 +116,14 @@ site_configuration = {
                             ]
                         }
                     ],
-                    'features': ['remote', 'uenv'],
+                    'features': ['nvgpu', 'remote', 'scontrol', 'uenv'],
+                    'devices': [
+                        {
+                            'type': 'gpu',
+                            'arch': 'sm_90',
+                            'num_devices': 4
+                        }
+                    ],
                     'launcher': 'srun'
                 },
             ]
