@@ -1,4 +1,4 @@
-# Copyright 2016-2023 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright 2016-2024 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -29,6 +29,14 @@ class BaseCheck(rfm.RunOnlyRegressionTest):
     @run_after('init')
     def set_descr(self):
         self.descr = f'{self.name} on {self.num_tasks} nodes(s)'
+
+    @run_after('setup')
+    def prepare_test(self):
+        self.skip_if_no_procinfo()
+
+        # Use a single socket per node (num_tasks_per_node == 1)
+        self.num_cpus_per_task = int(
+            self.current_partition.processor.num_cpus_per_socket)
 
     @run_after('setup')
     def set_launcher_options(self):
