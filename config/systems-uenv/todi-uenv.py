@@ -36,9 +36,9 @@ for uenv in uenv_list:
         with open(rfm_meta) as image_envs:
             image_environments = yaml.load(
                 image_envs.read(), Loader=yaml.BaseLoader)
-            print(f"# --- loading the metadata from '{rfm_meta}'")
+            print(f"# TO --- loading the metadata from '{rfm_meta}'")
     except OSError as err:
-        raise ConfigError(f"problem loading the metadata from '{rfm_meta}'")
+        raise ConfigError(f"TO problem loading the metadata from '{rfm_meta}'")
 
     environs = image_environments.keys()
     environ_names.extend([f'{image_name}_{e}'for e in environs] or
@@ -46,7 +46,7 @@ for uenv in uenv_list:
 
     for k, v in image_environments.items():
         env = {
-            'target_systems': ['santis']
+            'target_systems': ['todi']
         }
         env.update(v)
         activation_script = v['activation']
@@ -82,17 +82,25 @@ for uenv in uenv_list:
 site_configuration = {
     'systems': [
         {
-            'name': 'santis',
-            'descr': 'santis vcluster with uenv',
-            'hostnames': ['santis'],
+            'name': 'todi',
+            'descr': 'todi vcluster with uenv',
+            'hostnames': ['todi'],
             'resourcesdir': '/apps/common/UES/reframe/resources/',
-            'modules_system': 'nomod',
+            'modules_system': 'lmod',
             'partitions': [
                 {
                     'name': 'normal',
                     'scheduler': 'slurm',
                     'time_limit': '10m',
                     'environs': environ_names,
+                    'container_platforms': [
+                        {
+                            'type': 'Sarus',
+                        },
+                        {
+                            'type': 'Singularity',
+                        }
+                    ],
                     'max_jobs': 100,
                     'extras': {
                         'cn_memory': 500,
@@ -116,14 +124,7 @@ site_configuration = {
                             ]
                         }
                     ],
-                    'features': ['nvgpu', 'remote', 'scontrol', 'uenv'],
-                    'devices': [
-                        {
-                            'type': 'gpu',
-                            'arch': 'sm_90',
-                            'num_devices': 4
-                        }
-                    ],
+                    'features': ['remote', 'uenv'],
                     'launcher': 'srun'
                 },
             ]
@@ -142,10 +143,14 @@ site_configuration = {
                 '--tag=production',
                 '--timestamp=%F_%H-%M-%S'
             ],
-            'target_systems': ['santis'],
+            'target_systems': ['todi'],
         }
     ],
     'environments': uenv_environments,
     'general': [
+        {
+             # 'resolve_module_conflicts': False,
+             # 'target_systems': ['todi']
+        }
     ]
 }
