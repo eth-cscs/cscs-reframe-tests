@@ -117,7 +117,6 @@ oras_pull_meta_dir() {
     #
     # $oras --registry-config $jfrog_creds_path \
     $oras pull --output "${oras_tmp}" "$jfrog/$name@$meta_digest" &> oras-pull.log
-    cat oras-pull.log
     rc1=$?
     # echo "rc1=$rc1"
     rfm_yaml="${oras_tmp}/meta/extra/reframe.yaml" 
