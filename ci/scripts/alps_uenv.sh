@@ -13,6 +13,7 @@ jfrog_request="$CSCS_CI_MW_URL/credentials?token=$CI_JOB_TOKEN&job_id=$CI_JOB_ID
 # jfrog_request_nojobid="$CSCS_CI_MW_URL/credentials&token=$CI_JOB_TOKEN&creds=container_registry"
 # https://cicd-ext-mw.cscs.ch/ci
 # system="santis" ; uarch="gh200"
+# FIRECREST_SYSTEM=santis UARCH=gh200
 system="$FIRECREST_SYSTEM" ; uarch="$UARCH"
 #del name=`echo $in |cut -d: -f1`
 #del tag=`echo $in |cut -d: -f2`
@@ -125,7 +126,7 @@ oras_pull_meta_dir() {
         if [ $rc2 -eq 0 ] ;then
             echo "ok"
         else
-            "reframe.yaml is missing in $img"
+            echo "reframe.yaml is missing in $img"
         fi
     else
         echo "failed to download $jfrog/$name@$meta_digest"
