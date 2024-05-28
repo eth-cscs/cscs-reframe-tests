@@ -114,11 +114,13 @@ oras_pull_meta_dir() {
     | jq -r '.manifests[0].digest'`
     #
     # $oras --registry-config $jfrog_creds_path \
-    rc1=$($oras pull --output "${oras_tmp}" "$jfrog/$name@$meta_digest")
-    echo "rc1=$?"
+    $oras pull --output "${oras_tmp}" "$jfrog/$name@$meta_digest"
+    rc1=$?
+    echo "rc1=$rc1"
     if [ $rc1 -eq 0 ] ;then
-        rc2=$(test -f "${oras_tmp}"/extra/reframe.yaml)
-        echo "rc2=$?"
+        test -f "${oras_tmp}"/extra/reframe.yaml
+        rc2=$?
+        echo "rc2=$rc2"
         if [ $rc2 -eq 0 ] ;then
             echo "ok"
         else
