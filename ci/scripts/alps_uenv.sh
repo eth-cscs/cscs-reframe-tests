@@ -116,6 +116,8 @@ oras_pull_meta_dir() {
     #
     # $oras --registry-config $jfrog_creds_path \
     $oras pull --output "${oras_tmp}" "$jfrog/$name@$meta_digest" &> oras-pull.log
+    cat oras-pull.log
+    set -x 
     rc1=$?
     # echo "rc1=$rc1"
     rfm_yaml="${oras_tmp}/meta/extra/reframe.yaml" 
@@ -132,8 +134,7 @@ oras_pull_meta_dir() {
     else
         echo "failed to download $jfrog/$name@$meta_digest"
     fi
-    #[[ $rc -eq 0 ]] || { echo "failed to download $jfrog/$name@$meta_digest, exiting"; exit 1; }
-    #[[ -f "${oras_tmp}"/extra/reframe.yaml ]] || { echo "warning: reframe.yaml is missing, skipping $img"; }
+    set +x 
 }
 # }}}
 # {{{ oras_pull_sqfs 
