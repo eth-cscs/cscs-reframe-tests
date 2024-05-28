@@ -51,6 +51,8 @@ setup and pull:
         img_path=$(./ci/scripts/alps_uenv.sh uenv_sqfs_fullpath "$img")
         UENVA+="$img_path,"
         echo
+      else
+        echo "$rc"
       fi
     done
     UENVA=${UENVA%?}
