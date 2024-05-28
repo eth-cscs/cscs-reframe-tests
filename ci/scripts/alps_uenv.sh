@@ -118,7 +118,7 @@ oras_pull_meta_dir() {
     rc1=$?
     echo "rc1=$rc1"
     if [ $rc1 -eq 0 ] ;then
-        find "${oras_tmp}" -reframe.yaml
+        # find "${oras_tmp}" -name reframe.yaml
         test -f "${oras_tmp}"/meta/extra/reframe.yaml
         rc2=$?
         echo "rc2=$rc2"
