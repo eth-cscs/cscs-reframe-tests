@@ -13,6 +13,10 @@ from reframe.core.exceptions import SanityError, ReframeError
 
 
 class CompileAffinityTool(rfm.CompileOnlyRegressionTest):
+    valid_systems = [
+        '*'
+    ]
+    valid_prog_environs = ['+mpi']
     build_system = 'Make'
     build_locally = False
 
@@ -37,6 +41,9 @@ class CompileAffinityTool(rfm.CompileOnlyRegressionTest):
 
 
 class CompileAffinityToolNoOmp(CompileAffinityTool):
+    valid_systems = ['*']
+    valid_prog_environs = ['+mpi +openmp']
+
     @run_before('compile')
     def set_build_opts(self):
         self.build_system.options = ['MPI=1', 'OPENMP=0']
@@ -67,8 +74,14 @@ class AffinityTestBase(rfm.RunOnlyRegressionTest):
     #     }
     # }
     system = variable(dict, value={})
-    valid_systems = ['+remote']
-    valid_prog_environs = ['+mpi']
+
+    valid_systems = [
+        '+remote'
+    ]
+    valid_prog_environs = [
+        '+openmp'
+    ]
+
     tags = {'production', 'scs', 'maintenance', 'craype'}
 
     @run_before('run')
@@ -240,7 +253,6 @@ class AffinityOpenMPBase(AffinityTestBase):
     many threads as sockets).
     '''
 
-    valid_prog_environs = ['+openmp +mpi']
     omp_bind = variable(str)
     omp_proc_bind = variable(str, value='spread')
     num_tasks = 1
@@ -315,7 +327,7 @@ class OneThreadPerPhysicalCoreOpenMP(AffinityOpenMPBase):
 
             # All CPUs in the set must belong to the same core
             if (not all(x in self.cpu_set for x in affinity_set) or
-                not all(x in cpu_siblings for x in affinity_set)):
+               not all(x in cpu_siblings for x in affinity_set)):
                 raise SanityError('incorrect affinity set')
 
             # Decrement the cpu set with all the CPUs that belong to this core
@@ -363,7 +375,7 @@ class OneThreadPerSocketOpenMP(AffinityOpenMPBase):
 
             # Alll CPUs in the affinity set must belong to the same socket
             if (not all(x in self.cpu_set for x in affinity_set) or
-                not all(x in cpu_siblings for x in affinity_set)):
+               not all(x in cpu_siblings for x in affinity_set)):
                 raise SanityError('incorrect affinity set')
 
             # Decrement all the CPUs in this socket from the cpu set.
@@ -413,7 +425,7 @@ class OneTaskPerSocketOpenMPnomt(AffinityOpenMPBase):
             # The size of the affinity set matches the number of OMP threads
             # and all CPUs from the set belong to the same socket.
             if ((self.num_omp_threads != len(affinity_set)) or
-                not all(x in cpu_siblings for x in affinity_set)):
+               not all(x in cpu_siblings for x in affinity_set)):
                 raise SanityError('incorrect affinity set')
 
         # Remove the sockets the cpu set.
@@ -484,7 +496,7 @@ class ConsecutiveSocketFilling(AffinityTestBase):
                 next(iter(cpus_present)), by='socket'
             )
             if (not all(cpu in cpuset_by_socket for cpu in cpus_present) and
-                len(cpuset_by_socket) == len(cpus_present)):
+               len(cpuset_by_socket) == len(cpus_present)):
                 raise SanityError(
                     f'socket {socket_number} not filled in order'
                 )
@@ -524,8 +536,8 @@ class AlternateSocketFilling(AffinityTestBase):
 
                 # Only 1 CPU per affinity set is allowed
                 if ((len(affinity_set) > 1) or
-                    (any(cpu in sockets[s] for cpu in affinity_set)) or
-                    (any(cpu not in self.sockets[s] for cpu in affinity_set))):
+                   (any(cpu in sockets[s] for cpu in affinity_set)) or
+                   (any(cpu not in self.sockets[s] for cpu in affinity_set))):
                     raise SanityError(
                         f'incorrect affinity set for task {task_count}'
                     )
@@ -538,7 +550,8 @@ class AlternateSocketFilling(AffinityTestBase):
                 task_count += 1
 
             # Check that all sockets have the same CPU count
-            if not all(len(s) == (task+1)*2 for s in sockets):
+            if not all(len(s) == (task + 1) * self.num_cpus_per_core
+                       for s in sockets):
                 self.cpu_set.add(-1)
 
         # Decrement the socket set from the CPU set
@@ -555,6 +568,7 @@ class OneTaskPerNumaNode(AffinityTestBase):
     Multithreading is disabled.
     '''
 
+    valid_systems = ['+remote']
     use_multithreading = False
     num_cpus_per_task = required
     affinity_tool = fixture(CompileAffinityToolNoOmp, scope='environment')
@@ -591,7 +605,7 @@ class OneTaskPerNumaNode(AffinityTestBase):
         for numa_node, aff_set in enumerate(self.aff_cpus):
             cpuset_by_numa = self.get_sibling_cpus(aff_set[0], by='node')
             if (len(aff_set) != self.num_cpus_per_task or
-                any(cpu not in cpuset_by_numa for cpu in aff_set)):
+               any(cpu not in cpuset_by_numa for cpu in aff_set)):
                 raise SanityError(
                     f'incorrect affinity set for numa node {numa_node}'
                 )
