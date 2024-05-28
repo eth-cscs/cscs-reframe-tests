@@ -111,13 +111,13 @@ oras_pull_meta_dir() {
     tag=`echo "$img" |cut -d: -f2`
     #
     # meta_digest=`$oras --registry-config $jfrog_creds_path \
+    rm -fr meta  # remove dir from previous image
     meta_digest=`$oras discover --output json --artifact-type 'uenv/meta' $jfrog/$name:$tag \
     | jq -r '.manifests[0].digest'`
     #
     # $oras --registry-config $jfrog_creds_path \
     $oras pull --output "${oras_tmp}" "$jfrog/$name@$meta_digest" &> oras-pull.log
     cat oras-pull.log
-    set -x 
     rc1=$?
     # echo "rc1=$rc1"
     rfm_yaml="${oras_tmp}/meta/extra/reframe.yaml" 
@@ -134,7 +134,6 @@ oras_pull_meta_dir() {
     else
         echo "failed to download $jfrog/$name@$meta_digest"
     fi
-    set +x 
 }
 # }}}
 # {{{ oras_pull_sqfs 
