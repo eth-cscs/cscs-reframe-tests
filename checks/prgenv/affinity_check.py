@@ -550,7 +550,8 @@ class AlternateSocketFilling(AffinityTestBase):
                 task_count += 1
 
             # Check that all sockets have the same CPU count
-            if not all(len(s) == (task+1)*2 for s in sockets):
+            if not all(len(s) == (task + 1) * self.num_cpus_per_core
+                       for s in sockets):
                 self.cpu_set.add(-1)
 
         # Decrement the socket set from the CPU set
