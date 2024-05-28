@@ -117,6 +117,7 @@ oras_pull_meta_dir() {
     $oras pull --output "${oras_tmp}" "$jfrog/$name@$meta_digest"
     #
     [[ $? -eq 0 ]] || { echo "failed to download $jfrog/$name@$meta_digest, exiting"; exit 1; }
+    [[ -f "${oras_tmp}"/extra/reframe.yaml ]] || { echo "warning: reframe.yaml is missing, skipping"; exit 1; }
 }
 # }}}
 # {{{ oras_pull_sqfs 
