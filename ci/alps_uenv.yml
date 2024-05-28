@@ -47,6 +47,7 @@ setup and pull:
     for img in $imgs; do
       echo "----- Pulling img=$img metadata & sqfs"
       rc=$(./ci/scripts/alps_uenv.sh oras_pull_meta_dir "$img")
+      echo "# rc=$rc | $img"
       if [ "$rc" == "ok" ] ; then
         img_path=$(./ci/scripts/alps_uenv.sh uenv_sqfs_fullpath "$img")
         UENVA+="$img_path,"

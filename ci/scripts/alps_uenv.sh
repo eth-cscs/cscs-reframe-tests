@@ -118,15 +118,16 @@ oras_pull_meta_dir() {
     $oras pull --output "${oras_tmp}" "$jfrog/$name@$meta_digest" &> oras-pull.log
     rc1=$?
     # echo "rc1=$rc1"
+    rfm_yaml="${oras_tmp}/meta/extra/reframe.yaml" 
     if [ $rc1 -eq 0 ] ;then
         # find "${oras_tmp}" -name reframe.yaml
-        test -f "${oras_tmp}"/meta/extra/reframe.yaml
+        test -f $rfm_yaml
         rc2=$?
         # echo "rc2=$rc2"
         if [ $rc2 -eq 0 ] ;then
             echo "ok"
         else
-            echo "reframe.yaml is missing in $img"
+            echo "failed to find $rfm_yaml file in $img"
         fi
     else
         echo "failed to download $jfrog/$name@$meta_digest"
