@@ -114,10 +114,19 @@ oras_pull_meta_dir() {
     | jq -r '.manifests[0].digest'`
     #
     # $oras --registry-config $jfrog_creds_path \
-    $oras pull --output "${oras_tmp}" "$jfrog/$name@$meta_digest"
-    #
-    [[ $? -eq 0 ]] || { echo "failed to download $jfrog/$name@$meta_digest, exiting"; exit 1; }
-    [[ -f "${oras_tmp}"/extra/reframe.yaml ]] || { echo "warning: reframe.yaml is missing, skipping $img"}
+    rc1=$($oras pull --output "${oras_tmp}" "$jfrog/$name@$meta_digest")
+    if [ $rc1 -eq 0 ] ;then
+        rc2=$(test -f "${oras_tmp}"/extra/reframe.yaml)
+        if [ $rc2 -eq 0 ] ;then
+            echo "ok"
+        else
+            "reframe.yaml is missing in $img"
+        fi
+    else
+        echo "failed to download $jfrog/$name@$meta_digest"
+    fi
+    #[[ $rc -eq 0 ]] || { echo "failed to download $jfrog/$name@$meta_digest, exiting"; exit 1; }
+    #[[ -f "${oras_tmp}"/extra/reframe.yaml ]] || { echo "warning: reframe.yaml is missing, skipping $img"; }
 }
 # }}}
 # {{{ oras_pull_sqfs 
