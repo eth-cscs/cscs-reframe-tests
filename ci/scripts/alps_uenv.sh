@@ -13,6 +13,7 @@ jfrog_request="$CSCS_CI_MW_URL/credentials?token=$CI_JOB_TOKEN&job_id=$CI_JOB_ID
 # jfrog_request_nojobid="$CSCS_CI_MW_URL/credentials&token=$CI_JOB_TOKEN&creds=container_registry"
 # https://cicd-ext-mw.cscs.ch/ci
 # system="santis" ; uarch="gh200"
+# FIRECREST_SYSTEM=santis UARCH=gh200
 system="$FIRECREST_SYSTEM" ; uarch="$UARCH"
 #del name=`echo $in |cut -d: -f1`
 #del tag=`echo $in |cut -d: -f2`
@@ -110,13 +111,28 @@ oras_pull_meta_dir() {
     tag=`echo "$img" |cut -d: -f2`
     #
     # meta_digest=`$oras --registry-config $jfrog_creds_path \
+    rm -fr meta  # remove dir from previous image
     meta_digest=`$oras discover --output json --artifact-type 'uenv/meta' $jfrog/$name:$tag \
     | jq -r '.manifests[0].digest'`
     #
     # $oras --registry-config $jfrog_creds_path \
-    $oras pull --output "${oras_tmp}" "$jfrog/$name@$meta_digest"
-    #
-    [[ $? -eq 0 ]] || { echo "failed to download $jfrog/$name@$meta_digest, exiting"; exit 1; }
+    $oras pull --output "${oras_tmp}" "$jfrog/$name@$meta_digest" &> oras-pull.log
+    rc1=$?
+    # echo "rc1=$rc1"
+    rfm_yaml="${oras_tmp}/meta/extra/reframe.yaml" 
+    if [ $rc1 -eq 0 ] ;then
+        # find "${oras_tmp}" -name reframe.yaml
+        test -f $rfm_yaml
+        rc2=$?
+        # echo "rc2=$rc2"
+        if [ $rc2 -eq 0 ] ;then
+            echo "ok"
+        else
+            echo "failed to find $rfm_yaml file in $img"
+        fi
+    else
+        echo "failed to download $jfrog/$name@$meta_digest"
+    fi
 }
 # }}}
 # {{{ oras_pull_sqfs 
