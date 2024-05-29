@@ -38,11 +38,11 @@ class linaro_ddt(rfm.RunOnlyRegressionTest):
          - message (n/a): Every process in your program has terminated.
         """
         return sn.all([
-            sn.assert_not_found(r'Error communicating with Licence Server',
+            sn.assert_not_found('Error communicating with Licence Server',
                                 self.stdout),
             sn.assert_found(
-                rf"Offline log written to:.*{self.rpt}", self.stderr),
-            sn.assert_found(r'Startup complete', self.rpt),
+                f'Offline log written to:.*{self.rpt}', self.stderr),
+            sn.assert_found('Startup complete', self.rpt),
             sn.assert_found(
-                r'Every process in your program has terminated', self.rpt),
+                'Every process in your program has terminated', self.rpt),
         ])
