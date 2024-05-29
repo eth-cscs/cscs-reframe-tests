@@ -42,7 +42,7 @@ site_configuration = {
                             'options': ['--mem={mem_per_node}']
                         },
                     ],
-                    'features': ['remote', 'scontrol', 'nvgpu'],
+                    'features': ['ce', 'gpu', 'nvgpu', 'remote', 'scontrol'],
                     'devices': [
                         {
                             'type': 'gpu',
