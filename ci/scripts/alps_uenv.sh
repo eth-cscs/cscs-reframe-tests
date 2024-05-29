@@ -101,7 +101,7 @@ jfrog_login() {
 # }}}
 # {{{ uenv_image_find 
 uenv_image_find() {
-    uenv --no-color image find | grep -v "uenv/version:tag" | awk '{print $1}' | egrep -v "linaro"
+    uenv --no-color image find | grep -v "uenv/version:tag" | awk '{print $1}'
 }
 # }}}
 # {{{ oras_pull_meta_dir
