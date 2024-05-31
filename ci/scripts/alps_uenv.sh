@@ -197,7 +197,9 @@ install_reframe() {
 install_reframe_tests() {
     rm -fr cscs-reframe-tests
     git clone -b alps https://github.com/eth-cscs/cscs-reframe-tests.git
-    # no need
+    pip install python-hostlist
+    # TODO: pyfirecrest requires python>=3.7    
+    # cscs-reframe-tests/config/utilities/requirements.txt
 }
 # }}}
 # {{{ uenv_sqfs_fullpath
