@@ -63,8 +63,9 @@ for uenv in uenv_list:
         elif isinstance(activation, list):
             env['prepare_cmds'] = activation
         else:
-           raise ConfigError(
-               f'activation has to be either a string or list of strings'
+            raise ConfigError(
+                'activation has to be either a file to be sourced or a list '
+                'of commands to be executed to configure the environment'
             )
 
         env['name'] = f'{image_name}_{k}'

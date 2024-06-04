@@ -56,15 +56,17 @@ for uenv in uenv_list:
         if isinstance(activation, str):
             if not activation.startswith(image_mount):
                 raise ConfigError(
-                        f'activation script of {k!r} is not consistent '
-                        f'with the mount point: {image_mount!r}')
+                    f'activation script of {k!r} is not consistent '
+                    f'with the mount point: {image_mount!r}'
+                )
 
             env['prepare_cmds'] = [f'source {activation}']
         elif isinstance(activation, list):
             env['prepare_cmds'] = activation
         else:
-           raise ConfigError(
-               f'activation has to be either a string or list of strings'
+            raise ConfigError(
+                'activation has to be either a file to be sourced or a list '
+                'of commands to be executed to configure the environment'
             )
 
         env['name'] = f'{image_name}_{k}'
