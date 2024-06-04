@@ -49,14 +49,25 @@ for uenv in uenv_list:
             'target_systems': ['todi']
         }
         env.update(v)
-        activation_script = v['activation']
 
-        # FIXME: Handle the activation script based on the image mount point
-        if not activation_script.startswith(image_mount):
-            raise ConfigError(
-                    f'activation script of {k!r} is not consistent '
-                    f'with the mount point: {image_mount!r}')
+        activation = v['activation']
+        
+        # FIXME: Assume that an activation script is given, to be sourced
+        if isinstance(activation, str):
+            if not activation.startswith(image_mount):
+                raise ConfigError(
+                        f'activation script of {k!r} is not consistent '
+                        f'with the mount point: {image_mount!r}')
 
+            env['prepare_cmds'] = [f'source {activation}']
+        elif isinstance(activation, list):
+            env['prepare_cmds'] = activation
+        else:
+           raise ConfigError(
+               f'activation has to be either a string or list of strings'
+            )
+
+        env['name'] = f'{image_name}_{k}'
         env['resources'] = {
             'uenv': {
                 'mount': image_mount,
@@ -64,20 +75,10 @@ for uenv in uenv_list:
             }
         }
 
-        # view_path = activation_script.replace('activate.sh', '')
-        # view_path = activation_script.parent
-        env['prepare_cmds'] = [
-            f'source {activation_script}',
-            # --- workaround for https://jira.cscs.ch/browse/VCUE-236:
-            # f'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:{view_path}/lib'
-        ]
-        env['name'] = f'{image_name}_{k}'
-
         # Added as a prepare_cmd for the environment
         del env['activation']
 
         uenv_environments.append(env)
-
 
 site_configuration = {
     'systems': [

@@ -104,17 +104,28 @@ for k, v in image_environments.items():
         'target_systems': ['pilatus']
     }
     env.update(v)
-    activation_script = v['activation']
+    activation = v['activation']
 
-    # FIXME: Handle the activation script based on the image mount point
-    if not activation_script.startswith(image_mount):
-        raise ConfigError(
-                f'activation script of {k!r} is not consistent '
-                f'with the mount point: {image_mount!r}')
+    # FIXME: Assume that an activation script is given, to be sourced
+    if isinstance(activation, str):
+        if not activation.startswith(image_mount):
+            raise ConfigError(
+                    f'activation script of {k!r} is not consistent '
+                    f'with the mount point: {image_mount!r}')
 
-    env['prepare_cmds'] = [f'source {activation_script}']
+        env['prepare_cmds'] = [f'source {activation}']
+    elif isinstance(activation, list):
+        env['prepare_cmds'] = activation
+    else:
+       raise ConfigError(
+           f'activation has to be either a string or list of strings'
+        )
+
     env['name'] = f'{image_name}_{k}'
+
+    # Added as a prepare_cmd for the environment
     del env['activation']
+
     actual_environs.append(env)
 
 site_configuration = {
