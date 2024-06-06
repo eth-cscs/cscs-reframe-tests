@@ -60,6 +60,7 @@ base_config = {
                 {
                     'type': 'gpu',
                     'arch': 'sm_60',
+                    'model': 'P100-PCIE-16GB',
                     'num_devices': 1
                 }
                 ],
