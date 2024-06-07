@@ -25,6 +25,7 @@ class SlurmGPUGresTest(rfm.RunOnlyRegressionTest):
     num_tasks_per_node = 1
     executable = 'scontrol'
     executable_opts = ['show', 'nodes', '--oneliner']
+    tags = {'production'}
 
     @sanity_function
     def assert_gres_valid(self):

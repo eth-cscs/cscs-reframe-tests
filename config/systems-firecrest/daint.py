@@ -1,4 +1,4 @@
-# Copyright 2016-2023 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright 2016 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -6,32 +6,17 @@
 # ReFrame CSCS settings
 #
 
-import reframe.utility.osext as osext
 import copy
+import os
 
 
 base_config = {
     'modules_system': 'tmod',
-    'resourcesdir': '/apps/common/UES/reframe/resources',
+    # 'resourcesdir': '/apps/common/UES/reframe/resources',
     'partitions': [
         {
-            'name': 'login',
-            'scheduler': 'local',
-            'time_limit': '10m',
-            'environs': [
-                'builtin',
-                'PrgEnv-cray',
-                'PrgEnv-gnu',
-                'PrgEnv-intel',
-                'PrgEnv-nvidia'
-            ],
-            'descr': 'Login nodes',
-            'max_jobs': 4,
-            'launcher': 'local'
-        },
-        {
             'name': 'gpu',
-            'scheduler': 'slurm',
+            'scheduler': 'firecrest-slurm',
             'time_limit': '10m',
             'container_platforms': [
                 {
@@ -46,7 +31,7 @@ base_config = {
             'modules': ['daint-gpu'],
             'access': [
                 f'--constraint=gpu',
-                f'--account={osext.osgroup()}'
+                f'--account=csstaff'
             ],
             'environs': [
                 'builtin',
@@ -82,7 +67,7 @@ base_config = {
         },
         {
             'name': 'mc',
-            'scheduler': 'slurm',
+            'scheduler': 'firecrest-slurm',
             'time_limit': '10m',
             'container_platforms': [
                 {
@@ -97,7 +82,7 @@ base_config = {
             'modules': ['daint-mc'],
             'access': [
                 f'--constraint=mc',
-                f'--account={osext.osgroup()}'
+                f'--account=csstaff'
             ],
             'environs': [
                 'builtin',
@@ -126,13 +111,13 @@ base_config = {
         },
         {
             'name': 'jupyter_gpu',
-            'scheduler': 'slurm',
+            'scheduler': 'firecrest-slurm',
             'time_limit': '10m',
             'environs': ['builtin'],
             'access': [
                 f'-Cgpu',
                 f'--reservation=interact_gpu',
-                f'--account={osext.osgroup()}'
+                f'--account=csstaff'
             ],
             'descr': 'JupyterHub GPU nodes',
             'max_jobs': 10,
@@ -141,13 +126,13 @@ base_config = {
         },
         {
             'name': 'jupyter_mc',
-            'scheduler': 'slurm',
+            'scheduler': 'firecrest-slurm',
             'time_limit': '10m',
             'environs': ['builtin'],
             'access': [
                 f'-Cmc',
                 f'--reservation=interact_mc',
-                f'--account={osext.osgroup()}'
+                f'--account=csstaff'
             ],
             'descr': 'JupyterHub multicore nodes',
             'max_jobs': 10,
@@ -156,12 +141,12 @@ base_config = {
         },
         {
             'name': 'xfer',
-            'scheduler': 'slurm',
+            'scheduler': 'firecrest-slurm',
             'time_limit': '10m',
             'environs': ['builtin'],
             'access': [
                 f'--partition=xfer',
-                f'--account={osext.osgroup()}'
+                f'--account=csstaff'
             ],
             'descr': 'Nordend nodes for internal transfers',
             'max_jobs': 10,
@@ -178,7 +163,7 @@ daint_sys['hostnames'] = ['daint']
 
 dom_sys = copy.deepcopy(base_config)
 dom_sys['name'] = 'dom'
-dom_sys['descr'] = 'Dom TDS'
+dom_sys['descr'] = 'Piz Daint tds'
 dom_sys['hostnames'] = ['dom']
 
 site_configuration = {
@@ -197,12 +182,14 @@ site_configuration = {
             'name': 'PrgEnv-gnu',
             'modules': ['PrgEnv-gnu'],
             'target_systems': ['daint', 'dom'],
-            'features': ['mpi', 'openmp']
+            'prepare_cmds': ['module unload PrgEnv-cray'],
+            'features': ['mpi', 'openmp'],
         },
         {
             'name': 'PrgEnv-intel',
             'modules': ['PrgEnv-intel'],
             'target_systems': ['daint', 'dom'],
+            'prepare_cmds': ['module unload PrgEnv-cray'],
             'features': ['mpi', 'openmp']
         },
         {
@@ -210,6 +197,34 @@ site_configuration = {
             'modules': ['PrgEnv-nvidia'],
             'features': ['cuda', 'mpi', 'openmp'],
             'target_systems': ['daint', 'dom'],
+            'prepare_cmds': ['module unload PrgEnv-cray'],
         }
     ],
+    'general': [
+        {
+            'resolve_module_conflicts': False,
+            'use_login_shell': True,
+            # Autodetection with this scheduler is really slow,
+            # so it's better to disable it.
+            'remote_detect': False,
+            'target_systems': ['daint', 'dom'],
+            'pipeline_timeout': 1000 # https://reframe-hpc.readthedocs.io/en/stable/pipeline.html#tweaking-the-throughput-and-interactivity-of-test-jobs-in-the-asynchronous-execution-policy
+        }
+    ],
+    'autodetect_methods': [
+        f'echo {os.environ.get("FIRECREST_SYSTEM")}'
+    ],
+    'modes': [
+        {
+            'name': 'production',
+            'options': [
+                '--exec-policy=async',
+                '-Sstrict_check=1',
+                '--save-log-files',
+                '--tag=production',
+                '--timestamp=%F_%H-%M-%S'
+            ],
+            'target_systems': ['daint'],
+        }
+    ]
 }

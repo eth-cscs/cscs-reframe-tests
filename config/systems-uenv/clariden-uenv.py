@@ -42,7 +42,7 @@ try:
         image_environments = yaml.load(
             image_envs.read(), Loader=yaml.BaseLoader)
 except OSError as err:
-    raise ConfigError(f"problem loading the metadata from '{rfm_meta}'")
+    raise ConfigError(f"CLA: problem loading the metadata from '{rfm_meta}'")
 
 
 environs = image_environments.keys()
@@ -128,17 +128,30 @@ for k, v in image_environments.items():
         'target_systems': ['clariden']
     }
     env.update(v)
-    activation_script = v['activation']
+    activation = v['activation']
 
-    # FIXME: Handle the activation script based on the image mount point
-    if not activation_script.startswith(image_mount):
-        raise ConfigError(
+    # FIXME: Assume that an activation script is given, to be sourced
+    if isinstance(activation, str):
+        if not activation.startswith(image_mount):
+            raise ConfigError(
                 f'activation script of {k!r} is not consistent '
-                f'with the mount point: {image_mount!r}')
+                f'with the mount point: {image_mount!r}'
+            )
 
-    env['prepare_cmds'] = [f'source {activation_script}']
+        env['prepare_cmds'] = [f'source {activation}']
+    elif isinstance(activation, list):
+        env['prepare_cmds'] = activation
+    else:
+        raise ConfigError(
+            'activation has to be either a file to be sourced or a list '
+            'of commands to be executed to configure the environment'
+        )
+
     env['name'] = f'{image_name}_{k}'
+
+    # Added as a prepare_cmd for the environment
     del env['activation']
+
     actual_environs.append(env)
 
 site_configuration = {

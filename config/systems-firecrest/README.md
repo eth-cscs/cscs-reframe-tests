@@ -3,7 +3,7 @@
 ## Prerequisites
 
 - Firecrest client set up: https://user.cscs.ch/tools/firecrest/#oidc-client-registration-management
-- pyfirecrest installation: https://pypi.org/project/pyfirecrest/
+- Requirements need to be installed before running. You can find the list [here](../utilities/requirements.txt).
 
 ## Configuration Setup
 
@@ -21,6 +21,9 @@ FIRECREST_CLIENT_SECRET=
 AUTH_TOKEN_URL=
 FIRECREST_URL=
 
+# You can set optionally the version of the FirecREST API that you are using by setting the variable
+FIRECREST_API_VERSION="1.15.0"
+
 # This variable defines the name of the system from the point of view of FirecREST
 FIRECREST_SYSTEM=daint
 
@@ -28,7 +31,7 @@ FIRECREST_SYSTEM=daint
 FIRECREST_BASEDIR=
 
 # In case the tests need compilation you have to pass this in the command in order to build them in the remote partitions
-reframe ... -Sbuild_locally=0
+reframe -C /path/to/cscs-reframe-tests/config/cscs.py ... -Sbuild_locally=0
 ```
 
 The processor autodetection can be really slow, so we recommend to skip it for now. It also requires a version of Reframe with this bugfix: https://github.com/reframe-hpc/reframe/pull/3094

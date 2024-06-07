@@ -9,9 +9,9 @@
 site_configuration = {
     'systems': [
         {
-            'name': 'santis',
-            'descr': 'santis vcluster',
-            'hostnames': ['santis'],
+            'name': 'todi',
+            'descr': 'todi vcluster',
+            'hostnames': ['todi'],
             'modules_system': 'nomod',
             'partitions': [
                 {
@@ -68,7 +68,7 @@ site_configuration = {
                 '--tag=production',
                 '--timestamp=%F_%H-%M-%S'
             ],
-            'target_systems': ['santis'],
+            'target_systems': ['todi'],
         }
     ]
 }

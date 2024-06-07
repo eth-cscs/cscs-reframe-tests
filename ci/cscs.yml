@@ -5,9 +5,8 @@ stages:
   - run
 
 run rfm_test:
-  extends: .container-runner-hohgant
   stage: run
-  tags: ['hohgant-login-baremetal']
+  tags: ['clariden-login-baremetal']
   variables:
     GIT_STRATEGY: fetch
   script:
@@ -16,7 +15,7 @@ run rfm_test:
     - cd reframe
     - ./bootstrap.sh
     - export RFM_AUTODETECT_XTHOSTNAME=1
-    - ./bin/reframe -C ../config/cscs-uenv.py --system=hohgant:nvgpu -c ../checks/uenv --report-junit=../report.xml -r
+    - ./bin/reframe -C ../config/cscs-uenv.py ../checks/uenv --report-junit=../report.xml -r
   artifacts:
     when: always
     paths:

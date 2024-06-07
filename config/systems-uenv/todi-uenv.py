@@ -36,9 +36,9 @@ for uenv in uenv_list:
         with open(rfm_meta) as image_envs:
             image_environments = yaml.load(
                 image_envs.read(), Loader=yaml.BaseLoader)
-            print(f"# --- loading the metadata from '{rfm_meta}'")
+            print(f"# TO --- loading the metadata from '{rfm_meta}'")
     except OSError as err:
-        raise ConfigError(f"problem loading the metadata from '{rfm_meta}'")
+        raise ConfigError(f"TO problem loading the metadata from '{rfm_meta}'")
 
     environs = image_environments.keys()
     environ_names.extend([f'{image_name}_{e}'for e in environs] or
@@ -46,18 +46,19 @@ for uenv in uenv_list:
 
     for k, v in image_environments.items():
         env = {
-            'target_systems': ['santis']
+            'target_systems': ['todi']
         }
         env.update(v)
 
         activation = v['activation']
-
+        
         # FIXME: Assume that an activation script is given, to be sourced
         if isinstance(activation, str):
             if not activation.startswith(image_mount):
                 raise ConfigError(
-                        f'activation script of {k!r} is not consistent '
-                        f'with the mount point: {image_mount!r}')
+                    f'activation script of {k!r} is not consistent '
+                    f'with the mount point: {image_mount!r}'
+                )
 
             env['prepare_cmds'] = [f'source {activation}']
         elif isinstance(activation, list):
@@ -84,11 +85,11 @@ for uenv in uenv_list:
 site_configuration = {
     'systems': [
         {
-            'name': 'santis',
-            'descr': 'santis vcluster with uenv',
-            'hostnames': ['santis'],
+            'name': 'todi',
+            'descr': 'todi vcluster with uenv',
+            'hostnames': ['todi'],
             'resourcesdir': '/apps/common/UES/reframe/resources/',
-            'modules_system': 'nomod',
+            'modules_system': 'lmod',
             'partitions': [
                 {
                     'name': 'normal',
@@ -144,10 +145,14 @@ site_configuration = {
                 '--tag=production',
                 '--timestamp=%F_%H-%M-%S'
             ],
-            'target_systems': ['santis'],
+            'target_systems': ['todi'],
         }
     ],
     'environments': uenv_environments,
     'general': [
+        {
+             # 'resolve_module_conflicts': False,
+             # 'target_systems': ['todi']
+        }
     ]
 }

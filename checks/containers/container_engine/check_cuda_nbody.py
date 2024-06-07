@@ -21,8 +21,13 @@ class CudaNBodyCheckCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     sourcesdir = None
     num_tasks = 1
     num_tasks_per_node = 1
-    executable = '/cuda-samples/nbody'
-    container_image = 'nvcr.io#nvidia/k8s/cuda-sample:nbody-cuda11.7.1'
+    executable = 'nbody'
+    container_image = 'jfrog.svc.cscs.ch#reframe-oci/cuda_samples:nbody-12.3'
+
+    # Allow running with an older Cuda driver
+    env_vars = {
+        'NVIDIA_DISABLE_REQUIRE': 1
+    }
     reference = {
         '*': {
             'gflops': (28000., -0.05, None, 'Gflop/s')
@@ -30,6 +35,7 @@ class CudaNBodyCheckCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     }
 
     num_bodies_per_gpu = variable(int, value=200000)
+    tags = {'production', 'ce'}
 
     @run_after('setup')
     def set_num_gpus_per_node(self):

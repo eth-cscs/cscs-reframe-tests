@@ -1,4 +1,4 @@
-# Copyright 2016-2023 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright 2016-2024 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -24,14 +24,14 @@ class StreamTest(rfm.RegressionTest):
     sourcepath = 'stream.c'
     build_system = 'SingleSource'
     build_locally = False
-    num_tasks = 1
-    num_tasks_per_node = 1
+    num_tasks_per_socket = 1
     env_vars = {
         'OMP_PLACES': 'cores',
         'OMP_PROC_BIND': 'spread'
     }
     stream_bw_reference = {
-        'zen3': (122000., -0.05, 0.05, 'MB/s')
+        'zen3': (122000., -0.05, 0.05, 'MB/s'),
+        'neoverse_v2': (430000., -0.05, 0.05, 'MB/s')
     }
 
     @sanity_function
@@ -42,9 +42,9 @@ class StreamTest(rfm.RegressionTest):
 
     @performance_function('MB/s')
     def triad(self):
-        return sn.extractsingle(
+        return sn.min(sn.extractall(
             r'Triad:\s+(?P<triad>\S+)\s+\S+', self.stdout, 'triad', float
-        )
+        ))
 
     @run_after('setup')
     def prepare_test(self):
@@ -54,16 +54,19 @@ class StreamTest(rfm.RegressionTest):
         # the total cache size of the last-level cache, for example:
         # last_level_cache = {'type': 'L3', 'size': 33554432, ...}
         caches = self.current_partition.processor.topology['caches']
+        num_sockets = int(self.current_partition.processor.num_sockets)
         last_level_cache = max(caches, key=lambda c: c['type'])
         cache_size_bytes = (int(last_level_cache['size']) *
-                            len(last_level_cache['cpusets']))
-
+                            len(last_level_cache['cpusets'])) // num_sockets
         # Sizes of each array must be at least 4x the size of the sum of all
         # the last-level caches, (double precision floating points are 8 bytes)
         array_size = 4 * cache_size_bytes // 8
         self.build_system.cppflags = [f'-DSTREAM_ARRAY_SIZE={array_size}']
 
-        self.num_cpus_per_task = int(self.current_partition.processor.num_cores)
+        self.num_tasks = self.num_tasks_per_node = num_sockets
+        self.num_cpus_per_task = int(
+            self.current_partition.processor.num_cores_per_socket
+        )
         self.env_vars['OMP_NUM_THREADS'] = self.num_cpus_per_task
         self.build_system.cflags += (
             self.current_environ.extras.get('c_openmp_flags', ['-fopenmp'])
@@ -71,7 +74,14 @@ class StreamTest(rfm.RegressionTest):
         self.build_system.cflags.append('-O3')
 
         # This is typically needed for large array sizes
-        self.build_system.cflags += ['-mcmodel=medium']
+        mcmodel = 'medium'
+        proc = self.current_partition.processor
+
+        # -mcmodel=medium is not available for AARCH64 on gcc
+        if proc.arch == 'neoverse_v2':
+            mcmodel = 'large'
+
+        self.build_system.cflags += [f'-mcmodel={mcmodel}']
 
     @run_before('performance')
     def set_reference(self):
