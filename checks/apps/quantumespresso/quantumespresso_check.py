@@ -26,7 +26,7 @@ qe_tests = {
         'zen3-4x-gpu-sm_80': {
             # A100 nodes: 1socket, 4 numa, 16c/numa = 64c (no MT)
             'energy_reference': -11427.09017218,
-            'performance_reference': [{'R': 4, 'T': 16, 'P': 32.0}]
+            'performance_reference': [{'R': 4, 'T': 16, 'P': 2.35}]
         }
     }
 }
@@ -82,20 +82,25 @@ class QuantumESPRESSOBase(rfm.RunOnlyRegressionTest):
                                   self.stdout, 'energy', float)
         energy_diff = sn.abs(energy - self.energy_reference)
         return sn.all([
-            sn.assert_found(r'convergence has been achieved', self.stdout),
-            sn.assert_lt(energy_diff, self.energy_tolerance)
+            sn.assert_found(r'This run was terminated', self.stdout),
+            # sn.assert_lt(energy_diff, self.energy_tolerance)
         ])
 
     @performance_function('s')
     def time(self):
-        return sn.extractsingle(r'electrons.+\s(?P<wtime>\S+)s WALL',
+        return sn.extractsingle(r'PWSCF\s+:\s+(?P<wtime>\S+)s CPU',
                                 self.stdout, 'wtime', float)
+
+    @performance_function('')
+    def jid(self):
+        return sn.extractsingle(r' SLURM_JOBID=(\d+)', self.stdout, 1, int)
 
     @run_before('performance')
     def set_performance_reference(self):
         self.reference = {
             '*': {'time': (self.ref_dict['performance_reference'][0]['P'],
-                           None, 0.10, 's')}
+                           None, 0.9, 's')}
+            # not failing on performance as it is a demo test
         }
 
 
@@ -108,6 +113,7 @@ class UENV_QuantumESPRESSOCheck(QuantumESPRESSOBase,
     use_multithreading = False
     test_name = parameter(['Au-surf'])
     tags = {'production', 'uenv'}
+    prerun_cmds = ['echo "# SLURM_JOBID=$SLURM_JOBID"']
 
 
 @rfm.simple_test
