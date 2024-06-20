@@ -110,7 +110,7 @@ site_configuration = {
             'name': 'PrgEnv-gnu',
             'target_systems': ['clariden'],
             'modules': ['cray', 'PrgEnv-gnu'],
-            'features': ['serial', 'openmp', 'mpi', 'cuda', 'alloc_speed',
+            'features': ['serial', 'openmp', 'mpi', 'cuda'
                          'hdf5', 'netcdf-hdf5parallel', 'pnetcdf', 'openmp'],
             'extras': {
                 'hugepages2M': ['craype-hugepages2M'],

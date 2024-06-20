@@ -52,7 +52,6 @@ class LoginNodesTest(rfm.RegressionTest):
 | gromacs | GROMACS is available in this environment | |
 | netcdf-hdf5parallel | | |
 | pnetcdf | | |
-| alloc_speed | | |
 | cuda-fortran | | |
 | openacc | | |
 | opencl | | |
