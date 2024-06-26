@@ -15,6 +15,7 @@ class MLperfStorageBase(rfm.RunOnlyRegressionTest):
     image = 'henriquemendonca/mlperf-storage:v1.0-mpi'
     valid_prog_environs = ['builtin']
     num_nodes = parameter([1, 2])
+    time_limit = '20m'
     accelerator_type = 'h100'
     workload = 'unet3d'
     tags = {'production'}
