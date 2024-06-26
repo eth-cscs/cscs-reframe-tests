@@ -10,17 +10,11 @@ sys.path.append(str(pathlib.Path(__file__).parent.parent.parent / 'mixins'))
 from container_engine import ContainerEngineMixin  # noqa: E402
 
 
-"""
-./benchmark.sh run --hosts localhost --workload unet3d --accelerator-type h100 --num-accelerators 1 --results-dir resultsdir --param dataset.num_files_train=40 --param dataset.data_folder=unet3d_data
-HYDRA_FULL_ERROR=1 RDMAV_FORK_SAFE=1 ./benchmark.sh run --hosts localhost --workload unet3d --accelerator-type h100 --num-accelerators 1 --results-dir resultsdir --param dataset.num_files_train=40 --param dataset.data_folder=unet3d_data
-"""
-
 class MLperfStorageBase(rfm.RunOnlyRegressionTest):
     descr = 'Check the training throughput using the ContainerEngine and NVIDIA NGC'
     image = 'henriquemendonca/mlperf-storage:v1.0-mpi'
     valid_prog_environs = ['builtin']
     num_nodes = parameter([1, 2])
-    num_files = 512
     accelerator_type = 'h100'
     workload = 'unet3d'
     tags = {'production'}
@@ -36,11 +30,7 @@ class MLperfStorageBase(rfm.RunOnlyRegressionTest):
         self.num_gpus_per_node = curr_part.select_devices('gpu')[0].num_devices
         self.num_tasks_per_node = self.num_gpus_per_node
         self.num_tasks = self.num_nodes * self.num_tasks_per_node
-        
-        self.prerun_cmds = [
-            'set -x',
-            'export HOSTS=$(scontrol show hostname $SLURM_NODELIST|paste -sd,)',
-        ]
+        self.num_files = 512 * self.num_tasks
        
         self.executable = f""" bash -c '
             set -xe;
@@ -49,7 +39,6 @@ class MLperfStorageBase(rfm.RunOnlyRegressionTest):
                 --param dataset.num_files_train={self.num_files} --param dataset.data_folder=/rfm_workdir/unet3d_data;
 
             ./benchmark.sh run --workload {self.workload} --accelerator-type {self.accelerator_type} --num-accelerators {self.num_tasks} \\
-                --hosts $HOSTS \\
                 --results-dir resultsdir --param dataset.num_files_train={self.num_files} \\
                 --param dataset.data_folder=/rfm_workdir/unet3d_data;
         ' """
