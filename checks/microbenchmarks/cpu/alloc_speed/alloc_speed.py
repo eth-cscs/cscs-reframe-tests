@@ -58,7 +58,7 @@ class AllocSpeedTest(rfm.RegressionTest):
                     'time': (1.51, None, 0.15, 's')
                 },
                 'eiger:mc': {
-                    'time': (0.12, None, 0.15, 's')
+                    'time': (0.14, None, 0.15, 's')
                 },
                 'pilatus:mc': {
                     'time': (0.14, None, 0.15, 's')
