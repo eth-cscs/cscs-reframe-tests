@@ -14,7 +14,7 @@ from container_engine import ContainerEngineMixin  # noqa: E402
 
 
 class MLperfStorageBase(rfm.RunOnlyRegressionTest):
-    image = 'henriquemendonca/mlperf-storage:v1.0-mpi'
+    image = 'jfrog.svc.cscs.ch/reframe-oci/mlperf-storage:v1.0-mpi'
     valid_prog_environs = ['builtin']
     num_nodes = parameter([1, 2])
     time_limit = '20m'
