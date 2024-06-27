@@ -1,17 +1,19 @@
+# Copyright 2024 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# ReFrame Project Developers. See the top-level LICENSE file for details.
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
 import sys
 import pathlib
 
-from pkg_resources import working_set
 import reframe as rfm
 import reframe.utility.sanity as sn
-from pytorch_test_base import PyTorchTestBase
 
 sys.path.append(str(pathlib.Path(__file__).parent.parent.parent / 'mixins'))
 from container_engine import ContainerEngineMixin  # noqa: E402
 
 
 class MLperfStorageBase(rfm.RunOnlyRegressionTest):
-    descr = 'Check the training throughput using the ContainerEngine and NVIDIA NGC'
     image = 'henriquemendonca/mlperf-storage:v1.0-mpi'
     valid_prog_environs = ['builtin']
     num_nodes = parameter([1, 2])
@@ -33,14 +35,20 @@ class MLperfStorageBase(rfm.RunOnlyRegressionTest):
         self.num_tasks = self.num_nodes * self.num_tasks_per_node
         self.num_files = 512 * self.num_tasks
        
-        self.executable = f""" bash -c '
+        self.executable = rf""" bash -c '
             set -xe;
 
-            ./benchmark.sh datagen --workload {self.workload} --accelerator-type {self.accelerator_type} --num-parallel {self.num_tasks} \\
-                --param dataset.num_files_train={self.num_files} --param dataset.data_folder=/rfm_workdir/unet3d_data;
+            ./benchmark.sh datagen --workload {self.workload} \
+                --accelerator-type {self.accelerator_type} \
+                --num-parallel {self.num_tasks} \
+                --param dataset.num_files_train={self.num_files} \
+                --param dataset.data_folder=/rfm_workdir/unet3d_data;
 
-            ./benchmark.sh run --workload {self.workload} --accelerator-type {self.accelerator_type} --num-accelerators {self.num_tasks} \\
-                --results-dir resultsdir --param dataset.num_files_train={self.num_files} \\
+            ./benchmark.sh run --workload {self.workload} \
+                --accelerator-type {self.accelerator_type} \
+                --num-accelerators {self.num_tasks} \
+                --results-dir resultsdir \
+                --param dataset.num_files_train={self.num_files} \
                 --param dataset.data_folder=/rfm_workdir/unet3d_data;
         ' """
         # clean up data
@@ -60,15 +68,16 @@ class MLperfStorageBase(rfm.RunOnlyRegressionTest):
     @performance_function('MB/second')
     def mb_per_sec_total(self):
         return sn.avg(sn.extractall(
-            r'Training I/O Throughput \(MB/second\): (?P<mb_per_sec_total>)', # \((?P<mb_per_sec_per_gpu>)\)',
-            self.stderr, 'mb_per_sec_total', float
+            r'Training I/O Throughput \(MB/second\): (?P<mbs_total>\S+)',
+            self.stderr, 'mbs_total', float
         ))
 
 
 
 @rfm.simple_test
 class MLperfStorageBaseCEtest(MLperfStorageBase, ContainerEngineMixin):
-    descr = 'Check the training throughput using the ContainerEngine and NVIDIA NGC'
+    descr = ('Check the training throughput using the ContainerEngine and '
+             'NVIDIA NGC')
     valid_systems = ['+ce']
     tags = {'production', 'ce'}
     sourcesdir = 'src'
@@ -80,6 +89,7 @@ class MLperfStorageBaseCEtest(MLperfStorageBase, ContainerEngineMixin):
 
 @rfm.simple_test
 class MLperfStorageBaseSarusTest(MLperfStorageBase):
+    descr = 'Check the training throughput using Sarus and NVIDIA NGC'
     valid_systems = ['+nvgpu +sarus']
     platform = 'Sarus'
 
@@ -89,12 +99,13 @@ class MLperfStorageBaseSarusTest(MLperfStorageBase):
         self.container_platform.command = self.executable
         self.container_platform.image = self.image
         self.container_platform.workdir = None
-        # self.job.launcher.options.append('--mpi=pmi2')
         self.container_platform.with_mpi = True
 
 
 @rfm.simple_test
 class MLperfStorageBaseDockerTest(MLperfStorageBase):
+    descr = 'Check the training throughput using Docker and NVIDIA NGC'
+    valid_systems = ['+docker']
     platform = 'Docker'
     num_nodes = parameter([1])
     num_files = 16
