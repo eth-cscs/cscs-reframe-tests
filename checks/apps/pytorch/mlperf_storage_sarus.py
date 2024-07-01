@@ -10,9 +10,6 @@ import pathlib
 import reframe as rfm
 import reframe.utility.sanity as sn
 
-sys.path.append(str(pathlib.Path(__file__).parent.parent.parent / 'mixins'))
-from container_engine import ContainerEngineMixin  # noqa: E402
-
 
 class mlperf_storage_datagen_sarus(rfm.RunOnlyRegressionTest):
     image = 'jfrog.svc.cscs.ch/reframe-oci/mlperf-storage:v1.0-mpi'
@@ -65,22 +62,17 @@ class MLperfStorageSarus(rfm.RunOnlyRegressionTest):
     valid_systems = ['+sarus']
     valid_prog_environs = ['builtin']
     time_limit = '20m'
-    tags = {'production'}
-    env_vars = {
-        'LC_ALL': 'C',
-        'HYDRA_FULL_ERROR': '1',
-        'RDMAV_FORK_SAFE': '1',
-    }
     mlperf_data = fixture(mlperf_storage_datagen_sarus, scope='environment')
     
     @run_after('setup')
     def setup_test(self):
         curr_part = self.current_partition
-        self.num_gpus_per_node =  self.mlperf_data.num_gpus_per_node
+        self.num_gpus_per_node = self.mlperf_data.num_gpus_per_node
         self.num_tasks_per_node = self.num_gpus_per_node
         self.num_tasks = self.mlperf_data.num_nodes * self.num_tasks_per_node
-        num_files = 512 * self.num_tasks
+        self.env_vars = self.mlperf_data.env_vars
         self.workload = self.mlperf_data.workload
+        num_files = 512 * self.num_tasks
         accelerator_type = self.mlperf_data.accelerator_type
        
         self.executable = rf""" bash -c '
@@ -97,7 +89,6 @@ class MLperfStorageSarus(rfm.RunOnlyRegressionTest):
                 'mb_per_sec_total': (8000, -0.1, None, 'MB/second'),
             }
         }
-        self.job.launcher.options += ['-l']
 
     @run_before('run')
     def set_container_variables(self):
