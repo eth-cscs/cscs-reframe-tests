@@ -30,7 +30,7 @@ class mlperf_storage_datagen_ce(rfm.RunOnlyRegressionTest,
         'HYDRA_FULL_ERROR': '1',
         'RDMAV_FORK_SAFE': '1',
     }
-    
+
     @run_after('setup')
     def setup_test(self):
         curr_part = self.current_partition
@@ -38,7 +38,7 @@ class mlperf_storage_datagen_ce(rfm.RunOnlyRegressionTest,
         self.num_tasks_per_node = self.num_gpus_per_node
         self.num_tasks = self.num_nodes * self.num_tasks_per_node
         self.num_files = 512 * self.num_tasks
-       
+
         self.executable = rf""" bash -c '
             ./benchmark.sh datagen --workload {self.workload} \
                 --accelerator-type {self.accelerator_type} \
@@ -65,39 +65,38 @@ class MLperfStorageCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     valid_prog_environs = ['builtin']
     time_limit = '20m'
     mlperf_data = fixture(mlperf_storage_datagen_ce, scope='environment')
-    
+
     @run_after('setup')
     def setup_test(self):
         curr_part = self.current_partition
         self.num_gpus_per_node =  self.mlperf_data.num_gpus_per_node
         self.num_tasks_per_node = self.num_gpus_per_node
         self.num_tasks = self.mlperf_data.num_nodes * self.num_tasks_per_node
-        self.env_vars = self.mlperf_data.env_vars 
+        self.env_vars = self.mlperf_data.env_vars
         self.workload = self.mlperf_data.workload
         self.container_workdir = self.mlperf_data.container_workdir
         num_files = 512 * self.num_tasks
         accelerator_type = self.mlperf_data.accelerator_type
-       
+
         self.executable = rf""" bash -c '
             ./benchmark.sh run --workload {self.workload} \
                 --accelerator-type {accelerator_type} \
                 --num-accelerators {self.num_tasks} \
                 --results-dir /rfm_workdir/resultsdir \
                 --param dataset.num_files_train={num_files} \
-                --param dataset.data_folder=/dataset;
+                --param dataset.data_folder=/dataset \
+                --param checkpoint.checkpoint_folder=/rfm_workdir/checkpoint
         ' """
+
+        self.container_mounts = [
+            f'{os.path.join(self.mlperf_data.stagedir, "dataset")}:/dataset'
+        ]
 
         self.reference = {
             '*': {
                 'mb_per_sec_total': (8000, -0.1, None, 'MB/second'),
             }
         }
-
-    @run_before('run')
-    def setup_container(self):
-        self.container_mounts = [
-            f'{os.path.join(self.mlperf_data.stagedir, "dataset")}:"/dataset"'
-        ]
 
     @run_before('run')
     def set_pmi2(self):
