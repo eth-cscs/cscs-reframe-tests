@@ -16,7 +16,7 @@ from container_engine import ContainerEngineMixin  # noqa: E402
 
 class mlperf_storage_datagen_ce(rfm.RunOnlyRegressionTest,
                                 ContainerEngineMixin):
-    container_image = ('jfrog.svc.cscs.ch/reframe-oci/mlperf-storage:'
+    container_image = ('jfrog.svc.cscs.ch#reframe-oci/mlperf-storage:'
                        'v1.0-mpi_4.2.1')
     valid_systems = ['+nvgpu +ce']
     valid_prog_environs = ['builtin']
