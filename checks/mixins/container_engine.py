@@ -15,8 +15,10 @@ class ContainerEngineMixin(rfm.RegressionMixin):
 
     #: The working directory of the container.
     #:
+    #: Setting to `None` will not set any workdir for the container
+    #: 
     #: :default: ``'/rfm_workdir/'``
-    container_workdir = variable(str, value='/rfm_workdir')
+    container_workdir = variable(str, type(None), value='/rfm_workdir')
 
     #: A list of the container mounts following the <src dir>:<target dir>
     #: convention.
