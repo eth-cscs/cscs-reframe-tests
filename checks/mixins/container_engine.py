@@ -45,8 +45,9 @@ class ContainerEngineMixin(rfm.RegressionMixin):
             f'"{self.stagedir}:/rfm_workdir",',
             mounts,
             f']',
-            f'workdir = "{self.container_workdir}"'
         ]
+        if self.container_workdir:
+            toml_lines += ['workdir = "{self.container_workdir}"']
 
         for k, v in self.container_env_key_values.items():
             toml_lines.append(f'{k} = "{v}"')

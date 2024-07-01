@@ -18,6 +18,7 @@ class mlperf_storage_datagen_ce(rfm.RunOnlyRegressionTest,
                                 ContainerEngineMixin):
     container_image = ('jfrog.svc.cscs.ch#reframe-oci/mlperf-storage:'
                        'v1.0-mpi_4.2.1')
+    container_workdir = None
     valid_systems = ['+nvgpu +ce']
     valid_prog_environs = ['builtin']
     num_nodes = parameter([1, 2])
@@ -70,6 +71,7 @@ class MLperfStorageCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
         self.num_tasks = self.mlperf_data.num_nodes * self.num_tasks_per_node
         self.env_vars = self.mlperf_data.env_vars 
         self.workload = self.mlperf_data.workload
+        self.container_workdir = self.mlperf_data.container_workdir
         num_files = 512 * self.num_tasks
         accelerator_type = self.mlperf_data.accelerator_type
        
