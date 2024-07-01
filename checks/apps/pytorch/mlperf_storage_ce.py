@@ -43,6 +43,7 @@ class mlperf_storage_datagen_ce(rfm.RunOnlyRegressionTest,
             ./benchmark.sh datagen --workload {self.workload} \
                 --accelerator-type {self.accelerator_type} \
                 --num-parallel {self.num_tasks} \
+                --results-dir /rfm_workdir/resultsdir \
                 --param dataset.num_files_train={self.num_files} \
                 --param dataset.data_folder=/rfm_workdir/dataset;
         ' """
@@ -58,6 +59,8 @@ class mlperf_storage_datagen_ce(rfm.RunOnlyRegressionTest,
 
 @rfm.simple_test
 class MLperfStorageCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
+    container_image = ('jfrog.svc.cscs.ch#reframe-oci/mlperf-storage:'
+                       'v1.0-mpi_4.2.1')
     valid_systems = ['+nvgpu +ce']
     valid_prog_environs = ['builtin']
     time_limit = '20m'
@@ -79,7 +82,7 @@ class MLperfStorageCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
             ./benchmark.sh run --workload {self.workload} \
                 --accelerator-type {accelerator_type} \
                 --num-accelerators {self.num_tasks} \
-                --results-dir resultsdir \
+                --results-dir /rfm_workdir/resultsdir \
                 --param dataset.num_files_train={num_files} \
                 --param dataset.data_folder=/dataset;
         ' """
@@ -92,8 +95,7 @@ class MLperfStorageCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
 
     @run_before('run')
     def setup_container(self):
-        self.container_image = self.mlperf_data.container_image
-        self.container_.mount= [
+        self.container_mounts = [
             f'{os.path.join(self.mlperf_data.stagedir, "dataset")}:"/dataset"'
         ]
 
