@@ -45,7 +45,8 @@ class mlperf_storage_datagen_ce(rfm.RunOnlyRegressionTest,
                 --num-parallel {self.num_tasks} \
                 --results-dir /rfm_workdir/resultsdir \
                 --param dataset.num_files_train={self.num_files} \
-                --param dataset.data_folder=/rfm_workdir/dataset;
+                --param dataset.data_folder=/rfm_workdir/dataset \
+                --param checkpoint.checkpoint_folder=/rfm_workdir/checkpoint
         ' """
 
     @run_before('run')
