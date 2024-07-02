@@ -21,10 +21,11 @@ class mlperf_storage_datagen_ce(rfm.RunOnlyRegressionTest,
     container_workdir = None
     valid_systems = ['+nvgpu +ce']
     valid_prog_environs = ['builtin']
-    num_nodes = parameter([1, 2])
+    num_nodes = variable(int, value=2)
     time_limit = '20m'
     accelerator_type = 'h100'
     workload = 'unet3d'
+    prerun_cmds = ['rm -rf dataset checkpoint resultsdir']
     env_vars = {
         'LC_ALL': 'C',
         'HYDRA_FULL_ERROR': '1',
@@ -67,9 +68,13 @@ class MLperfStorageCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     time_limit = '20m'
     mlperf_data = fixture(mlperf_storage_datagen_ce, scope='environment')
 
+    # Add here to supress the warning, set by the fixture
+    num_nodes = variable(int)
+
     @run_after('setup')
     def setup_test(self):
         curr_part = self.current_partition
+        self.num_nodes = self.mlperf_data.num_nodes
         self.num_gpus_per_node =  self.mlperf_data.num_gpus_per_node
         self.num_tasks_per_node = self.num_gpus_per_node
         self.num_tasks = self.mlperf_data.num_nodes * self.num_tasks_per_node
