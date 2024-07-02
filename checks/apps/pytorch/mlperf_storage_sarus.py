@@ -5,7 +5,6 @@
 
 import os
 import sys
-import pathlib
 
 import reframe as rfm
 import reframe.utility.sanity as sn
@@ -15,32 +14,33 @@ class mlperf_storage_datagen_sarus(rfm.RunOnlyRegressionTest):
     image = 'jfrog.svc.cscs.ch/reframe-oci/mlperf-storage:v1.0-mpi'
     valid_systems = ['+sarus']
     valid_prog_environs = ['builtin']
-    num_nodes = parameter([1, 2])
+    num_nodes = variable(int, value=2)
     time_limit = '20m'
     accelerator_type = 'h100'
-    workload = 'unet3d'
-    tags = {'production'}
+    workload = variable(str, value='unet3d')
     platform = 'Sarus'
+    prerun_cmds = ['rm -rf dataset checkpoint resultsdir']
     env_vars = {
         'LC_ALL': 'C',
         'HYDRA_FULL_ERROR': '1',
         'RDMAV_FORK_SAFE': '1',
     }
-    
+
     @run_after('setup')
     def setup_test(self):
         curr_part = self.current_partition
-        self.num_gpus_per_node = 1 # curr_part.select_devices('gpu')[0].num_devices
+        self.num_gpus_per_node = 1
         self.num_tasks_per_node = self.num_gpus_per_node
         self.num_tasks = self.num_nodes * self.num_tasks_per_node
         self.num_files = 512 * self.num_tasks
-       
+
         self.executable = rf""" bash -c '
             ./benchmark.sh datagen --workload {self.workload} \
                 --accelerator-type {self.accelerator_type} \
                 --num-parallel {self.num_tasks} \
                 --param dataset.num_files_train={self.num_files} \
-                --param dataset.data_folder=/rfm_workdir/dataset;
+                --param dataset.data_folder=/rfm_workdir/dataset \
+                --param checkpoint.checkpoint_folder=/rfm_workdir/checkpoint
         ' """
 
     @run_before('run')
@@ -63,7 +63,10 @@ class MLperfStorageSarus(rfm.RunOnlyRegressionTest):
     valid_prog_environs = ['builtin']
     time_limit = '20m'
     mlperf_data = fixture(mlperf_storage_datagen_sarus, scope='environment')
-    
+
+    # Add here to supress the warning, set by the fixture
+    num_nodes = variable(int)
+
     @run_after('setup')
     def setup_test(self):
         curr_part = self.current_partition
@@ -74,14 +77,15 @@ class MLperfStorageSarus(rfm.RunOnlyRegressionTest):
         self.workload = self.mlperf_data.workload
         num_files = 512 * self.num_tasks
         accelerator_type = self.mlperf_data.accelerator_type
-       
+
         self.executable = rf""" bash -c '
             ./benchmark.sh run --workload {self.workload} \
                 --accelerator-type {accelerator_type} \
                 --num-accelerators {self.num_tasks} \
                 --results-dir resultsdir \
                 --param dataset.num_files_train={num_files} \
-                --param dataset.data_folder=/dataset;
+                --param dataset.data_folder=/dataset \
+                --param checkpoint.checkpoint_folder=/rfm_workdir/checkpoint
         ' """
 
         self.reference = {

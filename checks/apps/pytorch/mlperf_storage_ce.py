@@ -24,7 +24,7 @@ class mlperf_storage_datagen_ce(rfm.RunOnlyRegressionTest,
     num_nodes = variable(int, value=2)
     time_limit = '20m'
     accelerator_type = 'h100'
-    workload = 'unet3d'
+    workload = variable(str, value='unet3d')
     prerun_cmds = ['rm -rf dataset checkpoint resultsdir']
     env_vars = {
         'LC_ALL': 'C',
