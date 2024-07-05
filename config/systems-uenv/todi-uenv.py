@@ -89,7 +89,7 @@ site_configuration = {
             'descr': 'todi vcluster with uenv',
             'hostnames': ['todi'],
             'resourcesdir': '/apps/common/UES/reframe/resources/',
-            'modules_system': 'lmod',
+            'modules_system': 'nomod',
             'partitions': [
                 {
                     'name': 'normal',
