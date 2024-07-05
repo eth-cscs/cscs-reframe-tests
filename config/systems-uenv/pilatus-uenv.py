@@ -85,13 +85,7 @@ partitions = [
         ],
         'features': ['remote', 'uenv'],
         # 'features': ['gpu', 'nvgpu', 'remote', 'uenv'],
-        'devices': [
-            {
-                'type': 'gpu',
-                'arch': 'sm_80',
-                'num_devices': 4
-            }
-        ],
+        'devices': [],
         'launcher': 'srun'
     },
 ]

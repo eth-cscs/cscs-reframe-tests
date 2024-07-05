@@ -123,6 +123,7 @@ site_configuration = {
                         {
                             'type': 'gpu',
                             'arch': 'sm_90',
+                            'model': 'GH200/120GB',
                             'num_devices': 4
                         }
                     ],
