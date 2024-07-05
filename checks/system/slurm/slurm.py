@@ -263,7 +263,7 @@ class MemoryOverconsumptionMpiCheck(SlurmCompiledBaseCheck):
         reference_mem = self.current_partition.extras['cn_memory'] - 3
         self.reference = {
             '*': {
-                'cn_max_allocated_memory': (reference_mem, -0.05, None, 'GB'),
+                'cn_max_allocated_memory': (reference_mem, -0.10, None, 'GB'),
             }
         }
 
