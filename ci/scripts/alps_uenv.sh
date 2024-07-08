@@ -132,11 +132,11 @@ oras_pull_meta_dir() {
             return 0
         else
             echo "failed to find $rfm_yaml file in $img"
-            return -1
+            return 1
         fi
     else
         echo "failed to download $jfrog/$name@$meta_digest"
-        return -2
+        return 2
     fi
 }
 # }}}
