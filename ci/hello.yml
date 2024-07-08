@@ -36,7 +36,7 @@ setup and pull:
 #   artifacts:
 #     reports:
 #       dotenv: rfm_uenv.env
-# 
+
 # run reframe:
 #   stage: run
 #   # tags: ["santis-login-baremetal"]
