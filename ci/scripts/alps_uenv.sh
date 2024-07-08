@@ -107,9 +107,9 @@ uenv_image_find() {
 # {{{ oras_pull_meta_dir
 oras_pull_meta_dir() {
     img=$1
+    echo "----- Pulling img=$img metadata & sqfs"
     name=`echo "$img" |cut -d: -f1`
     tag=`echo "$img" |cut -d: -f2`
-    #
     # meta_digest=`$oras --registry-config $jfrog_creds_path \
     rm -fr meta  # remove dir from previous image
     meta_digest=`$oras discover --output json --artifact-type 'uenv/meta' $jfrog/$name:$tag \
@@ -126,6 +126,7 @@ oras_pull_meta_dir() {
         rc2=$?
         # echo "rc2=$rc2"
         if [ $rc2 -eq 0 ] ;then
+            cp $rfm_yaml `dirname $img`
             echo "ok"
         else
             echo "failed to find $rfm_yaml file in $img"
