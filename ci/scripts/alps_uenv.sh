@@ -36,14 +36,14 @@ setup_jq() {
 # {{{ setup_uenv_and_oras 
 setup_uenv_and_oras() {
   # cd $oras_tmp 
-  if [ -z $UENV_PREFIX ] ;then
-    uenv_repo=https://github.com/eth-cscs/uenv
-    uenv_version=5.0.0
-    (wget --quiet $uenv_repo/archive/refs/tags/v$uenv_version.tar.gz && \
-    tar xf v$uenv_version.tar.gz && cd uenv-$uenv_version/ && \
-    echo N | ./install --prefix=$PWD --local && \
-    rm -f v$uenv_version.tar.gz uenv-$uenv_version)
-  fi    
+  # if [ -z $UENV_PREFIX ] ;then
+  uenv_repo=https://github.com/eth-cscs/uenv
+  uenv_version=5.0.0
+  (wget --quiet $uenv_repo/archive/refs/tags/v$uenv_version.tar.gz && \
+  tar xf v$uenv_version.tar.gz && cd uenv-$uenv_version/ && \
+  echo N | ./install --prefix=$PWD --local && \
+  rm -f v$uenv_version.tar.gz uenv-$uenv_version)
+  # fi    
   # source ./uenv-4.0.1/bin/activate-uenv
   # export oras="$UENV_PREFIX/libexec/uenv-oras"
 }
