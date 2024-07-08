@@ -36,6 +36,7 @@ setup and pull:
     - ./ci/scripts/alps_uenv.sh setup_uenv_and_oras &> setup_uenv_and_oras.log
     - source ./uenv-5.0.0/bin/activate-uenv
     - uenv --version
+    - export PATH=$UENV_PREFIX/libexec:$PATH
     - uenv-oras version
     # - uenv image repo $SCRATCH/.uenv-images
     - imgs=$(./ci/scripts/alps_uenv.sh uenv_image_find)
@@ -44,6 +45,7 @@ setup and pull:
     echo "imgs=$imgs"
     export PATH=$PWD:$PATH
     export PATH=$UENV_PREFIX/libexec:$PATH
+    echo $PATH | tr : "\n"
     # get list of uenv to test and set $UENV
     for img in $imgs; do
       echo "----- Pulling img=$img metadata & sqfs"
