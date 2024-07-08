@@ -10,6 +10,7 @@ variables:
   JOB_NAME: rfm-$CI_PIPELINE_ID
   CLUSTER_NAME: "${CLUSTER_NAME}"
   F7T_TOKEN_URL: 'https://auth.cscs.ch/auth/realms/firecrest-clients/protocol/openid-connect/token'
+  F7T_URL: 'https://firecrest.cscs.ch'
 
 setup and pull:
   stage: pull
