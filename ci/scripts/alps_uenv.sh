@@ -126,7 +126,7 @@ oras_pull_meta_dir() {
         rc2=$?
         # echo "rc2=$rc2"
         if [ $rc2 -eq 0 ] ;then
-            imgdir=`dirname $img`
+            imgpath=`uenv image inspect $img --format {path}`
             cp $rfm_yaml $imgdir/store.yaml
             # echo "ok"
             return 0
