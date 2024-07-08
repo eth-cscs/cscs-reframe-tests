@@ -1,0 +1,77 @@
+include:
+  - remote: 'https://gitlab.com/cscs-ci/recipes/-/raw/master/templates/v2/.ci-ext.yml'
+
+stages:
+  - pull
+  - run
+
+variables:
+  WORKSPACE: '$${CI_CACHE_FOLDER}/rfm_workspace'
+  JOB_NAME: rfm-$CI_PIPELINE_ID
+  CLUSTER_NAME: "${CLUSTER_NAME}"
+
+setup and pull:
+  stage: pull
+  tags: ["$TAG"]
+  # tags: ['f7t-runner']
+  # tags: ["santis-spack-stack-builder"]
+  variables:
+    # Valid MODE=('container-runner', 'baremetal', 'f7t-controller')
+    MODE: "${RFM_MODE}"
+    # no runner match tags:eiger-login-baremetal
+    # MODE: "f7t-controller"
+    # SLURM_PARTITION: "${SLURM_PARTITION}"
+    # SLURM_CONSTRAINT: "mc"
+    GIT_STRATEGY: "fetch"
+    SLURM_ACCOUNT: "csstaff"
+    FIRECREST_SYSTEM: "${FIRECREST_SYSTEM}"
+  before_script:
+    - echo $FIRECREST_SYSTEM / $CLUSTER_NAME / $RFM_MODE
+    - pwd
+    - uname -a
+    - uenv --version
+  script: |
+    # if [ "${CLUSTER_NAME}" == "eiger" ] ; then export SLURM_CONSTRAINT="mc"; fi
+    echo "imgs=$imgs"
+#   artifacts:
+#     reports:
+#       dotenv: rfm_uenv.env
+# 
+# run reframe:
+#   stage: run
+#   # tags: ["santis-login-baremetal"]
+#   tags: ["$TAG"]
+#   # tags: ['f7t-runner']
+#   needs: ['setup and pull']
+#   variables:
+#     # Valid MODE=('container-runner', 'baremetal', 'f7t-controller')
+#     MODE: "${RFM_MODE}"
+#     # MODE: "f7t-controller"  # santis
+#     # MODE: "baremetal"  # eiger
+#     GIT_STRATEGY: "fetch"
+#     SLURM_ACCOUNT: "csstaff"
+#     FIRECREST_SYSTEM: "${FIRECREST_SYSTEM}"
+#     # SLURM_PARTITION: "${SLURM_PARTITION}"
+#     # SLURM_PARTITION: "debug"
+#     # SLURM_CONSTRAINT: "mc"
+#     # FIRECREST_SYSTEM: "santis"
+#   before_script:
+#     - echo $FIRECREST_SYSTEM / $CLUSTER_NAME / $RFM_MODE
+#     - pwd
+#     - uname -a
+#     - ./ci/scripts/alps_uenv.sh setup_uenv_and_oras &> setup_uenv_and_oras.log
+#     - source ./uenv-4.0.1/bin/activate-uenv
+#     - uenv --version
+#     - echo "UENV=$UENV" | tr , "\n"
+#   script:
+#     - rfm_path=$(./ci/scripts/alps_uenv.sh install_reframe)
+#     - echo "rfm_path=$rfm_path"
+#     - export PATH=$rfm_path:$PATH
+#     - reframe -V
+#     - ./ci/scripts/alps_uenv.sh launch_reframe
+#   artifacts:
+#     when: on_failure
+#     paths:
+#       - report.xml
+#     reports:
+#       junit: report.xml
