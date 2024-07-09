@@ -53,6 +53,7 @@ setup and pull:
       cat .rc
       rc=$(grep -q OK .rc ; echo $?)
       if [ $rc -eq 0 ] ; then
+        uenv image pull "$img"
         UENVA+="$img,"
         echo "UENVA=$UENVA"
       fi
