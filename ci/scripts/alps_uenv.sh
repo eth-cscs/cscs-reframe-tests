@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#DEBUG="n"
+if [ -z $DEBUG ] ; then export DEBUG="n" ;fi
 if [ $DEBUG = "y" ] ; then
     echo DEBUG=$DEBUG
     oras_tmp="$PWD"
