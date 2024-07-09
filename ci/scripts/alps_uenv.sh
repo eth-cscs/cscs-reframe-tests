@@ -1,13 +1,12 @@
 #!/bin/bash
 
+DEBUG="n"
 if [ $DEBUG = "y" ] ; then
     echo DEBUG=$DEBUG
     oras_tmp="$PWD"
     oras="uenv-oras"
     rfm_meta_yaml="$oras_tmp/meta/extra/reframe.yaml"
     jfrog_creds_path="${oras_tmp}/docker/config.json"
-    #jfrog_request="$CSCS_CI_MW_URL/credentials?token=$CI_JOB_TOKEN&job_id=$CI_JOB_ID&creds=container_registry"
-    # https://cicd-ext-mw.cscs.ch/ci
     system="eiger" ; uarch="zen2"
     jfrog=jfrog.svc.cscs.ch/uenv/deploy/$system/$uarch
     jfrog_u="piccinal"
