@@ -151,7 +151,7 @@ meta_has_reframe_yaml() {
 remove_last_comma_from_variable() {
     vv=$1
     vv=${vv%?}
-    echo ${UENVA} | sed 's-,,-,-g' | sort -u
+    echo ${vv} | sed 's-,,-,-g' | sort -u
     #echo "UENV=$UENV" > rfm_uenv.env
     #cat rfm_uenv.env | tr , "\n"
 }
