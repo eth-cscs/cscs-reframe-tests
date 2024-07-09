@@ -58,9 +58,9 @@ setup and pull:
         echo "UENVA=$UENVA"
       fi
     done
-    UENV=$(./ci/scripts/alps_uenv.sh remove_last_comma_from_variable "$UENVA")
-    #UENVA=${UENVA%?}
-    #UENV=`echo ${UENVA} | sed 's-,,-,-g' | sort -u`
+    #UENV=$(./ci/scripts/alps_uenv.sh remove_last_comma_from_variable "$UENVA")
+    UENVA=${UENVA%?}
+    UENV=`echo ${UENVA} | sed 's-,,-,-g' | sort -u`
     echo "UENV=$UENV" > rfm_uenv.env
     cat rfm_uenv.env | tr , "\n"
   artifacts:
