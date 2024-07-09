@@ -1,5 +1,17 @@
 #!/bin/bash
 
+if [ $DEBUG = "y" ] ; then
+    echo DEBUG=$DEBUG
+    oras_tmp="$PWD"
+    oras="uenv-oras"
+    rfm_meta_yaml="$oras_tmp/meta/extra/reframe.yaml"
+    jfrog_creds_path="${oras_tmp}/docker/config.json"
+    #jfrog_request="$CSCS_CI_MW_URL/credentials?token=$CI_JOB_TOKEN&job_id=$CI_JOB_ID&creds=container_registry"
+    # https://cicd-ext-mw.cscs.ch/ci
+    system="eiger" ; uarch="zen2"
+    jfrog=jfrog.svc.cscs.ch/uenv/deploy/$system/$uarch
+    jfrog_u="piccinal"
+else
 # {{{ input parameters <--- 
 # oras="$UENV_PREFIX/libexec/uenv-oras"  # /users/piccinal/.local/ on eiger
 # oras_tmp=`mktemp -d`
@@ -22,6 +34,7 @@ jfrog=jfrog.svc.cscs.ch/uenv/deploy/$system/$uarch
 jfrog_u="piccinal"
 [[ -z "${SLURM_PARTITION}" ]] && RFM_SYSTEM="${system}" || RFM_SYSTEM="${system}:${SLURM_PARTITION}"
  # }}}
+fi
 
 # {{{ setup_jq 
 setup_jq() {
@@ -106,6 +119,40 @@ uenv_image_find() {
 # }}}
 # {{{ oras_pull_meta_dir
 oras_pull_meta_dir() {
+    img=$1
+    echo "--- Pulling img=$img metadata"
+    name=`echo "$img" |cut -d: -f1`
+    tag=`echo "$img" |cut -d: -f2`
+    # meta_digest=`$oras --registry-config $jfrog_creds_path \
+    rm -fr meta  # remove dir from previous image
+    meta_digest=`$oras discover --output json --artifact-type 'uenv/meta' $jfrog/$name:$tag \
+        | jq -r '.manifests[0].digest'`
+    # $oras --registry-config $jfrog_creds_path \
+    $oras pull --output "${oras_tmp}" "$jfrog/$name@$meta_digest" &> oras-pull.log
+}
+# }}}
+# {{{ meta_has_reframe_yaml
+meta_has_reframe_yaml() {
+    img=$1
+    echo "--- Checking img=$img for meta/extra/reframe.yaml"
+    rfm_yaml="${oras_tmp}/meta/extra/reframe.yaml" 
+    test -f $rfm_yaml ; rc=$?
+    echo "rc=$rc"
+    if [ $rc -eq 0 ] ;then
+        imgpath=`uenv image inspect $img --format {path}`
+        cp $rfm_yaml $imgpath/store.yaml
+        ls $imgpath/store.yaml
+        #echo $img
+        #export UENVA+="$img,"
+        return 0
+    else
+        return 1
+    #     echo "---- failed to find $rfm_yaml file, skipping $img..."
+    fi 
+}
+# }}}
+# {{{ oras_pull_meta_dir_old
+oras_pull_meta_dir_old() {
     img=$1
     echo "----- Pulling img=$img metadata & sqfs"
     name=`echo "$img" |cut -d: -f1`
@@ -255,6 +302,7 @@ case $in in
     jfrog_login) jfrog_login "$jfrog_creds_path";;
     uenv_image_find) uenv_image_find;;
     oras_pull_meta_dir) oras_pull_meta_dir "$img";;
+    meta_has_reframe_yaml) meta_has_reframe_yaml "$img";;
     oras_pull_sqfs) oras_pull_sqfs;;
     uenv_pull_sqfs) uenv_pull_sqfs "$img";;
     install_reframe) install_reframe;;
