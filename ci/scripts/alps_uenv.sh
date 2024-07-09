@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DEBUG="n"
+#DEBUG="n"
 if [ $DEBUG = "y" ] ; then
     echo DEBUG=$DEBUG
     oras_tmp="$PWD"
@@ -133,21 +133,27 @@ oras_pull_meta_dir() {
 # {{{ meta_has_reframe_yaml
 meta_has_reframe_yaml() {
     img=$1
-    echo "--- Checking img=$img for meta/extra/reframe.yaml"
+    echo "# --- Checking img=$img for meta/extra/reframe.yaml"
     rfm_yaml="${oras_tmp}/meta/extra/reframe.yaml" 
     test -f $rfm_yaml ; rc=$?
     echo "rc=$rc"
     if [ $rc -eq 0 ] ;then
         imgpath=`uenv image inspect $img --format {path}`
         cp $rfm_yaml $imgpath/store.yaml
+        echo "# ---- OK $rfm_yaml found in $img :-)"
         ls $imgpath/store.yaml
-        #echo $img
-        #export UENVA+="$img,"
-        return 0
     else
-        return 1
-    #     echo "---- failed to find $rfm_yaml file, skipping $img..."
+        echo "# ---- no $rfm_yaml file found, skipping $img :-("
     fi 
+}
+# }}}
+# {{{ remove_last_comma_from_variable
+remove_last_comma_from_variable() {
+    vv=$1
+    vv=${vv%?}
+    echo ${UENVA} | sed 's-,,-,-g' | sort -u
+    #echo "UENV=$UENV" > rfm_uenv.env
+    #cat rfm_uenv.env | tr , "\n"
 }
 # }}}
 # {{{ oras_pull_meta_dir_old
@@ -302,6 +308,7 @@ case $in in
     uenv_image_find) uenv_image_find;;
     oras_pull_meta_dir) oras_pull_meta_dir "$img";;
     meta_has_reframe_yaml) meta_has_reframe_yaml "$img";;
+    remove_last_comma_from_variable) remove_last_comma_from_variable "$myvar";;
     oras_pull_sqfs) oras_pull_sqfs;;
     uenv_pull_sqfs) uenv_pull_sqfs "$img";;
     install_reframe) install_reframe;;

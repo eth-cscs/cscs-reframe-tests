@@ -51,14 +51,16 @@ setup and pull:
     unset UENVA
     for img in $imgs; do
       ./ci/scripts/alps_uenv.sh oras_pull_meta_dir "$img"
-      ./ci/scripts/alps_uenv.sh meta_has_reframe_yaml "$img" ;rc=$?
-      if [ $rc -eq 0 ] ; then
-        echo UENVA=$UENVA rc=$rc
+      ./ci/scripts/alps_uenv.sh meta_has_reframe_yaml "$img" &> .rc
+      grep -q OK .rc
+      if [ $? -eq 0 ] ; then
+        #echo UENVA=$UENVA rc=$rc
         UENVA+="$img,"
       fi
     done
-    UENVA=${UENVA%?}
-    UENV=`echo ${UENVA} | sed 's-,,-,-g' | sort -u`
+    UENV=$(./ci/scripts/alps_uenv.sh remove_last_comma_from_variable "$UENVA")
+    #UENVA=${UENVA%?}
+    #UENV=`echo ${UENVA} | sed 's-,,-,-g' | sort -u`
     echo "UENV=$UENV" > rfm_uenv.env
     cat rfm_uenv.env | tr , "\n"
   artifacts:
