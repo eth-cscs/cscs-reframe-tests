@@ -46,8 +46,6 @@ setup and pull:
     # imgs='prgenv-gnu/24.7:v1 prgenv-gnu/23.11:latest cp2k/2024.1:v1'
     # export PATH=$PWD:$PATH
     # export PATH=$UENV_PREFIX/libexec:$PATH
-    # echo $PATH | tr : "\n"
-    # get list of uenv to test and set $UENV
     unset UENVA
     for img in $imgs; do
       ./ci/scripts/alps_uenv.sh oras_pull_meta_dir "$img"
