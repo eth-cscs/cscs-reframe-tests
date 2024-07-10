@@ -125,11 +125,13 @@ oras_pull_meta_dir() {
     echo "--- Pulling metadata from $jfrog/$name:$tag"
     # meta_digest=`$oras --registry-config $jfrog_creds_path \
     rm -fr meta  # remove dir from previous image
+    set -x 
     meta_digest=`$oras discover --output json --artifact-type 'uenv/meta' $jfrog/$name:$tag \
         | jq -r '.manifests[0].digest'`
     # $oras --registry-config $jfrog_creds_path \
     echo "---- $jfrog/$name@$meta_digest"
     $oras pull --output "${oras_tmp}" "$jfrog/$name@$meta_digest" &> oras-pull.log
+    set +x
 }
 # }}}
 # {{{ meta_has_reframe_yaml
