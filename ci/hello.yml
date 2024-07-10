@@ -52,11 +52,14 @@ setup and pull:
       ./ci/scripts/alps_uenv.sh meta_has_reframe_yaml "$img" &> .rc
       cat .rc
       rc=$(grep -q OK .rc ; echo $?)
+      echo "rc=$rc"
       if [ $rc -eq 0 ] ; then
-        uenv image pull "$img"
+        # uenv image pull "$img"
         imgfpath=`uenv image inspect $img --format {sqfs}`
         UENVA+="$imgfpath,"
         echo "UENVA=$UENVA"
+      else
+        echo "nooo"
       fi
     done
     #UENV=$(./ci/scripts/alps_uenv.sh remove_last_comma_from_variable "$UENVA")

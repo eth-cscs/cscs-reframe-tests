@@ -146,6 +146,10 @@ meta_has_reframe_yaml() {
         echo "# ---- no: vasp is a special case: "todi/gh200/vasp/v6.4.2/manifests/v1": response status code 403: Forbidden"
     else
     if [ $rc -eq 0 ] ;then
+        echo "# ---- reframe.yaml has been found --> pulling $img"
+        uenv image pull $img
+        echo
+        echo "# ---- reframe.yaml has been found --> adding it as store.yaml"
         imgpath=`uenv image inspect $img --format {path}`
         cp $rfm_yaml $imgpath/store.yaml
 
