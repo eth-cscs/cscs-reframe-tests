@@ -140,6 +140,14 @@ meta_has_reframe_yaml() {
     if [ $rc -eq 0 ] ;then
         imgpath=`uenv image inspect $img --format {path}`
         cp $rfm_yaml $imgpath/store.yaml
+
+        # TODO: https://github.com/eth-cscs/alps-uenv/issues/127 <-------------
+        if [ "$img" == "prgenv-gnu/24.7:v1" ] ;then
+            sed -i 's-develop/activate.sh-develop/activate.sh-' \
+                $imgpath/store.yaml
+        fi
+        # TODO: https://github.com/eth-cscs/alps-uenv/issues/127 <-------------
+
         echo "# ---- OK $rfm_yaml found in $img :-)"
         ls $imgpath/store.yaml
     else
