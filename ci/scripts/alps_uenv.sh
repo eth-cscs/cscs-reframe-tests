@@ -7,7 +7,8 @@ if [ $DEBUG = "y" ] ; then
     oras="uenv-oras"
     rfm_meta_yaml="$oras_tmp/meta/extra/reframe.yaml"
     jfrog_creds_path="${oras_tmp}/docker/config.json"
-    system="eiger" ; uarch="zen2"
+    system="todi" ; uarch="gh200"
+    #system="eiger" ; uarch="zen2"
     jfrog=jfrog.svc.cscs.ch/uenv/deploy/$system/$uarch
     jfrog_u="piccinal"
 else
@@ -119,7 +120,7 @@ uenv_image_find() {
 # {{{ oras_pull_meta_dir
 oras_pull_meta_dir() {
     img=$1
-    echo "--- Pulling img=$img metadata"
+    echo "--- Pulling $jfrog/$name:$tag metadata"
     name=`echo "$img" |cut -d: -f1`
     tag=`echo "$img" |cut -d: -f2`
     # meta_digest=`$oras --registry-config $jfrog_creds_path \
