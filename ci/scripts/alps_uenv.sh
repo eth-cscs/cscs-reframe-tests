@@ -120,14 +120,15 @@ uenv_image_find() {
 # {{{ oras_pull_meta_dir
 oras_pull_meta_dir() {
     img=$1
-    echo "--- Pulling $jfrog/$name:$tag metadata"
     name=`echo "$img" |cut -d: -f1`
     tag=`echo "$img" |cut -d: -f2`
+    echo "--- Pulling metadata from $jfrog/$name:$tag"
     # meta_digest=`$oras --registry-config $jfrog_creds_path \
     rm -fr meta  # remove dir from previous image
     meta_digest=`$oras discover --output json --artifact-type 'uenv/meta' $jfrog/$name:$tag \
         | jq -r '.manifests[0].digest'`
     # $oras --registry-config $jfrog_creds_path \
+    echo "---- $jfrog/$name@$meta_digest"
     $oras pull --output "${oras_tmp}" "$jfrog/$name@$meta_digest" &> oras-pull.log
 }
 # }}}
