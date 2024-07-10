@@ -47,6 +47,8 @@ setup and pull:
     # export PATH=$PWD:$PATH
     # export PATH=$UENV_PREFIX/libexec:$PATH
     unset UENVA
+    uenv repo create
+    uenv repo status
     for img in $imgs; do
       ./ci/scripts/alps_uenv.sh oras_pull_meta_dir "$img"
       ./ci/scripts/alps_uenv.sh meta_has_reframe_yaml "$img" &> .rc
@@ -58,8 +60,6 @@ setup and pull:
         imgfpath=`uenv image inspect $img --format {sqfs}`
         UENVA+="$imgfpath,"
         echo "UENVA=$UENVA"
-      else
-        echo "nooo"
       fi
     done
     #UENV=$(./ci/scripts/alps_uenv.sh remove_last_comma_from_variable "$UENVA")
