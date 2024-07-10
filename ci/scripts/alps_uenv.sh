@@ -137,6 +137,10 @@ meta_has_reframe_yaml() {
     rfm_yaml="${oras_tmp}/meta/extra/reframe.yaml" 
     test -f $rfm_yaml ; rc=$?
     echo "rc=$rc"
+#     is_vasp=`echo $img |cut -d/ -f1`
+#     if [ "$is_vasp" == "vasp" ] ;then
+#         echo "# ---- no: vasp is a special case: "todi/zen2/vasp/v6.4.2/manifests/v1": response status code 403: Forbidden"
+#     fi
     if [ $rc -eq 0 ] ;then
         imgpath=`uenv image inspect $img --format {path}`
         cp $rfm_yaml $imgpath/store.yaml
