@@ -15,7 +15,7 @@ utilities_path = os.path.join(base_dir, 'utilities')
 sys.path.append(utilities_path)
 
 import firecrest_slurm
-
+import uenv
 
 def is_var_true(var):
     if var is None:
@@ -24,8 +24,7 @@ def is_var_true(var):
     return var.lower() in ['true', 'yes', '1']
 
 firecrest = os.environ.get('RFM_FIRECREST', None)
-uenv = os.environ.get('UENV', None)
-systems_path = 'systems-firecrest' if is_var_true(firecrest) else 'systems-uenv' if uenv else 'systems'
+systems_path = 'systems-firecrest' if is_var_true(firecrest) else 'systems'
 
 system_conf_files = glob.glob(
     os.path.join(os.path.dirname(__file__), systems_path, '*.py')
@@ -45,3 +44,21 @@ for c in system_configs:
     for key, val in c.items():
         site_configuration.setdefault(key, [])
         site_configuration[key] += val
+
+uenv_environs = uenv.UENV
+
+# If a system partition has the 'uenv' feature, add the environment'
+# names valid for that system
+if site_configuration and uenv_environs:
+    site_configuration['environments'] += uenv_environs
+    for system in site_configuration['systems']:
+        valid_system_uenv_names = [
+            u['name'] for u in uenv_environs 
+            if system['name'] in u['target_systems']
+        ]
+        for partition in system['partitions']:
+            if (partition.get('features', None) and 
+                'uenv' in partition['features']):
+
+                # Replace the partition environs with the uenv ones
+                partition['environs'] = valid_system_uenv_names
