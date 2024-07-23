@@ -41,16 +41,14 @@ def _get_uenvs():
         image_path = pathlib.Path(image_path)
 
         try:
-            print(f"image_path={image_path}")
-            print(f"{image_path.parent} /// {image_path.stem}.yaml")
+            # print(f"image_path={image_path}")
             rfm_meta = image_path.parent / f'{image_path.stem}.yaml'
             with open(rfm_meta) as image_envs:
                 image_environments = yaml.load(
                     image_envs.read(), Loader=yaml.BaseLoader)
-                print(f"# TO --- loading the metadata from '{rfm_meta}'")
+                print(f"# --- loading the metadata from '{rfm_meta}'")
         except OSError as err:
-            msg = f"# TO --- problem loading the metadata from '{rfm_meta}'"
-            # print(err)
+            msg = f"# --- problem loading the metadata from '{rfm_meta}'"
             raise ConfigError(msg)
 
         for k, v in image_environments.items():
