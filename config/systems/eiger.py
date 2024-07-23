@@ -62,7 +62,7 @@ base_config = {
             'extras': {
                 'cn_memory': 256,
             },
-            'features': ['remote', 'sarus', 'singularity'],
+            'features': ['remote', 'sarus', 'singularity', 'uenv'],
             'access': ['-Cmc', f'--account={osext.osgroup()}'],
             'resources': [
                 {
@@ -73,6 +73,12 @@ base_config = {
                     'name': 'memory',
                     'options': ['--mem={mem_per_node}']
                 },
+                {
+                    'name': 'uenv',
+                    'options': [
+                        '--uenv={file}:{mount}',
+                    ]
+                }
             ],
             'launcher': 'srun'
         },
