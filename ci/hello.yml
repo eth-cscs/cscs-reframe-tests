@@ -57,8 +57,9 @@ setup and pull:
       echo "rc=$rc"
       if [ $rc -eq 0 ] ; then
         # uenv image pull "$img"
-        imgfpath=`uenv image inspect $img --format {sqfs}`
-        UENVA+="$imgfpath,"
+        # imgfpath=`uenv image inspect $img --format {sqfs}`
+        # UENVA+="$imgfpath,"
+        UENVA+="$img,"
         echo "UENVA=$UENVA"
       fi
     done
