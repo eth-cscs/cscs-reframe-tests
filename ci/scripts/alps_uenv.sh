@@ -7,8 +7,9 @@ if [ $DEBUG = "y" ] ; then
     oras="uenv-oras"
     rfm_meta_yaml="$oras_tmp/meta/extra/reframe.yaml"
     jfrog_creds_path="${oras_tmp}/docker/config.json"
-    system="todi" ; uarch="gh200"
-    #system="eiger" ; uarch="zen2"
+    system="$CLUSTER_NAME" ;
+    if [ $system = "todi" ] ;then uarch="gh200" ;fi
+    if [ $system = "eiger" ] ;then uarch="zen2" ;fi
     jfrog=jfrog.svc.cscs.ch/uenv/deploy/$system/$uarch
     jfrog_u="piccinal"
 else
@@ -140,28 +141,34 @@ meta_has_reframe_yaml() {
     echo "# --- Checking img=$img for meta/extra/reframe.yaml"
     rfm_yaml="${oras_tmp}/meta/extra/reframe.yaml" 
     test -f $rfm_yaml ; rc=$?
-    echo "rc=$rc"
+    
+    # --- VASP
     is_vasp=`echo $img |cut -d/ -f1`
     if [ "$is_vasp" == "vasp" ] ;then
         echo "# ---- no: vasp is a special case: "todi/gh200/vasp/v6.4.2/manifests/v1": response status code 403: Forbidden"
     else
+
     if [ $rc -eq 0 ] ;then
-        echo "# ---- reframe.yaml has been found --> pulling $img"
-        uenv image pull $img
-        echo
-        echo "# ---- reframe.yaml has been found --> adding it as store.yaml"
-        imgpath=`uenv image inspect $img --format {path}`
-        cp $rfm_yaml $imgpath/store.yaml
+        rctools=$(grep -q user-tools $rfm_yaml ; echo $?)
+        echo "rc=$rc rctools=$rctools"
+        if [ $rctools -ne 0 ] ;then
+            echo "# ---- reframe.yaml has been found --> pulling $img"
+            uenv image pull $img
+            echo
+            echo "# ---- reframe.yaml has been found --> adding it as store.yaml"
+            imgpath=`uenv image inspect $img --format {path}`
+            cp $rfm_yaml $imgpath/store.yaml
 
-        # TODO: https://github.com/eth-cscs/alps-uenv/issues/127 <-------------
-        if [ "$img" == "prgenv-gnu/24.7:v1" ] ;then
-            sed -i 's-default/activate.sh-develop/activate.sh-' \
-                $imgpath/store.yaml
+            # TODO: https://github.com/eth-cscs/alps-uenv/issues/127 <-------------
+            if [ "$img" == "prgenv-gnu/24.7:v1" ] ;then
+                sed -i 's-default/activate.sh-develop/activate.sh-' \
+                    $imgpath/store.yaml
+            fi
+            # TODO: https://github.com/eth-cscs/alps-uenv/issues/127 <-------------
+
+            echo "# ---- OK $rfm_yaml found in $img :-)"
+            ls $imgpath/store.yaml
         fi
-        # TODO: https://github.com/eth-cscs/alps-uenv/issues/127 <-------------
-
-        echo "# ---- OK $rfm_yaml found in $img :-)"
-        ls $imgpath/store.yaml
     else
         echo "# ---- no $rfm_yaml file found, skipping $img :-("
     fi
