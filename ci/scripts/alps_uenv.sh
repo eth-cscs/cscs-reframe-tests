@@ -155,7 +155,7 @@ meta_has_reframe_yaml() {
 
         # TODO: https://github.com/eth-cscs/alps-uenv/issues/127 <-------------
         if [ "$img" == "prgenv-gnu/24.7:v1" ] ;then
-            sed -i 's-develop/activate.sh-develop/activate.sh-' \
+            sed -i 's-default/activate.sh-develop/activate.sh-' \
                 $imgpath/store.yaml
         fi
         # TODO: https://github.com/eth-cscs/alps-uenv/issues/127 <-------------
