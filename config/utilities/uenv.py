@@ -10,6 +10,7 @@ _UENV_MOUNT_DEFAULT = '/user-environment'
 _UENV_CLI = 'uenv'
 _UENV_DELIMITER = ','
 _UENV_MOUNT_DELIMITER = '@'
+_RFM_META = pathlib.Path('extra') / 'reframe.yaml'
 
 
 def _get_uenvs():
@@ -17,7 +18,6 @@ def _get_uenvs():
     if uenv is None:
         return uenv 
 
-    help_cli = osext.run_command(f'{_UENV_CLI} --help', check=True, shell=True)
     uenv_environments = []
     uenv_list = uenv.split(_UENV_DELIMITER)
 
@@ -28,26 +28,25 @@ def _get_uenvs():
         else:
             image_mount = _UENV_MOUNT_DEFAULT 
 
-        image_path = osext.run_command(
-            f"{_UENV_CLI} image inspect {uenv_name} --format '{{sqfs}}'",
-            shell=True
-        ).stdout.strip()
+        inspect_cmd = f'{_UENV_CLI} image inspect {uenv_name} --format'
 
-        target_system = osext.run_command(
-            f"{_UENV_CLI} image inspect {uenv_name} --format '{{system}}'",
-            shell=True
-        ).stdout.strip()
-    
+        image_path = osext.run_command(f"{inspect_cmd} '{{sqfs}}'", shell=True
+            ).stdout.strip()
+        target_system = osext.run_command(f"{inspect_cmd} '{{system}}'",
+            shell=True).stdout.strip()
+        meta_path = osext.run_command(f"{inspect_cmd} '{{meta}}'", shell=True
+            ).stdout.strip()
+ 
         image_path = pathlib.Path(image_path)
+        meta_path = pathlib.Path(meta_path)
    
         try:
-            rfm_meta = image_path.parent / f'{image_path.stem}.yaml'
+            rfm_meta = meta_path / _RFM_META 
             with open(rfm_meta) as image_envs:
                 image_environments = yaml.load(
                     image_envs.read(), Loader=yaml.BaseLoader)
-                print(f"# TO --- loading the metadata from '{rfm_meta}'")
         except OSError as err:
-            raise ConfigError(f"TO problem loading the metadata from '{rfm_meta}'")
+            raise ConfigError(f"problem loading the metadata from '{rfm_meta}'")
     
         for k, v in image_environments.items():
             env = {
