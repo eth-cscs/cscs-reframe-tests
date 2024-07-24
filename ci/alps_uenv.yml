@@ -27,7 +27,7 @@ setup and pull:
     # SLURM_PARTITION: "${SLURM_PARTITION}"
     # SLURM_CONSTRAINT: "mc"
     GIT_STRATEGY: "fetch"
-    SLURM_ACCOUNT: "csstaff"
+    SLURM_ACCOUNT: "${SLURM_ACCOUNT}"
     FIRECREST_SYSTEM: "${FIRECREST_SYSTEM}"
   before_script:
     - echo $FIRECREST_SYSTEM / $CLUSTER_NAME / $RFM_MODE
@@ -85,7 +85,7 @@ run reframe:
     # MODE: "f7t-controller"  # santis
     # MODE: "baremetal"  # eiger
     GIT_STRATEGY: "fetch"
-    SLURM_ACCOUNT: "csstaff"
+    SLURM_ACCOUNT: "${SLURM_ACCOUNT}"
     FIRECREST_SYSTEM: "${FIRECREST_SYSTEM}"
     # SLURM_PARTITION: "${SLURM_PARTITION}"
     # SLURM_PARTITION: "debug"
