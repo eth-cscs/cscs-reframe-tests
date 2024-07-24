@@ -11,6 +11,8 @@ variables:
   WORKSPACE: '$${CI_CACHE_FOLDER}/rfm_workspace'
   JOB_NAME: rfm-$CI_PIPELINE_ID
   CLUSTER_NAME: "${CLUSTER_NAME}"
+  F7T_TOKEN_URL: 'https://auth.cscs.ch/auth/realms/firecrest-clients/protocol/openid-connect/token'
+  F7T_URL: 'https://firecrest.cscs.ch'
 
 setup and pull:
   stage: pull
@@ -32,31 +34,39 @@ setup and pull:
     - pwd
     - uname -a
     - ./ci/scripts/alps_uenv.sh setup_uenv_and_oras &> setup_uenv_and_oras.log
-    - source ./uenv-4.0.1/bin/activate-uenv
+    - source ./uenv-5.0.0/bin/activate-uenv
     - uenv --version
+    - export PATH=$PWD:$UENV_PREFIX/libexec:$PATH
+    - uenv-oras version
     # - uenv image repo $SCRATCH/.uenv-images
     - imgs=$(./ci/scripts/alps_uenv.sh uenv_image_find)
   script: |
     # if [ "${CLUSTER_NAME}" == "eiger" ] ; then export SLURM_CONSTRAINT="mc"; fi
     echo "imgs=$imgs"
-    export PATH=$PWD:$PATH
-    uenv --version
-    export PATH=$UENV_PREFIX/libexec:$PATH
-    uenv-oras version
-    # get list of uenv to test and set $UENV
+    # imgs='prgenv-gnu/24.7:v1 prgenv-gnu/23.11:latest cp2k/2024.1:v1'
+    # export PATH=$PWD:$PATH
+    # export PATH=$UENV_PREFIX/libexec:$PATH
+    unset UENVA
+    uenv repo create
+    uenv repo status
     for img in $imgs; do
-      echo "----- Pulling img=$img metadata & sqfs"
-      rc=$(./ci/scripts/alps_uenv.sh oras_pull_meta_dir "$img")
-      if [ "$rc" == "ok" ] ; then
-        img_path=$(./ci/scripts/alps_uenv.sh uenv_sqfs_fullpath "$img")
-        UENVA+="$img_path,"
-        echo
-      else
-        echo "# $img:|rc=$rc|"
+      ./ci/scripts/alps_uenv.sh oras_pull_meta_dir "$img"
+      ./ci/scripts/alps_uenv.sh meta_has_reframe_yaml "$img" &> .rc
+      cat .rc
+      rc=$(grep -q OK .rc ; echo $?)
+      echo "rc=$rc"
+      if [ $rc -eq 0 ] ; then
+        # uenv image pull "$img"
+        # imgfpath=`uenv image inspect $img --format {sqfs}`
+        # UENVA+="$imgfpath,"
+        UENVA+="$img,"
+        echo "UENVA=$UENVA"
       fi
     done
+    #UENV=$(./ci/scripts/alps_uenv.sh remove_last_comma_from_variable "$UENVA")
     UENVA=${UENVA%?}
     UENV=`echo ${UENVA} | sed 's-,,-,-g' | sort -u`
+    #echo "UENV=$UENV"
     echo "UENV=$UENV" > rfm_uenv.env
     cat rfm_uenv.env | tr , "\n"
   artifacts:
@@ -86,7 +96,7 @@ run reframe:
     - pwd
     - uname -a
     - ./ci/scripts/alps_uenv.sh setup_uenv_and_oras &> setup_uenv_and_oras.log
-    - source ./uenv-4.0.1/bin/activate-uenv
+    - source ./uenv-5.0.0/bin/activate-uenv
     - uenv --version
     - echo "UENV=$UENV" | tr , "\n"
   script:
