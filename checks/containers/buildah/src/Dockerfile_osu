@@ -1,11 +1,8 @@
-FROM debian:11.6
+FROM docker.io/opensuse/leap:15.5
 
-RUN apt-get update && apt-get install -y \
-        build-essential             \
-        wget                        \
-        ca-certificates             \
-        --no-install-recommends     \
-    && rm -rf /var/lib/apt/lists/*
+RUN zypper install -y -t pattern devel_basis \
+    && zypper install -y which wget gzip gcc-c++ \
+    && zypper clean --all
 
 RUN wget -q http://www.mpich.org/static/downloads/3.1.4/mpich-3.1.4.tar.gz \
     && tar xf mpich-3.1.4.tar.gz \
@@ -28,4 +25,4 @@ RUN wget -q http://mvapich.cse.ohio-state.edu/download/mvapich/osu-micro-benchma
     && rm -rf osu-micro-benchmarks-5.3.2 \
     && rm osu-micro-benchmarks-5.3.2.tar.gz
 
-CMD /usr/local/libexec/osu-micro-benchmarks/mpi/pt2pt/osu_bw
+CMD usr/local/libexec/osu-micro-benchmarks/mpi/pt2pt/osu_bw
