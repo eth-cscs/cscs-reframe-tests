@@ -4,6 +4,7 @@ import yaml
 
 import reframe.utility.osext as osext
 from reframe.core.exceptions import ConfigError
+from packaging.version import Version
 
 
 _UENV_MOUNT_DEFAULT = '/user-environment'
@@ -20,6 +21,9 @@ def _get_uenvs():
 
     uenv_environments = []
     uenv_list = uenv.split(_UENV_DELIMITER)
+    uenv_version = osext.run_command(
+        f'{_UENV_CLI} --version', shell=True
+    ).stdout.strip()
 
     for uenv in uenv_list:
         uenv_name, *image_mount = uenv.split(_UENV_MOUNT_DELIMITER)
@@ -34,19 +38,26 @@ def _get_uenvs():
             ).stdout.strip()
         target_system = osext.run_command(f"{inspect_cmd} '{{system}}'",
             shell=True).stdout.strip()
-        meta_path = osext.run_command(f"{inspect_cmd} '{{meta}}'", shell=True
-            ).stdout.strip()
- 
+
         image_path = pathlib.Path(image_path)
-        meta_path = pathlib.Path(meta_path)
-   
+
+        #FIXME temporary workaround for older uenv versions
+        if Version(uenv_version) >= Version('5.1.0-dev'):
+            meta_path = osext.run_command(
+                f"{inspect_cmd} '{{meta}}'", shell=True
+            ).stdout.strip()
+            rfm_meta = pathlib.Path(meta_path) / _RFM_META
+        else:
+            rfm_meta = image_path.parent / 'store.yaml'
+
         try:
-            rfm_meta = meta_path / _RFM_META 
             with open(rfm_meta) as image_envs:
                 image_environments = yaml.load(
                     image_envs.read(), Loader=yaml.BaseLoader)
         except OSError as err:
-            raise ConfigError(f"problem loading the metadata from '{rfm_meta}'")
+            raise ConfigError(
+                f"problem loading the metadata from '{rfm_meta}'"
+            )
     
         for k, v in image_environments.items():
             env = {
