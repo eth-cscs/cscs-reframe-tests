@@ -30,18 +30,18 @@ def _get_uenvs():
         if len(image_mount) > 0:
             image_mount = image_mount[0]
         else:
-            image_mount = _UENV_MOUNT_DEFAULT 
+            image_mount = _UENV_MOUNT_DEFAULT
 
         inspect_cmd = f'{_UENV_CLI} image inspect {uenv_name} --format'
 
-        image_path = osext.run_command(f"{inspect_cmd} '{{sqfs}}'", shell=True
-            ).stdout.strip()
-        target_system = osext.run_command(f"{inspect_cmd} '{{system}}'",
-            shell=True).stdout.strip()
+        image_path = osext.run_command(
+            f"{inspect_cmd} '{{sqfs}}'", shell=True).stdout.strip()
+        target_system = osext.run_command(
+            f"{inspect_cmd} '{{system}}'", shell=True).stdout.strip()
 
         image_path = pathlib.Path(image_path)
 
-        #FIXME temporary workaround for older uenv versions
+        # FIXME temporary workaround for older uenv versions
         if Version(uenv_version) >= Version('5.1.0-dev'):
             meta_path = osext.run_command(
                 f"{inspect_cmd} '{{meta}}'", shell=True
@@ -58,15 +58,14 @@ def _get_uenvs():
             raise ConfigError(
                 f"problem loading the metadata from '{rfm_meta}'"
             )
-    
+
         for k, v in image_environments.items():
             env = {
-                'target_systems': [target_system] 
+                'target_systems': [target_system]
             }
             env.update(v)
-    
             activation = v['activation']
-            
+
             # FIXME: Assume that an activation script is given, to be sourced
             if isinstance(activation, str):
                 if not activation.startswith(image_mount):
@@ -74,7 +73,7 @@ def _get_uenvs():
                         f'activation script of {k!r} is not consistent '
                         f'with the mount point: {image_mount!r}'
                     )
-    
+
                 env['prepare_cmds'] = [f'source {activation}']
             elif isinstance(activation, list):
                 env['prepare_cmds'] = activation
@@ -84,21 +83,20 @@ def _get_uenvs():
                     'list of commands to be executed to configure the '
                     'environment'
                 )
-    
+
             # Replace characters that create problems in environment names
             uenv_name_pretty = uenv_name.replace(":", "_").replace("/", "_")
             env['name'] = f'{uenv_name_pretty}_{k}'
-
             env['resources'] = {
                 'uenv': {
                     'mount': image_mount,
                     'file': str(image_path),
                 }
             }
-    
+
             # Added as a prepare_cmd for the environment
             del env['activation']
-    
+
             uenv_environments.append(env)
 
     return uenv_environments
