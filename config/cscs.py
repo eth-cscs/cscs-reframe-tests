@@ -60,7 +60,7 @@ if site_configuration and uenv_environs:
         ]
         for partition in system['partitions']:
             if (partition.get('features', None) and
-               'uenv' in partition['features']):
+                'uenv' in partition['features']):
 
                 # Replace the partition environs with the uenv ones
                 partition['environs'] = valid_system_uenv_names

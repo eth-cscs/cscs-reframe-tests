@@ -11,8 +11,7 @@ _UENV_MOUNT_DEFAULT = '/user-environment'
 _UENV_CLI = 'uenv'
 _UENV_DELIMITER = ','
 _UENV_MOUNT_DELIMITER = '@'
-# _RFM_META = pathlib.Path('extra') / 'store.yaml'
-# _RFM_META = pathlib.Path('extra') / 'reframe.yaml'
+_RFM_META = pathlib.Path('extra') / 'reframe.yaml'
 
 
 def _get_uenvs():
@@ -22,6 +21,9 @@ def _get_uenvs():
 
     uenv_environments = []
     uenv_list = uenv.split(_UENV_DELIMITER)
+    uenv_version = osext.run_command(
+        f'{_UENV_CLI} --version', shell=True
+    ).stdout.strip()
 
     for uenv in uenv_list:
         uenv_name, *image_mount = uenv.split(_UENV_MOUNT_DELIMITER)
@@ -30,45 +32,39 @@ def _get_uenvs():
         else:
             image_mount = _UENV_MOUNT_DEFAULT
 
-        uenv_version = osext.run_command(
-            f'{_UENV_CLI} --version', shell=True
-        ).stdout.strip()
-
         inspect_cmd = f'{_UENV_CLI} image inspect {uenv_name} --format'
+
         image_path = osext.run_command(
-            f"{inspect_cmd} '{{sqfs}}'", shell=True
-        ).stdout.strip()
+            f"{inspect_cmd} '{{sqfs}}'", shell=True).stdout.strip()
+        target_system = osext.run_command(
+            f"{inspect_cmd} '{{system}}'", shell=True).stdout.strip()
+
         image_path = pathlib.Path(image_path)
 
-        target_system = osext.run_command(
-            f"{inspect_cmd} '{{system}}'", shell=True
-        ).stdout.strip()
-
-        if Version(uenv_version) > Version('5.1.0-dev'):
+        # FIXME temporary workaround for older uenv versions
+        if Version(uenv_version) >= Version('5.1.0-dev'):
             meta_path = osext.run_command(
                 f"{inspect_cmd} '{{meta}}'", shell=True
             ).stdout.strip()
-            # pathlib.Path('extra') / 'reframe.yaml'
-            rfm_meta = pathlib.Path(meta_path) / 'extra/reframe.yaml'
+            rfm_meta = pathlib.Path(meta_path) / _RFM_META
         else:
-            rfm_meta = pathlib.Path(os.path.dirname(image_path)) / 'store.yaml'
+            rfm_meta = image_path.parent / 'store.yaml'
 
         try:
-            # rfm_meta = meta_path / _RFM_META
             with open(rfm_meta) as image_envs:
                 image_environments = yaml.load(
                     image_envs.read(), Loader=yaml.BaseLoader)
-                print(f"# --- loading the metadata from '{rfm_meta}'")
+                # print(f"# --- loading the metadata from '{rfm_meta}'")
         except OSError as err:
-            msg = f"# --- problem loading the metadata from '{rfm_meta}'"
-            raise ConfigError(msg)
+            raise ConfigError(
+                f"problem loading the metadata from '{rfm_meta}'"
+            )
 
         for k, v in image_environments.items():
             env = {
                 'target_systems': [target_system]
             }
             env.update(v)
-
             activation = v['activation']
 
             # FIXME: Assume that an activation script is given, to be sourced
@@ -92,7 +88,6 @@ def _get_uenvs():
             # Replace characters that create problems in environment names
             uenv_name_pretty = uenv_name.replace(":", "_").replace("/", "_")
             env['name'] = f'{uenv_name_pretty}_{k}'
-
             env['resources'] = {
                 'uenv': {
                     'mount': image_mount,
