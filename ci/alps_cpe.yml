@@ -1,0 +1,36 @@
+include:
+  - remote: 'https://gitlab.com/cscs-ci/recipes/-/raw/master/templates/v2/.ci-ext.yml'
+
+stages:
+  - run
+
+variables:
+  WORKSPACE: '$${CI_CACHE_FOLDER}/rfm_workspace'
+  JOB_NAME: rfm-$CI_PIPELINE_ID
+  CLUSTER_NAME: "${CLUSTER_NAME}"
+
+run reframe:
+  stage: run
+  tags: ["$TAG"]
+  variables:
+    # Valid MODE=('container-runner', 'baremetal', 'f7t-controller')
+    MODE: "${RFM_MODE}"
+    GIT_STRATEGY: "fetch"
+    SLURM_ACCOUNT: "csstaff"
+    FIRECREST_SYSTEM: "${FIRECREST_SYSTEM}"
+  before_script:
+    - echo $FIRECREST_SYSTEM / $CLUSTER_NAME / $RFM_MODE
+    - pwd
+    - uname -a
+  script:
+    - rfm_path=$(./ci/scripts/alps_uenv.sh install_reframe)
+    - echo "rfm_path=$rfm_path"
+    - export PATH=$rfm_path:$PATH
+    - reframe -V
+    - ./ci/scripts/alps_uenv.sh launch_reframe
+  artifacts:
+    when: on_failure
+    paths:
+      - report.xml
+    reports:
+      junit: report.xml
