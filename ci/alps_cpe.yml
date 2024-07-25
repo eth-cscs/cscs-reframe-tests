@@ -8,6 +8,8 @@ variables:
   WORKSPACE: '$${CI_CACHE_FOLDER}/rfm_workspace'
   JOB_NAME: rfm-$CI_PIPELINE_ID
   CLUSTER_NAME: "${CLUSTER_NAME}"
+  F7T_TOKEN_URL: 'https://auth.cscs.ch/auth/realms/firecrest-clients/protocol/openid-connect/token'
+  F7T_URL: 'https://firecrest.cscs.ch'
 
 run reframe:
   stage: run
@@ -16,7 +18,7 @@ run reframe:
     # Valid MODE=('container-runner', 'baremetal', 'f7t-controller')
     MODE: "${RFM_MODE}"
     GIT_STRATEGY: "fetch"
-    SLURM_ACCOUNT: "csstaff"
+    SLURM_ACCOUNT: "${SLURM_ACCOUNT}"
     FIRECREST_SYSTEM: "${FIRECREST_SYSTEM}"
   before_script:
     - echo $FIRECREST_SYSTEM / $CLUSTER_NAME / $RFM_MODE
