@@ -49,8 +49,8 @@ for c in system_configs:
 
 uenv_environs = uenv.UENV
 
-# If a system partition has the 'uenv' feature, add the environment'
-# names valid for that system
+# If a system partition has the 'uenv' feature, replace the environment'
+# names valid for that system with the ones from uenv
 if site_configuration and uenv_environs:
     site_configuration['environments'] += uenv_environs
     for system in site_configuration['systems']:

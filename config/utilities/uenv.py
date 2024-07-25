@@ -4,12 +4,15 @@ import yaml
 
 import reframe.utility.osext as osext
 from reframe.core.exceptions import ConfigError
+from packaging.version import Version
 
 
 _UENV_MOUNT_DEFAULT = '/user-environment'
 _UENV_CLI = 'uenv'
 _UENV_DELIMITER = ','
 _UENV_MOUNT_DELIMITER = '@'
+# _RFM_META = pathlib.Path('extra') / 'store.yaml'
+# _RFM_META = pathlib.Path('extra') / 'reframe.yaml'
 
 
 def _get_uenvs():
@@ -17,7 +20,6 @@ def _get_uenvs():
     if uenv is None:
         return uenv
 
-    help_cli = osext.run_command(f'{_UENV_CLI} --help', check=True, shell=True)
     uenv_environments = []
     uenv_list = uenv.split(_UENV_DELIMITER)
 
@@ -28,21 +30,31 @@ def _get_uenvs():
         else:
             image_mount = _UENV_MOUNT_DEFAULT
 
+        uenv_version = osext.run_command(
+            f'{_UENV_CLI} --version', shell=True
+        ).stdout.strip()
+
+        inspect_cmd = f'{_UENV_CLI} image inspect {uenv_name} --format'
         image_path = osext.run_command(
-            f"{_UENV_CLI} image inspect {uenv_name} --format '{{sqfs}}'",
-            shell=True
+            f"{inspect_cmd} '{{sqfs}}'", shell=True
         ).stdout.strip()
-
-        target_system = osext.run_command(
-            f"{_UENV_CLI} image inspect {uenv_name} --format '{{system}}'",
-            shell=True
-        ).stdout.strip()
-
         image_path = pathlib.Path(image_path)
 
+        target_system = osext.run_command(
+            f"{inspect_cmd} '{{system}}'", shell=True
+        ).stdout.strip()
+
+        if Version(uenv_version) > Version('5.1.0-dev'):
+            meta_path = osext.run_command(
+                f"{inspect_cmd} '{{meta}}'", shell=True
+            ).stdout.strip()
+            # pathlib.Path('extra') / 'reframe.yaml'
+            rfm_meta = pathlib.Path(meta_path) / 'extra/reframe.yaml'
+        else:
+            rfm_meta = pathlib.Path(os.path.dirname(image_path)) / 'store.yaml'
+
         try:
-            # print(f"image_path={image_path}")
-            rfm_meta = image_path.parent / f'{image_path.stem}.yaml'
+            # rfm_meta = meta_path / _RFM_META
             with open(rfm_meta) as image_envs:
                 image_environments = yaml.load(
                     image_envs.read(), Loader=yaml.BaseLoader)
