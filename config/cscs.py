@@ -17,11 +17,13 @@ sys.path.append(utilities_path)
 import firecrest_slurm
 import uenv
 
+
 def is_var_true(var):
     if var is None:
         return False
 
     return var.lower() in ['true', 'yes', '1']
+
 
 firecrest = os.environ.get('RFM_FIRECREST', None)
 systems_path = 'systems-firecrest' if is_var_true(firecrest) else 'systems'
@@ -53,11 +55,11 @@ if site_configuration and uenv_environs:
     site_configuration['environments'] += uenv_environs
     for system in site_configuration['systems']:
         valid_system_uenv_names = [
-            u['name'] for u in uenv_environs 
+            u['name'] for u in uenv_environs
             if system['name'] in u['target_systems']
         ]
         for partition in system['partitions']:
-            if (partition.get('features', None) and 
+            if (partition.get('features', None) and
                 'uenv' in partition['features']):
 
                 # Replace the partition environs with the uenv ones

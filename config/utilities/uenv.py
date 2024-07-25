@@ -17,7 +17,7 @@ _RFM_META = pathlib.Path('extra') / 'reframe.yaml'
 def _get_uenvs():
     uenv = os.environ.get('UENV', None)
     if uenv is None:
-        return uenv 
+        return uenv
 
     uenv_environments = []
     uenv_list = uenv.split(_UENV_DELIMITER)
