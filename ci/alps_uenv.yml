@@ -1,5 +1,3 @@
----
-# TODO: https://github.com/finkandreas/benchpark/blob/develop/.ci/cscs.yml
 include:
   - remote: 'https://gitlab.com/cscs-ci/recipes/-/raw/master/templates/v2/.ci-ext.yml'
 
@@ -17,15 +15,9 @@ variables:
 setup and pull:
   stage: pull
   tags: ["$TAG"]
-  # tags: ['f7t-runner']
-  # tags: ["santis-spack-stack-builder"]
   variables:
     # Valid MODE=('container-runner', 'baremetal', 'f7t-controller')
     MODE: "${RFM_MODE}"
-    # no runner match tags:eiger-login-baremetal
-    # MODE: "f7t-controller"
-    # SLURM_PARTITION: "${SLURM_PARTITION}"
-    # SLURM_CONSTRAINT: "mc"
     GIT_STRATEGY: "fetch"
     SLURM_ACCOUNT: "${SLURM_ACCOUNT}"
     FIRECREST_SYSTEM: "${FIRECREST_SYSTEM}"
@@ -38,14 +30,9 @@ setup and pull:
     - uenv --version
     - export PATH=$PWD:$UENV_PREFIX/libexec:$PATH
     - uenv-oras version
-    # - uenv image repo $SCRATCH/.uenv-images
     - imgs=$(./ci/scripts/alps_uenv.sh uenv_image_find)
   script: |
-    # if [ "${CLUSTER_NAME}" == "eiger" ] ; then export SLURM_CONSTRAINT="mc"; fi
     echo "imgs=$imgs"
-    # imgs='prgenv-gnu/24.7:v1 prgenv-gnu/23.11:latest cp2k/2024.1:v1'
-    # export PATH=$PWD:$PATH
-    # export PATH=$UENV_PREFIX/libexec:$PATH
     unset UENVA
     uenv repo create
     uenv repo status
@@ -56,17 +43,12 @@ setup and pull:
       rc=$(grep -q OK .rc ; echo $?)
       echo "rc=$rc"
       if [ $rc -eq 0 ] ; then
-        # uenv image pull "$img"
-        # imgfpath=`uenv image inspect $img --format {sqfs}`
-        # UENVA+="$imgfpath,"
         UENVA+="$img,"
         echo "UENVA=$UENVA"
       fi
     done
-    #UENV=$(./ci/scripts/alps_uenv.sh remove_last_comma_from_variable "$UENVA")
     UENVA=${UENVA%?}
     UENV=`echo ${UENVA} | sed 's-,,-,-g' | sort -u`
-    #echo "UENV=$UENV"
     echo "UENV=$UENV" > rfm_uenv.env
     cat rfm_uenv.env | tr , "\n"
   artifacts:
@@ -75,22 +57,13 @@ setup and pull:
 
 run reframe:
   stage: run
-  # tags: ["santis-login-baremetal"]
   tags: ["$TAG"]
-  # tags: ['f7t-runner']
   needs: ['setup and pull']
   variables:
-    # Valid MODE=('container-runner', 'baremetal', 'f7t-controller')
     MODE: "${RFM_MODE}"
-    # MODE: "f7t-controller"  # santis
-    # MODE: "baremetal"  # eiger
     GIT_STRATEGY: "fetch"
     SLURM_ACCOUNT: "${SLURM_ACCOUNT}"
     FIRECREST_SYSTEM: "${FIRECREST_SYSTEM}"
-    # SLURM_PARTITION: "${SLURM_PARTITION}"
-    # SLURM_PARTITION: "debug"
-    # SLURM_CONSTRAINT: "mc"
-    # FIRECREST_SYSTEM: "santis"
   before_script:
     - echo $FIRECREST_SYSTEM / $CLUSTER_NAME / $RFM_MODE
     - pwd
