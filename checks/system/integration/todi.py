@@ -58,7 +58,7 @@ def create_checks():
 
     check('printenv http_proxy',  expected='http://proxy.cscs.ch:8080',  where='+remote')
     check('printenv https_proxy', expected='http://proxy.cscs.ch:8080', where='+remote')
-    check('printenv no_proxy',    expected='.local, .cscs.ch, localhost, 148.187.0.0/16, 10.0.0.0/8, 172.16.0.0/12', where='+remote')
+    check('printenv no_proxy',    expected='.local,.cscs.ch,localhost,148.187.0.0/16,10.0.0.0/8,172.16.0.0/12', where='+remote')
 
     check('printenv http_proxy',  expected='', where='-remote')
     check('printenv https_proxy', expected='', where='-remote')
@@ -75,7 +75,7 @@ def create_checks():
     check.CLASS = 'NETIFACE'
 
     check('ip address show | grep -A6 nmn0: ', expected='nmn0.*state UP')
-    check('ip address show | grep -A6 nmn0: ', expected='inet 10.100.*.*/22 brd 10.100.11.255 scope global nmn0')
+    check('ip address show | grep -A6 nmn0: ', expected='inet 10.100.*.*/22 brd 10.100.*.255 scope global nmn0')
 
     check('ip address show | grep -A6 hsn0: ', expected='hsn0.*state UP')
     check('ip address show | grep -A6 hsn0: ', expected='inet 172.28.*.*/16 brd 172.28.255.255 scope global hsn0')
@@ -149,9 +149,9 @@ def create_checks():
 
     check.CLASS = 'MOUNTS'
 
-    check('grep -q "/users /users dvs"            /proc/mounts || echo FAILED', not_expected='FAILED')
-    check('grep -q "/store /store dvs"            /proc/mounts || echo FAILED', not_expected='FAILED')
-    check('grep -q "/project /project dvs"        /proc/mounts || echo FAILED', not_expected='FAILED')
+    check('grep -q "/capstor/scratch/cscs /capstor/scratch/cscs lustre"     /proc/mounts || echo FAILED', not_expected='FAILED')
+    check('grep -q "/capstor/users/cscs /users lustre"                      /proc/mounts || echo FAILED', not_expected='FAILED')
+    check('grep -q "/iopsstor/scratch/cscs /iopsstor/scratch/cscs lustre"   /proc/mounts || echo FAILED', not_expected='FAILED')
 
     check('grep -q "pe_opt_cray_pe /opt/cray/pe"  /proc/mounts || echo FAILED', not_expected='FAILED')
 
@@ -192,7 +192,7 @@ def create_checks():
 
     check.CLASS = 'VSERVICES'
 
-    check('uenv --version || echo FAILED', not_expected='FAILED')
+    check('bash -c "uenv --version" || echo FAILED', not_expected='FAILED')
 
 
 
