@@ -7,7 +7,7 @@
 #                         S T A R T   O F   C H E C K S                       #
 # --------------------------------------------------------------------------- #
 
-def create_checks():
+def create_checks(check):
 
 #-----------------------------------------------------------------------------#
 #                                                                             #
@@ -157,8 +157,17 @@ def create_checks():
 
     check('printenv SCRATCH || echo FAILED', not_expected='FAILED')
     check('printenv PROJECT || echo FAILED', not_expected='FAILED')
-    check('printenv APPS    || echo FAILED', not_expected='FAILED')
     check('printenv STORE   || echo FAILED', not_expected='FAILED')
+    check('printenv APPS    || echo FAILED', not_expected='FAILED')
+    check('printenv HOME    || echo FAILED', not_expected='FAILED')
+
+    check('bash -c "[[ $SCRATCH == /capstor/scratch/cscs/* ]] || echo FAILED"', not_expected='FAILED')
+    check('bash -c "[[ $PROJECT == /project/*              ]] || echo FAILED"', not_expected='FAILED')
+    check('bash -c "[[ $STORE   == /store/*                ]] || echo FAILED"', not_expected='FAILED')
+    check('bash -c "[[ $APPS    == /capstor/apps/cscs      ]] || echo FAILED"', not_expected='FAILED')
+    check('bash -c "[[ $HOME    == /users/*                ]] || echo FAILED"', not_expected='FAILED')
+
+    check('printenv TMP || echo FAILED', expected='FAILED')
 
 #-----------------------------------------------------------------------------#
 #                                                                             #
@@ -208,20 +217,14 @@ def create_checks():
 # --------------------------------------------------------------------------- #
 
 
-# ---------------------------------------------------------------------------
-# This has to happen so that the utils code executes within the context of this
-# file otherwise ReFrame will fail to properly detect the created checks.
-# import does not work here.
-with open('utils.py', 'r') as file:
-    exec(file.read())
-# ---------------------------------------------------------------------------
+from utils import Check 
 
+check = Check()
 
 if __name__ == '__main__':
     check.DEBUG = True
-    create_checks()
 else:
-
     import reframe as rfm
-    create_checks()
+    check.MODULE_NAME = __name__
 
+create_checks(check)
