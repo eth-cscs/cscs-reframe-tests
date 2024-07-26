@@ -210,9 +210,8 @@ def create_checks():
 
 # ---------------------------------------------------------------------------
 # This has to happen so that the utils code executes within the context of this
-# file Other ReFrame will fail to properly detect the created checks. import
-# does not work here.
-#
+# file otherwise ReFrame will fail to properly detect the created checks.
+# import does not work here.
 with open('utils.py', 'r') as file:
     exec(file.read())
 # ---------------------------------------------------------------------------
