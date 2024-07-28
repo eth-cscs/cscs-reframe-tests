@@ -16,6 +16,7 @@ def create_checks(check):
 #-----------------------------------------------------------------------------#
 
     check.SYSTEM = 'todi'
+    check.CLASS_INCLUDE = ['CPE']
 
 #-----------------------------------------------------------------------------#
 #                                                                             #
@@ -127,6 +128,17 @@ def create_checks(check):
     check('ss -ltup | grep :x11  || echo FAILED', expected='FAILED')
 
     check('ss -ltup | grep :http || echo FAILED', expected='FAILED')
+
+#-----------------------------------------------------------------------------#
+#                                                                             #
+#                         Cray Programming Environment                        #
+#                                                                             #
+#-----------------------------------------------------------------------------#
+
+    check.CLASS = "CPE"
+
+    check('bash -c "module load cray || echo FAILED"', not_expected='FAILED')
+    check('bash -c "module load cray && module list"', expected='craype-arm-grace', not_expected='craype-x86-rome')
 
 #-----------------------------------------------------------------------------#
 #                                                                             #
