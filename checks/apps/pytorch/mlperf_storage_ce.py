@@ -75,7 +75,7 @@ class MLperfStorageCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     def setup_test(self):
         curr_part = self.current_partition
         self.num_nodes = self.mlperf_data.num_nodes
-        self.num_gpus_per_node =  self.mlperf_data.num_gpus_per_node
+        self.num_gpus_per_node = self.mlperf_data.num_gpus_per_node
         self.num_tasks_per_node = self.num_gpus_per_node
         self.num_tasks = self.mlperf_data.num_nodes * self.num_tasks_per_node
         self.env_vars = self.mlperf_data.env_vars
