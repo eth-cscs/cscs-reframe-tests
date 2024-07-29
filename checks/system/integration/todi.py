@@ -139,6 +139,10 @@ def create_checks(check):
     check('bash -c "module load cray || echo FAILED"', not_expected='FAILED')
     check('bash -c "module load cray && module list"', expected='craype-arm-grace', not_expected='craype-x86-rome')
 
+    check('bash -c "module spider PrgEnv-cray/8.5.0   || echo FAILED"', not_expected='FAILED')
+    check('bash -c "module spider PrgEnv-gnu/8.5.0    || echo FAILED"', not_expected='FAILED')
+    check('bash -c "module spider PrgEnv-nvidia/8.5.0 || echo FAILED"', not_expected='FAILED')
+
 #-----------------------------------------------------------------------------#
 #                                                                             #
 #                                Basic tools                                  #
@@ -213,6 +217,19 @@ def create_checks(check):
     check.CLASS = 'VSERVICES'
 
     check('bash -c "uenv --version" || echo FAILED', not_expected='FAILED')
+    check('bash -c "uenv image find || echo FAILED"', expected=           'vasp/.*gh200',   not_expected='FAILED');
+    check('bash -c "uenv image find || echo FAILED"', expected='quantumespresso/.*gh200',   not_expected='FAILED');
+    check('bash -c "uenv image find || echo FAILED"', expected=        'pytorch/.*gh200',   not_expected='FAILED');
+    check('bash -c "uenv image find || echo FAILED"', expected=  'prgenv-nvidia/.*gh200',   not_expected='FAILED');
+    check('bash -c "uenv image find || echo FAILED"', expected=     'prgenv-gnu/.*gh200',   not_expected='FAILED');
+    check('bash -c "uenv image find || echo FAILED"', expected=   'netcdf-tools/.*gh200',   not_expected='FAILED');
+    check('bash -c "uenv image find || echo FAILED"', expected=           'namd/.*gh200',   not_expected='FAILED');
+    check('bash -c "uenv image find || echo FAILED"', expected=         'lammps/.*gh200',   not_expected='FAILED');
+    check('bash -c "uenv image find || echo FAILED"', expected=       'icon-wcp/.*gh200',   not_expected='FAILED');
+    check('bash -c "uenv image find || echo FAILED"', expected=        'gromacs/.*gh200',   not_expected='FAILED');
+    check('bash -c "uenv image find || echo FAILED"', expected=        'editors/.*gh200',   not_expected='FAILED');
+    check('bash -c "uenv image find || echo FAILED"', expected=           'cp2k/.*gh200',   not_expected='FAILED');
+    check('bash -c "uenv image find || echo FAILED"', expected=          'arbor/.*gh200',   not_expected='FAILED');
 
 
 
