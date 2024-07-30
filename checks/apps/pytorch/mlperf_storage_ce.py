@@ -16,12 +16,13 @@ from container_engine import ContainerEngineMixin  # noqa: E402
 
 class mlperf_storage_datagen_ce(rfm.RunOnlyRegressionTest,
                                 ContainerEngineMixin):
+    # from https://github.com/henrique/storage/blob/v1.0-cscs/Dockerfile
     container_image = ('jfrog.svc.cscs.ch#reframe-oci/mlperf-storage:'
                        'v1.0-mpi_4.2.1')
     container_workdir = None
     valid_systems = ['+nvgpu +ce']
     valid_prog_environs = ['builtin']
-    num_nodes = variable(int, value=128)
+    num_nodes = variable(int, value=32)
     time_limit = '15m'
     accelerator_type = 'h100'
     workload = variable(str, value='unet3d')
@@ -34,10 +35,11 @@ class mlperf_storage_datagen_ce(rfm.RunOnlyRegressionTest,
 
     @run_after('setup')
     def setup_test(self):
-        self.num_tasks_per_node = 72  # 288 / 4 read_threads
-        self.num_cpus_per_task = 4
+        self.num_cpus_per_node = 288
+        self.num_cpus_per_task = 6
+        self.num_tasks_per_node = self.num_cpus_per_node // self.num_cpus_per_task
         self.num_tasks = self.num_nodes * self.num_tasks_per_node
-        self.num_files = 288 * 64 * self.num_nodes
+        self.num_files = 64 * self.num_tasks
 
         self.container_mounts = [
             f'{self.stagedir}/unet3d.yaml:'
@@ -98,7 +100,7 @@ class MLperfStorageCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
                 --param checkpoint.checkpoint_folder=/rfm_workdir/checkpoint
         ' """
 
-        self.container_mounts = [
+        self.container_mounts += [
             f'{os.path.join(self.mlperf_data.stagedir, "dataset")}:/dataset'
         ]
 
