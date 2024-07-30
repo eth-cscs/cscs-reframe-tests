@@ -35,7 +35,7 @@ class mlperf_storage_datagen_ce(rfm.RunOnlyRegressionTest,
 
     @run_after('setup')
     def setup_test(self):
-        self.num_cpus_per_node = 288
+        self.num_cpus_per_node = self.current_partition.processor.num_cores
         self.num_cpus_per_task = 6
         self.num_tasks_per_node = self.num_cpus_per_node // self.num_cpus_per_task
         self.num_tasks = self.num_nodes * self.num_tasks_per_node
