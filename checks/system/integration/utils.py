@@ -21,11 +21,7 @@ class Check:
         #
 
         # Name for the class of check we are creating.
-        self.CLASS         = ''
-        # List of check classes to exclude or '*'
-        self.CLASS_EXCLUDE = []
-        # List of check classes to include or '*'
-        self.CLASS_INCLUDE = []
+        self.CLASS         = 'NOCLASS'
         # Print what check will be created. Do nothing.
         self.DEBUG         = False
         # The computing system we expect to run on.
@@ -66,29 +62,6 @@ class Check:
         #
         Check.check_id += 1
 
-        lcl_CHECK_CLASS = ''
-        if self.CLASS:
-            lcl_CHECK_CLASS = f'_{self.CLASS}'
-
-        #
-        # Check if a class of tests has been explicitly included or excluded
-        #
-        exclude = self.CLASS_EXCLUDE
-        include = self.CLASS_INCLUDE
-
-        if exclude or include:
-            if not exclude:
-                exclude = ['*']
-            if not include:
-                include = ['*']
-
-        if '*' not in exclude:
-            if self.CLASS in exclude:
-                return
-        elif '*' not in include:
-            if self.CLASS not in include:
-                return
-
         #
         # If where is unspecificed we can run with any feature.
         # Be forgiving if the user forgets a leading +.
@@ -100,10 +73,11 @@ class Check:
             where = f'+{where}'
 
         #
-        # Get out properties ready.
+        # Get our properties ready.
         #
 
-        name                = f'Check_{Check.check_id:04}{lcl_CHECK_CLASS}'
+        name                = f'Check_{Check.check_id:04}_{self.CLASS}'
+        tag                 = f'sysint-{self.CLASS}'
         valid_systems       = where.split()
         valid_prog_environs = ['builtin']
         time_limit          = '2m'
@@ -141,7 +115,7 @@ class Check:
                 a = sn.assert_found(
                     expected,
                     where,
-                    msg=f"Expected '{expected}' running" +
+                    msg=f"Expected '{expected}' running " +
                         f"'{test.cmd} {test.caller}'")
 
             not_expected, where = test.not_expected
@@ -150,7 +124,7 @@ class Check:
                 b = sn.assert_not_found(
                     not_expected,
                     where,
-                    msg=f"Did not expect '{not_expected}'" +
+                    msg=f"Did not expect '{not_expected}' " +
                         f"running '{test.cmd} {test.caller}'")
             return (a and b)
 
@@ -171,12 +145,12 @@ class Check:
 
             test.skip_if(
                 test.expected[1] not in ['stdout', 'stderr'],
-                msg=f'Location for expected' +
+                msg=f'Location for expected ' +
                     f'is not stdout or stderr {test.caller}')
 
             test.skip_if(
                 test.not_expected[1] not in ['stdout', 'stderr'],
-                msg=f'Location for not_expected' +
+                msg=f'Location for not_expected ' +
                     f'is not stdout or stderr {test.caller}')
 
         def check_system(test):
@@ -185,11 +159,11 @@ class Check:
 
             test.skip_if(
                 test.current_system.name != self.SYSTEM,
-                msg=f'Required sytem {self.SYSTEM}' +
+                msg=f'Required sytem {self.SYSTEM} ' +
                     f'but found {test.current_system.name}.')
 
         #
-        # Finally, create a register the test.
+        # Finally, create and register the test.
         #
         t = make_test(
             name,
@@ -202,6 +176,7 @@ class Check:
                 'valid_prog_environs': valid_prog_environs,
                 'time_limit': time_limit,
                 'caller': debuginfo(),
+                'tags': {tag},
             },
             [
                 builtins.run_after('setup')(set_command_options),
