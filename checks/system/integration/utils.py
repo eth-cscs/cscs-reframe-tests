@@ -176,7 +176,7 @@ class Check:
                 'valid_prog_environs': valid_prog_environs,
                 'time_limit': time_limit,
                 'caller': debuginfo(),
-                'tags': {tag},
+                'tags': {'production', tag},
             },
             [
                 builtins.run_after('setup')(set_command_options),
