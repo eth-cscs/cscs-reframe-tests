@@ -132,6 +132,8 @@ def create_checks(check):
     check('which gcc    || echo FAILED', not_expected='FAILED')
     check('which gcc-12 || echo FAILED', not_expected='FAILED')
 
+    check('which emacs || echo FAILED', not_expected='FAILED')
+
 #-----------------------------------------------------------------------------#
 #                                                                             #
 #                               Mount-points                                  #
