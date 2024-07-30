@@ -25,8 +25,8 @@ def create_checks(check):
 
     check.CLASS = 'SLEEP'
 
-    check('timeout -v -k 3 3 sleep 1', expected=['',                    'stderr'])
-    check('timeout -v -k 3 2 sleep 4', expected=['sending signal TERM', 'stderr'])
+    check('timeout -v -k 3 3 sleep 1', expected=[r'',                    'stderr'])
+    check('timeout -v -k 3 2 sleep 4', expected=[r'sending signal TERM', 'stderr'])
 
 #-----------------------------------------------------------------------------#
 #                                                                             #
@@ -36,8 +36,8 @@ def create_checks(check):
 
     check.CLASS = 'FS'
 
-    check('timeout -v -k 5 3 df > /dev/null',                   not_expected=['sending signal',  'stderr'])
-    check('timeout -v -k 3 3 df | grep -v /dev | grep 100%',    expected='', not_expected=['sending signal',  'stderr'])
+    check('timeout -v -k 5 3 df > /dev/null',                   not_expected=[r'sending signal',  'stderr'])
+    check('timeout -v -k 3 3 df | grep -v /dev | grep 100%',    expected=r'', not_expected=[r'sending signal',  'stderr'])
 
 #-----------------------------------------------------------------------------#
 #                                                                             #
@@ -47,38 +47,38 @@ def create_checks(check):
 
     check.CLASS = 'PING'
 
-    check('ping -n -q -c 5  127.0.0.1',      expected='5 packets transmitted, 5 received, 0% packet loss')
-    check('ping -n -q -c 5  8.8.8.8',        expected='5 packets transmitted, 0 received, 100% packet loss', where='+remote')
-    check('ping -n -q -c 5  www.google.com', expected='5 packets transmitted, 0 received, 100% packet loss', where='+remote')
+    check('ping -n -q -c 5  127.0.0.1',      expected=r'5 packets transmitted, 5 received, 0% packet loss')
+    check('ping -n -q -c 5  8.8.8.8',        expected=r'5 packets transmitted, 0 received, 100% packet loss', where='+remote')
+    check('ping -n -q -c 5  www.google.com', expected=r'5 packets transmitted, 0 received, 100% packet loss', where='+remote')
 
-    check('ping -n -q -c 5  8.8.8.8',        expected='5 packets transmitted, 5 received, 0% packet loss', where='-remote')
-    check('ping -n -q -c 5  www.google.com', expected='5 packets transmitted, 5 received, 0% packet loss', where='-remote')
+    check('ping -n -q -c 5  8.8.8.8',        expected=r'5 packets transmitted, 5 received, 0% packet loss', where='-remote')
+    check('ping -n -q -c 5  www.google.com', expected=r'5 packets transmitted, 5 received, 0% packet loss', where='-remote')
 
     check.CLASS = 'PROXY'
 
-    check('printenv http_proxy',  expected='http://proxy.cscs.ch:8080',  where='+remote')
-    check('printenv https_proxy', expected='http://proxy.cscs.ch:8080', where='+remote')
-    check('printenv no_proxy',    expected='.local, .cscs.ch, localhost, 148.187.0.0/16, 10.0.0.0/8, 172.16.0.0/12', where='+remote')
+    check('printenv http_proxy',  expected=r'http://proxy.cscs.ch:8080',  where='+remote')
+    check('printenv https_proxy', expected=r'http://proxy.cscs.ch:8080', where='+remote')
+    check('printenv no_proxy',    expected=r'.local, .cscs.ch, localhost, 148.187.0.0/16, 10.0.0.0/8, 172.16.0.0/12', where='+remote')
 
-    check('printenv http_proxy',  expected='', where='-remote')
-    check('printenv https_proxy', expected='', where='-remote')
-    check('printenv no_proxy',    expected='', where='-remote')
+    check('printenv http_proxy',  expected=r'', where='-remote')
+    check('printenv https_proxy', expected=r'', where='-remote')
+    check('printenv no_proxy',    expected=r'', where='-remote')
 
-    check('curl -s www.google.com -o /dev/null || echo FAILED', not_expected='FAILED')
+    check('curl -s www.google.com -o /dev/null || echo FAILED', not_expected=r'FAILED')
 
     check.CLASS = 'DNS'
 
-    check('nslookup Xgit.cscs.ch    -timeout=5 || echo FAILED', expected='FAILED')
-    check('nslookup  git.cscs.ch    -timeout=5 || echo FAILED', not_expected='FAILED')
-    check('nslookup  www.google.com -timeout=5 || echo FAILED', not_expected='FAILED')
+    check('nslookup Xgit.cscs.ch    -timeout=5 || echo FAILED', expected=r'FAILED')
+    check('nslookup  git.cscs.ch    -timeout=5 || echo FAILED', not_expected=r'FAILED')
+    check('nslookup  www.google.com -timeout=5 || echo FAILED', not_expected=r'FAILED')
 
     check.CLASS = 'NETIFACE'
 
-    check('ip address show | grep -A6 nmn0: ', expected='nmn0.*state UP')
-    check('ip address show | grep -A6 nmn0: ', expected='inet 10.100.*.*/22 brd 10.100.*.255 scope global nmn0')
+    check('ip address show | grep -A6 nmn0: ', expected=r'nmn0.*state UP')
+    check('ip address show | grep -A6 nmn0: ', expected=r'inet 10.100.*.*/22 brd 10.100.*.255 scope global nmn0')
 
-    check('ip address show | grep -A6 hsn0: ', expected='hsn0.*state UP')
-    check('ip address show | grep -A6 hsn0: ', expected='inet 172.28.*.*/16 brd 172.28.255.255 scope global hsn0')
+    check('ip address show | grep -A6 hsn0: ', expected=r'hsn0.*state UP')
+    check('ip address show | grep -A6 hsn0: ', expected=r'inet 172.28.*.*/16 brd 172.28.255.255 scope global hsn0')
 
 
 #-----------------------------------------------------------------------------#
@@ -89,8 +89,8 @@ def create_checks(check):
 
     check.CLASS = 'LDAP'
 
-    check('ping -n -q -c 5  ldap.cscs.ch',  expected='5 packets transmitted, 5 received, 0% packet loss')
-    check('timeout -v -k 3 3 getent hosts', expected='localhost', not_expected='sending signal')
+    check('ping -n -q -c 5  ldap.cscs.ch',  expected=r'5 packets transmitted, 5 received, 0% packet loss')
+    check('timeout -v -k 3 3 getent hosts', expected=r'localhost', not_expected=r'sending signal')
 
 #-----------------------------------------------------------------------------#
 #                                                                             #
@@ -100,8 +100,8 @@ def create_checks(check):
 
     check.CLASS = 'OSINSTALL'
 
-    check('cat /etc/os-release', expected='PRETTY_NAME="SUSE Linux Enterprise Server 15 SP5"')
-    check('locale', expected='LANG=C')
+    check('cat /etc/os-release', expected=r'PRETTY_NAME="SUSE Linux Enterprise Server 15 SP5"')
+    check('locale', expected=r'LANG=C')
 
 #-----------------------------------------------------------------------------#
 #                                                                             #
@@ -111,13 +111,13 @@ def create_checks(check):
 
     check.CLASS = 'OSSERVICE'
 
-    check('ps aux | grep /usr/sbin/sshd | grep root || echo FAILED', not_expected='FAILED')
-    check('ss -ltup | grep :ssh  || echo FAILED', not_expected='FAILED')
+    check('ps aux | grep /usr/sbin/sshd | grep root || echo FAILED', not_expected=r'FAILED')
+    check('ss -ltup | grep :ssh  || echo FAILED', not_expected=r'FAILED')
 
-    check('ss -ltup | grep :smtp || echo FAILED', expected='FAILED')
-    check('ss -ltup | grep :x11  || echo FAILED', expected='FAILED')
+    check('ss -ltup | grep :smtp || echo FAILED', expected=r'FAILED')
+    check('ss -ltup | grep :x11  || echo FAILED', expected=r'FAILED')
 
-    check('ss -ltup | grep :http || echo FAILED', expected='FAILED')
+    check('ss -ltup | grep :http || echo FAILED', expected=r'FAILED')
 
 #-----------------------------------------------------------------------------#
 #                                                                             #
@@ -127,12 +127,12 @@ def create_checks(check):
 
     check.CLASS = 'TOOLS'
 
-    check('which zypper || echo FAILED', not_expected='FAILED')
-    check('which vim    || echo FAILED', not_expected='FAILED')
-    check('which gcc    || echo FAILED', not_expected='FAILED')
-    check('which gcc-12 || echo FAILED', not_expected='FAILED')
+    check('which zypper || echo FAILED', not_expected=r'FAILED')
+    check('which vim    || echo FAILED', not_expected=r'FAILED')
+    check('which gcc    || echo FAILED', not_expected=r'FAILED')
+    check('which gcc-12 || echo FAILED', not_expected=r'FAILED')
 
-    check('which emacs || echo FAILED', not_expected='FAILED')
+    check('which emacs || echo FAILED', not_expected=r'FAILED')
 
 #-----------------------------------------------------------------------------#
 #                                                                             #
@@ -142,27 +142,27 @@ def create_checks(check):
 
     check.CLASS = 'MOUNTS'
 
-    check('grep -q "/users /users dvs"            /proc/mounts || echo FAILED', not_expected='FAILED')
-    check('grep -q "/store /store dvs"            /proc/mounts || echo FAILED', not_expected='FAILED')
-    check('grep -q "/project /project dvs"        /proc/mounts || echo FAILED', not_expected='FAILED')
+    check('grep -q "/users /users dvs"            /proc/mounts || echo FAILED', not_expected=r'FAILED')
+    check('grep -q "/store /store dvs"            /proc/mounts || echo FAILED', not_expected=r'FAILED')
+    check('grep -q "/project /project dvs"        /proc/mounts || echo FAILED', not_expected=r'FAILED')
 
-    check('grep -q "pe_opt_cray_pe /opt/cray/pe"  /proc/mounts || echo FAILED', not_expected='FAILED')
-    check('grep -q "pe_opt_AMD /opt/AMD"          /proc/mounts || echo FAILED', not_expected='FAILED')
-    check('grep -q "pe_opt_intel /opt/intel"      /proc/mounts || echo FAILED', not_expected='FAILED')
+    check('grep -q "pe_opt_cray_pe /opt/cray/pe"  /proc/mounts || echo FAILED', not_expected=r'FAILED')
+    check('grep -q "pe_opt_AMD /opt/AMD"          /proc/mounts || echo FAILED', not_expected=r'FAILED')
+    check('grep -q "pe_opt_intel /opt/intel"      /proc/mounts || echo FAILED', not_expected=r'FAILED')
 
-    check('printenv SCRATCH || echo FAILED', not_expected='FAILED')
-    check('printenv PROJECT || echo FAILED', not_expected='FAILED')
-    check('printenv STORE   || echo FAILED', not_expected='FAILED')
-    check('printenv APPS    || echo FAILED', not_expected='FAILED')
-    check('printenv HOME    || echo FAILED', not_expected='FAILED')
+    check('printenv SCRATCH || echo FAILED', not_expected=r'FAILED')
+    check('printenv PROJECT || echo FAILED', not_expected=r'FAILED')
+    check('printenv STORE   || echo FAILED', not_expected=r'FAILED')
+    check('printenv APPS    || echo FAILED', not_expected=r'FAILED')
+    check('printenv HOME    || echo FAILED', not_expected=r'FAILED')
 
-    check('bash -c "[[ $SCRATCH == /capstor/scratch/cscs/*  ]] || echo FAILED"', not_expected='FAILED')
-    check('bash -c "[[ $PROJECT == /project/*               ]] || echo FAILED"', not_expected='FAILED')
-    check('bash -c "[[ $STORE   == /store/*                 ]] || echo FAILED"', not_expected='FAILED')
-    check('bash -c "[[ $APPS    == /capstor/apps/cscs/eiger ]] || echo FAILED"', not_expected='FAILED')
-    check('bash -c "[[ $HOME    == /users/*                 ]] || echo FAILED"', not_expected='FAILED')
+    check('bash -c "[[ $SCRATCH == /capstor/scratch/cscs/*  ]] || echo FAILED"', not_expected=r'FAILED')
+    check('bash -c "[[ $PROJECT == /project/*               ]] || echo FAILED"', not_expected=r'FAILED')
+    check('bash -c "[[ $STORE   == /store/*                 ]] || echo FAILED"', not_expected=r'FAILED')
+    check('bash -c "[[ $APPS    == /capstor/apps/cscs/eiger ]] || echo FAILED"', not_expected=r'FAILED')
+    check('bash -c "[[ $HOME    == /users/*                 ]] || echo FAILED"', not_expected=r'FAILED')
 
-    check('printenv TMP || echo FAILED', expected='FAILED')
+    check('printenv TMP || echo FAILED', expected=r'FAILED')
 
 #-----------------------------------------------------------------------------#
 #                                                                             #
@@ -172,11 +172,11 @@ def create_checks(check):
 
     check.CLASS = 'SLURM'
 
-    check('test -e /etc/slurm/slurm.conf || echo FAILED', not_expected='FAILED')
-    check('which sinfo || echo FAILED', not_expected='FAILED')
-    check('ps aux | grep munge', expected='/usr/sbin/munged')
-    check('scontrol ping', expected='Slurmctld\(primary\) at .* is UP')
-    check('scontrol ping', expected='Slurmctld\(backup\) at .* is UP')
+    check('test -e /etc/slurm/slurm.conf || echo FAILED', not_expected=r'FAILED')
+    check('which sinfo || echo FAILED', not_expected=r'FAILED')
+    check('ps aux | grep munge', expected=r'/usr/sbin/munged')
+    check('scontrol ping', expected=r'Slurmctld\(primary\) at .* is UP')
+    check('scontrol ping', expected=r'Slurmctld\(backup\) at .* is UP')
 
 #-----------------------------------------------------------------------------#
 #                                                                             #
@@ -186,7 +186,7 @@ def create_checks(check):
 
     check.CLASS = 'VSBASE'
 
-    #check('which nomad || echo FAILED', not_expected='FAILED')
+    #check('which nomad || echo FAILED', not_expected=r'FAILED')
 
 #-----------------------------------------------------------------------------#
 #                                                                             #
@@ -196,7 +196,7 @@ def create_checks(check):
 
     check.CLASS = 'VSERVICES'
 
-    check('bash -c "uenv --version" || echo FAILED', not_expected='FAILED')
+    check('bash -c "uenv --version" || echo FAILED', not_expected=r'FAILED')
 
 
 
