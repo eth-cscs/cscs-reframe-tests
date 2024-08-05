@@ -54,6 +54,7 @@ def _get_uenvs():
             with open(rfm_meta) as image_envs:
                 image_environments = yaml.load(
                     image_envs.read(), Loader=yaml.BaseLoader)
+                # print(f"# --- loading the metadata from '{rfm_meta}'")
         except OSError as err:
             raise ConfigError(
                 f"problem loading the metadata from '{rfm_meta}'"
