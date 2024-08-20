@@ -1,0 +1,50 @@
+include:
+  - remote: 'https://gitlab.com/cscs-ci/recipes/-/raw/master/templates/v2/.ci-ext.yml'
+
+stages:
+  - tests
+
+variables:
+  # FIRECREST_SYSTEM    todi
+  # CLUSTER_NAME        todi
+  # SLURM_PARTITION     normal
+  # RFM_MODE            baremetal
+  # TAG                 f7t-runner
+  # UARCH               arm64  
+  WORKSPACE: '$${CI_CACHE_FOLDER}/rfm_workspace'
+  JOB_NAME: rfm-$CI_PIPELINE_ID
+  CLUSTER_NAME: "${CLUSTER_NAME}"
+  F7T_TOKEN_URL: 'https://auth.cscs.ch/auth/realms/firecrest-clients/protocol/openid-connect/token'
+  F7T_URL: 'https://firecrest.cscs.ch'
+
+run reframe:
+  stage: tests
+  tags: ["$TAG"]
+  variables:
+    # Valid MODE=('container-runner', 'baremetal', 'f7t-controller')
+    MODE: "${RFM_MODE}"
+    GIT_STRATEGY: "fetch"
+    SLURM_ACCOUNT: "${SLURM_ACCOUNT}"
+    FIRECREST_SYSTEM: "${FIRECREST_SYSTEM}"
+  before_script:
+    - echo "FIRECREST_SYSTEM=$FIRECREST_SYSTEM"
+    - echo "CLUSTER_NAME=$CLUSTER_NAME"
+    - echo "SLURM_PARTITION=$SLURM_PARTITION"
+    - echo "RFM_MODE=$RFM_MODE"
+    - echo "TAG=$TAG"
+    - echo "UARCH=$UARCH"
+    #  WORKSPACE: '$${CI_CACHE_FOLDER}/rfm_workspace'
+    #  JOB_NAME: rfm-$CI_PIPELINE_ID
+    - pwd
+    - uname -a
+    - rfm_path=$(./ci/scripts/alps_uenv.sh install_reframe)
+    - echo "rfm_path=$rfm_path"
+    - export PATH=$rfm_path:$PATH
+    - reframe -V
+    - ./ci/scripts/alps_uenv.sh launch_reframe
+  artifacts:
+    when: on_failure
+    paths:
+      - report.xml
+    reports:
+      junit: report.xml

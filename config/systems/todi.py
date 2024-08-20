@@ -6,69 +6,98 @@
 # ReFrame CSCS settings
 #
 
+import reframe.utility.osext as osext
+import copy
+
+
+base_config = {
+    'modules_system': 'lmod',
+    # 'resourcesdir': '/apps/common/UES/reframe/resources',
+    'partitions': [
+        {
+            'name': 'login',
+            'scheduler': 'local',
+            'time_limit': '10m',
+            'environs': [
+                'builtin',
+                'PrgEnv-cray',
+                'PrgEnv-gnu',
+                #'PrgEnv-nvidia'
+            ],
+            'descr': 'Login nodes',
+            'max_jobs': 4,
+            'launcher': 'local'
+        },
+        {
+            'name': 'normal',
+            'descr': 'Grace-Hopper GH200',
+            'scheduler': 'slurm',
+            'time_limit': '10m',
+            'container_platforms': [
+#                 {
+#                     'type': 'Sarus',
+#                     #'modules': ['sarus']
+#                 },
+#                 {
+#                     'type': 'Singularity',
+#                     #'modules': ['singularity/3.6.4-todi']
+#                 }
+            ],
+            'environs': [
+                'builtin',
+                'PrgEnv-cray',
+                'PrgEnv-gnu',
+            ],
+            'max_jobs': 100,
+            'extras': {
+                'cn_memory': 825,
+            },
+            'features': ['gpu', 'nvgpu', 'remote'],
+            'resources': [
+                {
+                    'name': 'switches',
+                    'options': ['--switches={num_switches}']
+                },
+                {
+                    'name': 'gres',
+                    'options': ['--gres={gres}']
+                }
+            ],
+            'devices': [
+                {
+                    'type': 'gpu',
+                    'arch': 'sm_90',
+                    'num_devices': 4
+                }
+                ],
+            'launcher': 'srun',
+        },
+    ]
+}
+
+todi_sys = copy.deepcopy(base_config)
+todi_sys['name'] = 'todi'
+todi_sys['descr'] = 'Piz todi'
+todi_sys['hostnames'] = ['todi']
+
 site_configuration = {
     'systems': [
+        todi_sys,
+    ],
+    'environments': [
         {
-            'name': 'todi',
-            'descr': 'todi vcluster',
-            'hostnames': ['todi'],
-            'modules_system': 'nomod',
-            'partitions': [
-                {
-                    'name': 'login',
-                    'scheduler': 'local',
-                    'time_limit': '10m',
-                    'environs': [
-                        'builtin',
-                    ],
-                    'descr': 'Login nodes',
-                    'max_jobs': 4,
-                    'launcher': 'local'
-                },
-                {
-                    'name': 'normal',
-                    'scheduler': 'slurm',
-                    'time_limit': '10m',
-                    'environs': [
-                        'builtin',
-                    ],
-                    'max_jobs': 100,
-                    'extras': {
-                        'cn_memory': 500,
-                    },
-                    'resources': [
-                        {
-                            'name': 'memory',
-                            'options': ['--mem={mem_per_node}']
-                        },
-                    ],
-                    'features': ['ce', 'gpu', 'nvgpu', 'remote', 'scontrol'],
-                    'devices': [
-                        {
-                            'type': 'gpu',
-                            'arch': 'sm_90',
-                            'num_devices': 4
-                        }
-                    ],
-                    'launcher': 'srun'
-                },
-            ]
+            'name': 'PrgEnv-cray',
+            'features': ['serial', 'openmp', 'mpi', 'cuda', 'openacc', 'hdf5',
+                         'netcdf-hdf5parallel', 'pnetcdf', 'openmp', 'opencl'],
+            'target_systems': ['todi'],
+            'modules': ['cray', 'PrgEnv-cray', 'craype-arm-grace']
+        },
+        {
+            'name': 'PrgEnv-gnu',
+            'target_systems': ['todi'],
+            'features': ['serial', 'openmp', 'mpi', 'cuda', 'alloc_speed',
+                         'hdf5', 'netcdf-hdf5parallel', 'pnetcdf', 'openmp'],
+            'modules': ['cray', 'PrgEnv-gnu', 'craype-arm-grace']
         },
     ],
-    'modes': [
-        {
-            'name': 'production',
-            'options': [
-                '--unload-module=reframe',
-                '--exec-policy=async',
-                '-Sstrict_check=1',
-                '--prefix=$SCRATCH/regression/production',
-                '--report-file=$SCRATCH/regression/production/reports/prod_report_{sessionid}.json',
-                '--save-log-files',
-                '--tag=production',
-                '--timestamp=%F_%H-%M-%S'
-            ],
-            'target_systems': ['todi'],
-        }
-    ]
 }
