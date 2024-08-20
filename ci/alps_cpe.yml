@@ -37,6 +37,7 @@ run reframe:
     #  JOB_NAME: rfm-$CI_PIPELINE_ID
     - pwd
     - uname -a
+  script:
     - rfm_path=$(./ci/scripts/alps_uenv.sh install_reframe)
     - echo "rfm_path=$rfm_path"
     - export PATH=$rfm_path:$PATH
