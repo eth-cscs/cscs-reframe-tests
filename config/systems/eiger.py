@@ -59,10 +59,18 @@ base_config = {
                 'cpeIntel'
             ],
             'max_jobs': 100,
+
+            #FIXME temporary workaround for uenv=prgenv-gnu_23.11
+            'env_vars': [
+                [
+                    'LD_LIBRARY_PATH',
+                    '$LD_LIBRARY_PATH:/opt/cray/libfabric/1.15.2.0/lib64'
+                ]
+            ],
             'extras': {
                 'cn_memory': 256,
             },
-            'features': ['remote', 'sarus', 'singularity'],
+            'features': ['remote', 'sarus', 'singularity', 'uenv'],
             'access': ['-Cmc', f'--account={osext.osgroup()}'],
             'resources': [
                 {
@@ -73,6 +81,12 @@ base_config = {
                     'name': 'memory',
                     'options': ['--mem={mem_per_node}']
                 },
+                {
+                    'name': 'uenv',
+                    'options': [
+                        '--uenv={file}:{mount}',
+                    ]
+                }
             ],
             'launcher': 'srun'
         },

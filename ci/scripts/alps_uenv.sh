@@ -1,5 +1,18 @@
 #!/bin/bash
 
+if [ -z $DEBUG ] ; then export DEBUG="n" ;fi
+if [ $DEBUG = "y" ] ; then
+    echo DEBUG=$DEBUG
+    oras_tmp="$PWD"
+    oras="uenv-oras"
+    rfm_meta_yaml="$oras_tmp/meta/extra/reframe.yaml"
+    jfrog_creds_path="${oras_tmp}/docker/config.json"
+    system="$CLUSTER_NAME" ;
+    if [ $system = "todi" ] ;then uarch="gh200" ;fi
+    if [ $system = "eiger" ] ;then uarch="zen2" ;fi
+    jfrog=jfrog.svc.cscs.ch/uenv/deploy/$system/$uarch
+    jfrog_u="piccinal"
+else
 # {{{ input parameters <--- 
 # oras="$UENV_PREFIX/libexec/uenv-oras"  # /users/piccinal/.local/ on eiger
 # oras_tmp=`mktemp -d`
@@ -22,6 +35,7 @@ jfrog=jfrog.svc.cscs.ch/uenv/deploy/$system/$uarch
 jfrog_u="piccinal"
 [[ -z "${SLURM_PARTITION}" ]] && RFM_SYSTEM="${system}" || RFM_SYSTEM="${system}:${SLURM_PARTITION}"
  # }}}
+fi
 
 # {{{ setup_jq 
 setup_jq() {
@@ -36,14 +50,14 @@ setup_jq() {
 # {{{ setup_uenv_and_oras 
 setup_uenv_and_oras() {
   # cd $oras_tmp 
-  if [ -z $UENV_PREFIX ] ;then
-    uenv_repo=https://github.com/eth-cscs/uenv
-    uenv_version=4.0.1
-    (wget --quiet $uenv_repo/archive/refs/tags/v$uenv_version.tar.gz && \
-    tar xf v$uenv_version.tar.gz && cd uenv-$uenv_version/ && \
-    echo N | ./install --prefix=$PWD --local && \
-    rm -f v$uenv_version.tar.gz uenv-$uenv_version)
-  fi    
+  # if [ -z $UENV_PREFIX ] ;then
+  uenv_repo=https://github.com/eth-cscs/uenv
+  uenv_version=5.0.0
+  (wget --quiet $uenv_repo/archive/refs/tags/v$uenv_version.tar.gz && \
+  tar xf v$uenv_version.tar.gz && cd uenv-$uenv_version/ && \
+  echo N | ./install --prefix=$PWD --local && \
+  rm -f v$uenv_version.tar.gz uenv-$uenv_version)
+  # fi    
   # source ./uenv-4.0.1/bin/activate-uenv
   # export oras="$UENV_PREFIX/libexec/uenv-oras"
 }
@@ -109,7 +123,71 @@ oras_pull_meta_dir() {
     img=$1
     name=`echo "$img" |cut -d: -f1`
     tag=`echo "$img" |cut -d: -f2`
-    #
+    echo "--- Pulling metadata from $jfrog/$name:$tag"
+    # meta_digest=`$oras --registry-config $jfrog_creds_path \
+    rm -fr meta  # remove dir from previous image
+    meta_digest=`$oras discover --output json --artifact-type 'uenv/meta' $jfrog/$name:$tag \
+        | jq -r '.manifests[0].digest'`
+    # $oras --registry-config $jfrog_creds_path \
+    echo "---- $jfrog/$name@$meta_digest"
+    $oras pull --output "${oras_tmp}" "$jfrog/$name@$meta_digest" &> oras-pull.log
+}
+# }}}
+# {{{ meta_has_reframe_yaml
+meta_has_reframe_yaml() {
+    img=$1
+    echo "# --- Checking img=$img for meta/extra/reframe.yaml"
+    rfm_yaml="${oras_tmp}/meta/extra/reframe.yaml" 
+    test -f $rfm_yaml ; rc=$?
+    
+    # --- VASP
+    is_vasp=`echo $img |cut -d/ -f1`
+    if [ "$is_vasp" == "vasp" ] ;then
+        echo "# ---- no: vasp is a special case: "todi/gh200/vasp/v6.4.2/manifests/v1": response status code 403: Forbidden"
+    else
+
+    if [ $rc -eq 0 ] ;then
+        rctools=$(grep -q user-tools $rfm_yaml ; echo $?)
+        echo "rc=$rc rctools=$rctools"
+        if [ $rctools -ne 0 ] ;then
+            echo "# ---- reframe.yaml has been found --> pulling $img"
+            uenv image pull $img
+            echo
+            echo "# ---- reframe.yaml has been found --> adding it as store.yaml"
+            imgpath=`uenv image inspect $img --format {path}`
+            cp $rfm_yaml $imgpath/store.yaml
+
+            # TODO: https://github.com/eth-cscs/alps-uenv/issues/127 <-------------
+            if [ "$img" == "prgenv-gnu/24.7:v1" ] ;then
+                sed -i 's-default/activate.sh-develop/activate.sh-' \
+                    $imgpath/store.yaml
+            fi
+            # TODO: https://github.com/eth-cscs/alps-uenv/issues/127 <-------------
+
+            echo "# ---- OK $rfm_yaml found in $img :-)"
+            ls $imgpath/store.yaml
+        fi
+    else
+        echo "# ---- no $rfm_yaml file found, skipping $img :-("
+    fi
+    fi
+}
+# }}}
+# {{{ remove_last_comma_from_variable
+remove_last_comma_from_variable() {
+    vv=$1
+    vv=${vv%?}
+    echo ${vv} | sed 's-,,-,-g' | sort -u
+    #echo "UENV=$UENV" > rfm_uenv.env
+    #cat rfm_uenv.env | tr , "\n"
+}
+# }}}
+# {{{ oras_pull_meta_dir_old
+oras_pull_meta_dir_old() {
+    img=$1
+    echo "----- Pulling img=$img metadata & sqfs"
+    name=`echo "$img" |cut -d: -f1`
+    tag=`echo "$img" |cut -d: -f2`
     # meta_digest=`$oras --registry-config $jfrog_creds_path \
     rm -fr meta  # remove dir from previous image
     meta_digest=`$oras discover --output json --artifact-type 'uenv/meta' $jfrog/$name:$tag \
@@ -126,12 +204,17 @@ oras_pull_meta_dir() {
         rc2=$?
         # echo "rc2=$rc2"
         if [ $rc2 -eq 0 ] ;then
-            echo "ok"
+            imgpath=`uenv image inspect $img --format {path}`
+            cp $rfm_yaml $imgpath/store.yaml
+            # echo "ok"
+            return 0
         else
             echo "failed to find $rfm_yaml file in $img"
+            return 1
         fi
     else
         echo "failed to download $jfrog/$name@$meta_digest"
+        return 2
     fi
 }
 # }}}
@@ -250,6 +333,8 @@ case $in in
     jfrog_login) jfrog_login "$jfrog_creds_path";;
     uenv_image_find) uenv_image_find;;
     oras_pull_meta_dir) oras_pull_meta_dir "$img";;
+    meta_has_reframe_yaml) meta_has_reframe_yaml "$img";;
+    remove_last_comma_from_variable) remove_last_comma_from_variable "$myvar";;
     oras_pull_sqfs) oras_pull_sqfs;;
     uenv_pull_sqfs) uenv_pull_sqfs "$img";;
     install_reframe) install_reframe;;
