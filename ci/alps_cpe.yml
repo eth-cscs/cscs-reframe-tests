@@ -8,8 +8,9 @@ my job on todi:
   stage: tests    
   extends: .f7t-baremetal-runner
   variables:
-    F7T_URL: 'https://firecrest.cscs.ch'
-    FIRECREST_SYSTEM: "$FIRECREST_SYSTEM"
+    # F7T_URL: 'https://firecrest.cscs.ch'
+    F7T_URL: 'https://firecrest-todi.v1.tds.cscs.ch'
+    FIRECREST_SYSTEM: "${FIRECREST_SYSTEM}"
     # FIRECREST_SYSTEM: 'todi'
   rules:
     - if: $FIRECREST_SYSTEM == "todi"
