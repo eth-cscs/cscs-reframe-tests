@@ -322,7 +322,7 @@ launch_reframe() {
 }
 # }}}
 # {{{ launch_reframe_1arg
-launch_reframe() {
+launch_reframe_1arg() {
     export RFM_AUTODETECT_METHODS="cat /etc/xthostname,hostname"
     export RFM_USE_LOGIN_SHELL=1
     # export RFM_AUTODETECT_XTHOSTNAME=1
