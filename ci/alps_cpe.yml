@@ -5,6 +5,7 @@ stages:
   - tests
 
 my job on todi:
+  stage: tests    
   extends: .f7t-baremetal-runner
   script:
     - hostname
