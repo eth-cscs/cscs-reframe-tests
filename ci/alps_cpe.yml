@@ -9,6 +9,7 @@ my job on todi:
   extends: .f7t-baremetal-runner
   variables:
     F7T_URL: 'https://firecrest.cscs.ch'
+    FIRECREST_SYSTEM: "$FIRECREST_SYSTEM"
     # FIRECREST_SYSTEM: 'todi'
   rules:
     - if: $FIRECREST_SYSTEM == "todi"
