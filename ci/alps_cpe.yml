@@ -7,11 +7,25 @@ stages:
 my job on todi:
   stage: tests    
   extends: .f7t-baremetal-runner
+  variables:
+    F7T_URL: 'https://firecrest.cscs.ch'
+    # FIRECREST_SYSTEM: 'todi'
+  rules:
+    - if: $FIRECREST_SYSTEM == "todi"
+      variables:
+        $F7T_URL: 'https://firecrest-todi.v1.tds.cscs.ch'
+  before_script:
+    - echo "FIRECREST_SYSTEM=$FIRECREST_SYSTEM"
+    - echo "F7T_URL=$F7T_URL"
+    - echo "CLUSTER_NAME=$CLUSTER_NAME"
+    - echo "SLURM_PARTITION=$SLURM_PARTITION"
+    - echo "RFM_MODE=$RFM_MODE"
+    - echo "TAG=$TAG"
+    - echo "UARCH=$UARCH"
+    - uname -a
+    - pwd
   script:
     - hostname
-  variables:
-    F7T_URL: 'https://firecrest-todi.v1.tds.cscs.ch'
-    FIRECREST_SYSTEM: 'todi'
       
 # variables:
 #   # https://oidc-dashboard-prod.cscs.ch / https://cicd-ext-mw.cscs.ch/ci/setup_ci
