@@ -1,0 +1,1 @@
+../../../../checks/microbenchmarks/mpi/osu/osu_run.py

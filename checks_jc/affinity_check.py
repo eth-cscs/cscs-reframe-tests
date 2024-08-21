@@ -1,1 +1,0 @@
-../checks/prgenv/affinity_check.py

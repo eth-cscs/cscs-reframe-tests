@@ -1,0 +1,1 @@
+../../../../checks/microbenchmarks/cpu/alloc_speed/alloc_speed.py

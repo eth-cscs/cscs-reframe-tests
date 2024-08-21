@@ -1,0 +1,1 @@
+../../checks/prgenv/mpi.py
