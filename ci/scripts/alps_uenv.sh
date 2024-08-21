@@ -321,6 +321,22 @@ launch_reframe() {
     # -n HelloWorldTestMPIOpenMP
 }
 # }}}
+# {{{ launch_reframe_1arg
+launch_reframe() {
+    export RFM_AUTODETECT_METHODS="cat /etc/xthostname,hostname"
+    export RFM_USE_LOGIN_SHELL=1
+    # export RFM_AUTODETECT_XTHOSTNAME=1
+    # reframe -V
+    echo "UENV=$UENV"
+    reframe -C ./config/cscs.py \
+        --report-junit=report.xml \
+        -c $img \
+        --system=$system \
+        -r
+    # -J reservation=all_nodes
+    # -n HelloWorldTestMPIOpenMP
+}
+# }}}
 
 # {{{ main 
 in=$1
@@ -342,9 +358,10 @@ case $in in
     uenv_sqfs_fullpath) uenv_sqfs_fullpath "$img";;
     launch_reframe_1img) launch_reframe_1img "$img";;
     launch_reframe) launch_reframe;;
+    launch_reframe_1arg) launch_reframe_1arg "$img";;
     *) echo "unknown arg=$in";;
 esac
 #old [[ -d $oras_tmp ]] && { echo "cleaning $oras_tmp"; rm -fr $oras_tmp; }
-# }}}
+# }}} 
 
 # TODO: oras attach rpt

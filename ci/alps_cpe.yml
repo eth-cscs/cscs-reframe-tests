@@ -2,14 +2,11 @@ include:
   - remote: 'https://gitlab.com/cscs-ci/recipes/-/raw/master/templates/v2/.ci-ext.yml'
 
 stages:
-  - tests
+  - run
 
-my job on todi:
-  stage: tests    
+reframe:
+  stage: run
   extends: .f7t-baremetal-runner
-  variables:
-    F7T_URL: 'https://firecrest-todi.v1.tds.cscs.ch'
-    FIRECREST_SYSTEM: 'todi'
   before_script:
     - echo "FIRECREST_SYSTEM=$FIRECREST_SYSTEM"
     - echo "F7T_URL=$F7T_URL"
@@ -22,55 +19,14 @@ my job on todi:
     - pwd
   script:
     - hostname
-      
-# variables:
-#   # https://oidc-dashboard-prod.cscs.ch / https://cicd-ext-mw.cscs.ch/ci/setup_ci
-#   # FIRECREST_SYSTEM    todi
-#   # CLUSTER_NAME        todi
-#   # SLURM_PARTITION     normal
-#   # RFM_MODE            baremetal
-#   # TAG                 f7t-runner
-#   # UARCH               arm64  
-#   WORKSPACE: '$${CI_CACHE_FOLDER}/rfm_workspace'
-#   JOB_NAME: rfm-$CI_PIPELINE_ID
-#   CLUSTER_NAME: "${CLUSTER_NAME}"
-#   F7T_TOKEN_URL: 'https://auth.cscs.ch/auth/realms/firecrest-clients/protocol/openid-connect/token'
-#   F7T_URL: 'https://firecrest.cscs.ch'
-# 
-# run reframe:
-#   stage: tests
-#   tags: ["$TAG"]
-#   variables:
-#     # Valid MODE=('container-runner', 'baremetal', 'f7t-controller')
-#     MODE: "${RFM_MODE}"
-#     GIT_STRATEGY: "fetch"
-#     SLURM_ACCOUNT: "${SLURM_ACCOUNT}"
-#     FIRECREST_SYSTEM: "${FIRECREST_SYSTEM}"
-#   rules:
-#     - if: $FIRECREST_SYSTEM == "todi"
-#       variables:
-#         $F7T_URL: 'https://firecrest-todi.v1.tds.cscs.ch'
-#   before_script:
-#     - echo "FIRECREST_SYSTEM=$FIRECREST_SYSTEM"
-#     - echo "F7T_URL=$F7T_URL"
-#     - echo "CLUSTER_NAME=$CLUSTER_NAME"
-#     - echo "SLURM_PARTITION=$SLURM_PARTITION"
-#     - echo "RFM_MODE=$RFM_MODE"
-#     - echo "TAG=$TAG"
-#     - echo "UARCH=$UARCH"
-#     #  WORKSPACE: '$${CI_CACHE_FOLDER}/rfm_workspace'
-#     #  JOB_NAME: rfm-$CI_PIPELINE_ID
-#     - pwd
-#     - uname -a
-#   script:
-#     - rfm_path=$(./ci/scripts/alps_uenv.sh install_reframe)
-#     - echo "rfm_path=$rfm_path"
-#     - export PATH=$rfm_path:$PATH
-#     - reframe -V
-#     - ./ci/scripts/alps_uenv.sh launch_reframe
-#   artifacts:
-#     when: on_failure
-#     paths:
-#       - report.xml
-#     reports:
-#       junit: report.xml
+    - rfm_path=$(./ci/scripts/alps_uenv.sh install_reframe)
+    - echo "rfm_path=$rfm_path"
+    - export PATH=$rfm_path:$PATH
+    - reframe -V
+    - ./ci/scripts/alps_uenv.sh launch_reframe_1 checks/prgenv/mpi.py
+  artifacts:
+    when: on_failure
+    paths:
+      - report.xml
+    reports:
+      junit: report.xml
