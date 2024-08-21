@@ -5,6 +5,7 @@ stages:
   - tests
 
 variables:
+  # https://oidc-dashboard-prod.cscs.ch / https://cicd-ext-mw.cscs.ch/ci/setup_ci
   # FIRECREST_SYSTEM    todi
   # CLUSTER_NAME        todi
   # SLURM_PARTITION     normal
@@ -26,8 +27,13 @@ run reframe:
     GIT_STRATEGY: "fetch"
     SLURM_ACCOUNT: "${SLURM_ACCOUNT}"
     FIRECREST_SYSTEM: "${FIRECREST_SYSTEM}"
+  rules:
+    - if: $FIRECREST_SYSTEM == "todi"
+      variables:
+        $F7T_URL: 'https://firecrest-todi.v1.tds.cscs.ch'
   before_script:
     - echo "FIRECREST_SYSTEM=$FIRECREST_SYSTEM"
+    - echo "F7T_URL=$F7T_URL"
     - echo "CLUSTER_NAME=$CLUSTER_NAME"
     - echo "SLURM_PARTITION=$SLURM_PARTITION"
     - echo "RFM_MODE=$RFM_MODE"
