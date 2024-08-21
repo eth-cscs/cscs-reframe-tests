@@ -1,0 +1,1 @@
+../reframe-develop/hpctestlib/microbenchmarks/gpu/gpu_burn.py

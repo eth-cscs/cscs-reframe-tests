@@ -330,7 +330,7 @@ launch_reframe_1arg() {
     echo "UENV=$UENV"
     reframe -C ./config/cscs.py \
         --report-junit=report.xml \
-        -c $img \
+        -c "$img" \
         --system=$system \
         -r
     # -J reservation=all_nodes
