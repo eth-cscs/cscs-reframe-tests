@@ -333,8 +333,6 @@ launch_reframe_1arg() {
         -c "$img" \
         --system=$system \
         -r
-    # -J reservation=all_nodes
-    # -n HelloWorldTestMPIOpenMP
 }
 # }}}
 
@@ -363,5 +361,3 @@ case $in in
 esac
 #old [[ -d $oras_tmp ]] && { echo "cleaning $oras_tmp"; rm -fr $oras_tmp; }
 # }}} 
-
-# TODO: oras attach rpt
