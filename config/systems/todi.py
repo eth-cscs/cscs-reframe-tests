@@ -52,7 +52,7 @@ base_config = {
             'extras': {
                 'cn_memory': 825,
             },
-            'features': ['gpu', 'nvgpu', 'remote'],
+            'features': ['ce', 'gpu', 'nvgpu', 'remote', 'scontrol', 'uenv'],
             'resources': [
                 {
                     'name': 'switches',
