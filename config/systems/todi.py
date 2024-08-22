@@ -30,7 +30,7 @@ base_config = {
         },
         {
             'name': 'normal',
-            'descr': 'Grace-Hopper GH200',
+            'descr': 'TODI Grace-Hopper GH200',
             'scheduler': 'slurm',
             'time_limit': '10m',
             'container_platforms': [
@@ -61,7 +61,11 @@ base_config = {
                 {
                     'name': 'gres',
                     'options': ['--gres={gres}']
-                }
+                },
+                {
+                    'name': 'memory',
+                    'options': ['--mem={mem_per_node}']
+                },
             ],
             'devices': [
                 {
