@@ -156,6 +156,9 @@ def create_checks(check):
     check('which gcc    || echo FAILED', not_expected=r'FAILED')
     check('which gcc-12 || echo FAILED', not_expected=r'FAILED')
 
+    # CI-Ext
+    check('which jq     || echo FAILED', not_expected=r'FAILED')
+
     check('which emacs || echo FAILED', not_expected=r'FAILED')
 
 #-----------------------------------------------------------------------------#
