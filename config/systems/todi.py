@@ -22,7 +22,7 @@ base_config = {
                 'builtin',
                 'PrgEnv-cray',
                 'PrgEnv-gnu',
-                #'PrgEnv-nvidia'
+                # 'PrgEnv-nvidia'
             ],
             'descr': 'Login nodes',
             'max_jobs': 4,
@@ -30,7 +30,7 @@ base_config = {
         },
         {
             'name': 'normal',
-            'descr': 'TODI Grace-Hopper GH200',
+            'descr': 'GH200',
             'scheduler': 'slurm',
             'time_limit': '10m',
             'container_platforms': [
@@ -79,14 +79,13 @@ base_config = {
     ]
 }
 
-todi_sys = copy.deepcopy(base_config)
-todi_sys['name'] = 'todi'
-todi_sys['descr'] = 'Piz todi'
-todi_sys['hostnames'] = ['todi']
+base_config['name'] = 'todi'
+base_config['descr'] = 'Piz Todi vcluster'
+base_config['hostnames'] = ['todi']
 
 site_configuration = {
     'systems': [
-        todi_sys,
+        base_config,
     ],
     'environments': [
         {
