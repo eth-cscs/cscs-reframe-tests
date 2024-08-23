@@ -331,7 +331,7 @@ launch_reframe_1arg() {
     echo "# img=$img"
     reframe -C ./config/cscs.py \
         --report-junit=report.xml \
-        "$img" \
+        $img \
         --system=$system \
         -r
 }
