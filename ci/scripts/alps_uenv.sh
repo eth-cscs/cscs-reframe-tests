@@ -328,6 +328,7 @@ launch_reframe_1arg() {
     # export RFM_AUTODETECT_XTHOSTNAME=1
     # reframe -V
     echo "UENV=$UENV"
+    echo "# img=$img"
     reframe -C ./config/cscs.py \
         --report-junit=report.xml \
         "$img" \
@@ -337,8 +338,8 @@ launch_reframe_1arg() {
 # }}}
 
 # {{{ main 
-in=$1
-img=$2
+in="$1"
+img="$2"
 case $in in
     setup_jq) setup_jq;;
     setup_uenv_and_oras) setup_uenv_and_oras;;

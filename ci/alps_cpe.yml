@@ -8,13 +8,7 @@ reframe:
   stage: run
   extends: .f7t-baremetal-runner
   before_script:
-    - echo "FIRECREST_SYSTEM=$FIRECREST_SYSTEM"
-    - echo "F7T_URL=$F7T_URL"
-    - echo "CLUSTER_NAME=$CLUSTER_NAME"
-    - echo "SLURM_PARTITION=$SLURM_PARTITION"
-    - echo "RFM_MODE=$RFM_MODE"
-    - echo "TAG=$TAG"
-    - echo "UARCH=$UARCH"
+    - echo "FIRECREST_SYSTEM=$FIRECREST_SYSTEM / F7T_URL=$F7T_URL / CLUSTER_NAME=$CLUSTER_NAME"
     - uname -a
     - pwd
   script:
