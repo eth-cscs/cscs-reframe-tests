@@ -330,7 +330,7 @@ launch_reframe_1arg() {
     echo "UENV=$UENV"
     reframe -C ./config/cscs.py \
         --report-junit=report.xml \
-        -c "$img" \
+        "$img" \
         --system=$system \
         -r
 }
