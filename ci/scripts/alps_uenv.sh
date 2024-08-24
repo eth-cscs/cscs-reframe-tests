@@ -261,9 +261,6 @@ install_reframe() {
     rm -fr rfm_venv reframe
     python3 -m venv rfm_venv
     source rfm_venv/bin/activate
-    # deps for cscs-reframe-tests.git:
-    pip install python-hostlist
-    pip install requests
     # pip install --upgrade reframe-hpc
     # git clone --depth 1 https://github.com/reframe-hpc/reframe.git
     # multi-uenv support only in reframe > v4.5.2:
@@ -271,6 +268,8 @@ install_reframe() {
     unzip -qq "develop.zip" && cd reframe-develop && ./bootstrap.sh &> /dev/null)
     export PATH="$(pwd)/reframe-develop/bin:$PATH"
     echo "$(pwd)/reframe-develop/bin"
+    # deps for cscs-reframe-tests.git:
+    pip install python-hostlist requests &> .deps.cscs-reframe-tests
     # (wget --quiet "https://github.com/reframe-hpc/reframe/archive/refs/tags/v4.5.2.tar.gz" && \
     # tar xf v4.5.2.tar.gz && \
     # cd reframe-4.5.2 && \
