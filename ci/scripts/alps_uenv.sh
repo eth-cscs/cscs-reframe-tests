@@ -261,6 +261,9 @@ install_reframe() {
     rm -fr rfm_venv reframe
     python3 -m venv rfm_venv
     source rfm_venv/bin/activate
+    # deps for cscs-reframe-tests.git:
+    pip install python-hostlist
+    pip install requests
     # pip install --upgrade reframe-hpc
     # git clone --depth 1 https://github.com/reframe-hpc/reframe.git
     # multi-uenv support only in reframe > v4.5.2:
@@ -280,8 +283,6 @@ install_reframe() {
 install_reframe_tests() {
     rm -fr cscs-reframe-tests
     git clone -b alps https://github.com/eth-cscs/cscs-reframe-tests.git
-    pip install python-hostlist
-    pip install requests
     # TODO: pyfirecrest requires python>=3.7    
     # cscs-reframe-tests/config/utilities/requirements.txt
 }
