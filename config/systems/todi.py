@@ -107,6 +107,7 @@ site_configuration = {
        {
            'name': 'cpe_production',
            'options': [
+               '--report-file=$PWD/latest.json',
                '-c checks/system/integration/todi.py',
                '-c checks/prgenv/mpi.py',
                '-c checks/microbenchmarks/mpi/osu/osu_run.py',

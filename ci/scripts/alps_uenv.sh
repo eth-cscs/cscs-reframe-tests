@@ -281,6 +281,7 @@ install_reframe_tests() {
     rm -fr cscs-reframe-tests
     git clone -b alps https://github.com/eth-cscs/cscs-reframe-tests.git
     pip install python-hostlist
+    pip install requests
     # TODO: pyfirecrest requires python>=3.7    
     # cscs-reframe-tests/config/utilities/requirements.txt
 }
@@ -336,6 +337,19 @@ launch_reframe_1arg() {
         -r
 }
 # }}}
+# {{{ oneuptime
+oneuptime() {
+    json_rpt='latest.json'
+    if [ -f $json_rpt ] ; then
+        num_failures=`jq '.session_info.num_failures' $json_rpt`
+    else
+        num_failures=-1
+        echo "# warning: no json_rpt=$json_rpt file found"
+    fi
+    python oneuptime.py $num_failures
+}
+# }}}
+#
 
 # {{{ main 
 in="$1"
@@ -358,6 +372,7 @@ case $in in
     launch_reframe_1img) launch_reframe_1img "$img";;
     launch_reframe) launch_reframe;;
     launch_reframe_1arg) launch_reframe_1arg "$img";;
+    oneuptime) oneuptime;;
     *) echo "unknown arg=$in";;
 esac
 #old [[ -d $oras_tmp ]] && { echo "cleaning $oras_tmp"; rm -fr $oras_tmp; }
