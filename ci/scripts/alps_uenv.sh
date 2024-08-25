@@ -347,7 +347,8 @@ oneuptime() {
         num_failures=-1
         echo "# warning: no json_rpt=$json_rpt file found"
     fi
-    python ./ci/scripts/oneuptime.py $num_failures
+    echo "Updating oneuptime status page"
+    python ./ci/scripts/oneuptime.py $CLUSTER_NAME $num_failures
 }
 # }}}
 #
