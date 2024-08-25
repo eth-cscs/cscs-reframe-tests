@@ -347,7 +347,7 @@ oneuptime() {
         num_failures=-1
         echo "# warning: no json_rpt=$json_rpt file found"
     fi
-    python oneuptime.py $num_failures
+    python scripts/oneuptime.py $num_failures
 }
 # }}}
 #
