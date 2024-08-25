@@ -339,6 +339,7 @@ launch_reframe_1arg() {
 # }}}
 # {{{ oneuptime
 oneuptime() {
+    source rfm_venv/bin/activate
     json_rpt='latest.json'
     if [ -f $json_rpt ] ; then
         num_failures=`jq '.session_info.num_failures' $json_rpt`
