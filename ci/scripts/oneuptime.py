@@ -8,7 +8,7 @@ import sys
 api_url = "https://oneuptime.com"
 project_id = "ee08f8ce-375c-4082-95c6-dd55b2f0d1fd"
 monitor_id = "2de73dd3-0e06-437f-a8fd-fec3169e8b05"
-# -> https://oneuptime.com/status-page/5edbd971-8b4b-4ff3-8f14-691a1fc94c31
+status_page_url='https://oneuptime.com/status-page/5edbd971-8b4b-4ff3-8f14-691a1fc94c31'
 
 
 def set_monitor_status(monitor_id, status_label):
@@ -53,7 +53,7 @@ if __name__ == '__main__':
         print(f'Error: $RFM_ONEUPTIME_APIKEY is not set, exiting...')
         sys.exit(1)
 
-    num_failures = sys.argv[1]
+    cluster_name, num_failures = sys.argv[1:3]
     if int(num_failures) == 0:
         status_label = "Operational"
     elif int(num_failures) == -1:
@@ -62,6 +62,7 @@ if __name__ == '__main__':
         status_label = "Degraded"
 
     try:
+        print(f"Updating {status_page_url}@{cluster_name}@{status_label}")
         set_monitor_status(monitor_id, status_label)
     except KeyError as e:
         print(f'Error: Unknown key err={e}')
