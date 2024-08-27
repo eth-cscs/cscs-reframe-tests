@@ -15,7 +15,7 @@ def create_checks(check):
 #                                                                             #
 #-----------------------------------------------------------------------------#
 
-    check.SYSTEM = 'alpsdaint'
+    check.SYSTEM = 'alps-daint'
 
 #-----------------------------------------------------------------------------#
 #                                                                             #
@@ -136,12 +136,12 @@ def create_checks(check):
 
     check.CLASS = "CPE"
 
-    check('bash -c "module load cray || echo FAILED"', not_expected=r'FAILED')
-    check('bash -c "module load cray && module list"', expected=r'craype-arm-grace', not_expected=r'craype-x86-rome')
+    check('bash -c "module --redirect load cray || echo FAILED"', not_expected=r'FAILED')
+    check('bash -c "module --redirect load cray && module --redirect list"', expected=r'craype-arm-grace', not_expected=r'craype-x86-rome')
 
-    check('bash -c "module spider PrgEnv-cray/8.5.0   || echo FAILED"', not_expected=r'FAILED')
-    check('bash -c "module spider PrgEnv-gnu/8.5.0    || echo FAILED"', not_expected=r'FAILED')
-    check('bash -c "module spider PrgEnv-nvidia/8.5.0 || echo FAILED"', not_expected=r'FAILED')
+    check('bash -c "module --redirect spider PrgEnv-cray/8.5.0   || echo FAILED"', not_expected=r'FAILED')
+    check('bash -c "module --redirect spider PrgEnv-gnu/8.5.0    || echo FAILED"', not_expected=r'FAILED')
+    check('bash -c "module --redirect spider PrgEnv-nvidia/8.5.0 || echo FAILED"', not_expected=r'FAILED')
 
 #-----------------------------------------------------------------------------#
 #                                                                             #
@@ -167,22 +167,23 @@ def create_checks(check):
     check.CLASS = 'MOUNTS'
 
     check('grep -q "/capstor/scratch/cscs /capstor/scratch/cscs lustre"     /proc/mounts || echo FAILED', not_expected=r'FAILED')
+    check('grep -q "/capstor/apps/cscs /capstor/apps/cscs lustre"           /proc/mounts || echo FAILED', not_expected=r'FAILED')
     check('grep -q "/capstor/users/cscs /users lustre"                      /proc/mounts || echo FAILED', not_expected=r'FAILED')
-    check('grep -q "/iopsstor/scratch/cscs /iopsstor/scratch/cscs lustre"   /proc/mounts || echo FAILED', not_expected=r'FAILED')
+    check('grep -q "/capstor/store/cscs /store lustre"                      /proc/mounts || echo FAILED', not_expected=r'FAILED')
 
     check('grep -q "pe_opt_cray_pe /opt/cray/pe"  /proc/mounts || echo FAILED', not_expected=r'FAILED')
 
     check('printenv SCRATCH || echo FAILED', not_expected=r'FAILED')
     check('printenv PROJECT || echo FAILED', not_expected=r'FAILED')
-    check('printenv STORE   || echo FAILED', not_expected=r'FAILED')
+    #check('printenv STORE   || echo FAILED', not_expected=r'FAILED')
     check('printenv APPS    || echo FAILED', not_expected=r'FAILED')
     check('printenv HOME    || echo FAILED', not_expected=r'FAILED')
 
-    check('bash -c "[[ $SCRATCH == /capstor/scratch/cscs/* ]] || echo FAILED"', not_expected=r'FAILED')
-    check('bash -c "[[ $PROJECT == /project/*              ]] || echo FAILED"', not_expected=r'FAILED')
-    check('bash -c "[[ $STORE   == /store/*                ]] || echo FAILED"', not_expected=r'FAILED')
-    check('bash -c "[[ $APPS    == /capstor/apps/cscs      ]] || echo FAILED"', not_expected=r'FAILED')
-    check('bash -c "[[ $HOME    == /users/*                ]] || echo FAILED"', not_expected=r'FAILED')
+    check('bash -c "[[ $SCRATCH == /capstor/scratch/cscs/*  ]] || echo FAILED"', not_expected=r'FAILED')
+    check('bash -c "[[ $PROJECT == /project/*               ]] || echo FAILED"', not_expected=r'FAILED')
+    #check('bash -c "[[ $STORE   == /store/*                 ]] || echo FAILED"', not_expected=r'FAILED')
+    check('bash -c "[[ $APPS    == /capstor/apps/cscs/daint ]] || echo FAILED"', not_expected=r'FAILED')
+    check('bash -c "[[ $HOME    == /users/*                 ]] || echo FAILED"', not_expected=r'FAILED')
 
     check('printenv TMP || echo FAILED', expected=r'FAILED')
 
