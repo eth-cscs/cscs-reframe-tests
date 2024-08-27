@@ -24,6 +24,7 @@ reframe:
     when: on_failure
     paths:
       - report.xml
+      - latest.json
     reports:
       junit: report.xml
 
