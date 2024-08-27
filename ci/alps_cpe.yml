@@ -30,8 +30,7 @@ reframe:
 status_page:
   stage: status
   extends: .f7t-baremetal-runner
-  needs:
-    - job: run
+  needs: ['run']
   script:
     - pwd
     - ls -a
