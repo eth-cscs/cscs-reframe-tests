@@ -339,7 +339,7 @@ launch_reframe_1arg() {
 # }}}
 # {{{ oneuptime
 oneuptime() {
-    source rfm_venv/bin/activate
+    # source rfm_venv/bin/activate
     json_rpt='latest.json'
     if [ -f $json_rpt ] ; then
         num_failures=`jq '.session_info.num_failures' $json_rpt`
@@ -348,10 +348,9 @@ oneuptime() {
         echo "# warning: no json_rpt=$json_rpt file found"
     fi
     echo "Updating oneuptime status page"
-    python ./ci/scripts/oneuptime.py $CLUSTER_NAME $num_failures
+    python3 ./ci/scripts/oneuptime.py $CLUSTER_NAME $num_failures
 }
 # }}}
-#
 
 # {{{ main 
 in="$1"
