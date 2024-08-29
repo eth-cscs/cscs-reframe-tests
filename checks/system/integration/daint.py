@@ -3,47 +3,51 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
+from utils import Check
+
+
 # --------------------------------------------------------------------------- #
-#                         S T A R T   O F   C H E C K S                       #
+#                         S T A R T   O F   C H E C K S
 # --------------------------------------------------------------------------- #
+
 
 def create_checks(check):
 
-#-----------------------------------------------------------------------------#
-#                                                                             #
-#                   These checks are only intended for Eiger                  #
-#                                                                             #
-#-----------------------------------------------------------------------------#
+    # ----------------------------------------------------------------------- #
+    #
+    #                   These checks are only intended for Alps-Daint
+    #
+    # ----------------------------------------------------------------------- #
 
     check.SYSTEM = 'alps-daint'
 
-#-----------------------------------------------------------------------------#
-#                                                                             #
-#                       Basic sanity checks for testing                       #
-#                                                                             #
-#-----------------------------------------------------------------------------#
+    # ----------------------------------------------------------------------- #
+    #
+    #                       Basic sanity checks for testing
+    #
+    # ----------------------------------------------------------------------- #
 
     check.CLASS = 'SLEEP'
 
-    check('timeout -v -k 3 3 sleep 1', expected=[r'',                    'stderr'])
+    check('timeout -v -k 3 3 sleep 1', expected=[r'', 'stderr'])
     check('timeout -v -k 3 2 sleep 4', expected=[r'sending signal TERM', 'stderr'])
 
-#-----------------------------------------------------------------------------#
-#                                                                             #
-#                                   Filesytem                                 #
-#                                                                             #
-#-----------------------------------------------------------------------------#
+    # ----------------------------------------------------------------------- #
+    #
+    #                                   Filesytem
+    #
+    # ----------------------------------------------------------------------- #
 
     check.CLASS = 'FS'
 
-    check('timeout -v -k 5 3 df > /dev/null',                   not_expected=[r'sending signal',  'stderr'])
-    check('timeout -v -k 3 3 df | grep -v /dev | grep 100%',    expected=r'', not_expected=[r'sending signal',  'stderr'])
+    check('timeout -v -k 5 3 df > /dev/null',                not_expected=[r'sending signal',  'stderr'])
+    check('timeout -v -k 3 3 df | grep -v /dev | grep 100%', expected=r'', not_expected=[r'sending signal',  'stderr'])
 
-#-----------------------------------------------------------------------------#
-#                                                                             #
-#                                   Network                                   #
-#                                                                             #
-#-----------------------------------------------------------------------------#
+    # ----------------------------------------------------------------------- #
+    #
+    #                                   Network
+    #
+    # ----------------------------------------------------------------------- #
 
     check.CLASS = 'PING'
 
@@ -60,9 +64,9 @@ def create_checks(check):
     check('printenv https_proxy', expected=r'http://proxy.cscs.ch:8080', where='+remote')
     check('printenv no_proxy',    expected=r'.local,.cscs.ch,localhost,148.187.0.0/16,10.0.0.0/8,172.16.0.0/12', where='+remote')
 
-    check('printenv http_proxy',  expected=r'', where='-remote')
+    check('printenv http_proxy', expected=r'', where='-remote')
     check('printenv https_proxy', expected=r'', where='-remote')
-    check('printenv no_proxy',    expected=r'', where='-remote')
+    check('printenv no_proxy', expected=r'', where='-remote')
 
     check('curl -s www.google.com -o /dev/null || echo FAILED', not_expected=r'FAILED')
 
@@ -89,34 +93,33 @@ def create_checks(check):
     check('ip address show | grep -A6 hsn3: ', expected=r'hsn3.*state UP')
     check('ip address show | grep -A6 hsn3: ', expected=r'inet 172.28.*.*/16 brd 172.28.255.255 scope global hsn3')
 
-
-#-----------------------------------------------------------------------------#
-#                                                                             #
-#                                     LDAP                                    #
-#                                                                             #
-#-----------------------------------------------------------------------------#
+    # ----------------------------------------------------------------------- #
+    #
+    #                                     LDAP
+    #
+    # ----------------------------------------------------------------------- #
 
     check.CLASS = 'LDAP'
 
-    check('ping -n -q -c 5  ldap.cscs.ch',  expected=r'5 packets transmitted, 5 received, 0% packet loss')
+    check('ping -n -q -c 5  ldap.cscs.ch', expected=r'5 packets transmitted, 5 received, 0% packet loss')
     check('timeout -v -k 3 3 getent hosts', expected=r'localhost', not_expected=r'sending signal')
 
-#-----------------------------------------------------------------------------#
-#                                                                             #
-#                               OS installation                               #
-#                                                                             #
-#-----------------------------------------------------------------------------#
+    # ----------------------------------------------------------------------- #
+    #
+    #                               OS installation
+    #
+    # ----------------------------------------------------------------------- #
 
     check.CLASS = 'OSINSTALL'
 
     check('cat /etc/os-release', expected=r'PRETTY_NAME="SUSE Linux Enterprise Server 15 SP5"')
     check('locale', expected=r'LANG=C')
 
-#-----------------------------------------------------------------------------#
-#                                                                             #
-#                                 OS services                                 #
-#                                                                             #
-#-----------------------------------------------------------------------------#
+    # ----------------------------------------------------------------------- #
+    #
+    #                                 OS services
+    #
+    # ----------------------------------------------------------------------- #
 
     check.CLASS = 'OSSERVICE'
 
@@ -128,11 +131,11 @@ def create_checks(check):
 
     check('ss -ltup | grep :http || echo FAILED', expected=r'FAILED')
 
-#-----------------------------------------------------------------------------#
-#                                                                             #
-#                         Cray Programming Environment                        #
-#                                                                             #
-#-----------------------------------------------------------------------------#
+    # ----------------------------------------------------------------------- #
+    #
+    #                         Cray Programming Environment
+    #
+    # ----------------------------------------------------------------------- #
 
     check.CLASS = "CPE"
 
@@ -143,11 +146,11 @@ def create_checks(check):
     check('bash -c "module --redirect spider PrgEnv-gnu/8.5.0    || echo FAILED"', not_expected=r'FAILED')
     check('bash -c "module --redirect spider PrgEnv-nvidia/8.5.0 || echo FAILED"', not_expected=r'FAILED')
 
-#-----------------------------------------------------------------------------#
-#                                                                             #
-#                                Basic tools                                  #
-#                                                                             #
-#-----------------------------------------------------------------------------#
+    # ----------------------------------------------------------------------- #
+    #
+    #                                Basic tools
+    #
+    # ----------------------------------------------------------------------- #
 
     check.CLASS = 'TOOLS'
 
@@ -156,13 +159,16 @@ def create_checks(check):
     check('which gcc    || echo FAILED', not_expected=r'FAILED')
     check('which gcc-12 || echo FAILED', not_expected=r'FAILED')
 
+    # CI-Ext
+    check('which jq     || echo FAILED', not_expected=r'FAILED')
+
     check('which emacs || echo FAILED', not_expected=r'FAILED')
 
-#-----------------------------------------------------------------------------#
-#                                                                             #
-#                               Mount-points                                  #
-#                                                                             #
-#-----------------------------------------------------------------------------#
+    # ----------------------------------------------------------------------- #
+    #
+    #                               Mount-points
+    #
+    # ----------------------------------------------------------------------- #
 
     check.CLASS = 'MOUNTS'
 
@@ -187,11 +193,11 @@ def create_checks(check):
 
     check('printenv TMP || echo FAILED', expected=r'FAILED')
 
-#-----------------------------------------------------------------------------#
-#                                                                             #
-#                                   Slurm                                     #
-#                                                                             #
-#-----------------------------------------------------------------------------#
+    # ----------------------------------------------------------------------- #
+    #
+    #                                   Slurm
+    #
+    # ----------------------------------------------------------------------- #
 
     check.CLASS = 'SLURM'
 
@@ -201,21 +207,21 @@ def create_checks(check):
     check('scontrol ping', expected=r'Slurmctld\(primary\) at .* is UP')
     check('scontrol ping', expected=r'Slurmctld\(backup\) at .* is UP')
 
-#-----------------------------------------------------------------------------#
-#                                                                             #
-#                           vService fundamentals                             #
-#                                                                             #
-#-----------------------------------------------------------------------------#
+    # ----------------------------------------------------------------------- #
+    #
+    #                           vService fundamentals
+    #
+    # ----------------------------------------------------------------------- #
 
     check.CLASS = 'VSBASE'
 
     check('which nomad || echo FAILED', not_expected=r'FAILED')
 
-#-----------------------------------------------------------------------------#
-#                                                                             #
-#                             Expected vServices                              #
-#                                                                             #
-#-----------------------------------------------------------------------------#
+    # ----------------------------------------------------------------------- #
+    #
+    #                             Expected vServices
+    #
+    # ----------------------------------------------------------------------- #
 
     check.CLASS = 'VSERVICES'
 
@@ -234,21 +240,14 @@ def create_checks(check):
     check('bash -c "uenv image find || echo FAILED"', expected=           r'cp2k/.*gh200',   not_expected=r'FAILED');
     check('bash -c "uenv image find || echo FAILED"', expected=          r'arbor/.*gh200',   not_expected=r'FAILED');
 
-
-
 # --------------------------------------------------------------------------- #
-#                           E N D   O F   C H E C K S                         #
+#                           E N D   O F   C H E C K S
 # --------------------------------------------------------------------------- #
 
-
-
-
-# --------------------------------------------------------------------------- # 
-#                          S T A R T   U P   C O D E                          #
+# --------------------------------------------------------------------------- #
+#                          S T A R T   U P   C O D E
 # --------------------------------------------------------------------------- #
 
-
-from utils import Check 
 
 check = Check()
 
@@ -256,6 +255,7 @@ if __name__ == '__main__':
     check.DEBUG = True
 else:
     import reframe as rfm
+
     check.MODULE_NAME = __name__
 
 create_checks(check)
