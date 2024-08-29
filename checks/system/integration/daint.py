@@ -162,6 +162,7 @@ def create_checks(check):
     # CI-Ext
     check('which jq     || echo FAILED', not_expected=r'FAILED')
 
+    # TODO: deploy https://github.com/eth-cscs/alps-uenv/pull/130
     check('which emacs || echo FAILED', not_expected=r'FAILED')
 
     # ----------------------------------------------------------------------- #
