@@ -268,6 +268,8 @@ install_reframe() {
     unzip -qq "develop.zip" && cd reframe-develop && ./bootstrap.sh &> /dev/null)
     export PATH="$(pwd)/reframe-develop/bin:$PATH"
     echo "$(pwd)/reframe-develop/bin"
+    # deps for cscs-reframe-tests.git:
+    pip install python-hostlist requests &> .deps.cscs-reframe-tests
     # (wget --quiet "https://github.com/reframe-hpc/reframe/archive/refs/tags/v4.5.2.tar.gz" && \
     # tar xf v4.5.2.tar.gz && \
     # cd reframe-4.5.2 && \
@@ -280,7 +282,6 @@ install_reframe() {
 install_reframe_tests() {
     rm -fr cscs-reframe-tests
     git clone -b alps https://github.com/eth-cscs/cscs-reframe-tests.git
-    pip install python-hostlist
     # TODO: pyfirecrest requires python>=3.7    
     # cscs-reframe-tests/config/utilities/requirements.txt
 }
@@ -321,10 +322,42 @@ launch_reframe() {
     # -n HelloWorldTestMPIOpenMP
 }
 # }}}
+# {{{ launch_reframe_1arg
+launch_reframe_1arg() {
+    export RFM_AUTODETECT_METHODS="cat /etc/xthostname,hostname"
+    export RFM_USE_LOGIN_SHELL=1
+    # export RFM_AUTODETECT_XTHOSTNAME=1
+    # reframe -V
+    echo "UENV=$UENV"
+    echo "# img=$img"
+    reframe -C ./config/cscs.py \
+        --report-junit=report.xml \
+        $img \
+        --system=$system \
+        -r
+}
+# }}}
+# {{{ oneuptime
+oneuptime() {
+    # source rfm_venv/bin/activate
+    CLUSTER_NAME=$1
+    echo "CLUSTER_NAME=$CLUSTER_NAME / $1"
+    json_rpt='latest.json'
+    if [ -f $json_rpt ] ; then
+        num_failures=`grep -m1 num_failures $json_rpt |cut -d: -f2 |cut -d, -f1 |tr -d " "`
+        # num_failures=`jq '.session_info.num_failures' $json_rpt`
+    else
+        num_failures=-1
+        echo "# warning: no json_rpt=$json_rpt file found"
+    fi
+    echo "Updating oneuptime status page"
+    python3 ./ci/scripts/oneuptime.py $CLUSTER_NAME $num_failures
+}
+# }}}
 
 # {{{ main 
-in=$1
-img=$2
+in="$1"
+img="$2"
 case $in in
     setup_jq) setup_jq;;
     setup_uenv_and_oras) setup_uenv_and_oras;;
@@ -342,9 +375,9 @@ case $in in
     uenv_sqfs_fullpath) uenv_sqfs_fullpath "$img";;
     launch_reframe_1img) launch_reframe_1img "$img";;
     launch_reframe) launch_reframe;;
+    launch_reframe_1arg) launch_reframe_1arg "$img";;
+    oneuptime) oneuptime "$img";;
     *) echo "unknown arg=$in";;
 esac
 #old [[ -d $oras_tmp ]] && { echo "cleaning $oras_tmp"; rm -fr $oras_tmp; }
-# }}}
-
-# TODO: oras attach rpt
+# }}} 
