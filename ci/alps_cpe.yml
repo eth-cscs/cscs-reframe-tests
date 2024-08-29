@@ -38,5 +38,5 @@ status_page:
     - pwd
     - ls -a
     - pip install requests
-    - ./ci/scripts/alps_uenv.sh oneuptime
+    - ./ci/scripts/alps_uenv.sh oneuptime $FIRECREST_SYSTEM
   when: always        

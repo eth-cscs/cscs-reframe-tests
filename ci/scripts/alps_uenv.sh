@@ -340,6 +340,8 @@ launch_reframe_1arg() {
 # {{{ oneuptime
 oneuptime() {
     # source rfm_venv/bin/activate
+    CLUSTER_NAME=$1
+    echo "CLUSTER_NAME=$CLUSTER_NAME / $1"
     json_rpt='latest.json'
     if [ -f $json_rpt ] ; then
         num_failures=`grep -m1 num_failures $json_rpt |cut -d: -f2 |tr -d " "`
@@ -374,7 +376,7 @@ case $in in
     launch_reframe_1img) launch_reframe_1img "$img";;
     launch_reframe) launch_reframe;;
     launch_reframe_1arg) launch_reframe_1arg "$img";;
-    oneuptime) oneuptime;;
+    oneuptime) oneuptime "$in";;
     *) echo "unknown arg=$in";;
 esac
 #old [[ -d $oras_tmp ]] && { echo "cleaning $oras_tmp"; rm -fr $oras_tmp; }
