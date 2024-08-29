@@ -344,7 +344,7 @@ oneuptime() {
     echo "CLUSTER_NAME=$CLUSTER_NAME / $1"
     json_rpt='latest.json'
     if [ -f $json_rpt ] ; then
-        num_failures=`grep -m1 num_failures $json_rpt |cut -d: -f2 |tr -d " "`
+        num_failures=`grep -m1 num_failures $json_rpt |cut -d: -f2 |cut -d, -f1 |tr -d " "`
         # num_failures=`jq '.session_info.num_failures' $json_rpt`
     else
         num_failures=-1
