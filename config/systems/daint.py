@@ -94,7 +94,7 @@ site_configuration = {
         {
             'name': 'PrgEnv-cray',
             'features': ['serial', 'openmp', 'mpi', 'cuda', 'openacc', 'hdf5',
-                         'netcdf-hdf5parallel', 'pnetcdf', 'openmp', 'opencl'],
+                         'netcdf-hdf5parallel', 'pnetcdf'],
             'target_systems': ['daint'],
             'modules': ['cray', 'PrgEnv-cray', 'craype-arm-grace']
         },
@@ -109,14 +109,14 @@ site_configuration = {
             'name': 'PrgEnv-nvidia',
             'target_systems': ['daint'],
             'features': ['serial', 'openmp', 'mpi', 'cuda', 'alloc_speed',
-                         'hdf5', 'netcdf-hdf5parallel', 'pnetcdf', 'openmp'],
+                         'hdf5', 'netcdf-hdf5parallel', 'pnetcdf'],
             'modules': ['cray', 'PrgEnv-gnu', 'craype-arm-grace']
         },
         {
             'name': 'PrgEnv-nvhpc',
             'target_systems': ['daint'],
             'features': ['serial', 'openmp', 'mpi', 'cuda', 'alloc_speed',
-                         'hdf5', 'netcdf-hdf5parallel', 'pnetcdf', 'openmp'],
+                         'hdf5', 'netcdf-hdf5parallel', 'pnetcdf'],
             'modules': ['cray', 'PrgEnv-gnu', 'craype-arm-grace']
         },
     ],
@@ -132,7 +132,6 @@ site_configuration = {
                '-c checks/microbenchmarks/cpu/alloc_speed/alloc_speed.py',
                '-c checks/microbenchmarks/cpu/stream/stream.py',
                '-c checks/prgenv/affinity_check.py',
-               '-c checks/prgenv/opencl.py',
            ],
            'target_systems': ['daint'],
        }
