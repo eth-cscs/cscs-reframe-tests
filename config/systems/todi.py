@@ -6,57 +6,86 @@
 # ReFrame CSCS settings
 #
 
-site_configuration = {
-    'systems': [
+import reframe.utility.osext as osext
+import copy
+
+
+base_config = {
+    'modules_system': 'lmod',
+    # 'resourcesdir': '/apps/common/UES/reframe/resources',
+    'partitions': [
         {
-            'name': 'todi',
-            'descr': 'todi vcluster',
-            'hostnames': ['todi'],
-            'modules_system': 'lmod',
-            'partitions': [
+            'name': 'login',
+            'scheduler': 'local',
+            'time_limit': '10m',
+            'environs': [
+                'builtin',
+                'PrgEnv-cray',
+                'PrgEnv-gnu',
+                # 'PrgEnv-nvidia'
+            ],
+            'descr': 'Login nodes',
+            'max_jobs': 4,
+            'launcher': 'local'
+        },
+        {
+            'name': 'normal',
+            'descr': 'GH200',
+            'scheduler': 'slurm',
+            'time_limit': '10m',
+            'container_platforms': [
+#                 {
+#                     'type': 'Sarus',
+#                     #'modules': ['sarus']
+#                 },
+#                 {
+#                     'type': 'Singularity',
+#                     #'modules': ['singularity/3.6.4-todi']
+#                 }
+            ],
+            'environs': [
+                'builtin',
+                'PrgEnv-cray',
+                'PrgEnv-gnu',
+            ],
+            'max_jobs': 100,
+            'extras': {
+                'cn_memory': 825,
+            },
+            'features': ['ce', 'gpu', 'nvgpu', 'remote', 'scontrol', 'uenv'],
+            'resources': [
                 {
-                    'name': 'login',
-                    'scheduler': 'local',
-                    'time_limit': '10m',
-                    'environs': [
-                        'builtin',
-                    ],
-                    'descr': 'Login nodes',
-                    'max_jobs': 4,
-                    'launcher': 'local'
+                    'name': 'switches',
+                    'options': ['--switches={num_switches}']
                 },
                 {
-                    'name': 'normal',
-                    'scheduler': 'slurm',
-                    'time_limit': '10m',
-                    'environs': [
-                        'builtin',
-                        'PrgEnv-cray',
-                        'PrgEnv-gnu'
-                    ],
-                    'max_jobs': 100,
-                    'extras': {
-                        'cn_memory': 500,
-                    },
-                    'resources': [
-                        {
-                            'name': 'memory',
-                            'options': ['--mem={mem_per_node}']
-                        },
-                    ],
-                    'features': ['ce', 'gpu', 'nvgpu', 'remote', 'scontrol', 'uenv'],
-                    'devices': [
-                        {
-                            'type': 'gpu',
-                            'arch': 'sm_90',
-                            'num_devices': 4
-                        }
-                    ],
-                    'launcher': 'srun'
+                    'name': 'gres',
+                    'options': ['--gres={gres}']
+                },
+                {
+                    'name': 'memory',
+                    'options': ['--mem={mem_per_node}']
                 },
             ],
+            'devices': [
+                {
+                    'type': 'gpu',
+                    'arch': 'sm_90',
+                    'num_devices': 4
+                }
+                ],
+            'launcher': 'srun',
         },
+    ]
+}
 
+base_config['name'] = 'todi'
+base_config['descr'] = 'Piz Todi vcluster'
+base_config['hostnames'] = ['todi']
+
+site_configuration = {
+    'systems': [
+        base_config,
     ],
     'environments': [
         {
@@ -75,19 +104,20 @@ site_configuration = {
         },
     ],
     'modes': [
-        {
-            'name': 'production',
-            'options': [
-                '--unload-module=reframe',
-                '--exec-policy=async',
-                '-Sstrict_check=1',
-                '--prefix=$SCRATCH/regression/production',
-                '--report-file=$SCRATCH/regression/production/reports/prod_report_{sessionid}.json',
-                '--save-log-files',
-                '--tag=production',
-                '--timestamp=%F_%H-%M-%S'
-            ],
-            'target_systems': ['todi'],
-        }
-    ]
+       {
+           'name': 'cpe_production',
+           'options': [
+               '--report-file=$PWD/latest.json',
+               '-c checks/system/integration/todi.py',
+               '-c checks/prgenv/mpi.py',
+               '-c checks/microbenchmarks/mpi/osu/osu_run.py',
+               '-c checks/microbenchmarks/mpi/osu/osu_tests.py',
+               '-c checks/microbenchmarks/cpu/alloc_speed/alloc_speed.py',
+               '-c checks/microbenchmarks/cpu/stream/stream.py',
+               '-c checks/prgenv/affinity_check.py',
+               '-c checks/prgenv/opencl.py',
+           ],
+           'target_systems': ['todi'],
+       }
+   ]
 }

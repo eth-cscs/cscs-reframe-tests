@@ -1,0 +1,42 @@
+include:
+  - remote: 'https://gitlab.com/cscs-ci/recipes/-/raw/master/templates/v2/.ci-ext.yml'
+
+stages:
+  - run
+  - status
+
+reframe:
+  stage: run
+  extends: .f7t-baremetal-runner
+  before_script:
+    - echo "FIRECREST_SYSTEM=$FIRECREST_SYSTEM / F7T_URL=$F7T_URL / CLUSTER_NAME=$CLUSTER_NAME"
+    - uname -a
+    - pwd
+  script:
+    - hostname
+    - rfm_path=$(./ci/scripts/alps_uenv.sh install_reframe)
+    - echo "rfm_path=$rfm_path"
+    - export PATH=$rfm_path:$PATH
+    - reframe -V
+    - ./ci/scripts/alps_uenv.sh launch_reframe_1arg "--mode cpe_production"
+    # - ./ci/scripts/alps_uenv.sh oneuptime
+  artifacts:
+    when: always
+    # on_failure
+    paths:
+      - report.xml
+      - latest.json
+    reports:
+      junit: report.xml
+
+status_page:
+  stage: status
+  needs: ['reframe']
+  extends: .container-runner-lightweight-zen2
+  image: python:3.9
+  script:
+    - pwd
+    - ls -a
+    - pip install requests
+    - ./ci/scripts/alps_uenv.sh oneuptime $FIRECREST_SYSTEM
+  when: always        
