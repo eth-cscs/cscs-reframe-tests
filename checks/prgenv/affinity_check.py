@@ -37,7 +37,7 @@ class CompileAffinityTool(rfm.CompileOnlyRegressionTest):
 
     @sanity_function
     def assert_exec_exists(self):
-        return sn.assert_found(r'affinity', self.stdout)
+        return sn.path_exists(os.path.join(self.stagedir, 'affinity'))
 
 
 class CompileAffinityToolNoOmp(CompileAffinityTool):
@@ -60,20 +60,6 @@ class AffinityTestBase(rfm.RunOnlyRegressionTest):
     cpu_bind = variable(str, type(None), value=None)
     hint = variable(str, type(None), value=None)
     affinity_tool = fixture(CompileAffinityTool, scope='environment')
-
-    # Variable to specify system specific launcher options. This will override
-    # any of the above global options.
-    #
-    # Example:
-    #
-    # system = {
-    #     'daint:mc': {
-    #         'multithreading': False,
-    #         'cpu_bind':       'none',
-    #         'hint':           'nomultithread',
-    #     }
-    # }
-    system = variable(dict, value={})
 
     valid_systems = [
         '+remote'
@@ -217,30 +203,15 @@ class AffinityTestBase(rfm.RunOnlyRegressionTest):
 
     @run_before('run')
     def set_multithreading(self):
-        '''Hook to control multithreading settings for each system.'''
-
-        cp = self.current_partition.fullname
-        mthread = (
-            self.system.get(cp, {}).get('multithreading', None) or
-            self.multithread
-        )
-        if mthread:
-            self.use_multithreading = mthread
+        self.use_multithreading = self.multithread
 
     @run_before('run')
     def set_launcher(self):
-        '''Hook to control hints and cpu-bind for each system.'''
+        if self.cpu_bind:
+            self.job.launcher.options += [f'--cpu-bind={self.cpu_bind}']
 
-        cp = self.current_partition.fullname
-        cpu_bind = (
-            self.system.get(cp, {}).get('cpu-bind', None) or self.cpu_bind
-        )
-        if cpu_bind:
-            self.job.launcher.options += [f'--cpu-bind={cpu_bind}']
-
-        hint = self.system.get(cp, {}).get('hint', None) or self.hint
-        if hint:
-            self.job.launcher.options += [f'--hint={hint}']
+        if self.hint:
+            self.job.launcher.options += [f'--hint={self.hint}']
 
 
 class AffinityOpenMPBase(AffinityTestBase):
@@ -448,6 +419,11 @@ class OneTaskPerSocketOpenMP(OneTaskPerSocketOpenMPnomt):
     @property
     def num_omp_threads(self):
         return int(self.num_cpus/self.num_sockets)
+
+    @run_after('setup')
+    def skip_if_no_mt(self):
+        self.skip_if(self.num_cpus_per_core == 1,
+                     'the cpu does not support multithreading')
 
 
 @rfm.simple_test
