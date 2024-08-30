@@ -44,7 +44,7 @@ base_config = {
                 },
                 {
                     'type': 'Singularity',
-                    'modules': ['singularity/3.5.3-eiger']
+                    'modules': ['cray', 'singularity/3.5.3-eiger']
                 }
             ],
             'environs': [
@@ -81,12 +81,6 @@ base_config = {
                     'name': 'memory',
                     'options': ['--mem={mem_per_node}']
                 },
-                {
-                    'name': 'uenv',
-                    'options': [
-                        '--uenv={file}:{mount}',
-                    ]
-                }
             ],
             'launcher': 'srun'
         },
@@ -151,22 +145,22 @@ site_configuration = {
         {
             'name': 'cpeAMD',
             'target_systems': ['eiger'],
-            'modules': ['cpeAMD']
+            'modules': ['cray', 'cpeAMD']
         },
         {
             'name': 'cpeCray',
             'target_systems': ['eiger'],
-            'modules': ['cpeCray']
+            'modules': ['cray', 'cpeCray']
         },
         {
             'name': 'cpeGNU',
             'target_systems': ['eiger'],
-            'modules': ['cpeGNU']
+            'modules': ['cray', 'cpeGNU']
         },
         {
             'name': 'cpeIntel',
             'target_systems': ['eiger'],
-            'modules': ['cpeIntel']
+            'modules': ['cray', 'cpeIntel']
         },
     ],
     'modes': [

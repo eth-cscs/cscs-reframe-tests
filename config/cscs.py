@@ -64,3 +64,15 @@ if site_configuration and uenv_environs:
 
                 # Replace the partition environs with the uenv ones
                 partition['environs'] = valid_system_uenv_names
+
+                # Add the corresponding resources for uenv
+                resources = partition.get('resources', [])
+                resources.append(
+                    {
+                        'name': 'uenv',
+                        'options': [
+                            '--uenv={file}:{mount}',
+                        ]
+                    }
+                )
+                partition['resources'] = resources
