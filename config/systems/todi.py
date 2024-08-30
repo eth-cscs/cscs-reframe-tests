@@ -12,7 +12,7 @@ site_configuration = {
             'name': 'todi',
             'descr': 'todi vcluster',
             'hostnames': ['todi'],
-            'modules_system': 'nomod',
+            'modules_system': 'lmod',
             'partitions': [
                 {
                     'name': 'login',
@@ -31,6 +31,8 @@ site_configuration = {
                     'time_limit': '10m',
                     'environs': [
                         'builtin',
+                        'PrgEnv-cray',
+                        'PrgEnv-gnu'
                     ],
                     'max_jobs': 100,
                     'extras': {
@@ -52,7 +54,24 @@ site_configuration = {
                     ],
                     'launcher': 'srun'
                 },
-            ]
+            ],
+        },
+
+    ],
+    'environments': [
+        {
+            'name': 'PrgEnv-cray',
+            'features': ['serial', 'openmp', 'mpi', 'cuda', 'openacc', 'hdf5',
+                         'netcdf-hdf5parallel', 'pnetcdf', 'openmp', 'opencl'],
+            'target_systems': ['todi'],
+            'modules': ['cray', 'PrgEnv-cray', 'craype-arm-grace']
+        },
+        {
+            'name': 'PrgEnv-gnu',
+            'target_systems': ['todi'],
+            'features': ['serial', 'openmp', 'mpi', 'cuda', 'alloc_speed',
+                         'hdf5', 'netcdf-hdf5parallel', 'pnetcdf', 'openmp'],
+            'modules': ['cray', 'PrgEnv-gnu', 'craype-arm-grace']
         },
     ],
     'modes': [

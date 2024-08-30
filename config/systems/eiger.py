@@ -81,12 +81,6 @@ base_config = {
                     'name': 'memory',
                     'options': ['--mem={mem_per_node}']
                 },
-                {
-                    'name': 'uenv',
-                    'options': [
-                        '--uenv={file}:{mount}',
-                    ]
-                }
             ],
             'launcher': 'srun'
         },
