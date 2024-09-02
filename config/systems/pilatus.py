@@ -159,9 +159,8 @@ site_configuration = {
                '-c checks/microbenchmarks/cpu/alloc_speed/alloc_speed.py',
                '-c checks/microbenchmarks/cpu/stream/stream.py',
                '-c checks/prgenv/affinity_check.py',
-               '-c checks/prgenv/opencl.py',
            ],
-           'target_systems': ['eiger'],
+           'target_systems': ['pilatus'],
        }
    ]
 

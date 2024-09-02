@@ -230,26 +230,24 @@ def create_checks(check):
     check('bash -c "uenv --version" || echo FAILED', not_expected=r'FAILED')
     # https://confluence.cscs.ch/display/KB/Scientific+Applications:
     # CP2K, GROMACS, LAMMPS, NAMD, QuantumESPRESSO, VASP
-    # check('bash -c "uenv image find || echo FAILED"', expected=        r'gromacs/.*gh200',   not_expected=r'FAILED');
-    # check('bash -c "uenv image find || echo FAILED"', expected=         r'lammps/.*gh200',   not_expected=r'FAILED');
-    check('bash -c "uenv image find || echo FAILED"', expected=   r'linaro-forge/.*gh200',   not_expected=r'FAILED');
+    check('bash -c "uenv image find || echo FAILED"', expected=   r'linaro-forge/.*gh200', not_expected=r'FAILED')
 
-    check('bash -c "uenv image find || echo FAILED"', expected=           r'cp2k/.*gh200',   not_expected=r'FAILED');
-    check('bash -c "uenv image find || echo FAILED"', expected=        r'gromacs/.*gh200',   not_expected=r'FAILED');
-    check('bash -c "uenv image find || echo FAILED"', expected=         r'lammps/.*gh200',   not_expected=r'FAILED');
-    check('bash -c "uenv image find || echo FAILED"', expected=           r'namd/.*gh200',   not_expected=r'FAILED');
-    check('bash -c "uenv image find || echo FAILED"', expected=r'quantumespresso/.*gh200',   not_expected=r'FAILED');
-    check('bash -c "uenv image find || echo FAILED"', expected=           r'vasp/.*gh200',   not_expected=r'FAILED');
-    check('bash -c "uenv image find || echo FAILED"', expected=   r'linaro-forge/.*gh200',   not_expected=r'FAILED');
-    #
-    check('bash -c "uenv image find || echo FAILED"', expected=          r'arbor/.*gh200',   not_expected=r'FAILED');
-    check('bash -c "uenv image find || echo FAILED"', expected=        r'pytorch/.*gh200',       expected=r'FAILED');
-    check('bash -c "uenv image find || echo FAILED"', expected=       r'icon-wcp/.*gh200',       expected=r'FAILED');
-    #
-    check('bash -c "uenv image find || echo FAILED"', expected=  r'prgenv-nvidia/.*gh200',   not_expected=r'FAILED');
-    check('bash -c "uenv image find || echo FAILED"', expected=     r'prgenv-gnu/.*gh200',   not_expected=r'FAILED');
-    check('bash -c "uenv image find || echo FAILED"', expected=   r'netcdf-tools/.*gh200',   not_expected=r'FAILED');
-    check('bash -c "uenv image find || echo FAILED"', expected=        r'editors/.*gh200',   not_expected=r'FAILED');
+    check('bash -c "uenv image find || echo FAILED"', expected=           r'cp2k/.*gh200', not_expected=r'FAILED')
+    check('bash -c "uenv image find || echo FAILED"', expected=        r'gromacs/.*gh200', not_expected=r'FAILED')
+    check('bash -c "uenv image find || echo FAILED"', expected=         r'lammps/.*gh200', not_expected=r'FAILED')
+    check('bash -c "uenv image find || echo FAILED"', expected=           r'namd/.*gh200', not_expected=r'FAILED')
+    check('bash -c "uenv image find || echo FAILED"', expected=r'quantumespresso/.*gh200', not_expected=r'FAILED')
+    check('bash -c "uenv image find || echo FAILED"', expected=           r'vasp/.*gh200', not_expected=r'FAILED')
+    check('bash -c "uenv image find || echo FAILED"', expected=   r'linaro-forge/.*gh200', not_expected=r'FAILED')
+
+    check('bash -c "uenv image find || echo FAILED"', expected=          r'arbor/.*gh200', not_expected=r'FAILED')
+    check('bash -c "uenv image find || echo FAILED"', expected=                 r'FAILED', not_expected=r'pytorch/.*gh200')
+    check('bash -c "uenv image find || echo FAILED"', expected=                 r'FAILED', not_expected=r'icon-wcp/.*gh200')
+
+    check('bash -c "uenv image find || echo FAILED"', expected=  r'prgenv-nvidia/.*gh200', not_expected=r'FAILED')
+    check('bash -c "uenv image find || echo FAILED"', expected=     r'prgenv-gnu/.*gh200', not_expected=r'FAILED')
+    check('bash -c "uenv image find || echo FAILED"', expected=   r'netcdf-tools/.*gh200', not_expected=r'FAILED')
+    check('bash -c "uenv image find || echo FAILED"', expected=        r'editors/.*gh200', not_expected=r'FAILED')
 
 
 # --------------------------------------------------------------------------- #
