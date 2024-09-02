@@ -118,6 +118,15 @@ site_configuration = {
                '-c checks/prgenv/affinity_check.py',
            ],
            'target_systems': ['todi'],
-       }
+       },
+       {
+           'name': 'uenv_production',
+           'options': [
+               '--max-retries=1',
+               '--report-file=$PWD/latest.json',
+               '-c checks/prgenv/mpi.py',
+           ],
+           'target_systems': ['todi'],
+       },
    ]
 }
