@@ -16,13 +16,14 @@ from container_engine import ContainerEngineMixin  # noqa: E402
 
 class mlperf_storage_datagen_ce(rfm.RunOnlyRegressionTest,
                                 ContainerEngineMixin):
+    # from https://github.com/henrique/storage/blob/v1.0-cscs/Dockerfile
     container_image = ('jfrog.svc.cscs.ch#reframe-oci/mlperf-storage:'
                        'v1.0-mpi_4.2.1')
     container_workdir = None
     valid_systems = ['+nvgpu +ce']
     valid_prog_environs = ['builtin']
-    num_nodes = variable(int, value=2)
-    time_limit = '20m'
+    num_nodes = variable(int, value=32)
+    time_limit = '15m'
     accelerator_type = 'h100'
     workload = variable(str, value='unet3d')
     prerun_cmds = ['rm -rf dataset checkpoint resultsdir']
@@ -34,11 +35,16 @@ class mlperf_storage_datagen_ce(rfm.RunOnlyRegressionTest,
 
     @run_after('setup')
     def setup_test(self):
-        curr_part = self.current_partition
-        self.num_gpus_per_node = curr_part.select_devices('gpu')[0].num_devices
-        self.num_tasks_per_node = self.num_gpus_per_node
+        self.num_cpus_per_node = self.current_partition.processor.num_cores
+        self.num_cpus_per_task = 6
+        self.num_tasks_per_node = self.num_cpus_per_node // self.num_cpus_per_task
         self.num_tasks = self.num_nodes * self.num_tasks_per_node
-        self.num_files = 512 * self.num_tasks
+        self.num_files = 64 * self.num_tasks
+
+        self.container_mounts = [
+            f'{self.stagedir}/unet3d.yaml:'
+            '/workspace/storage/storage-conf/workload/unet3d_h100.yaml'
+        ]
 
         self.executable = rf""" bash -c '
             ./benchmark.sh datagen --workload {self.workload} \
@@ -65,7 +71,7 @@ class MLperfStorageCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
                        'v1.0-mpi_4.2.1')
     valid_systems = ['+nvgpu +ce']
     valid_prog_environs = ['builtin']
-    time_limit = '20m'
+    time_limit = '30m'
     mlperf_data = fixture(mlperf_storage_datagen_ce, scope='environment')
 
     # Add here to supress the warning, set by the fixture
@@ -73,15 +79,15 @@ class MLperfStorageCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
 
     @run_after('setup')
     def setup_test(self):
-        curr_part = self.current_partition
         self.num_nodes = self.mlperf_data.num_nodes
-        self.num_gpus_per_node = self.mlperf_data.num_gpus_per_node
-        self.num_tasks_per_node = self.num_gpus_per_node
-        self.num_tasks = self.mlperf_data.num_nodes * self.num_tasks_per_node
+        self.num_tasks_per_node = self.mlperf_data.num_tasks_per_node
+        self.num_cpus_per_task = self.mlperf_data.num_cpus_per_task
+        self.num_tasks = self.mlperf_data.num_tasks
         self.env_vars = self.mlperf_data.env_vars
         self.workload = self.mlperf_data.workload
+        self.container_mounts = self.mlperf_data.container_mounts
         self.container_workdir = self.mlperf_data.container_workdir
-        num_files = 512 * self.num_tasks
+        num_files = self.mlperf_data.num_files
         accelerator_type = self.mlperf_data.accelerator_type
 
         self.executable = rf""" bash -c '
@@ -94,7 +100,7 @@ class MLperfStorageCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
                 --param checkpoint.checkpoint_folder=/rfm_workdir/checkpoint
         ' """
 
-        self.container_mounts = [
+        self.container_mounts += [
             f'{os.path.join(self.mlperf_data.stagedir, "dataset")}:/dataset'
         ]
 
