@@ -69,8 +69,8 @@ class CPE_CudaSamples(CudaSamplesBase):
     env_vars = {
         'LD_LIBRARY_PATH': '$CUDA_HOME/lib64:$LD_LIBRARY_PATH'
     }
-    valid_systems = ['+nvgpu -uenv']
-    valid_prog_environs = ['+cuda']
+    valid_systems = ['+nvgpu']
+    valid_prog_environs = ['+cuda -uenv']
 
     @run_after('setup')
     def set_modules(self):
@@ -97,8 +97,8 @@ class CPE_CudaSamples(CudaSamplesBase):
 @rfm.simple_test
 class UENV_CudaSamples(CudaSamplesBase):
     env_vars = {'LD_LIBRARY_PATH': '$CUDA_HOME/lib64:$LD_LIBRARY_PATH'}
-    valid_systems = ['+nvgpu +uenv']
-    valid_prog_environs = ['+cuda']
+    valid_systems = ['+nvgpu']
+    valid_prog_environs = ['+cuda +uenv']
 
     @run_before('compile')
     def set_build_flags(self):

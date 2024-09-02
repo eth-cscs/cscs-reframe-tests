@@ -8,8 +8,8 @@ import reframe.utility.sanity as sn
 
 
 class BaseCheck(rfm.RunOnlyRegressionTest):
-    valid_systems = ['+remote +uenv']
-    valid_prog_environs = ['+osu-micro-benchmarks']
+    valid_systems = ['+remote']
+    valid_prog_environs = ['+osu-micro-benchmarks +uenv']
     sourcesdir = None
     num_tasks = 2
     num_tasks_per_node = 1
@@ -95,8 +95,8 @@ class OSUBandwidth(BaseCheck):
 class OSUCuda(rfm.RegressionMixin):
     @run_after('init')
     def setup_test(self):
-        self.valid_systems = ['+remote +nvgpu +uenv']
-        self.valid_prog_environs = ['+osu-micro-benchmarks +cuda']
+        self.valid_systems = ['+remote +nvgpu']
+        self.valid_prog_environs = ['+osu-micro-benchmarks +cuda +uenv']
         self.env_vars = {
             # Enable GPU support for mpich
             'MPIR_CVAR_ENABLE_GPU': 1,
