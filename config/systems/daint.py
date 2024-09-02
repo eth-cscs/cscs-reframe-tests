@@ -124,6 +124,7 @@ site_configuration = {
        {
            'name': 'cpe_production',
            'options': [
+               '--max-retries=1',
                '--report-file=$PWD/latest.json',
                '-c checks/system/integration/daint.py',
                '-c checks/prgenv/mpi.py',

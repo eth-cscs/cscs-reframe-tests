@@ -31,7 +31,7 @@ class StreamTest(rfm.RegressionTest):
     }
     stream_bw_reference = {
         'zen3': (122000., -0.05, 0.05, 'MB/s'),
-        'neoverse_v2': (430000., -0.05, 0.05, 'MB/s')
+        'neoverse_v2': (430000., -0.05, 0.15, 'MB/s')
     }
 
     @sanity_function

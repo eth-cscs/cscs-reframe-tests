@@ -19,11 +19,11 @@ reframe:
     - export PATH=$rfm_path:$PATH
     - reframe -V
     - ./ci/scripts/alps_uenv.sh launch_reframe_1arg "--mode cpe_production"
-    # - ./ci/scripts/alps_uenv.sh oneuptime
   artifacts:
     when: always
     # on_failure
     paths:
+      - reframe.out
       - report.xml
       - latest.json
     reports:
