@@ -341,11 +341,11 @@ launch_reframe_1arg() {
 oneuptime() {
     # source rfm_venv/bin/activate
     CLUSTER_NAME=$1
-    echo "CLUSTER_NAME=$CLUSTER_NAME / $1"
+    echo "CLUSTER_NAME=$CLUSTER_NAME"
+    if [ -f 'reframe.out' ] ; then grep 'FAILURE INFO for' reframe.out ; fi
     json_rpt='latest.json'
     if [ -f $json_rpt ] ; then
         num_failures=`grep -m1 num_failures $json_rpt |cut -d: -f2 |cut -d, -f1 |tr -d " "`
-        # num_failures=`jq '.session_info.num_failures' $json_rpt`
     else
         num_failures=-1
         echo "# warning: no json_rpt=$json_rpt file found"
