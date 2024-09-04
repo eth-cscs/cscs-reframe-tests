@@ -346,6 +346,7 @@ launch_reframe_1arg() {
 oneuptime() {
     # source rfm_venv/bin/activate
     CLUSTER_NAME=$1
+    PE=$2
     echo "CLUSTER_NAME=$CLUSTER_NAME"
     if [ -f 'reframe.out' ] ; then grep 'FAILURE INFO for' reframe.out ; fi
     json_rpt='latest.json'
@@ -356,13 +357,14 @@ oneuptime() {
         echo "# warning: no json_rpt=$json_rpt file found"
     fi
     echo "Updating oneuptime status page"
-    python3 ./ci/scripts/oneuptime.py $CLUSTER_NAME $num_failures
+    python3 ./ci/scripts/oneuptime.py $CLUSTER_NAME $num_failures $PE
 }
 # }}}
 
 # {{{ main 
 in="$1"
 img="$2"
+pe="$3"
 case $in in
     setup_jq) setup_jq;;
     setup_uenv_and_oras) setup_uenv_and_oras;;
@@ -382,7 +384,7 @@ case $in in
     launch_reframe_1img) launch_reframe_1img "$img";;
     launch_reframe) launch_reframe;;
     launch_reframe_1arg) launch_reframe_1arg "$img";;
-    oneuptime) oneuptime "$img";;
+    oneuptime) oneuptime "$img" "$pe";;
     *) echo "unknown arg=$in";;
 esac
 #old [[ -d $oras_tmp ]] && { echo "cleaning $oras_tmp"; rm -fr $oras_tmp; }
