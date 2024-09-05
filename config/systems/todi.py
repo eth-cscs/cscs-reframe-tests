@@ -127,6 +127,6 @@ site_configuration = {
                '-c checks/prgenv/mpi.py',
            ],
            'target_systems': ['todi'],
-       },
+       }
    ]
 }
