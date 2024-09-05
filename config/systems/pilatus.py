@@ -59,10 +59,18 @@ base_config = {
                 'cpeIntel'
             ],
             'max_jobs': 100,
+
+            #FIXME temporary workaround for uenv=prgenv-gnu_23.11
+            'env_vars': [
+                [
+                    'LD_LIBRARY_PATH',
+                    '$LD_LIBRARY_PATH:/opt/cray/libfabric/1.15.2.0/lib64'
+                ]
+            ],
             'extras': {
                 'cn_memory': 256,
             },
-            'features': ['remote', 'sarus', 'singularity'],
+            'features': ['remote', 'sarus', 'singularity', 'uenv'],
             'access': ['-Cmc', f'--account={osext.osgroup()}'],
             'resources': [
                 {
@@ -83,6 +91,7 @@ pilatus_sys = copy.deepcopy(base_config)
 pilatus_sys['name'] = 'pilatus'
 pilatus_sys['descr'] = 'Alps Cray EX Supercomputer TDS'
 pilatus_sys['hostnames'] = ['pilatus']
+# pilatus_sys['partitions'].append(...)
 
 site_configuration = {
     'systems': [
@@ -92,22 +101,30 @@ site_configuration = {
         {
             'name': 'PrgEnv-aocc',
             'target_systems': ['pilatus'],
-            'modules': ['cray', 'PrgEnv-aocc']
+            'modules': ['cray', 'PrgEnv-aocc'],
+            'features': ['serial', 'openmp', 'mpi', 'cuda',
+                         'hdf5', 'netcdf-hdf5parallel', 'pnetcdf', 'openmp']
         },
         {
             'name': 'PrgEnv-cray',
+            'features': ['serial', 'openmp', 'mpi', 'cuda', 'openacc', 'hdf5',
+                         'netcdf-hdf5parallel', 'pnetcdf', 'openmp', 'opencl'],
             'target_systems': ['pilatus'],
             'modules': ['cray', 'PrgEnv-cray']
         },
         {
             'name': 'PrgEnv-gnu',
             'target_systems': ['pilatus'],
+            'features': ['serial', 'openmp', 'mpi', 'cuda', 'alloc_speed',
+                         'hdf5', 'netcdf-hdf5parallel', 'pnetcdf', 'openmp'],
             'modules': ['cray', 'PrgEnv-gnu']
         },
         {
             'name': 'PrgEnv-intel',
             'target_systems': ['pilatus'],
-            'modules': ['cray', 'PrgEnv-intel']
+            'modules': ['cray', 'PrgEnv-intel'],
+            'features': ['serial', 'openmp', 'mpi', 'cuda', 'alloc_speed',
+                         'hdf5', 'netcdf-hdf5parallel', 'pnetcdf', 'openmp']
         },
         {
             'name': 'cpeAMD',
@@ -130,4 +147,21 @@ site_configuration = {
             'modules': ['cray', 'cpeIntel']
         },
     ],
+    'modes': [
+       {
+           'name': 'cpe_production',
+           'options': [
+               '--report-file=$PWD/latest.json',
+               '-c checks/system/integration/eiger.py',
+               '-c checks/prgenv/mpi.py',
+               '-c checks/microbenchmarks/mpi/osu/osu_run.py',
+               '-c checks/microbenchmarks/mpi/osu/osu_tests.py',
+               '-c checks/microbenchmarks/cpu/alloc_speed/alloc_speed.py',
+               '-c checks/microbenchmarks/cpu/stream/stream.py',
+               '-c checks/prgenv/affinity_check.py',
+           ],
+           'target_systems': ['pilatus'],
+       }
+   ]
+
 }

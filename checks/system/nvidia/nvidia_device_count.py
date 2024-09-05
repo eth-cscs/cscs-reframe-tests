@@ -76,7 +76,7 @@ class NvidiaDeviceCountBase(CudaVisibleDevicesAllMixin,
 
 
 class CPE_BuildDeviceCount(BuildDeviceCountBase):
-    valid_systems = ['-uenv']
+    valid_prog_environs = ['-uenv']
 
     # FIXME: version of clang compiler and default gcc not compatible
     # with the default cudatoolkit (11.6)
@@ -95,12 +95,13 @@ class CPE_BuildDeviceCount(BuildDeviceCountBase):
 
 
 class UENV_BuildDeviceCount(BuildDeviceCountBase):
-    valid_systems = ['-uenv']
+    valid_prog_environs = ['+uenv']
 
 
 @rfm.simple_test
 class CPE_NvidiaDeviceCount(NvidiaDeviceCountBase):
-    valid_systems = ['+nvgpu -uenv']
+    valid_systems = ['+nvgpu']
+    valid_prog_environs = ['-uenv']
     device_count_bin = fixture(CPE_BuildDeviceCount, scope='environment')
     tags = {'production'}
 
@@ -113,6 +114,7 @@ class CPE_NvidiaDeviceCount(NvidiaDeviceCountBase):
 
 @rfm.simple_test
 class UENV_NvidiaDeviceCount(NvidiaDeviceCountBase):
-    valid_systems = ['+nvgpu +uenv']
+    valid_systems = ['+nvgpu']
+    valid_prog_environs = ['+uenv']
     device_count_bin = fixture(UENV_BuildDeviceCount, scope='environment')
     tags = {'production'}

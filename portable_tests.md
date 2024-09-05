@@ -43,12 +43,15 @@ class LoginNodesTest(rfm.RegressionTest):
 | Feature | Description | Notes |
 | --- | --- | --- |
 | cpe | This a CRAY based environment | |
+| uenv| Automatically injected for uenvs on the configuration (should be used in tests expected to be used with a uenv) | |
 | cuda | The environment has a CUDA compiler | |
 | compiler | The environment provides a typical compiler | |
 | openmp | The compiler of the environment supports OpenMP | |
 | openacc | The compiler of the environment supports OpenACC | For uenvs, only the Nvidia Compilers properly support OpenACC |
 | mpi | The compiler of the environment supports openmp | |
 | cuda-aware-mpi| A CUDA-aware mpi is provided | |
+| gromacs | GROMACS is available in this environment | |
+
 | gromacs | GROMACS is available in this environment | |
 | netcdf-hdf5parallel | | |
 | pnetcdf | | |
