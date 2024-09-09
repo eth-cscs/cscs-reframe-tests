@@ -13,6 +13,29 @@ _UENV_DELIMITER = ','
 _UENV_MOUNT_DELIMITER = '@'
 _RFM_META = pathlib.Path('extra') / 'reframe.yaml'
 
+# returns one of
+#   'a100', 'gh200', 'mi200', 'zen2', 'zen3'
+#   None
+def uarch(partition):
+    gpus = partition.devices
+    if gpus:
+        device = gpus[0]
+        if device.arch == 'sm_90':
+            return 'gh200'
+        if device.arch == 'sm_80':
+            return 'a100'
+        if device.arch == 'ghx90a':
+            return 'mi200'
+        return None
+
+    cpus = partition.processor
+    if cpus.arch == 'zen2':
+        return 'zen2'
+    if cpus.arch == 'zen3':
+        return 'zen3'
+
+    return None
+
 
 def _get_uenvs():
     uenv = os.environ.get('UENV', None)
@@ -54,35 +77,34 @@ def _get_uenvs():
             with open(rfm_meta) as image_envs:
                 image_environments = yaml.load(
                     image_envs.read(), Loader=yaml.BaseLoader)
-                # print(f"# --- loading the metadata from '{rfm_meta}'")
         except OSError as err:
             raise ConfigError(
                 f"problem loading the metadata from '{rfm_meta}'"
             )
 
         for k, v in image_environments.items():
+            # strip out the fields that are not to be part reframe environment
+            activation = v.pop('activation', [])
+            views = v.pop('views', [])
+
             env = {
                 'target_systems': [target_system]
             }
             env.update(v)
-            activation = v['activation']
 
-            # FIXME: Assume that an activation script is given, to be sourced
-            if isinstance(activation, str):
-                if not activation.startswith(image_mount):
-                    raise ConfigError(
-                        f'activation script of {k!r} is not consistent '
-                        f'with the mount point: {image_mount!r}'
-                    )
-
-                env['prepare_cmds'] = [f'source {activation}']
-            elif isinstance(activation, list):
+            if isinstance(activation, list):
                 env['prepare_cmds'] = activation
+            # no longer support implicit activation scripts
+            elif isinstance(activation, str):
+                raise ConfigError(
+                    'support for activation scripts has been deprecated. '
+                    'instead use an explicit view, or the commands that '
+                    'activate the environment.'
+                )
             else:
                 raise ConfigError(
-                    'activation has to be either a file to be sourced or a '
-                    'list of commands to be executed to configure the '
-                    'environment'
+                    'activation has to be either a list of commands to be '
+                    'executed to configure the environment'
                 )
 
             # Replace characters that create problems in environment names
@@ -94,10 +116,9 @@ def _get_uenvs():
                     'file': str(image_path),
                 }
             }
+            if len(views)>0:
+                env['resources']['uenv_views'] = {'views': ','.join(views)}
             env['features'] += ['uenv']
-
-            # Added as a prepare_cmd for the environment
-            del env['activation']
 
             uenv_environments.append(env)
 

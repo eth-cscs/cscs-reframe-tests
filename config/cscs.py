@@ -7,6 +7,7 @@
 #
 import glob
 import os
+import pprint
 import sys
 from reframe.utility import import_module_from_file
 
@@ -51,6 +52,7 @@ uenv_environs = uenv.UENV
 
 # If a system partition has the 'uenv' feature, replace the environment'
 # names valid for that system with the ones from uenv
+print(uenv_environs)
 if site_configuration and uenv_environs:
     site_configuration['environments'] += uenv_environs
     for system in site_configuration['systems']:
@@ -70,9 +72,17 @@ if site_configuration and uenv_environs:
                 resources.append(
                     {
                         'name': 'uenv',
-                        'options': [
-                            '--uenv={file}:{mount}',
-                        ]
+                        'options': ['--uenv={file}:{mount}']
+                    }
+                )
+                resources.append(
+                    {
+                        'name': 'uenv_views',
+                        'options': ['--view={views}']
                     }
                 )
                 partition['resources'] = resources
+
+                print(f'-- system ---- {pprint.pformat(system)}')
+                print(f'   partition -- {partition["name"]}')
+
