@@ -116,7 +116,7 @@ def _get_uenvs():
                     'file': str(image_path),
                 }
             }
-            if len(views)>0:
+            if len(views) > 0:
                 env['resources']['uenv_views'] = {'views': ','.join(views)}
             env['features'] += ['uenv']
 
