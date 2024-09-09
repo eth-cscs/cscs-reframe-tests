@@ -4,7 +4,7 @@ include:
 stages:
   - pull
   - run
-  # - status
+  - status
 
 # {{{ pull
 setup and pull:
