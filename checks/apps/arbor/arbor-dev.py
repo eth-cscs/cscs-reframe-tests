@@ -7,6 +7,25 @@ import os
 import reframe as rfm
 import reframe.utility.sanity as sn
 import reframe.utility.udeps as udeps
+import uenv
+
+arbor_references = {
+    'gh200': {
+        'serial': {
+            'small': {
+                'time_run':  (9.25, -0.1, 0.1, 's'),
+            },
+            'medium': {
+                'time_run':  (35.0, -0.05, 0.05, 's'),
+            }
+        },
+        'distributed': {
+            'medium': {
+                'time_run':  (9.2, -0.05, 0.05, 's'),
+            }
+        },
+    }
+}
 
 class arbor_download(rfm.RunOnlyRegressionTest):
     version = variable(str, value='0.9.0')
@@ -24,13 +43,19 @@ class arbor_download(rfm.RunOnlyRegressionTest):
 class arbor_build(rfm.CompileOnlyRegressionTest):
     descr = 'Build Arbor'
     valid_systems = ['*']
-    valid_prog_environs = ['+arbor']
+    valid_prog_environs = ['+arbor-dev']
     build_system = 'CMake'
     maintainers = ['bcumming']
     arbor_sources = fixture(arbor_download, scope='session')
+    # NOTE: required so that the build stage is performed on
+    # a compute node using an sbatch job.
+    # This will force the uenv and view to be loaded using
+    # "#SBATCH --uenv=" etc
+    build_locally = False
 
     @run_before('compile')
     def prepare_build(self):
+        self.uarch = uenv.uarch(self.current_partition)
         self.build_system.builddir = os.path.join(self.stagedir, 'build')
         tarball = f'v{self.arbor_sources.version}.tar.gz'
 
@@ -43,22 +68,30 @@ class arbor_build(rfm.CompileOnlyRegressionTest):
             '-DARB_WITH_MPI=on',
             '-DARB_WITH_PYTHON=on',
         ]
-        ##if self.target == 'gh200':
-        self.build_system.config_opts += [
-            '-DCMAKE_CUDA_ARCHITECTURES=90',
-            '-DARB_GPU=cuda',
-        ]
+        # set architecture-specific flags
+        if self.uarch == 'gh200':
+            self.build_system.config_opts += [
+                '-DCMAKE_CUDA_ARCHITECTURES=90',
+                '-DARB_GPU=cuda',
+            ]
+        elif self.uarch == 'a100':
+            self.build_system.config_opts += [
+                '-DCMAKE_CUDA_ARCHITECTURES=80',
+                '-DARB_GPU=cuda',
+                '-DARB_VECTORIZE=on'
+            ]
+        elif self.uarch == 'zen2':
+            self.build_system.config_opts += ['-DARB_VECTORIZE=on']
 
-        self.build_system.max_concurrency = 128
+        self.build_system.max_concurrency = 64
 
         self.build_system.make_opts = ['pyarb', 'examples', 'unit']
-
 
 @rfm.simple_test
 class arbor_unit(rfm.RunOnlyRegressionTest):
     descr = 'Run the arbor unit tests'
     valid_systems = ['*']
-    valid_prog_environs = ['+arbor']
+    valid_prog_environs = ['+arbor-dev']
     maintainers = ['bcumming']
     arbor_build = fixture(arbor_build, scope='environment')
 
@@ -73,68 +106,67 @@ class arbor_unit(rfm.RunOnlyRegressionTest):
 
 @rfm.simple_test
 class arbor_busyring(rfm.RunOnlyRegressionTest):
-    descr = 'Run the arbor unit tests'
+    descr = 'arbor busyring model'
     valid_systems = ['*']
-    valid_prog_environs = ['+arbor']
+    valid_prog_environs = ['+arbor-dev']
     maintainers = ['bcumming']
+    model_size = parameter(['small', 'medium'])
+
     arbor_build = fixture(arbor_build, scope='environment')
 
     @run_before('run')
     def prepare_run(self):
-        self.executable = os.path.join(self.arbor_build.stagedir, 'build', 'bin', 'unit')
-        self.executable_opts = []
+        self.uarch = uenv.uarch(self.current_partition)
+        self.executable = os.path.join(self.arbor_build.stagedir, 'build', 'bin', 'busyring')
+        self.executable_opts = [f'busyring-input-{self.model_size}.json']
+
+        # Instead of explicitly listing performance targets for all possible
+        # system:partition combinations, set the reference targets to those
+        # for the uarch of the current partition.
+        # * self.uarch is one of the alps arch: gh200, zen2, a100, ... or None
+        # * self.current_partition.fullname is the vcluster:partition string,
+        #   for example "daint:normal" or "todi:debug".
+        self.uarch = uenv.uarch(self.current_partition)
+        if (self.uarch is not None) and (self.uarch in arbor_references):
+            self.reference = {
+                self.current_partition.fullname:
+                    arbor_references[self.uarch]['serial'][self.model_size]
+            }
 
     @sanity_function
     def validate_test(self):
-        return sn.assert_found(r'PASSED', self.stdout)
+        # if the meters are printed, the simulation ran to completion
+        return sn.assert_found(r'meter-total', self.stdout)
 
-#@rfm.simple_test
-#class arbor_build_check(rfm.CompileOnlyRegressionTest):
-    #valid_systems = ['*']
-    #valid_prog_environs = ['*']
-    #valid_prog_environs = ['arbor']
-    #sourcesdir = 'https://github.com/arbor-sim/arbor/archive/refs/tags/v0.9.0.tar.gz'
-    #build_system = 'CMake'
-    #maintainers = ['bcumming']
-#
-    #@run_before('compile')
-    #def prepare_build(self):
-        #self.build_system.config_opts = [
-            #'-DCMAKE_CXX_COMPILER=mpicxx',
-            #'-DCMAKE_C_COMPILER=mpicc',
-            #'-DARB_WITH_MPI=on',
-            #'-DARB_WITH_PYTHON=on',
-        #]
-        ##if self.target == 'gh200':
-        #self.build_system.config_opts += [
-            #'-DCMAKE_CUDA_ARCHITECTURES=90',
-            #'-DARB_GPU=cuda',
-        #]
-#
-        #self.build_system.flags_from_environ = False
-        #self.build_system.make_opts = ['examples', 'tests', 'pyarb']
-        #self.build_system.max_concurrency = 64
-#
-    #@sanity_function
-    #def validate_build(self):
-        ## If compilation fails, the test would fail in any case
-        #return True
+    @performance_function('s')
+    def time_run(self):
+        return sn.extractsingle(r'model-run\s+(\S+)', self.stdout, 1, float)
 
-#@rfm.simple_test
-#class stream_test(rfm.RunOnlyRegressionTest):
-#    valid_systems = ['*']
-#    valid_prog_environs = ['*']
-#    executable = 'stream.x'
-#
-#    @sanity_function
-#    def validate(self):
-#        return sn.assert_found(r'Solution Validates', self.stdout)
-#
-#    @performance_function('MB/s')
-#    def copy_bw(self):
-#        return sn.extractsingle(r'Copy:\s+(\S+)', self.stdout, 1, float)
-#
-#    @performance_function('MB/s')
-#    def triad_bw(self):
-#        return sn.extractsingle(r'Triad:\s+(\S+)', self.stdout, 1, float)
+slurm_config = {
+    'gh200': {"ranks": 4, "cores": 64, "gpu": True},
+    'zen2':  {"ranks": 2, "cores": 64, "gpu": False},
+}
 
+# adapt the busyring test to check paralle MPI execution
+@rfm.simple_test
+class arbor_busyring_mpi(arbor_busyring):
+    descr = 'arbor busyring model MPI on a single node'
+    model_size = parameter(['medium'])
+
+    @run_before('run')
+    def prepare_run(self):
+        self.uarch = uenv.uarch(self.current_partition)
+        self.executable = os.path.join(self.arbor_build.stagedir, 'build', 'bin', 'busyring')
+        self.executable_opts = [f'busyring-input-{self.model_size}.json']
+
+        self.num_tasks = slurm_config[self.uarch]["ranks"]
+        self.num_cpus_per_task = slurm_config[self.uarch]["cores"]
+        if slurm_config[self.uarch]["gpu"]:
+            self.job.options = ['--gpus-per-task=1']
+
+        self.uarch = uenv.uarch(self.current_partition)
+        if (self.uarch is not None) and (self.uarch in arbor_references):
+            self.reference = {
+                self.current_partition.fullname:
+                    arbor_references[self.uarch]['distributed'][self.model_size]
+            }
