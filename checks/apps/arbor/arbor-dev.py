@@ -33,6 +33,7 @@ class arbor_download(rfm.RunOnlyRegressionTest):
     sourcesdir = None
     executable = 'wget'
     executable_opts = [
+        '--quiet',
         f'https://github.com/arbor-sim/arbor/archive/refs/tags/v{version}.tar.gz'
     ]
     local = True
