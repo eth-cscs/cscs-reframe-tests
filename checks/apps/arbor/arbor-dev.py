@@ -30,6 +30,7 @@ arbor_references = {
 class arbor_download(rfm.RunOnlyRegressionTest):
     version = variable(str, value='0.9.0')
     descr = 'Fetch Arbor sources code'
+    sourcesdir = None
     executable = 'wget'
     executable_opts = [
         f'https://github.com/arbor-sim/arbor/archive/refs/tags/v{version}.tar.gz'
