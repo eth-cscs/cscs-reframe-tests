@@ -101,7 +101,7 @@ def create_checks(check):
     check.CLASS = 'OSINSTALL'
 
     check('cat /etc/os-release', expected=r'PRETTY_NAME="SUSE Linux Enterprise Server 15 SP5"')
-    check('locale', expected=r'LANG=C')
+    check('locale', expected=r'LANG=en_US.UTF-8')
 
 #-----------------------------------------------------------------------------#
 #                                                                             #
@@ -172,7 +172,8 @@ def create_checks(check):
 
     check.CLASS = 'SLURM'
 
-    check('test -e /etc/slurm/slurm.conf || echo FAILED', not_expected=r'FAILED')
+    check('test -e /etc/slurm/slurm.conf      || echo FAILED', not_expected=r'FAILED', where='-remote')
+    check('test -e /run/slurm/conf/slurm.conf || echo FAILED', not_expected=r'FAILED', where='+remote')
     check('which sinfo || echo FAILED', not_expected=r'FAILED')
     check('ps aux | grep munge', expected=r'/usr/sbin/munged')
     check('scontrol ping', expected=r'Slurmctld\(primary\) at .* is UP')
