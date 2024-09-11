@@ -94,6 +94,7 @@ def _get_uenvs():
                     'file': str(image_path),
                 }
             }
+            env['features'] += ['uenv']
 
             # Added as a prepare_cmd for the environment
             del env['activation']

@@ -4,41 +4,37 @@ include:
 stages:
   - pull
   - run
+  # - status
 
-variables:
-  WORKSPACE: '$${CI_CACHE_FOLDER}/rfm_workspace'
-  JOB_NAME: rfm-$CI_PIPELINE_ID
-  CLUSTER_NAME: "${CLUSTER_NAME}"
-  F7T_TOKEN_URL: 'https://auth.cscs.ch/auth/realms/firecrest-clients/protocol/openid-connect/token'
-  F7T_URL: 'https://firecrest.cscs.ch'
-
+# {{{ pull
 setup and pull:
   stage: pull
-  tags: ["$TAG"]
+  extends: .f7t-baremetal-runner
   variables:
     # Valid MODE=('container-runner', 'baremetal', 'f7t-controller')
-    MODE: "${RFM_MODE}"
-    GIT_STRATEGY: "fetch"
-    SLURM_ACCOUNT: "${SLURM_ACCOUNT}"
-    FIRECREST_SYSTEM: "${FIRECREST_SYSTEM}"
+    # MODE: "${RFM_MODE}"
+    # GIT_STRATEGY: "fetch"
+    # SLURM_ACCOUNT: "${SLURM_ACCOUNT}"
+    # FIRECREST_SYSTEM: "${FIRECREST_SYSTEM}"
   before_script:
-    - echo $FIRECREST_SYSTEM / $CLUSTER_NAME / $RFM_MODE
+    - echo "FIRECREST_SYSTEM=$FIRECREST_SYSTEM / F7T_URL=$F7T_URL / CLUSTER_NAME=$CLUSTER_NAME"
     - pwd
     - uname -a
-    - ./ci/scripts/alps_uenv.sh setup_uenv_and_oras &> setup_uenv_and_oras.log
-    - source ./uenv-5.0.0/bin/activate-uenv
+    - ./ci/scripts/alps.sh setup_uenv_and_oras &> setup_uenv_and_oras.log
+    - source ./uenv-5.1.0/bin/activate-uenv
     - uenv --version
     - export PATH=$PWD:$UENV_PREFIX/libexec:$PATH
     - uenv-oras version
-    - imgs=$(./ci/scripts/alps_uenv.sh uenv_image_find)
+    - imgs=$(./ci/scripts/alps.sh uenv_image_find)
   script: |
     echo "imgs=$imgs"
     unset UENVA
     uenv repo create
     uenv repo status
     for img in $imgs; do
-      ./ci/scripts/alps_uenv.sh oras_pull_meta_dir "$img"
-      ./ci/scripts/alps_uenv.sh meta_has_reframe_yaml "$img" &> .rc
+      # ./ci/scripts/alps.sh oras_pull_meta_dir "$img"
+      ./ci/scripts/alps.sh uenv_pull_meta_dir "$img" &> .rc
+      ./ci/scripts/alps.sh meta_has_reframe_yaml "$img" &> .rc
       cat .rc
       rc=$(grep -q OK .rc ; echo $?)
       echo "rc=$rc"
@@ -54,10 +50,12 @@ setup and pull:
   artifacts:
     reports:
       dotenv: rfm_uenv.env
+# }}}
 
-run reframe:
+# {{{ reframe
+reframe:
   stage: run
-  tags: ["$TAG"]
+  extends: .f7t-baremetal-runner
   needs: ['setup and pull']
   variables:
     MODE: "${RFM_MODE}"
@@ -65,22 +63,39 @@ run reframe:
     SLURM_ACCOUNT: "${SLURM_ACCOUNT}"
     FIRECREST_SYSTEM: "${FIRECREST_SYSTEM}"
   before_script:
-    - echo $FIRECREST_SYSTEM / $CLUSTER_NAME / $RFM_MODE
-    - pwd
+    - echo "FIRECREST_SYSTEM=$FIRECREST_SYSTEM / F7T_URL=$F7T_URL / CLUSTER_NAME=$CLUSTER_NAME"
     - uname -a
-    - ./ci/scripts/alps_uenv.sh setup_uenv_and_oras &> setup_uenv_and_oras.log
-    - source ./uenv-5.0.0/bin/activate-uenv
+    - pwd
+    - ./ci/scripts/alps.sh setup_uenv_and_oras &> setup_uenv_and_oras.log
+    - source ./uenv-5.1.0/bin/activate-uenv
     - uenv --version
     - echo "UENV=$UENV" | tr , "\n"
   script:
-    - rfm_path=$(./ci/scripts/alps_uenv.sh install_reframe)
+    - hostname
+    - rfm_path=$(./ci/scripts/alps.sh install_reframe)
     - echo "rfm_path=$rfm_path"
     - export PATH=$rfm_path:$PATH
     - reframe -V
-    - ./ci/scripts/alps_uenv.sh launch_reframe
+    - ./ci/scripts/alps.sh launch_reframe_1arg "--mode uenv_production"
   artifacts:
-    when: on_failure
+    when: always
     paths:
       - report.xml
+      - latest.json
     reports:
       junit: report.xml
+# }}}
+
+# {{{ status_page
+status_page:
+  stage: status
+  needs: ['reframe']
+  extends: .container-runner-lightweight-zen2
+  image: python:3.9
+  script:
+    - pwd
+    - ls -a
+    - pip install requests
+    - ./ci/scripts/alps.sh oneuptime "$FIRECREST_SYSTEM" "uenv"
+  when: always
+# }}}

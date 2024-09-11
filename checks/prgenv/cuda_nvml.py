@@ -35,8 +35,8 @@ class NvmlBase(rfm.RegressionTest):
 
 @rfm.simple_test
 class CPE_NVMLCheck(NvmlBase):
-    valid_systems = ['+nvgpu -uenv']
-    valid_prog_environs = ['+cuda']
+    valid_systems = ['+nvgpu']
+    valid_prog_environs = ['+cuda -uenv']
     tags = {'production', 'external-resources', 'health', 'craype'}
 
     @run_after('setup')
@@ -61,8 +61,8 @@ class CPE_NVMLCheck(NvmlBase):
 
 @rfm.simple_test
 class UENV_NVMLCheck(NvmlBase):
-    valid_systems = ['+nvgpu +uenv']
-    valid_prog_environs = ['+cuda']
+    valid_systems = ['+nvgpu']
+    valid_prog_environs = ['+cuda +uenv']
     sourcepath = '$CUDA_HOME/nvml/example/example.c'
     tags = {'production', 'external-resources', 'health', 'uenv'}
 

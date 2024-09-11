@@ -10,8 +10,8 @@ import reframe.utility.sanity as sn
 @rfm.simple_test
 class H5PyTest(rfm.RunOnlyRegressionTest):
     descr = 'Test that h5py can write a HDF5 file in parallel'
-    valid_systems = ['+remote +uenv']
-    valid_prog_environs = ['+h5py +mpi']
+    valid_systems = ['+remote']
+    valid_prog_environs = ['+h5py +mpi +uenv']
     num_tasks = 4
     executable = 'python'
     executable_opts = ['h5py_mpi.py']  # from src/
