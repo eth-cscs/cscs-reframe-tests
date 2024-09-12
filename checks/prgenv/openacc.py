@@ -54,8 +54,8 @@ class OpenACCFortranBase(rfm.RegressionTest, CudaVisibleDevicesAllMixin,
 
 @rfm.simple_test
 class CPE_OpenACCFortranCheck(OpenACCFortranBase):
-    valid_systems = ['+nvgpu +remote -uenv']
-    valid_prog_environs = ['+openacc +mpi']
+    valid_systems = ['+nvgpu +remote']
+    valid_prog_environs = ['+openacc +mpi -uenv']
     tags = {'production', 'craype'}
 
     @run_after('setup')
@@ -83,8 +83,8 @@ class CPE_OpenACCFortranCheck(OpenACCFortranBase):
 
 @rfm.simple_test
 class UENV_OpenACCFortranCheck(OpenACCFortranBase):
-    valid_systems = ['+nvgpu +remote +uenv']
-    valid_prog_environs = ['+openacc +mpi']
+    valid_systems = ['+nvgpu +remote']
+    valid_prog_environs = ['+openacc +mpi +uenv']
     tags = {'production', 'uenv'}
 
     @run_after('setup')

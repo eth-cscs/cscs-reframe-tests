@@ -49,17 +49,12 @@ setup_jq() {
 # }}}
 # {{{ setup_uenv_and_oras 
 setup_uenv_and_oras() {
-  # cd $oras_tmp 
-  # if [ -z $UENV_PREFIX ] ;then
   uenv_repo=https://github.com/eth-cscs/uenv
-  uenv_version=5.0.0
+  uenv_version=5.1.0
   (wget --quiet $uenv_repo/archive/refs/tags/v$uenv_version.tar.gz && \
   tar xf v$uenv_version.tar.gz && cd uenv-$uenv_version/ && \
   echo N | ./install --prefix=$PWD --local && \
   rm -f v$uenv_version.tar.gz uenv-$uenv_version)
-  # fi    
-  # source ./uenv-4.0.1/bin/activate-uenv
-  # export oras="$UENV_PREFIX/libexec/uenv-oras"
 }
 # }}}
 # {{{ setup_oras_without_uenv 
@@ -118,6 +113,13 @@ uenv_image_find() {
     uenv --no-color image find | grep -v "uenv/version:tag" | awk '{print $1}'
 }
 # }}}
+# {{{ uenv_pull_meta_dir
+uenv_pull_meta_dir() {
+    img=$1
+    echo "--- Pulling metadata from $img"
+    uenv image pull --only-meta $img &> uenv_pull_meta_dir.log
+}    
+# }}}    
 # {{{ oras_pull_meta_dir
 oras_pull_meta_dir() {
     img=$1
@@ -125,7 +127,7 @@ oras_pull_meta_dir() {
     tag=`echo "$img" |cut -d: -f2`
     echo "--- Pulling metadata from $jfrog/$name:$tag"
     # meta_digest=`$oras --registry-config $jfrog_creds_path \
-    rm -fr meta  # remove dir from previous image
+    rm -fr meta # remove dir from previous image
     meta_digest=`$oras discover --output json --artifact-type 'uenv/meta' $jfrog/$name:$tag \
         | jq -r '.manifests[0].digest'`
     # $oras --registry-config $jfrog_creds_path \
@@ -137,7 +139,9 @@ oras_pull_meta_dir() {
 meta_has_reframe_yaml() {
     img=$1
     echo "# --- Checking img=$img for meta/extra/reframe.yaml"
-    rfm_yaml="${oras_tmp}/meta/extra/reframe.yaml" 
+    meta_path=`uenv image inspect --format {meta} $img`
+    echo "meta_path=$meta_path"
+    rfm_yaml="${meta_path}/extra/reframe.yaml" 
     test -f $rfm_yaml ; rc=$?
     
     # --- VASP
@@ -153,9 +157,10 @@ meta_has_reframe_yaml() {
             echo "# ---- reframe.yaml has been found --> pulling $img"
             uenv image pull $img
             echo
-            echo "# ---- reframe.yaml has been found --> adding it as store.yaml"
-            imgpath=`uenv image inspect $img --format {path}`
-            cp $rfm_yaml $imgpath/store.yaml
+            # meta/extra/reframe.yaml
+            # echo "# ---- reframe.yaml has been found --> adding it as store.yaml"
+            # imgpath=`uenv image inspect $img --format {path}`
+            # cp $rfm_yaml $imgpath/store.yaml
 
             # TODO: https://github.com/eth-cscs/alps-uenv/issues/127 <-------------
             if [ "$img" == "prgenv-gnu/24.7:v1" ] ;then
@@ -165,7 +170,7 @@ meta_has_reframe_yaml() {
             # TODO: https://github.com/eth-cscs/alps-uenv/issues/127 <-------------
 
             echo "# ---- OK $rfm_yaml found in $img :-)"
-            ls $imgpath/store.yaml
+            ls $rfm_yaml
         fi
     else
         echo "# ---- no $rfm_yaml file found, skipping $img :-("
@@ -341,23 +346,25 @@ launch_reframe_1arg() {
 oneuptime() {
     # source rfm_venv/bin/activate
     CLUSTER_NAME=$1
-    echo "CLUSTER_NAME=$CLUSTER_NAME / $1"
+    PE=$2
+    echo "CLUSTER_NAME=$CLUSTER_NAME"
+    if [ -f 'reframe.out' ] ; then grep 'FAILURE INFO for' reframe.out ; fi
     json_rpt='latest.json'
     if [ -f $json_rpt ] ; then
         num_failures=`grep -m1 num_failures $json_rpt |cut -d: -f2 |cut -d, -f1 |tr -d " "`
-        # num_failures=`jq '.session_info.num_failures' $json_rpt`
     else
         num_failures=-1
         echo "# warning: no json_rpt=$json_rpt file found"
     fi
     echo "Updating oneuptime status page"
-    python3 ./ci/scripts/oneuptime.py $CLUSTER_NAME $num_failures
+    python3 ./ci/scripts/oneuptime.py $CLUSTER_NAME $num_failures $PE
 }
 # }}}
 
 # {{{ main 
 in="$1"
 img="$2"
+pe="$3"
 case $in in
     setup_jq) setup_jq;;
     setup_uenv_and_oras) setup_uenv_and_oras;;
@@ -366,6 +373,7 @@ case $in in
     jfrog_login) jfrog_login "$jfrog_creds_path";;
     uenv_image_find) uenv_image_find;;
     oras_pull_meta_dir) oras_pull_meta_dir "$img";;
+    uenv_pull_meta_dir) uenv_pull_meta_dir "$img";;
     meta_has_reframe_yaml) meta_has_reframe_yaml "$img";;
     remove_last_comma_from_variable) remove_last_comma_from_variable "$myvar";;
     oras_pull_sqfs) oras_pull_sqfs;;
@@ -376,7 +384,7 @@ case $in in
     launch_reframe_1img) launch_reframe_1img "$img";;
     launch_reframe) launch_reframe;;
     launch_reframe_1arg) launch_reframe_1arg "$img";;
-    oneuptime) oneuptime "$img";;
+    oneuptime) oneuptime "$img" "$pe";;
     *) echo "unknown arg=$in";;
 esac
 #old [[ -d $oras_tmp ]] && { echo "cleaning $oras_tmp"; rm -fr $oras_tmp; }

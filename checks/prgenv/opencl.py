@@ -22,8 +22,8 @@ class OpenCLBase(rfm.RegressionTest):
 
 @rfm.simple_test
 class CPE_OpenCLCheck(OpenCLBase):
-    valid_systems = ['+nvgpu -uenv']
-    valid_prog_environs = ['+cuda +opencl']
+    valid_systems = ['+nvgpu']
+    valid_prog_environs = ['+cuda +opencl -uenv']
     tags = {'production', 'craype'}
 
     @run_after('setup')
@@ -40,8 +40,8 @@ class CPE_OpenCLCheck(OpenCLBase):
 
 @rfm.simple_test
 class UENV_OpenCLCheck(OpenCLBase):
-    valid_systems = ['+nvgpu +uenv']
-    valid_prog_environs = ['+cuda +opencl']
+    valid_systems = ['+nvgpu']
+    valid_prog_environs = ['+cuda +opencl +uenv']
     tags = {'production', 'uenv'}
 
     @run_before('compile')

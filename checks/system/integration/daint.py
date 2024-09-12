@@ -19,7 +19,7 @@ def create_checks(check):
     #
     # ----------------------------------------------------------------------- #
 
-    check.SYSTEM = 'alps-daint'
+    check.SYSTEM = 'daint'
 
     # ----------------------------------------------------------------------- #
     #
@@ -113,7 +113,7 @@ def create_checks(check):
     check.CLASS = 'OSINSTALL'
 
     check('cat /etc/os-release', expected=r'PRETTY_NAME="SUSE Linux Enterprise Server 15 SP5"')
-    check('locale', expected=r'LANG=C')
+    check('locale', expected=r'LANG=C') # needed for the jobreport tool
 
     # ----------------------------------------------------------------------- #
     #
@@ -124,12 +124,12 @@ def create_checks(check):
     check.CLASS = 'OSSERVICE'
 
     check('ps aux | grep /usr/sbin/sshd | grep root || echo FAILED', not_expected=r'FAILED')
-    check('ss -ltup | grep :ssh  || echo FAILED', not_expected=r'FAILED')
+    check('/usr/bin/ss -ltup | grep :ssh  || echo FAILED', not_expected=r'FAILED')
 
-    check('ss -ltup | grep :smtp || echo FAILED', expected=r'FAILED')
-    check('ss -ltup | grep :x11  || echo FAILED', expected=r'FAILED')
+    check('/usr/bin/ss -ltup | grep :smtp || echo FAILED', expected=r'FAILED')
+    check('/usr/bin/ss -ltup | grep :x11  || echo FAILED', expected=r'FAILED')
 
-    check('ss -ltup | grep :http || echo FAILED', expected=r'FAILED')
+    check('/usr/bin/ss -ltup | grep :http || echo FAILED', expected=r'FAILED')
 
     # ----------------------------------------------------------------------- #
     #
@@ -162,7 +162,8 @@ def create_checks(check):
     # CI-Ext
     check('which jq     || echo FAILED', not_expected=r'FAILED')
 
-    check('which emacs || echo FAILED', not_expected=r'FAILED')
+    # TODO: deploy https://github.com/eth-cscs/alps-uenv/pull/130
+    # check('which emacs || echo FAILED', not_expected=r'FAILED')
 
     # ----------------------------------------------------------------------- #
     #
@@ -205,7 +206,8 @@ def create_checks(check):
     check('which sinfo || echo FAILED', not_expected=r'FAILED')
     check('ps aux | grep munge', expected=r'/usr/sbin/munged')
     check('scontrol ping', expected=r'Slurmctld\(primary\) at .* is UP')
-    check('scontrol ping', expected=r'Slurmctld\(backup\) at .* is UP')
+    # no need of a backup on daint thanks to kubernetes
+    # check('scontrol ping', expected=r'Slurmctld\(backup\) at .* is UP')
 
     # ----------------------------------------------------------------------- #
     #
@@ -226,19 +228,27 @@ def create_checks(check):
     check.CLASS = 'VSERVICES'
 
     check('bash -c "uenv --version" || echo FAILED', not_expected=r'FAILED')
-    check('bash -c "uenv image find || echo FAILED"', expected=           r'vasp/.*gh200',   not_expected=r'FAILED');
-    check('bash -c "uenv image find || echo FAILED"', expected=r'quantumespresso/.*gh200',   not_expected=r'FAILED');
-    check('bash -c "uenv image find || echo FAILED"', expected=        r'pytorch/.*gh200',   not_expected=r'FAILED');
-    check('bash -c "uenv image find || echo FAILED"', expected=  r'prgenv-nvidia/.*gh200',   not_expected=r'FAILED');
-    check('bash -c "uenv image find || echo FAILED"', expected=     r'prgenv-gnu/.*gh200',   not_expected=r'FAILED');
-    check('bash -c "uenv image find || echo FAILED"', expected=   r'netcdf-tools/.*gh200',   not_expected=r'FAILED');
-    check('bash -c "uenv image find || echo FAILED"', expected=           r'namd/.*gh200',   not_expected=r'FAILED');
-    check('bash -c "uenv image find || echo FAILED"', expected=         r'lammps/.*gh200',   not_expected=r'FAILED');
-    check('bash -c "uenv image find || echo FAILED"', expected=       r'icon-wcp/.*gh200',   not_expected=r'FAILED');
-    check('bash -c "uenv image find || echo FAILED"', expected=        r'gromacs/.*gh200',   not_expected=r'FAILED');
-    check('bash -c "uenv image find || echo FAILED"', expected=        r'editors/.*gh200',   not_expected=r'FAILED');
-    check('bash -c "uenv image find || echo FAILED"', expected=           r'cp2k/.*gh200',   not_expected=r'FAILED');
-    check('bash -c "uenv image find || echo FAILED"', expected=          r'arbor/.*gh200',   not_expected=r'FAILED');
+    # https://confluence.cscs.ch/display/KB/Scientific+Applications:
+    # CP2K, GROMACS, LAMMPS, NAMD, QuantumESPRESSO, VASP
+    check('bash -c "uenv image find || echo FAILED"', expected=   r'linaro-forge/.*gh200', not_expected=r'FAILED')
+
+    check('bash -c "uenv image find || echo FAILED"', expected=           r'cp2k/.*gh200', not_expected=r'FAILED')
+    check('bash -c "uenv image find || echo FAILED"', expected=        r'gromacs/.*gh200', not_expected=r'FAILED')
+    check('bash -c "uenv image find || echo FAILED"', expected=         r'lammps/.*gh200', not_expected=r'FAILED')
+    check('bash -c "uenv image find || echo FAILED"', expected=           r'namd/.*gh200', not_expected=r'FAILED')
+    check('bash -c "uenv image find || echo FAILED"', expected=r'quantumespresso/.*gh200', not_expected=r'FAILED')
+    check('bash -c "uenv image find || echo FAILED"', expected=           r'vasp/.*gh200', not_expected=r'FAILED')
+    check('bash -c "uenv image find || echo FAILED"', expected=   r'linaro-forge/.*gh200', not_expected=r'FAILED')
+
+    check('bash -c "uenv image find || echo FAILED"', expected=          r'arbor/.*gh200', not_expected=r'FAILED')
+    check('bash -c "uenv image find || echo FAILED"', expected=                 r'FAILED', not_expected=r'pytorch/.*gh200')
+    check('bash -c "uenv image find || echo FAILED"', expected=                 r'FAILED', not_expected=r'icon-wcp/.*gh200')
+
+    check('bash -c "uenv image find || echo FAILED"', expected=  r'prgenv-nvidia/.*gh200', not_expected=r'FAILED')
+    check('bash -c "uenv image find || echo FAILED"', expected=     r'prgenv-gnu/.*gh200', not_expected=r'FAILED')
+    check('bash -c "uenv image find || echo FAILED"', expected=   r'netcdf-tools/.*gh200', not_expected=r'FAILED')
+    check('bash -c "uenv image find || echo FAILED"', expected=        r'editors/.*gh200', not_expected=r'FAILED')
+
 
 # --------------------------------------------------------------------------- #
 #                           E N D   O F   C H E C K S

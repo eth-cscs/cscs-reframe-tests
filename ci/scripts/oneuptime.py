@@ -6,16 +6,25 @@ import sys
 
 api_url = "https://oneuptime.com"
 project_id = "ee08f8ce-375c-4082-95c6-dd55b2f0d1fd"
-# api_key defined as environment variable in __main__
+# api_key defined from environment variable in __main__
 monitor_id_d = {
     # https://confluence.cscs.ch/display/SRM/
     # -> Status+Page+%7C+Phase-5%3A+list+of+monitors+provided+for+other+WS
-    'todi': '2de73dd3-0e06-437f-a8fd-fec3169e8b05',
-    'daint': '6fff497c-941c-4289-b170-4743406fbae6',
-    'eiger': '70f287fe-aa75-41fb-87fa-00458f2fa269',
-    'santis': '693fe39c-a9e7-43ad-9f6e-a21c0123b8a6',
-    'clariden': 'fac424a7-e4ae-4b19-987f-5f29e904a071'
+    'cpe': {
+        'todi': 'ae91f715-6595-4bd4-8c79-193b2cfcad00',
+        'daint': '3fcb96ca-b7d1-4013-bc72-7833c4b17207',
+        'eiger': 'eb64b621-2235-4835-a40a-97208fc05e89',
+        'santis': 'd6902bfc-3ada-4f47-b4b1-26cf49267eb6',
+        'clariden': '40203d20-1155-423b-9526-bce4c14a5181',
+    },
+    'uenv': {
+        'todi': '9a93f7e5-96d1-414a-849d-d69de85208e6',
+        'daint': '7a16cf8b-9936-4c2c-8f97-3d419c754753',
+        'eiger': '4675d745-af62-4685-b86f-c18cd4507dda',
+        'santis': '7f22e928-73a0-4337-b7e7-fab16f491a42',
+        'clariden': 'cd133b6d-3968-48f3-b14d-9c689f4ac5b5',
     }
+}
 status_page_url = \
     'https://oneuptime.com/status-page/5edbd971-8b4b-4ff3-8f14-691a1fc94c31'
 monitor_status = {
@@ -25,6 +34,7 @@ monitor_status = {
 }
 
 
+# {{{ set_monitor_status
 def set_monitor_status(monitor_id, status_label):
     # taken from Project -> Settings -> Monitor Status
     headers = {
@@ -55,6 +65,7 @@ def set_monitor_status(monitor_id, status_label):
             f"PUT request failed with status code: {response.status_code}")
         raise Exception(
             f"PUT request failed with status code: {response.status_code}")
+# }}}        
 
 
 if __name__ == '__main__':
@@ -63,7 +74,7 @@ if __name__ == '__main__':
         print(f'Error: $RFM_ONEUPTIME_APIKEY is not set, exiting...')
         sys.exit(1)
 
-    cluster_name, num_failures = sys.argv[1:3]
+    cluster_name, num_failures, cpe = sys.argv[1:4]
     if int(num_failures) == 0:
         status_label = "Operational"
     elif int(num_failures) == -1:
@@ -72,8 +83,8 @@ if __name__ == '__main__':
         status_label = "Degraded"
 
     try:
-        print(f"Updating {status_page_url} # {cluster_name}@{status_label}")
-        set_monitor_status(monitor_id_d[cluster_name], status_label)
+        print(f"Updating {status_page_url} # {cpe}@{cluster_name}@{status_label}")
+        set_monitor_status(monitor_id_d[cpe][cluster_name], status_label)
     except KeyError as e:
         print(f'Error: Unknown key err={e}')
         sys.exit(1)

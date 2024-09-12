@@ -57,8 +57,8 @@ class netCDFBase(rfm.RegressionTest):
 
 @rfm.simple_test
 class CPE_NetcdfTest(netCDFBase):
-    valid_systems = ['+remote -uenv']
-    valid_prog_environs = ['+mpi +netcdf-hdf5parallel']
+    valid_systems = ['+remote']
+    valid_prog_environs = ['+mpi +netcdf-hdf5parallel -uenv']
     tags = {'production', 'health', 'craype'}
 
     @run_before('run')
@@ -72,7 +72,7 @@ class CPE_NetcdfTest(netCDFBase):
 
 @rfm.simple_test
 class UENV_NetcdfTest(netCDFBase):
-    valid_systems = ['+remote +uenv']
-    valid_prog_environs = ['+mpi +netcdf-hdf5parallel']
+    valid_systems = ['+remote']
+    valid_prog_environs = ['+mpi +netcdf-hdf5parallel +uenv']
     env_vars = {'PE_ENV': 'UENV'}
     tags = {'production', 'health', 'uenv'}

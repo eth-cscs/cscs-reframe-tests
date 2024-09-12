@@ -24,13 +24,13 @@ class CudaFortranBase(rfm.RegressionTest):
 
 @rfm.simple_test
 class CPE_CudaFortran(CudaFortranBase):
-    valid_systems = ['+nvgpu -uenv']
-    valid_prog_environs = ['+cuda-fortran']
+    valid_systems = ['+nvgpu']
+    valid_prog_environs = ['+cuda-fortran -uenv']
     tags = {'production', 'craype'}
 
 
 @rfm.simple_test
 class UENV_CudaFortran(CudaFortranBase):
-    valid_systems = ['+nvgpu +uenv']
-    valid_prog_environs = ['+cuda-fortran']
+    valid_systems = ['+nvgpu']
+    valid_prog_environs = ['+cuda-fortran +uenv']
     tags = {'production', 'uenv'}
