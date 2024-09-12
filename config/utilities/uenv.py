@@ -103,7 +103,7 @@ def _get_uenvs():
                 )
             else:
                 raise ConfigError(
-                    'activation has to be either a list of commands to be '
+                    'activation has to be a list of commands to be '
                     'executed to configure the environment'
                 )
 
@@ -116,7 +116,7 @@ def _get_uenvs():
                     'file': str(image_path),
                 }
             }
-            if len(views)>0:
+            if len(views) > 0:
                 env['resources']['uenv_views'] = {'views': ','.join(views)}
             env['features'] += ['uenv']
 
