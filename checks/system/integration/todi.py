@@ -144,7 +144,7 @@ def create_checks(check):
 
     check('bash -c "module --redirect spider PrgEnv-cray/8.5.0   || echo FAILED"', not_expected=r'FAILED')
     check('bash -c "module --redirect spider PrgEnv-gnu/8.5.0    || echo FAILED"', not_expected=r'FAILED')
-    check('bash -c "module --redirect spider PrgEnv-nvidia/8.5.0 || echo FAILED"', not_expected=r"FAILED")
+    check('bash -c "module --redirect spider PrgEnv-nvidia/8.5.0 || echo FAILED"', not_expected=r'FAILED')
 
     # ----------------------------------------------------------------------- #
     #
@@ -162,7 +162,7 @@ def create_checks(check):
     # CI-Ext
     check('which jq     || echo FAILED', not_expected=r'FAILED')
 
-    #check('which emacs || echo FAILED', not_expected=r'FAILED')
+    # check('which emacs || echo FAILED', not_expected=r'FAILED')
 
     # ----------------------------------------------------------------------- #
     #
