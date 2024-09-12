@@ -24,7 +24,7 @@ def uarch(partition):
             return 'gh200'
         if device.arch == 'sm_80':
             return 'a100'
-        if device.arch == 'ghx90a':
+        if device.arch == 'gfx90a':
             return 'mi200'
         return None
 

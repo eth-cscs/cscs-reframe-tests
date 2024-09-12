@@ -47,6 +47,7 @@ class arbor_build(rfm.CompileOnlyRegressionTest):
     valid_systems = ['*']
     valid_prog_environs = ['+arbor-dev']
     build_system = 'CMake'
+    sourcesdir = None
     maintainers = ['bcumming']
     arbor_sources = fixture(arbor_download, scope='session')
     # NOTE: required so that the build stage is performed on
@@ -63,7 +64,7 @@ class arbor_build(rfm.CompileOnlyRegressionTest):
 
         tarsource = os.path.join(self.arbor_sources.stagedir, tarball)
         self.prebuild_cmds = [
-            f'tar --strip-components=1 -xzf{tarsource} -C {self.stagedir}'
+            f'tar --strip-components=1 -xzf {tarsource} -C {self.stagedir}'
         ]
 
         self.build_system.config_opts = [
@@ -94,6 +95,7 @@ class arbor_unit(rfm.RunOnlyRegressionTest):
     descr = 'Run the arbor unit tests'
     valid_systems = ['*']
     valid_prog_environs = ['+arbor-dev']
+    time_limit = '5m'
     maintainers = ['bcumming']
     arbor_build = fixture(arbor_build, scope='environment')
 
@@ -108,6 +110,9 @@ class arbor_unit(rfm.RunOnlyRegressionTest):
 
 @rfm.simple_test
 class arbor_busyring(rfm.RunOnlyRegressionTest):
+    """
+    run the arbor busyring example in small and medium model configurations
+    """
     descr = 'arbor busyring model'
     valid_systems = ['*']
     valid_prog_environs = ['+arbor-dev']
@@ -118,7 +123,6 @@ class arbor_busyring(rfm.RunOnlyRegressionTest):
 
     @run_before('run')
     def prepare_run(self):
-        self.uarch = uenv.uarch(self.current_partition)
         self.executable = os.path.join(self.arbor_build.stagedir, 'build', 'bin', 'busyring')
         self.executable_opts = [f'busyring-input-{self.model_size}.json']
 
@@ -149,9 +153,12 @@ slurm_config = {
     'zen2':  {"ranks": 2, "cores": 64, "gpu": False},
 }
 
-# adapt the busyring test to check paralle MPI execution
 @rfm.simple_test
 class arbor_busyring_mpi(arbor_busyring):
+    """
+    adapt the busyring test to check paralle MPI execution
+    """
+
     descr = 'arbor busyring model MPI on a single node'
     model_size = parameter(['medium'])
 
