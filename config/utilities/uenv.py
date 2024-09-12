@@ -13,10 +13,16 @@ _UENV_DELIMITER = ','
 _UENV_MOUNT_DELIMITER = '@'
 _RFM_META = pathlib.Path('extra') / 'reframe.yaml'
 
-# returns one of
-#   'a100', 'gh200', 'mi200', 'zen2', 'zen3'
-#   None
+
 def uarch(partition):
+    """
+    Return the uenv uarch tag of the nodes in a reframe partition description.
+
+    partition: reframe partition information
+    returns:
+       'a100', 'gh200', 'mi200', 'zen2' or 'zen3'
+       None -> unable to identify uarch
+    """
     gpus = partition.devices
     if gpus:
         device = gpus[0]

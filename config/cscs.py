@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 #
 # ReFrame CSCS settings
-#
+
 import glob
 import os
 import pprint
@@ -60,9 +60,7 @@ if site_configuration and uenv_environs:
             if system['name'] in u['target_systems']
         ]
         for partition in system['partitions']:
-            if (partition.get('features', None) and
-                'uenv' in partition['features']):
-
+            if partition.get('features', None) and ('uenv' in partition['features']):
                 # Replace the partition environs with the uenv ones
                 partition['environs'] = valid_system_uenv_names
 
@@ -81,4 +79,3 @@ if site_configuration and uenv_environs:
                     }
                 )
                 partition['resources'] = resources
-

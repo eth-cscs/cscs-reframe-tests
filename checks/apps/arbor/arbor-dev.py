@@ -27,6 +27,7 @@ arbor_references = {
     }
 }
 
+
 class arbor_download(rfm.RunOnlyRegressionTest):
     version = variable(str, value='0.9.0')
     descr = 'Fetch Arbor sources code'
@@ -41,6 +42,7 @@ class arbor_download(rfm.RunOnlyRegressionTest):
     @sanity_function
     def validate_download(self):
         return sn.assert_eq(self.job.exitcode, 0)
+
 
 class arbor_build(rfm.CompileOnlyRegressionTest):
     descr = 'Build Arbor'
@@ -90,6 +92,7 @@ class arbor_build(rfm.CompileOnlyRegressionTest):
 
         self.build_system.make_opts = ['pyarb', 'examples', 'unit']
 
+
 @rfm.simple_test
 class arbor_unit(rfm.RunOnlyRegressionTest):
     descr = 'Run the arbor unit tests'
@@ -101,12 +104,14 @@ class arbor_unit(rfm.RunOnlyRegressionTest):
 
     @run_before('run')
     def prepare_run(self):
-        self.executable = os.path.join(self.arbor_build.stagedir, 'build', 'bin', 'unit')
+        self.executable = os.path.join(self.arbor_build.stagedir,
+                                       'build', 'bin', 'unit')
         self.executable_opts = []
 
     @sanity_function
     def validate_test(self):
         return sn.assert_found(r'PASSED', self.stdout)
+
 
 @rfm.simple_test
 class arbor_busyring(rfm.RunOnlyRegressionTest):
@@ -123,7 +128,8 @@ class arbor_busyring(rfm.RunOnlyRegressionTest):
 
     @run_before('run')
     def prepare_run(self):
-        self.executable = os.path.join(self.arbor_build.stagedir, 'build', 'bin', 'busyring')
+        self.executable = os.path.join(self.arbor_build.stagedir,
+                                       'build', 'bin', 'busyring')
         self.executable_opts = [f'busyring-input-{self.model_size}.json']
 
         # Instead of explicitly listing performance targets for all possible
@@ -148,10 +154,12 @@ class arbor_busyring(rfm.RunOnlyRegressionTest):
     def time_run(self):
         return sn.extractsingle(r'model-run\s+(\S+)', self.stdout, 1, float)
 
+
 slurm_config = {
     'gh200': {"ranks": 4, "cores": 64, "gpu": True},
     'zen2':  {"ranks": 2, "cores": 64, "gpu": False},
 }
+
 
 @rfm.simple_test
 class arbor_busyring_mpi(arbor_busyring):
@@ -165,7 +173,8 @@ class arbor_busyring_mpi(arbor_busyring):
     @run_before('run')
     def prepare_run(self):
         self.uarch = uenv.uarch(self.current_partition)
-        self.executable = os.path.join(self.arbor_build.stagedir, 'build', 'bin', 'busyring')
+        self.executable = os.path.join(self.arbor_build.stagedir,
+                                       'build', 'bin', 'busyring')
         self.executable_opts = [f'busyring-input-{self.model_size}.json']
 
         self.num_tasks = slurm_config[self.uarch]["ranks"]
