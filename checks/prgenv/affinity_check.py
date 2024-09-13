@@ -71,6 +71,13 @@ class AffinityTestBase(rfm.RunOnlyRegressionTest):
 
     tags = {'production', 'scs', 'maintenance', 'craype'}
 
+    @run_after('setup')
+    def skip_cpe_2312(self):
+        cpe = osext.cray_cdt_version()
+        self.skip_if(cpe == '23.12' and
+                     'uenv' not in self.current_environ.features,
+                     f'skipping xpmem_attach known error with cpe/{cpe}')
+
     @run_before('run')
     def add_launcher_opts_from_env_extras(self):
         self.job.launcher.options += (
