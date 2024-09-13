@@ -60,6 +60,7 @@ class AffinityTestBase(rfm.RunOnlyRegressionTest):
     cpu_bind = variable(str, type(None), value=None)
     hint = variable(str, type(None), value=None)
     affinity_tool = fixture(CompileAffinityTool, scope='environment')
+    sourcesdir = None
 
     valid_systems = [
         '+remote'
