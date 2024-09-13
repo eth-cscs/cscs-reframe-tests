@@ -7,7 +7,6 @@
 
 import glob
 import os
-import pprint
 import sys
 from reframe.utility import import_module_from_file
 
