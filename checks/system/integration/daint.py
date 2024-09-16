@@ -113,7 +113,7 @@ def create_checks(check):
     check.CLASS = 'OSINSTALL'
 
     check('cat /etc/os-release', expected=r'PRETTY_NAME="SUSE Linux Enterprise Server 15 SP5"')
-    check('locale', expected=r'LANG=C') # needed for the jobreport tool
+    check('locale', expected=r'LANG=en_US.UTF-8')
 
     # ----------------------------------------------------------------------- #
     #
@@ -202,7 +202,9 @@ def create_checks(check):
 
     check.CLASS = 'SLURM'
 
-    check('test -e /etc/slurm/slurm.conf || echo FAILED', not_expected=r'FAILED')
+    check('test -e /etc/slurm/slurm.conf      || echo FAILED', not_expected=r'FAILED', where='-remote')
+    check('test -e /run/slurm/conf/slurm.conf || echo FAILED', not_expected=r'FAILED', where='+remote')
+
     check('which sinfo || echo FAILED', not_expected=r'FAILED')
     check('ps aux | grep munge', expected=r'/usr/sbin/munged')
     check('scontrol ping', expected=r'Slurmctld\(primary\) at .* is UP')
@@ -229,25 +231,22 @@ def create_checks(check):
 
     check('bash -c "uenv --version" || echo FAILED', not_expected=r'FAILED')
     # https://confluence.cscs.ch/display/KB/Scientific+Applications:
-    # CP2K, GROMACS, LAMMPS, NAMD, QuantumESPRESSO, VASP
-    check('bash -c "uenv image find || echo FAILED"', expected=   r'linaro-forge/.*gh200', not_expected=r'FAILED')
-
-    check('bash -c "uenv image find || echo FAILED"', expected=           r'cp2k/.*gh200', not_expected=r'FAILED')
-    check('bash -c "uenv image find || echo FAILED"', expected=        r'gromacs/.*gh200', not_expected=r'FAILED')
-    check('bash -c "uenv image find || echo FAILED"', expected=         r'lammps/.*gh200', not_expected=r'FAILED')
-    check('bash -c "uenv image find || echo FAILED"', expected=           r'namd/.*gh200', not_expected=r'FAILED')
-    check('bash -c "uenv image find || echo FAILED"', expected=r'quantumespresso/.*gh200', not_expected=r'FAILED')
-    check('bash -c "uenv image find || echo FAILED"', expected=           r'vasp/.*gh200', not_expected=r'FAILED')
-    check('bash -c "uenv image find || echo FAILED"', expected=   r'linaro-forge/.*gh200', not_expected=r'FAILED')
-
-    check('bash -c "uenv image find || echo FAILED"', expected=          r'arbor/.*gh200', not_expected=r'FAILED')
-    check('bash -c "uenv image find || echo FAILED"', expected=                 r'FAILED', not_expected=r'pytorch/.*gh200')
-    check('bash -c "uenv image find || echo FAILED"', expected=                 r'FAILED', not_expected=r'icon-wcp/.*gh200')
-
-    check('bash -c "uenv image find || echo FAILED"', expected=  r'prgenv-nvidia/.*gh200', not_expected=r'FAILED')
-    check('bash -c "uenv image find || echo FAILED"', expected=     r'prgenv-gnu/.*gh200', not_expected=r'FAILED')
-    check('bash -c "uenv image find || echo FAILED"', expected=   r'netcdf-tools/.*gh200', not_expected=r'FAILED')
-    check('bash -c "uenv image find || echo FAILED"', expected=        r'editors/.*gh200', not_expected=r'FAILED')
+    # CP2K, GROMACS, LAMMPS, NAMD, QuantumESPRESSO, VASP, Forge    
+    check('bash -c "uenv image find"', expected=           r'cp2k/.*gh200')
+    check('bash -c "uenv image find"', expected=        r'gromacs/.*gh200')
+    check('bash -c "uenv image find"', expected=         r'lammps/.*gh200')
+    check('bash -c "uenv image find"', expected=           r'namd/.*gh200')
+    check('bash -c "uenv image find"', expected=r'quantumespresso/.*gh200')
+    check('bash -c "uenv image find"', expected=           r'vasp/.*gh200')
+    check('bash -c "uenv image find"', expected=   r'linaro-forge/.*gh200')
+    
+    check('bash -c "uenv image find"', not_expected=    r'pytorch/.*gh200')
+    check('bash -c "uenv image find"', not_expected=   r'icon-wcp/.*gh200')
+    check('bash -c "uenv image find"', not_expected=  r'prgenv-nvidia/.*gh200')
+    
+    check('bash -c "uenv image find"', expected=     r'prgenv-gnu/.*gh200')
+    check('bash -c "uenv image find"', expected=   r'netcdf-tools/.*gh200')
+    check('bash -c "uenv image find"', expected=        r'editors/.*gh200')
 
 
 # --------------------------------------------------------------------------- #

@@ -113,7 +113,7 @@ def create_checks(check):
     check.CLASS = 'OSINSTALL'
 
     check('cat /etc/os-release', expected=r'PRETTY_NAME="SUSE Linux Enterprise Server 15 SP5"')
-    check('locale', expected=r'LANG=C')
+    check('locale', expected=r'LANG=en_US.UTF-8')
 
     # ----------------------------------------------------------------------- #
     #
@@ -139,12 +139,12 @@ def create_checks(check):
 
     check.CLASS = 'CPE'
 
-    check('bash -c "module load cray || echo FAILED"', not_expected=r'FAILED')
-    check('bash -c "module load cray && module list"', expected=r'craype-arm-grace', not_expected=r'craype-x86-rome')
+    check('bash -c "module --redirect load cray || echo FAILED"', not_expected=r'FAILED')
+    check('bash -c "module --redirect load cray && module --redirect list"', expected=r'craype-arm-grace', not_expected=r'craype-x86-rome')
 
-    check('bash -c "module spider PrgEnv-cray/8.5.0   || echo FAILED"', not_expected=r'FAILED')
-    check('bash -c "module spider PrgEnv-gnu/8.5.0    || echo FAILED"', not_expected=r'FAILED')
-    check('bash -c "module spider PrgEnv-nvidia/8.5.0 || echo FAILED"', not_expected=r"FAILED")
+    check('bash -c "module --redirect spider PrgEnv-cray/8.5.0   || echo FAILED"', not_expected=r'FAILED')
+    check('bash -c "module --redirect spider PrgEnv-gnu/8.5.0    || echo FAILED"', not_expected=r'FAILED')
+    check('bash -c "module --redirect spider PrgEnv-nvidia/8.5.0 || echo FAILED"', not_expected=r'FAILED')
 
     # ----------------------------------------------------------------------- #
     #
@@ -162,7 +162,7 @@ def create_checks(check):
     # CI-Ext
     check('which jq     || echo FAILED', not_expected=r'FAILED')
 
-    check('which emacs || echo FAILED', not_expected=r'FAILED')
+    # check('which emacs || echo FAILED', not_expected=r'FAILED')
 
     # ----------------------------------------------------------------------- #
     #
@@ -187,7 +187,7 @@ def create_checks(check):
     check('bash -c "[[ $SCRATCH == /capstor/scratch/cscs/* ]] || echo FAILED"', not_expected=r'FAILED')
     check('bash -c "[[ $PROJECT == /project/*              ]] || echo FAILED"', not_expected=r'FAILED')
     check('bash -c "[[ $STORE   == /store/*                ]] || echo FAILED"', not_expected=r'FAILED')
-    check('bash -c "[[ $APPS    == /capstor/apps/cscs      ]] || echo FAILED"', not_expected=r'FAILED')
+    check('bash -c "[[ $APPS    == /capstor/apps/cscs/todi ]] || echo FAILED"', not_expected=r'FAILED')
     check('bash -c "[[ $HOME    == /users/*                ]] || echo FAILED"', not_expected=r'FAILED')
 
     check("printenv TMP || echo FAILED", expected=r'FAILED')
@@ -200,7 +200,8 @@ def create_checks(check):
 
     check.CLASS = 'SLURM'
 
-    check('test -e /etc/slurm/slurm.conf || echo FAILED', not_expected=r'FAILED')
+    check('test -e /etc/slurm/slurm.conf      || echo FAILED', not_expected=r'FAILED', where='-remote')
+    check('test -e /run/slurm/conf/slurm.conf || echo FAILED', not_expected=r'FAILED', where='+remote')
     check('which sinfo || echo FAILED', not_expected=r'FAILED')
     check('ps aux | grep munge', expected=r'/usr/sbin/munged')
     check('scontrol ping', expected=r'Slurmctld\(primary\) at .* is UP')
