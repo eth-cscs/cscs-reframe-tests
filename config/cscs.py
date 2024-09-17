@@ -56,7 +56,8 @@ if site_configuration and uenv_environs:
     for system in site_configuration['systems']:
         valid_system_uenv_names = [
             u['name'] for u in uenv_environs
-            if system['name'] in u['target_systems']
+            if (system['name'] in u['target_systems'] or
+                u['target_systems'] == ['*'])
         ]
         for partition in system['partitions']:
             if partition.get('features', None) and ('uenv' in partition['features']):

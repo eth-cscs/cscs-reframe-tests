@@ -12,6 +12,7 @@ _UENV_CLI = 'uenv'
 _UENV_DELIMITER = ','
 _UENV_MOUNT_DELIMITER = '@'
 _RFM_META = pathlib.Path('extra') / 'reframe.yaml'
+_RFM_META_DIR = pathlib.Path('meta')
 
 
 def uarch(partition):
@@ -61,23 +62,31 @@ def _get_uenvs():
         else:
             image_mount = _UENV_MOUNT_DEFAULT
 
-        inspect_cmd = f'{_UENV_CLI} image inspect {uenv_name} --format'
-
-        image_path = osext.run_command(
-            f"{inspect_cmd} '{{sqfs}}'", shell=True).stdout.strip()
-        target_system = osext.run_command(
-            f"{inspect_cmd} '{{system}}'", shell=True).stdout.strip()
-
-        image_path = pathlib.Path(image_path)
-
-        # FIXME temporary workaround for older uenv versions
-        if Version(uenv_version) >= Version('5.1.0-dev'):
-            meta_path = osext.run_command(
-                f"{inspect_cmd} '{{meta}}'", shell=True
-            ).stdout.strip()
-            rfm_meta = pathlib.Path(meta_path) / _RFM_META
+        # Check if given uenv_name is a path to a squashfs archive
+        uenv_path = pathlib.Path(uenv_name)
+        if uenv_path.is_file():
+            # We cannot inspect for target systems
+            target_system = '*'
+            image_path = uenv_path
+            rfm_meta = image_path.parent / _RFM_META_DIR / _RFM_META
         else:
-            rfm_meta = image_path.parent / 'store.yaml'
+            inspect_cmd = f'{_UENV_CLI} image inspect {uenv_name} --format'
+
+            image_path = osext.run_command(
+                f"{inspect_cmd} '{{sqfs}}'", shell=True).stdout.strip()
+            target_system = osext.run_command(
+                f"{inspect_cmd} '{{system}}'", shell=True).stdout.strip()
+
+            image_path = pathlib.Path(image_path)
+
+            # FIXME temporary workaround for older uenv versions
+            if Version(uenv_version) >= Version('5.1.0-dev'):
+                meta_path = osext.run_command(
+                    f"{inspect_cmd} '{{meta}}'", shell=True
+                ).stdout.strip()
+                rfm_meta = pathlib.Path(meta_path) / _RFM_META
+            else:
+                rfm_meta = image_path.parent / 'store.yaml'
 
         try:
             with open(rfm_meta) as image_envs:
@@ -100,13 +109,9 @@ def _get_uenvs():
 
             if isinstance(activation, list):
                 env['prepare_cmds'] = activation
-            # no longer support implicit activation scripts
+            # FIXME: this is deprecated and should be removed
             elif isinstance(activation, str):
-                raise ConfigError(
-                    'support for activation scripts has been deprecated. '
-                    'instead use an explicit view, or the commands that '
-                    'activate the environment.'
-                )
+                env['prepare_cmds'] = [f'source {activation}']
             else:
                 raise ConfigError(
                     'activation has to be a list of commands to be '
