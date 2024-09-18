@@ -5,7 +5,65 @@
 
 import reframe as rfm
 import reframe.utility.sanity as sn
+import uenv
 
+
+class arbor_download(rfm.RunOnlyRegressionTest):
+    """
+    Download CP2K source code.
+    """
+    version = variable(str, value="2024.3")
+    descr = "Fetch CP2K source code"
+    sourcedir = None
+    executable = "curl"
+    executable_opts = [
+        "-O",
+        f"https://github.com/cp2k/cp2k/archive/refs/tags/v{version}.tar.gz",
+    ] 
+    local = True
+
+class Cp2kBuildTest(rfm.CompileOnlyRegressionTest):
+    """
+    Test CP2K build from source.
+    """
+    descr = "CP2K Build Test"
+    valid_systems = ['*']
+    valid_prog_environs = ['+cp2k-dev']
+    build_system = "CMake"
+    sourcesdir = None
+    maintainers = ["RMeli"]
+    cp2k_sources = fixture(cp2k_download, scope="session") # TODO: Change scope, other tests don't need source code
+    build_locally = False
+
+    @run_before("compile"):
+    def prepare_build(self):
+        self.uarch = uenv.uarch(self.current_partition)
+        self.build_system.builddir = os.path.join(self.stagedir, "build")
+        self.build_system.max_concurrency = 64
+        
+        tarball = 
+        tarsource = os.path.join(self.sourcesdir, f"v{self.version}.tar.gz")
+
+        self.prebuild_cmds = 
+
+        # TODO: Use Ninja generator
+        self.build_system.config_opts = [
+           "-DCP2K_ENABLE_REGTESTS=ON",
+           "-DCP2K_USE_LIBXC=ON",
+            "-DCP2K_USE_LIBINT2=ON",
+            "-DCP2K_USE_SPGLIB=ON",
+            "-DCP2K_USE_ELPA=ON",
+            "-DCP2K_USE_SPLA=ON",
+            "-DCP2K_USE_SIRIUS=ON",
+            "-DCP2K_USE_COSMA=ON",
+            "-DCP2K_USE_PLUMED=ON",
+        ]
+
+        if self.uarch == "gh200":
+            self.build_system.config_opts += [
+                "-DCP2K_USE_ACCEL=CUDA",
+                "-DCP2K_WITH_GPU=H100",
+            ]
 
 class Cp2kCheck(rfm.RunOnlyRegressionTest):
     modules = ['CP2K']
