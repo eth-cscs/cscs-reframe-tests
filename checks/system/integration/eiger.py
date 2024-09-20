@@ -101,8 +101,7 @@ def create_checks(check):
     check.CLASS = 'OSINSTALL'
 
     check('cat /etc/os-release', expected=r'PRETTY_NAME="SUSE Linux Enterprise Server 15 SP5"')
-    check('locale', expected=r'LANG=C')
-    check('locale', expected=r'LC_CTYPE=C.UTF-8')
+    check('cat /etc/locale.conf', expected=r'LANG=en_US.UTF-8')
 
 #-----------------------------------------------------------------------------#
 #                                                                             #
