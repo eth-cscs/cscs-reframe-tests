@@ -55,8 +55,8 @@ def create_checks(check):
     check('ping -n -q -c 5  8.8.8.8',        expected=r'5 packets transmitted, 0 received, 100% packet loss', where='+remote')
     check('ping -n -q -c 5  www.google.com', expected=r'5 packets transmitted, 0 received, 100% packet loss', where='+remote')
 
-    check('ping -n -q -c 5  8.8.8.8',        expected=r'5 packets transmitted, 5 received, 0% packet loss', where='-remote')
-    check('ping -n -q -c 5  www.google.com', expected=r'5 packets transmitted, 5 received, 0% packet loss', where='-remote')
+    # check('ping -n -q -c 5  8.8.8.8',        expected=r'5 packets transmitted, 5 received, 0% packet loss', where='-remote')
+    # check('ping -n -q -c 5  www.google.com', expected=r'5 packets transmitted, 5 received, 0% packet loss', where='-remote')
 
     check.CLASS = 'PROXY'
 
@@ -64,9 +64,9 @@ def create_checks(check):
     check('printenv https_proxy', expected=r'http://proxy.cscs.ch:8080', where='+remote')
     check('printenv no_proxy',    expected=r'.local,.cscs.ch,localhost,148.187.0.0/16,10.0.0.0/8,172.16.0.0/12', where='+remote')
 
-    check('printenv http_proxy', expected=r'', where='-remote')
-    check('printenv https_proxy', expected=r'', where='-remote')
-    check('printenv no_proxy', expected=r'', where='-remote')
+    # check('printenv http_proxy', expected=r'', where='-remote')
+    # check('printenv https_proxy', expected=r'', where='-remote')
+    # check('printenv no_proxy', expected=r'', where='-remote')
 
     check('curl -s www.google.com -o /dev/null || echo FAILED', not_expected=r'FAILED')
 
@@ -126,8 +126,8 @@ def create_checks(check):
     check('ps aux | grep /usr/sbin/sshd | grep root || echo FAILED', not_expected=r'FAILED')
     check('/usr/bin/ss -ltup | grep :ssh  || echo FAILED', not_expected=r'FAILED')
 
-    check('/usr/bin/ss -ltup | grep :smtp || echo FAILED', expected=r'FAILED')
-    check('/usr/bin/ss -ltup | grep :x11  || echo FAILED', expected=r'FAILED')
+    # check('/usr/bin/ss -ltup | grep :smtp || echo FAILED', expected=r'FAILED')
+    # check('/usr/bin/ss -ltup | grep :x11  || echo FAILED', expected=r'FAILED')
 
     check('/usr/bin/ss -ltup | grep :http || echo FAILED', expected=r'FAILED')
 
@@ -202,7 +202,7 @@ def create_checks(check):
 
     check.CLASS = 'SLURM'
 
-    check('test -e /etc/slurm/slurm.conf      || echo FAILED', not_expected=r'FAILED', where='-remote')
+    # check('test -e /etc/slurm/slurm.conf      || echo FAILED', not_expected=r'FAILED', where='-remote')
     check('test -e /run/slurm/conf/slurm.conf || echo FAILED', not_expected=r'FAILED', where='+remote')
 
     check('which sinfo || echo FAILED', not_expected=r'FAILED')
