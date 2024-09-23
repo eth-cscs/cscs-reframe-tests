@@ -68,7 +68,7 @@ class Check:
         #
 
         if not where:
-            where = '*'
+            where = ['*']
         else:
             where = where.split()
             if len(where) > 1:
