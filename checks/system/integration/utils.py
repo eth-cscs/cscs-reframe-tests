@@ -78,7 +78,7 @@ class Check:
                 where = [" ".join(where)]
             else:
                 if where[0][0] not in ['-', '+']:
-                    where[0] = f'+{where}'
+                    where[0] = f'+{where[0]}'
         
         #
         # Get our properties ready.
