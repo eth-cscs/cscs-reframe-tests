@@ -4,14 +4,27 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import os
+import shutil
 
 import reframe as rfm
 import reframe.utility.sanity as sn
+import reframe.utility.udeps as udeps
 import uenv
 
-cp2k_references = {"gh200": {"time_run": (190, None, 10, "s")}}
+cp2k_references = {
+    "pbe": {"gh200": {"time_run": (65, None, 5, "s")}},
+    "rpa": {"gh200": {"time_run": (560, None, 5, "s")}},
+}
 
-slurm_config = {"gh200": {"ranks": 4, "cores": 64, "gpu": True}}
+
+slurm_config = {
+    "pbe": {
+        "gh200": {"nodes": 8, "ntasks-per-node": 16, "cpus-per-task": 16, "gpu": True}
+    },
+    "rpa": {
+        "gh200": {"nodes": 8, "ntasks-per-node": 16, "cpus-per-task": 16, "gpu": True}
+    },
+}
 
 
 class cp2k_download(rfm.RunOnlyRegressionTest):
@@ -87,13 +100,91 @@ class cp2k_download(rfm.RunOnlyRegressionTest):
 #         return os.path.isfile(executable)
 
 
+# @rfm.simple_test
+# class Cp2kCheck(rfm.RunOnlyRegressionTest):
+#     executable = "cp2k.psmp"
+#     executable_opts = ["H2O-256.inp"]
+#     maintainers = ["RMeli"]
+#     valid_systems = ["*"]
+#     valid_prog_environs = ["+cp2k", "+cuda", "+mpi"]
+#
+#     @run_before("run")
+#     def prepare_run(self):
+#         self.uarch = uenv.uarch(self.current_partition)
+#
+#         # SBATCH options
+#         # TODO: Enable running with MPS
+#         self.num_tasks = slurm_config[self.uarch]["ranks"]
+#         self.num_cpus_per_task = slurm_config[self.uarch]["cores"]
+#
+#         # srun options
+#         self.job.launcher.options = ["--cpu-bind=cores"]
+#
+#         # Environment variables
+#         self.env_vars["MPICH_GPU_SUPPORT_ENABLED"] = "1"
+#         self.env_vars["OMP_NUM_THREADS"] = str(
+#             self.num_cpus_per_task - 1
+#         )  # INFO: OpenBLAS adds one thread
+#         self.env_vars["OMP_PLACES"] = "cores"
+#         self.env_vars["OMP_PROC_BIND"] = "close"
+#         self.env_vars["CUDA_CACHE_DISABLE"] = "1"
+#
+#         # Set reference
+#         if self.uarch is not None and self.uarch in cp2k_references:
+#             self.reference = {
+#                 self.current_partition.fullname: cp2k_references[self.uarch]
+#             }
+#
+#     @sanity_function
+#     def assert_energy_diff(self):
+#         energy = sn.extractsingle(
+#             r"\s+ENERGY\| Total FORCE_EVAL \( QS \) "
+#             r"energy [\[\(]a\.u\.[\]\)]:\s+(?P<energy>\S+)",
+#             self.stdout,
+#             "energy",
+#             float,
+#             item=-1,
+#         )
+#         energy_reference = -4404.2323
+#         energy_diff = sn.abs(energy - energy_reference)
+#
+#         successful_termination = sn.assert_found(r"PROGRAM STOPPED IN", self.stdout)
+#         correct_number_of_md_steps = sn.assert_eq(
+#             sn.count(
+#                 sn.extractall(
+#                     r"(?i)(?P<step_count>STEP NUMBER)", self.stdout, "step_count"
+#                 )
+#             ),
+#             10,
+#         )
+#         correct_energy = sn.assert_lt(energy_diff, 1e-4)
+#
+#         return sn.all(
+#             [
+#                 successful_termination,
+#                 correct_number_of_md_steps,
+#                 correct_energy,
+#             ]
+#         )
+#
+#     # INFO: The name of this function needs to match with the reference dict!
+#     @performance_function("s")
+#     def time_run(
+#         self,
+#     ):
+#         return sn.extractsingle(
+#             r"^ CP2K(\s+[\d\.]+){4}\s+(?P<perf>\S+)", self.stdout, "perf", float
+#         )
+
+
 @rfm.simple_test
-class Cp2kCheck(rfm.RunOnlyRegressionTest):
-    executable = "cp2k.psmp"
-    executable_opts = ["H2O-256.inp"]
+class Cp2kCheckPBE(rfm.RunOnlyRegressionTest):
+    executable = "./mps-wrapper.sh cp2k.psmp"
+    executable_opts = ["-i", "H2O-128-PBE-TZ.inp"]
     maintainers = ["RMeli"]
     valid_systems = ["*"]
     valid_prog_environs = ["+cp2k"]
+    test_name = "pbe"
 
     @run_before("run")
     def prepare_run(self):
@@ -101,10 +192,21 @@ class Cp2kCheck(rfm.RunOnlyRegressionTest):
 
         # SBATCH options
         # TODO: Enable running with MPS
-        self.num_tasks = slurm_config[self.uarch]["ranks"]
-        if slurm_config[self.uarch]["gpu"]:
-            self.job.options = ["--gpus-per-task=1"]
-        self.num_cpus_per_task = slurm_config[self.uarch]["cores"]
+        nodes = slurm_config[self.test_name][self.uarch]["nodes"]
+
+        self.job.options = [
+            f"--nodes={nodes}",
+            "--ntasks-per-core=1",
+            "--time 00:05:00",
+            "--reservation=daint",
+        ]  # TODO: Remove reservation
+        self.num_tasks_per_node = slurm_config[self.test_name][self.uarch][
+            "ntasks-per-node"
+        ]
+        self.num_tasks = nodes * self.num_tasks_per_node
+        self.num_cpus_per_task = slurm_config[self.test_name][self.uarch][
+            "cpus-per-task"
+        ]
 
         # srun options
         self.job.launcher.options = ["--cpu-bind=cores"]
@@ -119,9 +221,11 @@ class Cp2kCheck(rfm.RunOnlyRegressionTest):
         self.env_vars["CUDA_CACHE_DISABLE"] = "1"
 
         # Set reference
-        if self.uarch is not None and self.uarch in cp2k_references:
+        if self.uarch is not None and self.uarch in cp2k_references[self.test_name]:
             self.reference = {
-                self.current_partition.fullname: cp2k_references[self.uarch]
+                self.current_partition.fullname: cp2k_references[self.test_name][
+                    self.uarch
+                ]
             }
 
     @sanity_function
@@ -134,24 +238,110 @@ class Cp2kCheck(rfm.RunOnlyRegressionTest):
             float,
             item=-1,
         )
-        energy_reference = -4404.2323
+        energy_reference = -2206.2426491358
         energy_diff = sn.abs(energy - energy_reference)
 
         successful_termination = sn.assert_found(r"PROGRAM STOPPED IN", self.stdout)
-        correct_number_of_md_steps = sn.assert_eq(
-            sn.count(
-                sn.extractall(
-                    r"(?i)(?P<step_count>STEP NUMBER)", self.stdout, "step_count"
-                )
-            ),
-            10,
-        )
         correct_energy = sn.assert_lt(energy_diff, 1e-4)
 
         return sn.all(
             [
                 successful_termination,
-                correct_number_of_md_steps,
+                correct_energy,
+            ]
+        )
+
+    # INFO: The name of this function needs to match with the reference dict!
+    @performance_function("s")
+    def time_run(
+        self,
+    ):
+        return sn.extractsingle(
+            r"^ CP2K(\s+[\d\.]+){4}\s+(?P<perf>\S+)", self.stdout, "perf", float
+        )
+
+
+@rfm.simple_test
+class Cp2kCheckRPA(rfm.RunOnlyRegressionTest):
+    executable = "./mps-wrapper.sh cp2k.psmp"
+    maintainers = ["RMeli"]
+    valid_systems = ["*"]
+    valid_prog_environs = ["+cp2k"]
+
+    test_name = "rpa"
+    executable_opts = ["-i", "H2O-128-RI-dRPA-TZ.inp"]
+
+    def __init__(self):
+        self.depends_on("Cp2kCheckPBE", udeps.fully)
+
+    @require_deps
+    def copy_file(self, Cp2kCheckPBE):
+        pbe_wfn = "H2O-128-PBE-TZ-RESTART.wfn"
+        src = os.path.join(Cp2kCheckPBE().stagedir, pbe_wfn)
+        dest = os.path.join(self.stagedir, pbe_wfn)
+        shutil.copyfile(src, dest)
+
+    @run_before("run")
+    def prepare_run(self):
+        self.uarch = uenv.uarch(self.current_partition)
+
+        # SBATCH options
+        # TODO: Enable running with MPS
+        nodes = slurm_config[self.test_name][self.uarch]["nodes"]
+
+        self.job.options = [
+            f"--nodes={nodes}",
+            "--ntasks-per-core=1",
+            "--time 00:15:00",
+            "--reservation=daint",
+        ]  # TODO: Remove reservation
+        self.num_tasks_per_node = slurm_config[self.test_name][self.uarch][
+            "ntasks-per-node"
+        ]
+        self.num_tasks = nodes * self.num_tasks_per_node
+        self.num_cpus_per_task = slurm_config[self.test_name][self.uarch][
+            "cpus-per-task"
+        ]
+
+        # srun options
+        self.job.launcher.options = ["--cpu-bind=cores"]
+
+        # Environment variables
+        self.env_vars["MPICH_GPU_SUPPORT_ENABLED"] = "1"
+        self.env_vars["OMP_NUM_THREADS"] = str(
+            self.num_cpus_per_task - 1
+        )  # INFO: OpenBLAS adds one thread
+        self.env_vars["OMP_PLACES"] = "cores"
+        self.env_vars["OMP_PROC_BIND"] = "close"
+        self.env_vars["CUDA_CACHE_DISABLE"] = "1"
+
+        # Set reference
+        if self.uarch is not None and self.uarch in cp2k_references[self.test_name]:
+            self.reference = {
+                self.current_partition.fullname: cp2k_references[self.test_name][
+                    self.uarch
+                ]
+            }
+
+    @sanity_function
+    def assert_energy_diff(self):
+        energy = sn.extractsingle(
+            r"\s+ENERGY\| Total FORCE_EVAL \( QS \) "
+            r"energy [\[\(]a\.u\.[\]\)]:\s+(?P<energy>\S+)",
+            self.stdout,
+            "energy",
+            float,
+            item=-1,
+        )
+        energy_reference = -2217.36884935325
+        energy_diff = sn.abs(energy - energy_reference)
+
+        successful_termination = sn.assert_found(r"PROGRAM STOPPED IN", self.stdout)
+        correct_energy = sn.assert_lt(energy_diff, 1e-4)
+
+        return sn.all(
+            [
+                successful_termination,
                 correct_energy,
             ]
         )
