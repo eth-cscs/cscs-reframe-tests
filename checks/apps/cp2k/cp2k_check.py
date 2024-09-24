@@ -19,10 +19,10 @@ cp2k_references = {
 
 slurm_config = {
     "pbe": {
-        "gh200": {"nodes": 8, "ntasks-per-node": 16, "cpus-per-task": 16, "gpu": True}
+        "gh200": {"nodes": 8, "ntasks-per-node": 16, "cpus-per-task": 16, "walltime": "0d0h5m0s", "gpu": True}
     },
     "rpa": {
-        "gh200": {"nodes": 8, "ntasks-per-node": 16, "cpus-per-task": 16, "gpu": True}
+        "gh200": {"nodes": 8, "ntasks-per-node": 16, "cpus-per-task": 16, "walltime": "0d0h15m0s", "gpu": True}
     },
 }
 
@@ -113,22 +113,18 @@ class Cp2kCheck(rfm.RunOnlyRegressionTest):
     def prepare_run(self):
         self.uarch = uenv.uarch(self.current_partition)
 
-        # SBATCH options
-        nodes = slurm_config[self.test_name][self.uarch]["nodes"]
+        config = slurm_config[self.test_name][self.uarch]
 
+        # SBATCH options
         self.job.options = [
-            f"--nodes={nodes}",
+            f"--nodes={config['nodes']}",
             "--ntasks-per-core=1",
-            "--time 00:05:00",
             "--reservation=daint",  # TODO: Remove reservation
         ]
-        self.num_tasks_per_node = slurm_config[self.test_name][self.uarch][
-            "ntasks-per-node"
-        ]
-        self.num_tasks = nodes * self.num_tasks_per_node
-        self.num_cpus_per_task = slurm_config[self.test_name][self.uarch][
-            "cpus-per-task"
-        ]
+        self.num_tasks_per_node = config["ntasks-per-node"]
+        self.num_tasks = config["nodes"] * self.num_tasks_per_node
+        self.num_cpus_per_task = config["cpus-per-task"]
+        self.time_limit = config["walltime"]
 
         # srun options
         self.job.launcher.options = ["--cpu-bind=cores"]
@@ -186,19 +182,12 @@ class Cp2kCheck(rfm.RunOnlyRegressionTest):
 
 @rfm.simple_test
 class Cp2kCheckPBE(Cp2kCheck):
-    executable_opts = ["-i", "H2O-128-PBE-TZ.inp"]
     test_name = "pbe"
+    executable_opts = ["-i", "H2O-128-PBE-TZ.inp"]
     energy_reference = -2206.2426491358
 
     def __init__(self):
         super().__init__()
-
-    @run_before("run")
-    def prepare_run(self):
-        super().prepare_run()
-        self.job.options += [
-            "--time 00:05:00",
-        ]
 
 
 @rfm.simple_test
@@ -219,11 +208,3 @@ class Cp2kCheckRPA(Cp2kCheck):
         src = os.path.join(Cp2kCheckPBE().stagedir, pbe_wfn)
         dest = os.path.join(self.stagedir, pbe_wfn)
         shutil.copyfile(src, dest)
-
-    @run_before("run")
-    def prepare_run(self):
-        super().prepare_run()
-
-        self.job.options = [
-            "--time 00:15:00",
-        ]
