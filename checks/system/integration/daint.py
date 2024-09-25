@@ -210,6 +210,7 @@ def create_checks(check):
     check('scontrol ping', expected=r'Slurmctld\(primary\) at .* is UP')
     # no need of a backup on daint thanks to kubernetes
     # check('scontrol ping', expected=r'Slurmctld\(backup\) at .* is UP')
+    check('grep "JobComp" /etc/slurm/slurm.conf | grep -v "#"', expected=r'kafka', not_expected=r'elasticsearch')
 
     # ----------------------------------------------------------------------- #
     #
