@@ -65,7 +65,9 @@ class Cp2kBuildTest(rfm.CompileOnlyRegressionTest):
     def prepare_build(self):
         self.uarch = uenv.uarch(self.current_partition)
         self.build_system.builddir = os.path.join(self.stagedir, "build")
-        self.build_system.max_concurrency = 64
+        self.skip_if_no_procinfo()
+        cpu = self.current_partition.processor
+        self.build_system.max_concurrency = cpu.info['num_cpus_per_socket']
 
         tarsource = os.path.join(
             self.cp2k_sources.stagedir, f"v{self.cp2k_sources.version}.tar.gz"
