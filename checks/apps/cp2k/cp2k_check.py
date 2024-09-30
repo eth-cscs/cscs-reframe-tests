@@ -57,7 +57,7 @@ class Cp2kBuildTest(rfm.CompileOnlyRegressionTest):
     valid_prog_environs = ["+cp2k-dev"]
     build_system = "CMake"
     sourcesdir = None
-    maintainers = ["RMeli"]
+    maintainers = ["SSA"]
     cp2k_sources = fixture(cp2k_download, scope="session")
     build_locally = False
 
@@ -107,7 +107,7 @@ class Cp2kBuildTest(rfm.CompileOnlyRegressionTest):
 
 class Cp2kCheck(rfm.RunOnlyRegressionTest):
     executable = "./mps-wrapper.sh cp2k.psmp"
-    maintainers = ["RMeli"]
+    maintainers = ["SSA"]
     valid_systems = ["*"]
     valid_prog_environs = ["+cp2k"]
 
