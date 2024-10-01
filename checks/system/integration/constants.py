@@ -19,5 +19,6 @@ pkg_names = {"bubblewrap"             : "bwrap",
 
 yaml_files_path = "/users/bfuentes/sandbox/"
 
-MOUNT_VARS = "filesystems"
-TOOLS_VARS = "cscs_cluster_extra_pkgs"
+MOUNT_VARS   = "filesystems"
+TOOLS_VARS   = "cscs_cluster_extra_pkgs"
+ENV_VARS     = "cscs_extra_vars"
