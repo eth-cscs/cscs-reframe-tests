@@ -75,6 +75,8 @@ base_config = {
                 }
                 ],
             'launcher': 'srun',
+            # TODO: temporary fix
+            'access': ['--reservation=daint'],
         },
     ]
 }
