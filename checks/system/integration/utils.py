@@ -68,17 +68,25 @@ class Check:
         #
 
         if not where:
-            where = '*'
-        elif where[0] not in ['-', '+']:
-            where = f'+{where}'
-
+            where = ['*']
+        else:
+            where = where.split()
+            if len(where) > 1:
+                for i, item in enumerate(where):
+                    if item[0] not in ['-', '+']:
+                        where[i] = f"+{where[i]}"
+                where = [" ".join(where)]
+            else:
+                if where[0][0] not in ['-', '+']:
+                    where[0] = f'+{where[0]}'
+        
         #
         # Get our properties ready.
         #
 
         name                = f'Check_{Check.check_id:04}_{self.CLASS}'
         tag                 = f'sysint-{self.CLASS}'
-        valid_systems       = where.split()
+        valid_systems       = where
         valid_prog_environs = ['builtin']
         time_limit          = '2m'
 
