@@ -207,6 +207,7 @@ def create_checks(check):
     check('scontrol ping', expected=r'Slurmctld\(primary\) at .* is UP')
     check('scontrol ping', expected=r'Slurmctld\(backup\) at .* is UP')
     check('grep "JobComp" /etc/slurm/slurm.conf | grep -v "#"', not_expected=r'kafka', expected=r'elasticsearch')
+    #TODO uncomment when SitePolicies are enabled
     #check('grep "SitePolicies" /etc/slurm/slurm.conf | grep -v "#" || echo FAILED', not_expected=r'FAILED')
 
     # ----------------------------------------------------------------------- #
