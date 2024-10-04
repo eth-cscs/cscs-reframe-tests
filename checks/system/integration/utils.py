@@ -6,7 +6,6 @@
 # Definition of Check class and function.
 #
 
-from constants import *
 
 class Check:
 
@@ -195,17 +194,3 @@ class Check:
             module=self.MODULE_NAME
         )
         rfm.simple_test(t)
-
-def mount_check(check, mounts_info):
-    "Test method for mounts check"
-
-    for mount_i in mounts_info:
-        test = f'grep -q "{mount_i["src"]} {mount_i["mount_point"]} {mount_i["fstype"]}" /proc/mounts || echo FAILED'
-        check(test, not_expected=r"FAILED", where=r"-remote")
-
-def tools_check(check, tools_info):
-    "Test method for tools check"
-
-    for tool_i in tools_info:
-        test = f'which {pkg_names[tool_i]} || echo FAILED'
-        check(test, not_expected=r"FAILED", where=r"-remote")
