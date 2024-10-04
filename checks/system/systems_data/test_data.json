@@ -2,23 +2,28 @@
     "filesystems": [
         {
             "mount_point": "/capstor/scratch/cscs",
-            "fstype": "lustre"
+            "fstype": "lustre",
+            "state": "mounted"
         },
         {
             "mount_point": "/capstor/apps/cscs",
-            "fstype": "lustre"
+            "fstype": "lustre",
+            "state": "mounted"
         },
         {
             "mount_point": "/users",
-            "fstype": "lustre"
+            "fstype": "lustre",
+            "state": "mounted"
         },
         {
             "mount_point": "/store",
-            "fstype": "lustre"
+            "fstype": "lustre",
+            "state": "mounted"
         },
         {
             "mount_point": "/mnt",
-            "fstype": "lustre"
+            "fstype": "lustre",
+            "state": "mounted"
         }
     ],
     "cscs_cluster_extra_pkgs": [

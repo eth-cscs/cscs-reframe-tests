@@ -17,7 +17,7 @@ pkg_names = {"bubblewrap"             : "bwrap",
              "ansible"                : "ansible",
              "gcc12-c++"              : "g++-12"}
 
-yaml_files_path = "../../../sandbox/"
+json_file_path_write = "./"
 
 MOUNT_VARS   = "filesystems"
 TOOLS_VARS   = "cscs_cluster_extra_pkgs"
