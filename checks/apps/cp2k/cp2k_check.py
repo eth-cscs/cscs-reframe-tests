@@ -57,7 +57,7 @@ class Cp2kBuildTest(rfm.CompileOnlyRegressionTest):
     valid_prog_environs = ["+cp2k-dev"]
     build_system = "CMake"
     sourcesdir = None
-    maintainers = ["RMeli"]
+    maintainers = ["SSA"]
     cp2k_sources = fixture(cp2k_download, scope="session")
     build_locally = False
     tags = ["uenv"]
@@ -66,7 +66,9 @@ class Cp2kBuildTest(rfm.CompileOnlyRegressionTest):
     def prepare_build(self):
         self.uarch = uenv.uarch(self.current_partition)
         self.build_system.builddir = os.path.join(self.stagedir, "build")
-        self.build_system.max_concurrency = 64
+        self.skip_if_no_procinfo()
+        cpu = self.current_partition.processor
+        self.build_system.max_concurrency = cpu.info['num_cpus_per_socket']
 
         tarsource = os.path.join(
             self.cp2k_sources.stagedir, f"v{self.cp2k_sources.version}.tar.gz"
@@ -107,7 +109,7 @@ class Cp2kBuildTest(rfm.CompileOnlyRegressionTest):
 
 class Cp2kCheck(rfm.RunOnlyRegressionTest):
     executable = "./mps-wrapper.sh cp2k.psmp"
-    maintainers = ["RMeli"]
+    maintainers = ["SSA"]
     valid_systems = ["*"]
     valid_prog_environs = ["+cp2k"]
 
