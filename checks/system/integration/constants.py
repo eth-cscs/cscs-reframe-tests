@@ -17,7 +17,7 @@ pkg_names = {"bubblewrap"             : "bwrap",
              "ansible"                : "ansible",
              "gcc12-c++"              : "g++-12"}
 
-json_file_path_write = "./"
+json_file_path = "./"
 
 MOUNT_VARS   = "filesystems"
 TOOLS_VARS   = "cscs_cluster_extra_pkgs"
