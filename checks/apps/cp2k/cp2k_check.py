@@ -1,4 +1,4 @@
-# Copyright 2016-2022 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright 2016-2024 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -60,6 +60,7 @@ class Cp2kBuildTest(rfm.CompileOnlyRegressionTest):
     maintainers = ["RMeli"]
     cp2k_sources = fixture(cp2k_download, scope="session")
     build_locally = False
+    tags = ["uenv"]
 
     @run_before("compile")
     def prepare_build(self):
@@ -97,9 +98,10 @@ class Cp2kBuildTest(rfm.CompileOnlyRegressionTest):
 
     @sanity_function
     def validate_test(self):
-        # INFO: Executables are in exe/local_cuda because -DCP2K_ENABLE_REGTEST=ON
+        # INFO: Executables are in exe/FOLDER because -DCP2K_ENABLE_REGTEST=ON
         # INFO: With -DCP2K_ENABLE_REGTEST=OFF, executables are in build/bin/ as expected
-        executable = os.path.join(self.stagedir, "exe", "local_cuda", "cp2k.psmp")
+        folder = "local_cuda" if self.uarch == "gh200" else "local"
+        executable = os.path.join(self.stagedir, "exe", folder, "cp2k.psmp")
         return os.path.isfile(executable)
 
 
