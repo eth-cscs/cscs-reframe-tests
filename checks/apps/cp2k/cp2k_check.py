@@ -12,17 +12,29 @@ import reframe.utility.udeps as udeps
 import uenv
 
 cp2k_references = {
-    "pbe": {"gh200": {"time_run": (65, None, 5, "s")}},
-    "rpa": {"gh200": {"time_run": (575, None, 5, "s")}},
+    "pbe": {"gh200": {"time_run": (65, None, 0.05, "s")}},
+    "rpa": {"gh200": {"time_run": (575, None, 0.05, "s")}},
 }
 
 
 slurm_config = {
     "pbe": {
-        "gh200": {"nodes": 8, "ntasks-per-node": 16, "cpus-per-task": 16, "walltime": "0d0h5m0s", "gpu": True}
+        "gh200": {
+            "nodes": 8,
+            "ntasks-per-node": 16,
+            "cpus-per-task": 16,
+            "walltime": "0d0h5m0s",
+            "gpu": True,
+        }
     },
     "rpa": {
-        "gh200": {"nodes": 8, "ntasks-per-node": 16, "cpus-per-task": 16, "walltime": "0d0h15m0s", "gpu": True}
+        "gh200": {
+            "nodes": 8,
+            "ntasks-per-node": 16,
+            "cpus-per-task": 16,
+            "walltime": "0d0h15m0s",
+            "gpu": True,
+        }
     },
 }
 
@@ -68,7 +80,7 @@ class Cp2kBuildTest(rfm.CompileOnlyRegressionTest):
         self.build_system.builddir = os.path.join(self.stagedir, "build")
         self.skip_if_no_procinfo()
         cpu = self.current_partition.processor
-        self.build_system.max_concurrency = cpu.info['num_cpus_per_socket']
+        self.build_system.max_concurrency = cpu.info["num_cpus_per_socket"]
 
         tarsource = os.path.join(
             self.cp2k_sources.stagedir, f"v{self.cp2k_sources.version}.tar.gz"
