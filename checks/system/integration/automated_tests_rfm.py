@@ -16,36 +16,11 @@ import json
 #                READ THE CONFIGURATION FROM THE YAML FILES
 #                This part should be modified for the final 
 #                structure of the V-Clusters config files
-# --------------------------------------------------------------------------- #
-
-# Reading from yaml files inside a directory recursively
-
-# def read_config_yaml(file_path):
-
-#     with open(file_path, 'r') as config_yaml:
-#         config = yaml.safe_load(config_yaml)
-
-#         return config
-
-# # Look recursively for yaml files in the dummy directory
-# for file_i in glob.glob(yaml_files_path+"*", recursive=True):
-#     if file_i.endswith("yml"):  
-#         try:
-#             config_yaml_data
-#         except:
-#             config_yaml_data = read_config_yaml(file_i)
-#         else:
-#             config_yaml_data.update(read_config_yaml(file_i))
-
-# Save the extracted info to a json file
-# with open(yaml_files_path+'test_data.json', 'w') as json_file:
-#     json.dump(test_info, json_file, indent=4)
+# --------------------------------------------------------------------------- 
 
 # Read the extracted info from the json file
-with open(yaml_files_path+'test_data.json', 'r') as json_file:
+with open(json_file_path+'test_data.json', 'r') as json_file:
     config_yaml_data = json.load(json_file)
-
-cluster_name = config_yaml_data[MOUNT_VARS]
 
 test_info = {}
 # Check for mount points to be checked
@@ -135,7 +110,7 @@ class EnvTest(rfm.RunOnlyRegressionTest):
         for envs_i in envs_info:
             envs_info_par.append((envs_i["env_var"], envs_i["env_value"]))
         envs_info = parameter(envs_info_par)
-    # Configuration for grep /proc/mount info test
+
     descr = 'Test environment variables of the system'
     # For now
     valid_systems = ["-remote"]

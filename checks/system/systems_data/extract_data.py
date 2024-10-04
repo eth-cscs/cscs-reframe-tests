@@ -64,7 +64,7 @@ def main(yaml_config):
             return config
 
     # Save the extracted info to a json file
-    with open(json_file_path_write+'test_data.json', 'w') as json_file:
+    with open(json_file_path+'test_data.json', 'w') as json_file:
         json.dump(test_info, json_file, indent=4)
 
 
