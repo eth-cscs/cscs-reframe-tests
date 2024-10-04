@@ -44,7 +44,7 @@ class cp2k_download(rfm.RunOnlyRegressionTest):
     Download CP2K source code.
     """
 
-    version = variable(str, value="2024.3")  # TODO: Do not hard-code
+    version = variable(str, value="2024.3")
     descr = "Fetch CP2K source code"
     sourcedir = None
     executable = "wget"
@@ -72,7 +72,7 @@ class Cp2kBuildTest(rfm.CompileOnlyRegressionTest):
     maintainers = ["SSA"]
     cp2k_sources = fixture(cp2k_download, scope="session")
     build_locally = False
-    tags = ["uenv"]
+    tags = {"uenv"}
 
     @run_before("compile")
     def prepare_build(self):
@@ -135,7 +135,8 @@ class Cp2kCheck(rfm.RunOnlyRegressionTest):
         self.job.options = [
             f"--nodes={config['nodes']}",
             "--ntasks-per-core=1",
-            "--reservation=daint",  # TODO: Remove reservation
+            "--partition=debug",
+            # "--reservation=daint",  # TODO: Remove reservation
         ]
         self.num_tasks_per_node = config["ntasks-per-node"]
         self.num_tasks = config["nodes"] * self.num_tasks_per_node
@@ -202,8 +203,9 @@ class Cp2kCheckPBE(Cp2kCheck):
     executable_opts = ["-i", "H2O-128-PBE-TZ.inp"]
     energy_reference = -2206.2426491358
 
-    def __init__(self):
-        super().__init__()
+    @run_after("init")
+    def set_wfn(self):
+        self.wfn_file = "H2O-128-PBE-TZ-RESTART.wfn"
 
 
 @rfm.simple_test
@@ -215,12 +217,14 @@ class Cp2kCheckRPA(Cp2kCheck):
     def __init__(self):
         super().__init__()
 
+    @run_after("init")
+    def setup_dependency(self):
         # Depend on PBE ouput
-        self.depends_on("Cp2kCheckPBE", udeps.fully)
+        self.depends_on("Cp2kCheckPBE")
 
-    @require_deps
-    def copy_file(self, Cp2kCheckPBE):
-        pbe_wfn = "H2O-128-PBE-TZ-RESTART.wfn"
-        src = os.path.join(Cp2kCheckPBE().stagedir, pbe_wfn)
-        dest = os.path.join(self.stagedir, pbe_wfn)
+    @run_after("setup")
+    def copy_wnf(self):
+        parent = self.getdep("Cp2kCheckPBE")
+        src = os.path.join(parent.stagedir, parent.wfn_file)
+        dest = os.path.join(self.stagedir, parent.wfn_file)
         shutil.copyfile(src, dest)
