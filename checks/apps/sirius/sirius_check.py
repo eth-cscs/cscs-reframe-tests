@@ -165,5 +165,5 @@ class SARUS_sirius_scf_check(SIRIUSBase,
 class UENV_sirius_scf_check(SIRIUSBase,
                             ExtraLauncherOptionsMixin,
                             CudaVisibleDevicesAllMixin):
-    valid_systems = ['+uenv -amdgpu']
-    valid_prog_environs = ['+sirius +mpi +openmp']
+    valid_systems = ['-amdgpu']
+    valid_prog_environs = ['+sirius +mpi +openmp +uenv']
