@@ -19,30 +19,17 @@ import json
 # --------------------------------------------------------------------------- 
 
 # Read the extracted info from the json file
-with open(json_file_path+'test_data.json', 'r') as json_file:
+with open(os.path.join(json_file_path,'test_data.json'), 'r') as json_file:
     config_yaml_data = json.load(json_file)
 
-test_info = {}
 # Check for mount points to be checked
-try:
-    mount_info = config_yaml_data[MOUNT_VARS]
-    test_info.update({MOUNT_VARS : mount_info})
-except:
-    mount_info = [None]
+mount_info = config_yaml_data.get(MOUNT_VARS)
 
 # Check for pkg installations to be checked
-try:
-    tools_info = config_yaml_data[TOOLS_VARS]
-    test_info.update({TOOLS_VARS : tools_info})
-except:
-    tools_info = [None]
+tools_info = config_yaml_data.get(TOOLS_VARS)
 
 # Check for environment variables to be checked
-try:
-    envs_info = config_yaml_data[ENV_VARS]
-    test_info.update({ENV_VARS : envs_info})
-except:
-    envs_info = [None]
+envs_info = config_yaml_data.get(ENV_VARS)
 
 # --------------------------------------------------------------------------- #
 #                PERFORM INTEGRATION CHECKS
@@ -51,22 +38,19 @@ except:
 @rfm.simple_test
 class MountTest(rfm.RunOnlyRegressionTest):
 
-    if mount_info[0] is not None:
+    if mount_info:
         mount_info_par = []
         for mount_i in mount_info:
-            mount_info_par.append((mount_i["mount_point"], mount_i["fstype"]))
+            mount_info_par.append((mount_i['mount_point'], mount_i['fstype']))
         mount_info = parameter(mount_info_par)
-    
+        # For now
+        valid_systems = ['-remote']
+    else:
+        valid_systems = []
     descr = 'Test mount points in the system'
-    # For now
-    valid_systems = ["-remote"]
     valid_prog_environs = ['builtin']
     time_limit = '2m'
-    tags = {"MOUNT"}
-
-    @run_after('init')
-    def skip_notfound(self):
-        self.skip_if(mount_info[0]==None, msg='No mount points found')
+    tags = {'MOUNT'}
 
     @run_after('setup')
     def set_executable(self):
@@ -74,24 +58,23 @@ class MountTest(rfm.RunOnlyRegressionTest):
 
     @sanity_function
     def validate(self):
-        return sn.assert_not_found("FAILED", self.stdout, 
-                msg=f"Mount point '{self.mount_info[0]} {self.mount_info[1]}' not found in /proc/mounts")
+        return sn.assert_not_found('FAILED', self.stdout, 
+                msg=f'Mount point "{self.mount_info[0]} {self.mount_info[1]}" not found in /proc/mounts')
 
 
 @rfm.simple_test
 class ToolsTest(rfm.RunOnlyRegressionTest):
 
-    tools_info = parameter(tools_info)
+    if tools_info:
+        tools_info = parameter(tools_info)
+        # For now
+        valid_systems = ['-remote']
+    else:
+        valid_systems = []
     descr = 'Test pkgs installation in the system'
-    # For now
-    valid_systems = ["-remote"]
     valid_prog_environs = ['builtin']
     time_limit = '2m'
-    tags = {"TOOLS"}
-
-    @run_after('init')
-    def skip_notfound(self):
-        self.skip_if(tools_info[0]==None, msg='No required packages found')
+    tags = {'TOOLS'}
 
     @run_after('setup')
     def set_executable(self):
@@ -99,28 +82,25 @@ class ToolsTest(rfm.RunOnlyRegressionTest):
 
     @sanity_function
     def validate(self):
-        return sn.assert_not_found("FAILED", self.stdout, 
-                msg=f"Did not find an installation for {self.tools_info}")
+        return sn.assert_not_found('FAILED', self.stdout, 
+                msg=f'Did not find an installation for {self.tools_info}')
 
 @rfm.simple_test
 class EnvTest(rfm.RunOnlyRegressionTest):
 
-    if envs_info[0] is not None:
+    if envs_info:
         envs_info_par = []
         for envs_i in envs_info:
-            envs_info_par.append((envs_i["env_var"], envs_i["env_value"]))
+            envs_info_par.append((envs_i['env_var'], envs_i['env_value']))
         envs_info = parameter(envs_info_par)
-
+        # For now
+        valid_systems = ['-remote']
+    else:
+        valid_systems = []
     descr = 'Test environment variables of the system'
-    # For now
-    valid_systems = ["-remote"]
     valid_prog_environs = ['builtin']
     time_limit = '2m'
-    tags = {"ENV"}
-
-    @run_after('init')
-    def skip_notfound(self):
-        self.skip_if(envs_info[0]==None, msg='No extra environment variables to check')
+    tags = {'ENV'}
 
     @run_after('setup')
     def set_executable(self):
@@ -129,4 +109,4 @@ class EnvTest(rfm.RunOnlyRegressionTest):
     @sanity_function
     def validate(self):
         return sn.assert_found(self.envs_info[1], self.stdout, 
-                msg=f"Environment variable {self.envs_info[0]} is not set up correctly")
+                msg=f'Environment variable {self.envs_info[0]} is not set up correctly')

@@ -3,15 +3,15 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
+import json
+import glob
+import sys
+sys.path.append("../integration")
+from constants import *
 import yaml
 import sys
 import os
-sys.path.append("../integration")
-from constants import *
-import sys
-import glob
-import json
- 
+
 
 def main(yaml_config):
 
@@ -23,60 +23,49 @@ def main(yaml_config):
             return config
 
     # Look recursively for yaml files in the config directory
-    for file_i in glob.glob(yaml_config+"/*", recursive=True):
-        if file_i.endswith("yml"):  
-            print(f"Extracting data from {file_i}...")
-            try:
-                config_yaml_data
-            except:
-                config_yaml_data = read_config_yaml(file_i)
-            else:
-                config_yaml_data.update(read_config_yaml(file_i))
+    for root, _, files in os.walk(yaml_config):
+        for file_i in files:
+            if os.path.splitext(file_i)[1] == ".yml":
+                print(f"Extracting data from {file_i}...")
+                try:
+                    config_yaml_data
+                except:
+                    config_yaml_data = read_config_yaml(
+                        os.path.join(root, file_i))
+                else:
+                    config_yaml_data.update(
+                        read_config_yaml(os.path.join(root, file_i)))
 
     test_info = {}
     # Check for mount points to be checked
-    try:
-        mount_info = config_yaml_data[MOUNT_VARS]
-        for i in range(len(mount_info)):
-            del mount_info[i]['src']
-            del mount_info[i]['opts']
-        test_info.update({MOUNT_VARS : mount_info})
-    except:
-        pass
+    mount_info = config_yaml_data.get(MOUNT_VARS)
+    if mount_info:
+        for m in mount_info:
+            del m['src']
+            del m['opts']
+        test_info.update({MOUNT_VARS: mount_info})
 
     # Check for pkg installations to be checked
-    try:
-        test_info.update({TOOLS_VARS : config_yaml_data[TOOLS_VARS]})
-    except:
-        pass
+    if config_yaml_data.get(TOOLS_VARS):
+        test_info.update({TOOLS_VARS: config_yaml_data.get(TOOLS_VARS)})
 
     # Check for environment variables to be checked
-    try:
-        test_info.update({ENV_VARS : config_yaml_data[ENV_VARS]})
-    except:
-        pass
-        
-    def read_config_yaml(file_path):
-
-        with open(file_path, 'r') as config_yaml:
-            config = yaml.safe_load(config_yaml)
-
-            return config
+    if config_yaml_data.get(ENV_VARS):
+        test_info.update({ENV_VARS: config_yaml_data.get(ENV_VARS)})
 
     # Save the extracted info to a json file
-    with open(json_file_path+'test_data.json', 'w') as json_file:
+    with open(os.path.join(json_file_path, 'test_data.json'), 'w') as json_file:
         json.dump(test_info, json_file, indent=4)
+        json_file.write('\n')
 
 
 if __name__ == "__main__":
-    
-    try:
-        yaml_config = sys.argv[1]
-    except:
-        main(yaml_config)
-        print("The directory where the configuration is stored must be provided.")
-        print("Usage: python your_script_name.py path/to/your/config.yaml")
+
+    if len(sys.argv) != 2:
+        print("Usage: python extract_data.py path/to/your/yaml/config/dir")
         sys.exit(1)
+    else:
+        yaml_config = sys.argv[1]
 
     if os.path.isdir(yaml_config):
         main(yaml_config)
