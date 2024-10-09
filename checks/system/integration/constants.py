@@ -10,14 +10,14 @@ pkg_names = {"bubblewrap"             : "bwrap",
              "gcc12"                  : "gcc-12",
              "nnn"                    : "nnn",
              "netcat"                 : "nc",
-             "lua-lmod"               : "lmod",
-             "pycxi-utils"            : "cx",
+             "lua-lmod"               : "lua",
+             "pycxi-utils"            : "cxi_stat",
              "gcc12-fortran"          : "gfortran-12",
              "datacenter-gpu-manager" : "dcgmi",
              "ansible"                : "ansible",
              "gcc12-c++"              : "g++-12"}
 
-json_file_path = "./"
+json_file_path = "../systems_data"
 
 MOUNT_VARS   = "filesystems"
 TOOLS_VARS   = "cscs_cluster_extra_pkgs"
