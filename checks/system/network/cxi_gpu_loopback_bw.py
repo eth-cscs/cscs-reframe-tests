@@ -9,7 +9,6 @@ import reframe as rfm
 import reframe.utility.sanity as sn
 
 
-
 @rfm.simple_test
 class CXIGPULoopbackBW(rfm.RunOnlyRegressionTest):
     valid_systems = ['+nvgpu']
@@ -60,8 +59,9 @@ class CXIGPU2GPULoopbackBW(rfm.RunOnlyRegressionTest):
     def set_executable_opts(self):
         curr_part = self.current_partition
         gpu_count = curr_part.select_devices('gpu')[0].num_devices
-        self.skip_if(gpu_count <= 1,
-                     'test supported only for multi-gpu systems')
+        self.skip_if(
+            gpu_count <= 1, 'the test runs only on multi-gpu systems'
+        )
         self.gpu_combinations = list(
             itertools.combinations(range(gpu_count), 2)
         )
@@ -76,8 +76,7 @@ class CXIGPU2GPULoopbackBW(rfm.RunOnlyRegressionTest):
         test_header_count = sn.count(
             sn.extractall(r'CXI Loopback Bandwidth Test', self.stdout))
         test_result_count = sn.count(
-            sn.extractall(r'^\s+\d+(\s+\d+)\s+\S+\s+\S+\s*',
-                          self.stdout))
+            sn.extractall(r'^(\s+\d+){2}(\s+\S+){2}\s*', self.stdout))
         return sn.all([
             sn.assert_eq(len(self.gpu_combinations), test_header_count),
             sn.assert_eq(len(self.gpu_combinations), test_result_count)
