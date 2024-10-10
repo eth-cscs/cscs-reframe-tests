@@ -115,15 +115,15 @@ class Cp2kBuildTest(rfm.CompileOnlyRegressionTest):
         # INFO: Executables are in exe/FOLDER because -DCP2K_ENABLE_REGTEST=ON
         # INFO: With -DCP2K_ENABLE_REGTEST=OFF, executables are in build/bin/ as expected
         folder = "local_cuda" if self.uarch == "gh200" else "local"
-        executable = os.path.join(self.stagedir, "exe", folder, "cp2k.psmp")
-        return os.path.isfile(executable)
+        self.cp2k_executable = os.path.join(self.stagedir, "exe", folder, "cp2k.psmp")
+        return os.path.isfile(self.cp2k_executable)
 
 
 class Cp2kCheck(rfm.RunOnlyRegressionTest):
     executable = "./mps-wrapper.sh cp2k.psmp"
     maintainers = ["SSA"]
-    valid_systems = ["*"]
-    valid_prog_environs = ["+cp2k"]
+    valid_systems = ["todi:debug"]
+    valid_prog_environs = ["*"]
 
     @run_before("run")
     def prepare_run(self):
@@ -195,7 +195,6 @@ class Cp2kCheck(rfm.RunOnlyRegressionTest):
         )
 
 
-@rfm.simple_test
 class Cp2kCheckPBE(Cp2kCheck):
     test_name = "pbe"
     executable_opts = ["-i", "H2O-128-PBE-TZ.inp"]
@@ -207,10 +206,36 @@ class Cp2kCheckPBE(Cp2kCheck):
 
 
 @rfm.simple_test
+class Cp2kCheckPBEUenvExec(Cp2kCheckPBE):
+    valid_prog_environs = ["+cp2k"]
+    tags = {"uenv", "production"}
+
+
+@rfm.simple_test
+class Cp2kCheckPBECustomExec(Cp2kCheckPBE):
+    """
+    Same test as above, but using executables built by Cp2kBuildTest.
+    """
+    valid_prog_environs = ["+cp2k-dev"]
+    tags = {"uenv"}
+
+    @run_after("init")
+    def setup_dependency(self):
+        self.depends_on("Cp2kBuildTest", udeps.fully)
+
+    @run_after("setup")
+    def setup_executable(self):
+        parent = self.getdep("Cp2kBuildTest")
+        self.executable = f"./mps-wrapper.sh {parent.cp2k_executable}"
+
+
+@rfm.simple_test
 class Cp2kCheckRPA(Cp2kCheck):
     test_name = "rpa"
+    valid_prog_environs = ["+cp2k"]
     executable_opts = ["-i", "H2O-128-RI-dRPA-TZ.inp"]
     energy_reference = -2217.36884935325
+    tags = {"production"}
 
     def __init__(self):
         super().__init__()
@@ -218,11 +243,11 @@ class Cp2kCheckRPA(Cp2kCheck):
     @run_after("init")
     def setup_dependency(self):
         # Depend on PBE ouput
-        self.depends_on("Cp2kCheckPBE")
+        self.depends_on("Cp2kCheckPBEUenvExec", udeps.fully)
 
     @run_after("setup")
     def copy_wnf(self):
-        parent = self.getdep("Cp2kCheckPBE")
+        parent = self.getdep("Cp2kCheckPBEUenvExec")
         src = os.path.join(parent.stagedir, parent.wfn_file)
         dest = os.path.join(self.stagedir, parent.wfn_file)
         shutil.copyfile(src, dest)
