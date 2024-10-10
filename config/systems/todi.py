@@ -76,6 +76,46 @@ base_config = {
                 ],
             'launcher': 'srun',
         },
+        {
+            'name': 'debug',
+            'descr': 'GH200',
+            'scheduler': 'squeue',
+            'time_limit': '10m',
+            'container_platforms': [],
+            'access': ['--partition=debug'],
+            'environs': [
+                'builtin',
+                'PrgEnv-cray',
+                'PrgEnv-gnu',
+            ],
+            'max_jobs': 1,
+            'extras': {
+                'cn_memory': 825,
+            },
+            'features': ['ce', 'gpu', 'nvgpu', 'remote', 'scontrol', 'uenv'],
+            'resources': [
+                {
+                    'name': 'switches',
+                    'options': ['--switches={num_switches}']
+                },
+                {
+                    'name': 'gres',
+                    'options': ['--gres={gres}']
+                },
+                {
+                    'name': 'memory',
+                    'options': ['--mem={mem_per_node}']
+                },
+            ],
+            'devices': [
+                {
+                    'type': 'gpu',
+                    'arch': 'sm_90',
+                    'num_devices': 4
+                }
+                ],
+            'launcher': 'srun',
+        },
     ]
 }
 
