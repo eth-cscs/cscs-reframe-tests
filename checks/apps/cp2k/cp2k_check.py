@@ -65,7 +65,7 @@ class Cp2kBuildTest(rfm.CompileOnlyRegressionTest):
     """
 
     descr = "CP2K Build Test"
-    valid_systems = ["*"]
+    valid_systems = ["todi:debug"]
     valid_prog_environs = ["+cp2k-dev"]
     build_system = "CMake"
     sourcesdir = None
@@ -135,8 +135,6 @@ class Cp2kCheck(rfm.RunOnlyRegressionTest):
         self.job.options = [
             f"--nodes={config['nodes']}",
             "--ntasks-per-core=1",
-            "--partition=debug",
-            # "--reservation=daint",  # TODO: Remove reservation
         ]
         self.num_tasks_per_node = config["ntasks-per-node"]
         self.num_tasks = config["nodes"] * self.num_tasks_per_node
