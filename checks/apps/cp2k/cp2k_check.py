@@ -43,7 +43,6 @@ class cp2k_download(rfm.RunOnlyRegressionTest):
     '''
     Download CP2K source code.
     '''
-
     version = variable(str, value='2024.3')
     descr = 'Fetch CP2K source code'
     sourcedir = None
@@ -63,10 +62,9 @@ class Cp2kBuildTest(rfm.CompileOnlyRegressionTest):
     '''
     Test CP2K build from source.
     '''
-
     descr = 'CP2K Build Test'
-    valid_systems = ['todi:debug']
     valid_prog_environs = ['+cp2k-dev']
+    valid_systems = ["*"]
     build_system = 'CMake'
     sourcesdir = None
     maintainers = ['SSA']
@@ -122,8 +120,7 @@ class Cp2kBuildTest(rfm.CompileOnlyRegressionTest):
 class Cp2kCheck(rfm.RunOnlyRegressionTest):
     executable = './mps-wrapper.sh cp2k.psmp'
     maintainers = ['SSA']
-    valid_systems = ['todi:debug']
-    valid_prog_environs = ['*']
+    valid_systems = ["*"]
 
     @run_before('run')
     def prepare_run(self):
@@ -134,11 +131,11 @@ class Cp2kCheck(rfm.RunOnlyRegressionTest):
         # SBATCH options
         self.job.options = [
             f'--nodes={config["nodes"]}',
-            '--ntasks-per-core=1',
         ]
         self.num_tasks_per_node = config['ntasks-per-node']
         self.num_tasks = config['nodes'] * self.num_tasks_per_node
         self.num_cpus_per_task = config['cpus-per-task']
+        self.ntasks_per_core = 1
         self.time_limit = config['walltime']
 
         # srun options
