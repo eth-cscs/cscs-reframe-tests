@@ -235,7 +235,7 @@ class Cp2kCheckRPA(Cp2kCheck):
     valid_prog_environs = ["+cp2k"]
     executable_opts = ["-i", "H2O-128-RI-dRPA-TZ.inp"]
     energy_reference = -2217.36884935325
-    tags = {"production"}
+    tags = {"maintenance"}
 
     def __init__(self):
         super().__init__()
