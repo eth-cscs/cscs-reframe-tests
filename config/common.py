@@ -57,11 +57,17 @@ site_configuration = {
                 },
                 {
                     'type': 'httpjson',
-                    'url': 'http://httpjson-server:12345/rfm',
+                    # Maybe we should set this from the environment
+                    # to avoid polluting the logs from tests in the
+                    # login nodes
+                    'url': 'http://log.cscs.ch:31311/reframe',
                     'level': 'info',
                     'extras': {
-                        'facility': 'reframe',
-                        'data-version': '1.0',
+                        'data_stream': {
+                            'type' :'logs',
+                            'dataset' :'performance_values',
+                            'namespace': 'reframe'
+                        },
                     },
                     'ignore_keys': ['check_perfvalues']
                 }
