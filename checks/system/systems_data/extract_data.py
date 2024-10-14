@@ -13,7 +13,7 @@ import sys
 import os
 
 
-def main(yaml_config):
+def main(yaml_config, system_name):
 
     def read_config_yaml(file_path):
         """Read a YAML configuration file and return its content."""
@@ -54,21 +54,22 @@ def main(yaml_config):
         test_info.update({ENV_VARS: config_yaml_data.get(ENV_VARS)})
 
     # Save the extracted info to a json file
-    with open(os.path.join(json_file_path, 'test_data.json'), 'w') as json_file:
+    with open(os.path.join(json_file_path, system_name+"_data.json"), 'w') as json_file:
         json.dump(test_info, json_file, indent=4)
         json_file.write('\n')
 
 
 if __name__ == "__main__":
 
-    if len(sys.argv) != 2:
-        print("Usage: python extract_data.py path/to/your/yaml/config/dir")
+    if len(sys.argv) != 3:
+        print("Usage: python extract_data.py path/to/your/yaml/config/dir system_name")
         sys.exit(1)
     else:
         yaml_config = sys.argv[1]
+        system_name = sys.argv[2]
 
     if os.path.isdir(yaml_config):
-        main(yaml_config)
+        main(yaml_config, system_name)
     else:
         print(f"The directory '{yaml_config}' is not valid.")
         sys.exit(1)

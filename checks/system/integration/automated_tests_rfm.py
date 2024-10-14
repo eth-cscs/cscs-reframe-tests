@@ -18,8 +18,10 @@ import json
 #                structure of the V-Clusters config files
 # --------------------------------------------------------------------------- 
 
+system_data_file = "daint_data.json"
+
 # Read the extracted info from the json file
-with open(os.path.join(json_file_path,'test_data.json'), 'r') as json_file:
+with open(os.path.join(json_file_path, system_data_file), 'r') as json_file:
     config_yaml_data = json.load(json_file)
 
 # Check for mount points to be checked
