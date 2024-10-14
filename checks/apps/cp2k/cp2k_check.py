@@ -154,8 +154,8 @@ class Cp2kCheck(rfm.RunOnlyRegressionTest):
             self.env_vars['CUDA_CACHE_DISABLE'] = '1'
 
         # set reference
-        if self.uarch is not None and
-        self.uarch in cp2k_references[self.test_name]:
+        if self.uarch is not None and \
+           self.uarch in cp2k_references[self.test_name]:
             self.reference = {
                 self.current_partition.fullname:
                     cp2k_references[self.test_name][self.uarch]
