@@ -18,7 +18,7 @@ import json
 #                structure of the V-Clusters config files
 # --------------------------------------------------------------------------- 
 
-system_data_file = "daint_data.json"
+system_data_file = "eiger_data.json"
 
 # Read the extracted info from the json file
 with open(os.path.join(json_file_path, system_data_file), 'r') as json_file:
@@ -32,6 +32,16 @@ tools_info = config_yaml_data.get(TOOLS_VARS)
 
 # Check for environment variables to be checked
 envs_info = config_yaml_data.get(ENV_VARS)
+
+# Check the proxy configuration
+proxy_info = {}
+if config_yaml_data.get(PROXY_VARS['proxy_server']) and config_yaml_data.get(PROXY_VARS['proxy_port']):
+    proxy_info.update({"http_proxy": f"{config_yaml_data.get(PROXY_VARS['proxy_server'])}" +
+                            f":{config_yaml_data.get(PROXY_VARS['proxy_port'])}",
+                        "https_proxy": f"{config_yaml_data.get(PROXY_VARS['proxy_server'])}" +
+                            f":{config_yaml_data.get(PROXY_VARS['proxy_port'])}"})
+if config_yaml_data.get(PROXY_VARS['no_proxy']):
+    proxy_info.update({"no_proxy":   ", ".join(config_yaml_data.get(PROXY_VARS['no_proxy']))})
 
 # --------------------------------------------------------------------------- #
 #                PERFORM INTEGRATION CHECKS
@@ -112,3 +122,27 @@ class EnvTest(rfm.RunOnlyRegressionTest):
     def validate(self):
         return sn.assert_found(self.envs_info[1], self.stdout, 
                 msg=f'Environment variable {self.envs_info[0]} is not set up correctly')
+
+
+@rfm.simple_test
+class ProxyTest(rfm.RunOnlyRegressionTest):
+
+    proxy_info_par = [(k, v) for k, v in proxy_info.items() if v and "None" not in v ]
+    if proxy_info_par:
+        proxy_info = parameter(proxy_info_par)
+        valid_systems = ['+remote']
+    else:
+        valid_systems = []
+    descr = 'Test proxy configuration of the system'
+    valid_prog_environs = ['builtin']
+    time_limit = '2m'
+    tags = {'PROXY'}
+
+    @run_after('setup')
+    def set_executable(self):
+        self.executable = f'printenv {self.proxy_info[0]}'
+
+    @sanity_function
+    def validate(self):
+        return sn.assert_found(self.proxy_info[1], self.stdout, 
+                msg=f'Proxy configuration {self.proxy_info[0]} is not set up correctly')

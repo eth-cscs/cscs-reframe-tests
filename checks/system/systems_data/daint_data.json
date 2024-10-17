@@ -44,5 +44,15 @@
             "env_var": "APPS",
             "env_value": "/capstor/apps/cscs/daint"
         }
+    ],
+    "proxy_server": "http://proxy.cscs.ch",
+    "proxy_port": 8080,
+    "no_proxy": [
+        ".local",
+        ".cscs.ch",
+        "localhost",
+        "148.187.0.0/16",
+        "10.0.0.0/8",
+        "172.16.0.0/12"
     ]
 }

@@ -22,3 +22,6 @@ json_file_path = "../systems_data"
 MOUNT_VARS   = "filesystems"
 TOOLS_VARS   = "cscs_cluster_extra_pkgs"
 ENV_VARS     = "cscs_extra_vars"
+PROXY_VARS   = {"proxy_server": "proxy_server",
+                "proxy_port": "proxy_port",
+                "no_proxy": "no_proxy"}
