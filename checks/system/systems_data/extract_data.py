@@ -53,6 +53,11 @@ def main(yaml_config, system_name):
     if config_yaml_data.get(ENV_VARS):
         test_info.update({ENV_VARS: config_yaml_data.get(ENV_VARS)})
 
+    # Check for proxy configuration
+    for proxy_v in PROXY_VARS:
+        if config_yaml_data.get(proxy_v):
+            test_info.update({proxy_v: config_yaml_data.get(proxy_v)})
+
     # Save the extracted info to a json file
     with open(os.path.join(json_file_path, system_name+"_data.json"), 'w') as json_file:
         json.dump(test_info, json_file, indent=4)
