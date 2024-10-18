@@ -103,7 +103,8 @@ class Cp2kBuildTest(rfm.CompileOnlyRegressionTest):
 
         # TODO: Use Ninja generator
         self.build_system.config_opts = [
-            '-DCP2K_ENABLE_REGTESTS=ON',  # Puts executables under exe/local_cuda/
+            # Puts executables under exe/local_cuda/
+            '-DCP2K_ENABLE_REGTESTS=ON',
             '-DCP2K_USE_LIBXC=ON',
             '-DCP2K_USE_LIBINT2=ON',
             '-DCP2K_USE_SPGLIB=ON',
@@ -123,9 +124,10 @@ class Cp2kBuildTest(rfm.CompileOnlyRegressionTest):
     @sanity_function
     def validate_test(self):
         # INFO: Executables are in exe/FOLDER because -DCP2K_ENABLE_REGTEST=ON
-        # INFO: With -DCP2K_ENABLE_REGTEST=OFF, executables are in build/bin/ as expected
+        # INFO: With -DCP2K_ENABLE_REGTEST=OFF, executables are in build/bin/
         folder = 'local_cuda' if self.uarch == 'gh200' else 'local'
-        self.cp2k_executable = os.path.join(self.stagedir, 'exe', folder, 'cp2k.psmp')
+        self.cp2k_executable = os.path.join(self.stagedir, 'exe', folder,
+                                            'cp2k.psmp')
         return os.path.isfile(self.cp2k_executable)
 
 
@@ -137,10 +139,8 @@ class Cp2kCheck(rfm.RunOnlyRegressionTest):
     @run_before('run')
     def prepare_run(self):
         self.uarch = uenv.uarch(self.current_partition)
-
         config = slurm_config[self.test_name][self.uarch]
-
-        # SBATCH options
+        # sbatch options
         self.job.options = [
             f'--nodes={config["nodes"]}',
         ]
@@ -153,7 +153,7 @@ class Cp2kCheck(rfm.RunOnlyRegressionTest):
         # srun options
         self.job.launcher.options = ['--cpu-bind=cores']
 
-        # Environment variables
+        # environment variables
         self.env_vars['OMP_NUM_THREADS'] = str(
             self.num_cpus_per_task - 1
         )  # INFO: OpenBLAS adds one thread
@@ -164,12 +164,12 @@ class Cp2kCheck(rfm.RunOnlyRegressionTest):
             self.env_vars['MPICH_GPU_SUPPORT_ENABLED'] = '1'
             self.env_vars['CUDA_CACHE_DISABLE'] = '1'
 
-        # Set reference
-        if self.uarch is not None and self.uarch in cp2k_references[self.test_name]:
+        # set reference
+        if self.uarch is not None and \
+           self.uarch in cp2k_references[self.test_name]:
             self.reference = {
-                self.current_partition.fullname: cp2k_references[self.test_name][
-                    self.uarch
-                ]
+                self.current_partition.fullname:
+                    cp2k_references[self.test_name][self.uarch]
             }
 
     @sanity_function
@@ -183,24 +183,20 @@ class Cp2kCheck(rfm.RunOnlyRegressionTest):
             item=-1,
         )
         energy_diff = sn.abs(energy - self.energy_reference)
-
-        successful_termination = sn.assert_found(r'PROGRAM STOPPED IN', self.stdout)
+        successful_termination = sn.assert_found(r'PROGRAM STOPPED IN',
+                                                 self.stdout)
         correct_energy = sn.assert_lt(energy_diff, 1e-4)
-
-        return sn.all(
-            [
-                successful_termination,
-                correct_energy,
-            ]
-        )
+        return sn.all([
+            successful_termination,
+            correct_energy,
+        ])
 
     # INFO: The name of this function needs to match with the reference dict!
     @performance_function('s')
-    def time_run(
-        self,
-    ):
+    def time_run(self):
         return sn.extractsingle(
-            r'^ CP2K(\s+[\d\.]+){4}\s+(?P<perf>\S+)', self.stdout, 'perf', float
+            r'^ CP2K(\s+[\d\.]+){4}\s+(?P<perf>\S+)',
+            self.stdout, 'perf', float
         )
 
 
