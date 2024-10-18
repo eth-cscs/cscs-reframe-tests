@@ -227,6 +227,7 @@ def main():
             wrong_modules = len(modules_list)
             index_remove = []
             while wrong_modules != 0:
+                wrong_modules = len(modules_list)
                 for m_i, m in enumerate(modules_list):
                     m_output = subprocess.run(
                         f'module spider {m}', 
@@ -274,7 +275,6 @@ def main():
                     for i in index_remove[::-1]:
                         modules_list.pop(i)
                 index_remove = []
-                wrong_modules = len(modules_list)
             print(f"Required {bcolors.UNDERLINE}{bcolors.BOLD}modules{bcolors.ENDC}: {modules_list}")
         else:
             modules_list = [mod.strip() for mod in load_modules.split(",")]
@@ -441,6 +441,7 @@ def main():
                     wrong_modules = len(modules_list)
                     index_remove = []
                     while wrong_modules != 0:
+                        wrong_modules = len(modules_list)
                         for m_i, m in enumerate(modules_list):
                             m_output = subprocess.run(
                                 f'module spider {m}', 
@@ -488,7 +489,6 @@ def main():
                             for i in index_remove[::-1]:
                                 modules_list.pop(i)
                         index_remove = []
-                        wrong_modules = len(modules_list)
                     print(f"Required {bcolors.UNDERLINE}{bcolors.BOLD}modules{bcolors.ENDC}" +
                           f"for container {cp}: {modules_list}")
                 else:
@@ -508,7 +508,7 @@ def main():
     account = grp.getgrgid(os.getgid()).gr_name
 
     # Detecting the different types of nodes in the system (only form slurm)
-    if scheduler == 'slurm':
+    if scheduler == 'slurm' or scheduler == 'squeue':
         nodes = None
         print()
         print()
@@ -585,7 +585,7 @@ def main():
         # Detecting the different types of nodes in the system
         reservations = None
         try:
-            reservations = re.findall(r'ReservationName=(\w+)', reservations_info)
+            reservations = re.findall(r'ReservationName=([\w-]+)', reservations_info)
             print('Detected the following reservations:')
             print(reservations)
         except:
@@ -707,6 +707,7 @@ def main():
                 wrong_p = len(partitions_reservations)
                 index_remove = []
                 while wrong_p != 0:
+                    wrong_p = len(partitions_reservations)
                     for p_i, p_r in enumerate(partitions_reservations):
                         if p_r in reservations:
                             wrong_p -= 1
@@ -722,7 +723,6 @@ def main():
                         for i in index_remove[::-1]:
                             partitions_reservations.pop(i)
                     index_remove = []
-                    wrong_p = len(partitions_reservations)
                 for pr in partitions_reservations:
                     partition_name = input(f"How do you want to name the partition for reservation {pr}?:")
                     partition_maxjobs = input(f"Maximum number of forced local build or run jobs allowed?\n" +
