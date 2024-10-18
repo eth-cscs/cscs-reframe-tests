@@ -33,7 +33,6 @@ base_config = {
             'descr': 'GH200',
             'scheduler': 'slurm',
             'time_limit': '10m',
-            'access': ['--reservation=daint'],
             'container_platforms': [
 #                 {
 #                     'type': 'Sarus',
