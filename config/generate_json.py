@@ -414,12 +414,7 @@ def main():
             containers_found.append(contain_i['name'])
 
     if not containers_found:
-        # Set the scheduler to local if no other scheduler was detected
         print('No container platforms were detected')
-        print(f'The {bcolors.BOLD}{bcolors.UNDERLINE}' +
-              f'container{bcolors.ENDC}{bcolors.ENDC} ' +
-              f'for the partitions is set to {bcolors.WARNING}' +
-              f'local{bcolors.ENDC}')
     else:
         print(f'The following containers were found: ' +
               f'{", ".join(containers_found)}')
@@ -594,11 +589,13 @@ def main():
         print()
         print()
 
+        partition_login = 0
         print('Initializing the partitions of the system...')
         login_partition = input("Do you want to create a partition for the login node? (y/n):")
         while login_partition != "y" and login_partition.lower() != "n":
             login_partition = input("Do you want to create a partition for the login node? (y/n):")
         if login_partition == "y":
+            partition_login = 1
             print(f'Creating {bcolors.GREEN}login{bcolors.ENDC} ' +
                 f'{bcolors.BOLD}{bcolors.UNDERLINE}partition' +
                 f'{bcolors.ENDC}{bcolors.ENDC} with {bcolors.GREEN}' +
@@ -637,6 +634,10 @@ def main():
                     partition_time_limit = input(f"The time limit for the jobs submitted on this partition\n" +
                                                  "enter 'null' for no time limit (default is 10m):")
                     nodes_features.append('remote')
+                    if system_config['systems'][0].get('partitions'):
+                        pass
+                    else:
+                        system_config['systems'][0].update({'partitions': []})
                     system_config['systems'][0]['partitions'].append(
                         {'name':      partition_name, 
                         'scheduler': scheduler,
@@ -648,10 +649,12 @@ def main():
                         'env_vars':   "#FIXME :"+RFM_DOCUMENTATION["partition_envvars"],
                         'launcher':   launcher,  
                         'access':     [f'--account={account}'],
-                        'features':   nodes_features,
-                        'container_platforms': container_platforms}
+                        'features':   nodes_features}
                     )
+                    if containers_found:
+                        system_config['systems'][0]['partitions'][n_i+partition_login].update({'container_platforms': container_platforms})
                     print("Detecting the devices...")
+                    devices = []
                     nodes_devices = subprocess.run(
                                     f'scontrol show nodes -o | grep "ActiveFeatures={",".join(nodes_features[0:-1])}"', 
                                     stdout=subprocess.PIPE,
@@ -662,6 +665,7 @@ def main():
                                     )
                     nodes_devices = re.findall(r'Gres=([\w,:()]+)', nodes_devices.stdout)
                     nodes_devices = set(nodes_devices)
+                    print(nodes_devices)
                     if len(nodes_devices) != 1:
                         print(f"{bcolors.WARNING} Detected different devices in nodes with the same set of features. " +
                               f" Please check the devices option in the configuration file." + 
@@ -669,26 +673,31 @@ def main():
                     elif "(null)" in list(nodes_devices):
                         print("No devices were found for this node type.")
                     else:
-                        #FIXME: missing detection of device architecture (for gpus nvidia-smi)
-                        devices = {"devices": {"type": nodes_devices[0],
-                                               "num_devices": nodes_devices[1]}}
+                        devices = []
+                        for n_di, n_d in enumerate(nodes_devices):
+                            n_d = n_d.split(":")
+                            #FIXME: missing detection of device architecture (for gpus nvidia-smi)
+                            devices.append({"type": n_d[0],
+                                            "num_devices": n_d[1]})
+                    if devices:
+                        system_config['systems'][0]['partitions'][n_i+partition_login].update({"devices": devices})
                     if n not in default_nodes:
                         access_node = '&'.join(nodes_features)
-                        system_config['systems'][0]['partitions'][n_i+1]["access"].append(
+                        system_config['systems'][0]['partitions'][n_i+partition_login]["access"].append(
                             f"--constraint={access_node}"
                         )
                         print("This node type is not the node type by default so I added the required constraints:" +
                               f"--constraints={access_node}.") 
                         access_custom = input("Do you need any additional ones? (if no, enter n):")
                         if access_custom.lower() != "n":
-                            system_config['systems'][0]['partitions'][n_i+1]["access"].append(
+                            system_config['systems'][0]['partitions'][n_i+partition_login]["access"].append(
                             f"{access_custom}"
                         )
                     else: 
                         access_custom = input("Do you need any access options in slurm to access the node?\n" +
                                               f"(if no, enter n):")
                         if access_custom.lower() != "n":
-                            system_config['systems'][0]['partitions'][n_i+1]["access"].append(
+                            system_config['systems'][0]['partitions'][n_i+partition_login]["access"].append(
                             f"{access_custom}"
                         )
                     print(f'Creating {bcolors.WARNING}{partition_name}{bcolors.ENDC} ' +
@@ -743,7 +752,7 @@ def main():
                         'environs':   ['builtin'],
                         'max_jobs':  partition_maxjobs,
                         'launcher':   launcher,
-                        'access':     [f'--reservation=interact', f'--account={account}'],
+                        'access':     [f'--reservation={pr}', f'--account={account}'],
                         'features':   ['remote']}
                     )
                     print(f'Creating {bcolors.WARNING}{partition_name}{bcolors.ENDC} ' +
