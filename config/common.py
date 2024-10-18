@@ -61,7 +61,6 @@ site_configuration = {
                     # to avoid polluting the logs from tests in the
                     # login nodes
                     'url': 'http://httpjson-server:12345/rfm',
-                    'perflog_compat': True,
                     'level': 'info',
                     'extras': {
                         'data_stream': {
