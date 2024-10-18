@@ -11,6 +11,7 @@ import subprocess
 import json
 import shlex
 import traceback
+from jinja2 import Environment, FileSystemLoader
 
 # https://reframe-hpc.readthedocs.io/en/stable/config_reference.html#config.systems.partitions.time_limit
 TIME_LIMIT_LOGIN = '10m' # Time limit for jobs running in the login partition
@@ -135,7 +136,7 @@ def main():
                  f'systemname are different{bcolors.ENDC}') 
 
     print()
-    system_config['systems'][0].update({'hostname': hostname})
+    system_config['systems'][0].update({'hostnames': [hostname]})
 
     # Get the modules system
     # OK, TESTED
@@ -388,10 +389,10 @@ def main():
             launcher = input("Please select a launcher from the list above: ")
             while launcher not in launchers_found:
                 launcher = input("The launcher was not recognized. Please check the syntax: ")
-        print(f'The {bcolors.BOLD}{bcolors.UNDERLINE}' +
-            f'launcher{bcolors.ENDC}{bcolors.ENDC} ' +
-            f'for the system {cluster_name} is set to ' + 
-            f'{bcolors.GREEN}{launcher}{bcolors.ENDC}')
+            print(f'The {bcolors.BOLD}{bcolors.UNDERLINE}' +
+                f'launcher{bcolors.ENDC}{bcolors.ENDC} ' +
+                f'for the partitions is set to ' + 
+                f'{bcolors.GREEN}{launcher}{bcolors.ENDC}')
 
     print()
 
@@ -501,6 +502,7 @@ def main():
 
     # Detect the group (to add it to the -A option for slurm)
     account = grp.getgrgid(os.getgid()).gr_name
+    partition_name  = ""
 
     # Detecting the different types of nodes in the system (only form slurm)
     if scheduler == 'slurm' or scheduler == 'squeue':
@@ -608,8 +610,7 @@ def main():
                 'time_limit':  TIME_LIMIT_LOGIN,
                 'environs':   ['builtin'],
                 'scheduler':  'local',
-                'max_jobs':   MAX_JOBS_LOGIN,
-                'launcher':   'local'}
+                'max_jobs':   MAX_JOBS_LOGIN}
             )
 
         if not nodes and not reservations:
@@ -622,17 +623,21 @@ def main():
                     create_partition = input(f"Do you want to create a partition for the node with features {nodes_features}? (y/n):")
                 if create_partition == "y":
                     partition_name = input(f"How do you want to name the partition?:")
-                    partition_maxjobs = input(f"Maximum number of forced local build or run jobs allowed?\n" +
+                    maxjobs = input(f"Maximum number of forced local build or run jobs allowed?\n" +
                                                "(default is 100):")
+                    if not maxjobs:
+                        maxjobs = 100
                     integer_value = False
                     while not integer_value:
                         try:
-                            partition_maxjobs = int(partition_maxjobs)
+                            maxjobs = int(maxjobs)
                             integer_value = True
                         except:
-                            partition_maxjobs = input(f"It must be an integer:")
-                    partition_time_limit = input(f"The time limit for the jobs submitted on this partition\n" +
+                            maxjobs = input(f"It must be an integer:")
+                    time_limit = input(f"The time limit for the jobs submitted on this partition\n" +
                                                  "enter 'null' for no time limit (default is 10m):")
+                    if not time_limit:
+                        time_limit = "10m"
                     nodes_features.append('remote')
                     if system_config['systems'][0].get('partitions'):
                         pass
@@ -641,9 +646,9 @@ def main():
                     system_config['systems'][0]['partitions'].append(
                         {'name':      partition_name, 
                         'scheduler': scheduler,
-                        'time_limit': partition_time_limit,
+                        'time_limit': time_limit,
                         'environs':   ['builtin'],
-                        'max_jobs':   partition_maxjobs,
+                        'max_jobs':   maxjobs,
                         'resources':  resources,
                         'extras':     "#FIXME :"+RFM_DOCUMENTATION["extras"],
                         'env_vars':   "#FIXME :"+RFM_DOCUMENTATION["partition_envvars"],
@@ -694,6 +699,7 @@ def main():
                             f"{access_custom}"
                         )
                     else: 
+                        print("I have added the associated group found with the slurm option -A")
                         access_custom = input("Do you need any access options in slurm to access the node?\n" +
                                               f"(if no, enter n):")
                         if access_custom.lower() != "n":
@@ -721,7 +727,7 @@ def main():
                         if p_r in reservations:
                             wrong_p -= 1
                         else:
-                            new_partition = input(f"The resevration {p_r} is not in the system.\n" +
+                            new_partition = input(f"The reservation {p_r} is not in the system.\n" +
                                                   f"Please check the syntax or enter n to skip:")
                             if new_partition.lower() != "n":
                                 partitions_reservations[p_i] = new_partition
@@ -734,23 +740,27 @@ def main():
                     index_remove = []
                 for pr in partitions_reservations:
                     partition_name = input(f"How do you want to name the partition for reservation {pr}?:")
-                    partition_maxjobs = input(f"Maximum number of forced local build or run jobs allowed?\n" +
+                    maxjobs = input(f"Maximum number of forced local build or run jobs allowed?\n" +
                                                "(default is 100):")
+                    if not maxjobs:
+                        maxjobs = 100
                     integer_value = False
                     while not integer_value:
                         try:
-                            partition_maxjobs = int(partition_maxjobs)
+                            maxjobs = int(maxjobs)
                             integer_value = True
                         except:
-                            partition_maxjobs = input(f"It must be an integer:")
-                    partition_time_limit = input(f"The time limit for the jobs submitted on this partition\n" +
+                            maxjobs = input(f"It must be an integer:")
+                    time_limit = input(f"The time limit for the jobs submitted on this partition\n" +
                                                  "enter 'null' for no time limit (default is 10m):")
+                    if not time_limit:
+                        time_limit = "10m"
                     system_config['systems'][0]['partitions'].append(
                         {'name':     partition_name, 
                         'scheduler': scheduler,
-                        'time_limit': partition_time_limit,
+                        'time_limit': time_limit,
                         'environs':   ['builtin'],
-                        'max_jobs':  partition_maxjobs,
+                        'max_jobs':  maxjobs,
                         'launcher':   launcher,
                         'access':     [f'--reservation={pr}', f'--account={account}'],
                         'features':   ['remote']}
@@ -761,27 +771,56 @@ def main():
                             f'{bcolors.BOLD}{bcolors.UNDERLINE}{pr}{bcolors.ENDC} ' +
                             'reservation')
     else:
+        partition_login = 0
+        print('Initializing the partitions of the system...')
+        login_partition = input("Do you want to create a partition for the login node? (y/n):")
+        while login_partition != "y" and login_partition.lower() != "n":
+            login_partition = input("Do you want to create a partition for the login node? (y/n):")
+        if login_partition == "y":
+            partition_login = 1
+            print(f'Creating {bcolors.GREEN}login{bcolors.ENDC} ' +
+                f'{bcolors.BOLD}{bcolors.UNDERLINE}partition' +
+                f'{bcolors.ENDC}{bcolors.ENDC} with {bcolors.GREEN}' +
+                f'local{bcolors.ENDC} scheduler...')
+            system_config['systems'][0].update({'partitions': []})
+            system_config['systems'][0]['partitions'].append(
+                {'name':       'local', 
+                'descr':      'Login nodes',
+                'launcher':   'local',
+                'time_limit':  TIME_LIMIT_LOGIN,
+                'environs':   ['builtin'],
+                'scheduler':  'local',
+                'max_jobs':   MAX_JOBS_LOGIN}
+            )
         print("Automatic detection of partition is only possible with slurm")
         
     print()
     print()
-    print(f'{bcolors.WARNING}Creating an example of environment...{bcolors.ENDC}')
+    print(f'{bcolors.WARNING}For information about the environments check the links in the generated files{bcolors.ENDC}')
     # Creating an environment for reference
-    system_config["environments"] = []
-    system_config["environments"].append({  
-        'descr': "#FIXME :"+RFM_DOCUMENTATION["environments"],
-        'name': 'PrgEnv-cray',
-        'features': ['serial', 'openmp', 'mpi', 'cuda', 'openacc', 'hdf5',
-        'netcdf-hdf5parallel', 'pnetcdf'],
-        'target_systems': [f'{hostname}:{partition_name}'],
-        'modules': ['cray', 'PrgEnv-cray', 'craype-arm-grace']
-    })
+    system_config["environments"] = ["https://github.com/eth-cscs/cscs-reframe-tests/tree/alps/config/systems",
+                                     "https://reframe-hpc.readthedocs.io/en/stable/config_reference.html#environment-configuration"]
 
     print()
     print()
-    print(f'{bcolors.FAIL}Review the partitions and the links to the documentation in {cluster_name}_config.json.{bcolors.ENDC}')
+    print(f'The following configuration files were generated:\n' +
+          f"JSON: {cluster_name}_config.json\n" +
+          f"PYTHON: {cluster_name}_config.py")
 
-    system_config["modes"] = [RFM_DOCUMENTATION["modes"]]
+    # Set up Jinja2 environment and load the template
+    template_loader = FileSystemLoader(searchpath="./") 
+    env = Environment(loader=template_loader, trim_blocks=True, lstrip_blocks=True)
+    rfm_config_template = env.get_template("reframe_config_template.j2")
+
+    # Render the template with the gathered information
+    organized_config = rfm_config_template.render(system_config['systems'][0])
+
+    # Output filename for the generated configuration
+    output_filename = f"{cluster_name}_config.py"
+
+    # Write the rendered content to the output file
+    with open(output_filename, "w") as output_file:
+        output_file.write(organized_config)
 
     with open(f'{cluster_name}_config.json', 'w') as py_file:
         json.dump(system_config, py_file, indent=4)
