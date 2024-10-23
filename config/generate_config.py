@@ -60,7 +60,6 @@ else:
 user_input = not args.auto
 
 def main(user_input, containers_search, devices_search, reservations_based):
-    print(user_input, containers_search, devices_search, reservations_based)
 
     system_config['systems']   = []
 
@@ -497,14 +496,18 @@ def main(user_input, containers_search, devices_search, reservations_based):
                             logger.debug("This node type is not the node type by default so I added the required constraints:" +
                                          f"--constraints={access_node}.") 
                             access_custom = input("Do you need any additional ones? (if no, enter n):")
-                            if access_custom.lower() != "n":
+                            if not access_custom:
+                                pass
+                            elif access_custom.lower() != "n":
                                 system_config['systems'][0]['partitions'][nodes_p+p_login-1]["access"].append(
                                 f"{access_custom}"
                             )
                         else: 
                             access_custom = input("Do you need any access options in slurm to access the node?\n" +
                                                 f"(if no, enter n):")
-                            if access_custom.lower() != "n":
+                            if not access_custom:
+                                pass
+                            elif access_custom.lower() != "n":
                                 system_config['systems'][0]['partitions'][nodes_p+p_login-1]["access"].append(
                                 f"{access_custom}"
                             )
@@ -586,6 +589,7 @@ def main(user_input, containers_search, devices_search, reservations_based):
                                                    f'of required modules is not possible with {module_system}.\n')
                                 for cp_i, cp in enumerate(containers_found):
                                     logger.debug(f'Detected container platform: {cp["type"]}')
+                                    system_config['systems'][0]['partitions'][nodes_p+p_login-1]['features'].append(cp["type"].lower())
 
                                 system_config['systems'][0]['partitions'][nodes_p+p_login-1].update({'container_platforms': containers_found})   
                             else:
@@ -668,7 +672,9 @@ def main(user_input, containers_search, devices_search, reservations_based):
                         logger.debug(f'I have added the associated group found with the slurm option -A and the --reservation={pr}')
                         access_custom = input('Do you need any access options in slurm to access this reservation?\n' +
                                               f'(if no, enter n):')
-                        if access_custom.lower() != 'n':
+                        if not access_custom:
+                            pass
+                        elif access_custom.lower() != 'n':
                             system_config['systems'][0]['partitions'][nodes_p+p_login+reservations_p-1]['access'].append(
                             f"{access_custom}"
                         )
