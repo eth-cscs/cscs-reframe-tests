@@ -13,11 +13,13 @@ site_configuration = {
             'descr': 'System description for {{ name }}',  # Description of the system
             'hostnames': {{hostnames}},  # Hostname used by this system
             'modules_system': '{{modules_system}}',
-            # Specify the modules to be loaded in the system when running reframe (if any)
             {% if modules %}
+            # Specify the modules to be loaded in the system when running reframe (if any)
+            # https://reframe-hpc.readthedocs.io/en/stable/config_reference.html#config.systems.modules
             'modules': {{ modules }},
             {% endif %}
             {% if resourcesdir %}
+            # https://reframe-hpc.readthedocs.io/en/stable/config_reference.html#config.systems.resourcesdir
             'resourcesdir': '{{ resourcesdir }}',  # Directory path for system resources
             {% endif %}
             # Define the partitions of the system (based on node type or reservations)
@@ -33,7 +35,6 @@ site_configuration = {
                     'time_limit' : '{{partition.time_limit}}',
                     'max_jobs' : {{partition.max_jobs}},
                     {% if partition.features | length > 1 %}
-                    # The following options are only set for remote partitions based on node type
                     # Resources for testing this partition (https://reframe-hpc.readthedocs.io/en/stable/config_reference.html#config.systems.partitions.resources)
                     'resources' : [{'name': 'switches',
                                     'options': ['--switches={num_switches}']},
@@ -41,6 +42,10 @@ site_configuration = {
                                    'options': ['--gres={gres}']},
                                    {'name': 'memory',
                                    'options': ['--mem={mem_per_node}']}],
+                    # https://reframe-hpc.readthedocs.io/en/stable/config_reference.html#config.systems.partitions.extras
+                    'extras' : {{partition.extras}},
+                    # https://reframe-hpc.readthedocs.io/en/stable/config_reference.html#config.systems.partitions.env_vars
+                    'env_vars' : {{partition.env_vars}},
                     {% if partition.devices %}
                     # Check if any specific devices were found in this node type
                     # The gpus found in slurm GRes will be specified here
@@ -79,8 +84,7 @@ site_configuration = {
                 {% endfor %}
             ],
             # The environments cannot be automatically detected, check the following links for reference
-            'environments': ["CSCS_repo" : https://github.com/eth-cscs/cscs-reframe-tests/tree/alps/config/systems,
-                             "ReFrame documentation" : https://reframe-hpc.readthedocs.io/en/stable/config_reference.html#environment-configuration],
+            'environments': {{environments}}
         }
     ]
 }
