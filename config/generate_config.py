@@ -676,8 +676,9 @@ def main(user_input, containers_search, devices_search, reservations_based):
                                     f'scheduler for {pr} reservation\n')
 
             else:
-                for res in enumerate(reservations_based):
+                for res in reservations_based:
                     if res in reservations:
+                        reservations_p += 1
                         system_config['systems'][0]['partitions'].append(
                             {'name':     f'{res}', 
                             'scheduler':  scheduler,
@@ -688,11 +689,11 @@ def main(user_input, containers_search, devices_search, reservations_based):
                             'access':     [f'--reservation={res}', f'--account={account}'],
                             'features':   ['remote']}
                         )
-                        if hostemname == 'eiger':
-                            syst_config['systems'][0]['partitions'][nodes_p+p_login+reservations_p-1]['access'].append('-Cmc')
+                        if hostname == 'eiger':
+                            system_config['systems'][0]['partitions'][nodes_p+p_login+reservations_p-1]['access'].append('-Cmc')
 
                         logger.info(f'Created {partition_name} partition with {scheduler} ' +
-                                            f'scheduler for {pr} reservation\n')
+                                            f'scheduler for {res} reservation\n')
                     else:
                         logger.warning(f'Reservation {res} not found in the system, skipping...\n')
             
