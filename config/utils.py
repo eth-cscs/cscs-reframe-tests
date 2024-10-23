@@ -158,5 +158,3 @@ def submit_autodetection():
         return True
     except:
         return False
-
-        
