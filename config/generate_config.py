@@ -339,7 +339,7 @@ def main(user_input, containers_search, devices_search, reservations_based):
                         universal_newlines=True, check=True, shell=True
                         )
         nodes_info = nodes_info.stdout
-        DEBUG nodes_info+='ActiveFeatures=jaja,jeje\n'
+        #DEBUG nodes_info+='ActiveFeatures=jaja,jeje\n'
         # Detect the default partition
         default_partition = subprocess.run('scontrol show partitions -o | grep "Default=YES"',
                         stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
