@@ -1,24 +1,24 @@
 
-SCHEDULERS = [{'name': 'flux',   'cmd': 'flux'}, 
-              {'name': 'lsf',    'cmd': 'bsub'}, 
-              {'name': 'oar',    'cmd': 'oarsub'}, 
-              {'name': 'pbs',    'cmd': 'pbsnodes'},  
-              {'name': 'sge',    'cmd': 'qconf'}, 
-              {'name': 'squeue', 'cmd': 'squeue'},  
+SCHEDULERS = [{'name': 'flux',   'cmd': 'flux'},
+              {'name': 'lsf',    'cmd': 'bsub'},
+              {'name': 'oar',    'cmd': 'oarsub'},
+              {'name': 'pbs',    'cmd': 'pbsnodes'},
+              {'name': 'sge',    'cmd': 'qconf'},
+              {'name': 'squeue', 'cmd': 'squeue'},
               {'name': 'slurm',  'cmd': 'sacct'}]
 
-LAUNCHERS = [{'name': 'alps',    'cmd': 'aprun'}, 
-             {'name': 'clush',   'cmd': 'clush'}, 
-             {'name': 'ibrun',   'cmd': 'ibrun'}, 
-             {'name': 'lrun',    'cmd': 'lrun'},  
-             {'name': 'mpirun',  'cmd': 'mpirun'}, 
-             {'name': 'mpiexec', 'cmd': 'mpiexec'},  
-             {'name': 'pdsh',    'cmd': 'pdsh'},  
+LAUNCHERS = [{'name': 'alps',    'cmd': 'aprun'},
+             {'name': 'clush',   'cmd': 'clush'},
+             {'name': 'ibrun',   'cmd': 'ibrun'},
+             {'name': 'lrun',    'cmd': 'lrun'},
+             {'name': 'mpirun',  'cmd': 'mpirun'},
+             {'name': 'mpiexec', 'cmd': 'mpiexec'},
+             {'name': 'pdsh',    'cmd': 'pdsh'},
              {'name': 'srun',    'cmd': 'srun'}]
 
-CONTAINERS = [{'name': 'Sarus',       'cmd': 'sarus'}, 
-              {'name': 'Apptainer',   'cmd': 'apptainer'}, 
-              {'name': 'Docker',      'cmd': 'docker'}, 
+CONTAINERS = [{'name': 'Sarus',       'cmd': 'sarus'},
+              {'name': 'Apptainer',   'cmd': 'apptainer'},
+              {'name': 'Docker',      'cmd': 'docker'},
               {'name': 'Singularity', 'cmd': 'singularity'},
               {'name': 'Shifter',     'cmd': 'shifter'}]
 
@@ -89,7 +89,6 @@ nvidia_gpu_architecture = {
                             "Titan RTX": "sm_75"
                         }
 
-
 containers_detect_bash = '''
 # List of containers to check
 CONTAINERS=(
@@ -124,11 +123,11 @@ check_lmod() {
 # Check each container command
 for container in "${CONTAINERS[@]}"; do
     IFS=":" read -r name cmd <<< "$container"
-    
+
     # Check if the command exists via 'which'
     found_via_command=false
     found_via_module=false
-    
+
     if which "$cmd" > /dev/null 2>&1; then
         found_via_command=true
     fi
