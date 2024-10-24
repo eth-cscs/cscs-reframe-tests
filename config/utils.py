@@ -1,14 +1,16 @@
 import re
 from collections import defaultdict
-from utilities.constants import * 
+from utilities.constants import *
 import subprocess
 import logging
+from contextlib import contextmanager
+import os
 
 # Define a custom logging format with colors
 class CustomFormatter(logging.Formatter):
     # Define log format
     format = "%(message)s"
-    
+
     # Define ANSI escape codes for colors
     RESET = "\033[0m"
     COLORS = {
@@ -72,6 +74,7 @@ def parse_containers_output(file_path : str):
 
     containers_info = []
     containers_found = False
+    print(os.getcwd())
 
     with open(file_path, 'r') as file:
         lines = file.readlines()
@@ -84,7 +87,7 @@ def parse_containers_output(file_path : str):
             try:
                 modules = line.split(' modules: ')[1].split(', ')
                 modules = [m.strip() for m in modules]
-                modules.append(type)
+                modules.append(type.lower())
             except:
                 modules = []
             containers_info.append({'type': type, 'modules': modules})
@@ -106,13 +109,13 @@ def parse_cnmemory_output(file_path : str):
             if match:
                 cnmemory_info = match.group(1)
                 break
-        
+
     return cnmemory_info
 
 
 def generate_submission_file(containers : bool, devices : bool, cn_memory : bool, partition_name : str, access : list = []):
 
-    with open("autodetection_job.sh", "w") as file:
+    with open(f"autodetection_{partition_name}.sh", "w") as file:
         # Write some text to the file
         file.write(slurm_submission_header.format(partition_name=partition_name))
         for access_option in access:
@@ -146,15 +149,26 @@ def extract_info(containers : bool, devices : bool, cn_memory : bool, partition_
     return containers_info, devices_info, cnmemory_info
 
 
-def submit_autodetection():
+def submit_autodetection(partition_name):
 
     cmd_parts = ['sbatch', '-W']
-    cmd_parts += ["autodetection_job.sh"]
+    cmd_parts += [f'autodetection_{partition_name}.sh']
     cmd = ' '.join(cmd_parts)
     try:
         print("Remote autodection script submitted...")
         completed = subprocess.run(cmd, stdout=subprocess.PIPE,stderr=subprocess.PIPE,
                                     universal_newlines=True, check = True, shell=True)
         return True
-    except:
+    except Exception as e:
+        raise e
         return False
+
+
+@contextmanager
+def change_dir(destination : str):
+    original_dir = os.getcwd()  # Save the current working directory
+    try:
+        os.chdir(destination)   # Change to the new directory
+        yield
+    finally:
+        os.chdir(original_dir)  # Change back to the original directory

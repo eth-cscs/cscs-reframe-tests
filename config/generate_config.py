@@ -3,19 +3,18 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-import re
-import sys
-import os
+import argparse
 import grp
-import subprocess
 import json
-import shlex
-import traceback
+import os
+import re
+import shutil
+import socket
+import subprocess
+import tempfile
 from jinja2 import Environment, FileSystemLoader
 from utilities.constants import *
 from utils import *
-import socket
-import argparse
 
 system_config   = {}
 
@@ -36,9 +35,7 @@ parser.add_argument('--no-remote-containers', action='store_true', help='Disable
 # Define the '--no-remote-devices' flag
 parser.add_argument('--no-remote-devices', action='store_true', help='Disable devices detection in remote partition')
 # Define the '--reservations' flag
-parser.add_argument('--reservations', nargs='?', 
-    help='Specify the reservations that you want to create partitions for.'
-)
+parser.add_argument('--reservations', nargs='?', help='Specify the reservations that you want to create partitions for.')
 
 args = parser.parse_args()
 
@@ -59,11 +56,14 @@ else:
 
 user_input = not args.auto
 
+temp_dir = tempfile.mkdtemp(prefix='reframe_config_detection_', dir=os.getenv('SCRATCH'))
+
 def main(user_input, containers_search, devices_search, reservations_based):
 
     system_config['systems']   = []
+    keep_tmpdir = False
 
-    # Get the system name 
+    # Get the system name
     cluster_name = os.getenv('CLUSTER_NAME')
     if cluster_name:
         logger.info(f'System name is {cluster_name}\n')
@@ -78,7 +78,7 @@ def main(user_input, containers_search, devices_search, reservations_based):
         hostname = socket.gethostname() # Same method reframe uses
     except Exception as e:
         hostname = '<hostname>'
-        logger.error(f'Hostname not found')
+        logger.error('Hostname not found')
         logger.debug(f'Trying to retrieve the hostname raised:\n{e}\n')
     else:
         hostname = hostname.strip()
@@ -86,10 +86,10 @@ def main(user_input, containers_search, devices_search, reservations_based):
         hostname = hostname.group(0)
         logger.info(f'Hostname is {hostname}\n')
 
-    if hostname != '<hostname>' and cluster_name != 'cluster':  
+    if hostname != '<hostname>' and cluster_name != 'cluster':
         if hostname != cluster_name:
-            logger.warning(f'Detected hostname and ' +
-                          f'systemname are different\n') 
+            logger.warning('Detected hostname and '
+                           'systemname are different\n')
 
     system_config['systems'][0].update({'hostnames': [hostname]})
 
@@ -99,13 +99,13 @@ def main(user_input, containers_search, devices_search, reservations_based):
     module_info = os.getenv('LMOD_CMD')
     if not module_info:
         try:
-            module_info = subprocess.run(['modulecmd','-V'], 
+            module_info = subprocess.run(['modulecmd','-V'],
                 stdout=subprocess.PIPE,stderr=subprocess.PIPE,
                 universal_newlines=True
             )
         except FileNotFoundError:
             try:
-                module_info = subprocess.run(['spack','-V'], 
+                module_info = subprocess.run(['spack','-V'],
                     stdout=subprocess.PIPE,stderr=subprocess.PIPE,
                     universal_newlines=True
                 )
@@ -114,7 +114,7 @@ def main(user_input, containers_search, devices_search, reservations_based):
             else:
                 module_system = 'spack'
         else:
-            version_tmod = re.search(r'^VERSION=(\S+)', module_info.stderr,
+            version_tmod = re.search(r'^VERSION=(\S+)', module_info.stdout,
                                   re.MULTILINE)
             if version_tmod:
                 version = version_tmod.group(1)
@@ -122,7 +122,7 @@ def main(user_input, containers_search, devices_search, reservations_based):
                     ver_major, ver_minor = [int(v) for v in version.split('.')[:2]]
                 except ValueError:
                     raise ValueError(
-                        'could not parse TMod version string: ' + 
+                        'could not parse TMod version string: ' +
                         version) from None
                 if ver_major >= 4 and ver_minor >= 1:
                     module_system = 'tmod4'
@@ -131,17 +131,17 @@ def main(user_input, containers_search, devices_search, reservations_based):
                 elif ver_major >= 3 and ver_minor >= 1:
                     module_system = 'tmod31'
                 else:
-                    logger.warning(f'Detected unsupported ' +
-                                   f'TMod version: {version}\n') 
+                    logger.warning('Detected unsupported '
+                                   f'TMod version: {version}\n')
     else:
         module_system = 'lmod'
 
     if module_system != 'nomod':
-        logger.info(f'The module system for the system {cluster_name} ' +
+        logger.info(f'The module system for the system {cluster_name} '
                     f' is set to {module_system}\n')
     else:
-        logger.warning(f'No valid module system was detected.' +
-                       f'Set to nomod.\n')
+        logger.warning('No valid module system was detected.'
+                       'Set to nomod.\n')
 
     system_config['systems'][0].update({'modules_system': module_system})
 
@@ -149,8 +149,8 @@ def main(user_input, containers_search, devices_search, reservations_based):
     if module_system != 'nomod' and user_input:
         logger.debug('You can require some modules to be loaded every time reframe is run on this system')
         modules_list = []
-        load_modules = input('Do you require any modules to be loaded?\n' +
-                             'If yes please write the modules names separated by commas\n' + 
+        load_modules = input('Do you require any modules to be loaded?\n'
+                             'If yes please write the modules names separated by commas\n'
                              'If no please enter n\n')
 
         if load_modules.lower() == 'n':
@@ -162,7 +162,7 @@ def main(user_input, containers_search, devices_search, reservations_based):
             while wrong_modules != 0:
                 wrong_modules = len(modules_list)
                 for m_i, m in enumerate(modules_list):
-                    m_output = subprocess.run(f'module spider {m}', 
+                    m_output = subprocess.run(f'module spider {m}',
                         stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                         universal_newlines=True, check=False, shell=True
                         )
@@ -181,18 +181,18 @@ def main(user_input, containers_search, devices_search, reservations_based):
                             else:
                                 v_i += 1
                         new_module = input(f'There are multiple versions of the module {versions}.\n'
-                                           f'Please select one (or enter n to remove it):')
+                                           'Please select one (or enter n to remove it):')
                         while new_module not in versions and new_module.lower() != 'n':
                             new_module = input(f'Check the syntax please:')
                         if new_module.lower() != 'n':
                             modules_list[m_i] = new_module
                             wrong_modules -= 1
                         else:
-                            index_remove.append(m_i) 
+                            index_remove.append(m_i)
                             wrong_modules -= 1
                     elif 'error' in  m_output.stdout:
                         new_module = input(f'Module {modules_list[m_i]} not available.\n'
-                                           f'Specify the right one or enter n to remove it from the required modules:')
+                                           'Specify the right one or enter n to remove it from the required modules:')
                         if new_module.lower() != 'n':
                             modules_list[m_i] = new_module
                         else:
@@ -211,8 +211,8 @@ def main(user_input, containers_search, devices_search, reservations_based):
         else:
             modules_list = [mod.strip() for mod in load_modules.split(',')]
             logger.debug(f'Required modules: {modules_list}')
-            logger.warning(f'WARNING: I will not check the syntax ' +
-                           f'and availability of the specified modules.\n')
+            logger.warning('WARNING: I will not check the syntax '
+                           'and availability of the specified modules.\n')
 
         if modules_list:
             system_config['systems'][0].update({'modules': modules_list})
@@ -224,12 +224,12 @@ def main(user_input, containers_search, devices_search, reservations_based):
 
     # Additional fields that must be manually configured
     if user_input:
-        resourcesdir = input('Do you want to add a resources directory for the system?\n' +
-                             'Directory prefix where external test resources (e.g., large input files) are stored.\n' +
+        resourcesdir = input('Do you want to add a resources directory for the system?\n'
+                             'Directory prefix where external test resources (e.g., large input files) are stored.\n'
                              'If no just enter n.\n')
         if resourcesdir.lower() != 'n':
             while not os.path.exists(resourcesdir):
-                resourcesdir = input('The specified directory does not exist.\n' +
+                resourcesdir = input('The specified directory does not exist.\n'
                                      'Please enter a valid directory (or n):\n')
                 if resourcesdir.lower() == 'n':
                     break
@@ -244,7 +244,7 @@ def main(user_input, containers_search, devices_search, reservations_based):
     schedulers_found = []
     for sched_i in SCHEDULERS:
         try:
-            scheduler = subprocess.run(['which', f'{sched_i["cmd"]}'], 
+            scheduler = subprocess.run(['which', f'{sched_i["cmd"]}'],
                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                 universal_newlines=True, check=True
             )
@@ -259,11 +259,11 @@ def main(user_input, containers_search, devices_search, reservations_based):
         scheduler = 'local'
         logger.warning(f'The scheduler for the system is set to {scheduler}\n')
     else:
-        logger.debug(f'The following schedulers were found: '+
+        logger.debug('The following schedulers were found: '
                      f'{", ".join(schedulers_found)}')
         if len(schedulers_found) == 1:
             scheduler = schedulers_found[0]
-            logger.info(f'The scheduler for the system {cluster_name}' + 
+            logger.info(f'The scheduler for the system {cluster_name}'
                         f' is set to {schedulers_found[0]}\n')
         elif user_input:
             # Offer the different options for the schedulers
@@ -271,23 +271,23 @@ def main(user_input, containers_search, devices_search, reservations_based):
             scheduler = input('Please select a scheduler from the list above: ')
             while scheduler not in schedulers_found:
                 scheduler = input('The scheduler was not recognized. Please check the syntax: ')
-            logger.info(f'The scheduler for the system {cluster_name}' + 
+            logger.info(f'The scheduler for the system {cluster_name}'
                         f' is set to {scheduler}\n')
         else:
             # Select the last one detected (this will choose slurm over squeue
             # if both are detected in the system)
             #FIXME put the list in the jinja template
             scheduler = schedulers_found[-1]
-            logger.warning(f'The scheduler for the system {cluster_name}' + 
+            logger.warning(f'The scheduler for the system {cluster_name}'
                            f' is set to {scheduler}')
-            logger.debug(f'Check {cluster_name}_config.json to select' +
-                         f' a different one\n')          
+            logger.debug(f'Check {cluster_name}_config.json to select'
+                         ' a different one\n')
 
     # Detect the parallel launcher
     launchers_found = []
     for launch_i in LAUNCHERS:
         try:
-            launcher = subprocess.run(['which', f'{launch_i["cmd"]}'], 
+            launcher = subprocess.run(['which', f'{launch_i["cmd"]}'],
                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                 universal_newlines=True, check=True
             )
@@ -300,30 +300,30 @@ def main(user_input, containers_search, devices_search, reservations_based):
         # Set the scheduler to local if no other scheduler was detected
         logger.debug('No parallel launcher was detected')
         launcher = 'local'
-        logger.warning(f'The launcher for the partitions ' +
+        logger.warning(f'The launcher for the partitions '
                        f'is set to {launcher}\n')
     else:
-        logger.debug(f'The following launchers were found: ' +
+        logger.debug(f'The following launchers were found: '
                      f'{", ".join(launchers_found)}')
         if len(launchers_found) == 1:
             launcher = launchers_found[0]
-            logger.info(f'The launcher for the partitions ' +
+            logger.info(f'The launcher for the partitions '
                         f'is set to {launcher}\n')
         elif user_input:
             # Offer the different options for the launchers
             launcher = input('Please select a launcher from the list above: ')
             while launcher not in launchers_found:
                 launcher = input('The launcher was not recognized. Please check the syntax: ')
-            logger.info(f'The launcher for the partitions ' +
+            logger.info('The launcher for the partitions '
                         f'is set to {launcher}\n')
         else:
             # Select the last one detected
             #FIXME put the list in the jinja template
             launcher = launchers_found[-1]
-            logger.warning(f'The launcher for the system {cluster_name}' + 
+            logger.warning(f'The launcher for the system {cluster_name}'
                            f' is set to {launcher}')
-            logger.debug(f'Check {cluster_name}_config.json to select' +
-                         f' a different one\n')     
+            logger.debug(f'Check {cluster_name}_config.json to select'
+                         ' a different one\n')
 
     # Detect the group (to add it to the -A option for slurm)
     account = grp.getgrgid(os.getgid()).gr_name
@@ -334,14 +334,14 @@ def main(user_input, containers_search, devices_search, reservations_based):
         nodes = None
         #FIXME : nodes detection always on, can be disabled from command line
         logger.debug('Detecting partitions based on nodes features...')
-        nodes_info = subprocess.run('scontrol show nodes -o | grep "ActiveFeatures"', 
+        nodes_info = subprocess.run('scontrol show nodes -o | grep "ActiveFeatures"',
                         stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                         universal_newlines=True, check=True, shell=True
                         )
         nodes_info = nodes_info.stdout
-        #DEBUG nodes_info+='ActiveFeatures=jaja,jeje\n'
+        DEBUG nodes_info+='ActiveFeatures=jaja,jeje\n'
         # Detect the default partition
-        default_partition = subprocess.run('scontrol show partitions -o | grep "Default=YES"', 
+        default_partition = subprocess.run('scontrol show partitions -o | grep "Default=YES"',
                         stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                         universal_newlines=True, check=True, shell=True
                         )
@@ -354,7 +354,7 @@ def main(user_input, containers_search, devices_search, reservations_based):
             # Get the unique combinations
             nodes_features   = set(nodes_features)
             nodes_types = [[tuple(n[0].split(',')), tuple(n[1].split(','))] for n in nodes_features]
-            # Retrieve the node types in the default partition 
+            # Retrieve the node types in the default partition
             # (if more than 1, then access options are enforced to reach the exact node type)
             default_c = 0
             default_nodes = [] # Node type in the default partition
@@ -376,7 +376,7 @@ def main(user_input, containers_search, devices_search, reservations_based):
         if reservations_based or user_input:
             # Only search for reservations if the option is required
             logger.debug('Detecting partitions based on reservations...')
-            reservations_info = subprocess.run('scontrol show res | grep "ReservationName"', 
+            reservations_info = subprocess.run('scontrol show res | grep "ReservationName"',
                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                             universal_newlines=True, check=True, shell=True
                             )
@@ -400,8 +400,8 @@ def main(user_input, containers_search, devices_search, reservations_based):
                 login_partition = input('Do you want to create a partition for the login node? (y/n):')
             if login_partition == 'y':
                 p_login = 1
-                maxjobs = input(f'Maximum number of forced local build or run jobs allowed?\n' +
-                                 '(default is 4 for login):')
+                maxjobs = input('Maximum number of forced local build or run jobs allowed?\n'
+                                '(default is 4 for login):')
                 if not maxjobs:
                     maxjobs = 4
                 integer_value = False
@@ -410,14 +410,14 @@ def main(user_input, containers_search, devices_search, reservations_based):
                         maxjobs = int(maxjobs)
                         integer_value = True
                     except:
-                        maxjobs = input(f"It must be an integer:")
-                time_limit = input(f"The time limit for the jobs submitted on this partition\n" +
-                                    "enter 'null' for no time limit (default is 2m for login):")
+                        maxjobs = input('It must be an integer:')
+                time_limit = input('The time limit for the jobs submitted on this partition\n'
+                                   'enter "null" for no time limit (default is 2m for login):')
                 if not time_limit:
-                    time_limit = "2m"
+                    time_limit = '2m'
                 system_config['systems'][0].update({'partitions': []})
                 system_config['systems'][0]['partitions'].append(
-                    {'name':      'login', 
+                    {'name':      'login',
                     'descr':      'Login nodes',
                     'launcher':   'local',
                     'time_limit':  time_limit,
@@ -425,12 +425,12 @@ def main(user_input, containers_search, devices_search, reservations_based):
                     'scheduler':  'local',
                     'max_jobs':   maxjobs}
                 )
-                logger.info(f'Created login partition with local scheduler\n') 
+                logger.info('Created login partition with local scheduler\n')
         else:
             p_login = 1
             system_config['systems'][0].update({'partitions': []})
             system_config['systems'][0]['partitions'].append(
-                {'name':      'local', 
+                {'name':      'local',
                 'descr':      'Login nodes',
                 'launcher':   'local',
                 'time_limit':  '2m',
@@ -438,10 +438,10 @@ def main(user_input, containers_search, devices_search, reservations_based):
                 'scheduler':  'local',
                 'max_jobs':   '4'}
             )
-            logger.info(f'Created login partition with local scheduler\n') 
+            logger.info('Created login partition with local scheduler\n')
 
         if not nodes and not reservations:
-            logger.warning(f'No information is available for the creation of the partition.\n')
+            logger.warning('No information is available for the creation of the partition.\n')
         nodes_p = 0
         if nodes:
             for n in nodes:
@@ -452,9 +452,9 @@ def main(user_input, containers_search, devices_search, reservations_based):
                         create_partition = input(f'Do you want to create a partition for the node with features {nodes_features}? (y/n):')
                     if create_partition == 'y':
                         nodes_p += 1
-                        partition_name = input(f'How do you want to name the partition?:')
-                        maxjobs = input(f'Maximum number of forced local build or run jobs allowed?\n' +
-                                         '(default is 100):')
+                        partition_name = input('How do you want to name the partition?:')
+                        maxjobs = input('Maximum number of forced local build or run jobs allowed?\n'
+                                        '(default is 100):')
                         if not maxjobs:
                             maxjobs = 100
                         integer_value = False
@@ -463,9 +463,9 @@ def main(user_input, containers_search, devices_search, reservations_based):
                                 maxjobs = int(maxjobs)
                                 integer_value = True
                             except:
-                                maxjobs = input(f'It must be an integer:')
-                        time_limit = input(f'The time limit for the jobs submitted on this partition\n' +
-                                            'enter "null" for no time limit (default is 10m):')
+                                maxjobs = input('It must be an integer:')
+                        time_limit = input('The time limit for the jobs submitted on this partition\n'
+                                           'enter "null" for no time limit (default is 10m):')
                         if not time_limit:
                             time_limit = '10m'
                         nodes_features.append('remote')
@@ -474,7 +474,7 @@ def main(user_input, containers_search, devices_search, reservations_based):
                         else:
                             system_config['systems'][0].update({'partitions': []})
                         system_config['systems'][0]['partitions'].append(
-                            {'name':      partition_name, 
+                            {'name':      partition_name,
                             'scheduler': scheduler,
                             'time_limit': time_limit,
                             'environs':   ['builtin'],
@@ -482,46 +482,46 @@ def main(user_input, containers_search, devices_search, reservations_based):
                             'resources':  resources,
                             'extras':     {},
                             'env_vars':   [],
-                            'launcher':   launcher,  
+                            'launcher':   launcher,
                             'access':     [f'--account={account}'],
                             'features':   nodes_features}
                         )
                         # Get additional access options
-                        logger.debug("I have added the associated group found with the slurm option -A")
+                        logger.debug('I have added the associated group found with the slurm option -A')
                         if n not in default_nodes:
                             access_node = '&'.join(nodes_features)
                             system_config['systems'][0]['partitions'][nodes_p+p_login-1]["access"].append(
-                                f"--constraint={access_node}"
+                                f'--constraint={access_node}'
                             )
-                            logger.debug("This node type is not the node type by default so I added the required constraints:" +
-                                         f"--constraints={access_node}.") 
-                            access_custom = input("Do you need any additional ones? (if no, enter n):")
+                            logger.debug('This node type is not the node type by default so I added the required constraints:'
+                                         f'--constraints={access_node}.')
+                            access_custom = input('Do you need any additional ones? (if no, enter n):')
                             if not access_custom:
                                 pass
-                            elif access_custom.lower() != "n":
-                                system_config['systems'][0]['partitions'][nodes_p+p_login-1]["access"].append(
+                            elif access_custom.lower() != 'n':
+                                system_config['systems'][0]['partitions'][nodes_p+p_login-1]['access'].append(
                                 f"{access_custom}"
                             )
-                        else: 
-                            access_custom = input("Do you need any access options in slurm to access the node?\n" +
-                                                f"(if no, enter n):")
+                        else:
+                            access_custom = input('Do you need any access options in slurm to access the node?\n'
+                                                  '(if no, enter n):')
                             if not access_custom:
                                 pass
-                            elif access_custom.lower() != "n":
-                                system_config['systems'][0]['partitions'][nodes_p+p_login-1]["access"].append(
-                                f"{access_custom}"
+                            elif access_custom.lower() != 'n':
+                                system_config['systems'][0]['partitions'][nodes_p+p_login-1]['access'].append(
+                                f'{access_custom}'
                             )
                         # Detect the containers in remote partition
-                        containers_search = input("Do you require automatic detection of container platforms in this partition? (y/n):")
-                        while containers_search != "n" and containers_search != "y":
-                            containers_search = input("Do you require automatic detection of container platforms in this partition? (y/n):")
+                        containers_search = input('Do you require automatic detection of container platforms in this partition? (y/n):')
+                        while containers_search != 'n' and containers_search != 'y':
+                            containers_search = input('Do you require automatic detection of container platforms in this partition? (y/n):')
 
                         # cn_memory_search = input("Do you require information about the total memory in the nodes of this partition? (y/n):")
                         # while cn_memory_search != "n" and cn_memory_search != "y":
                         #     cn_memory_search = input("Do you require automatic detection of container platforms in this partition? (y/n):")
 
-                        logger.info(f'Creating {partition_name} partition ' +
-                                    f'with {scheduler} scheduler and features = {nodes_features}\n')  
+                        logger.info(f'Creating {partition_name} partition '
+                                    f'with {scheduler} scheduler and features = {nodes_features}\n')
                 else:
                     create_partition = 'y'
                     nodes_p += 1
@@ -532,7 +532,7 @@ def main(user_input, containers_search, devices_search, reservations_based):
                         system_config['systems'][0].update({'partitions': []})
                     nodes_features.append('remote')
                     system_config['systems'][0]['partitions'].append(
-                        {'name':      f'partition_{nodes_p}', 
+                        {'name':      f'partition_{nodes_p}',
                         'scheduler':  scheduler,
                         'time_limit': '10m',
                         'environs':   ['builtin'],
@@ -540,7 +540,7 @@ def main(user_input, containers_search, devices_search, reservations_based):
                         'resources':  resources,
                         'extras':     {},
                         'env_vars':   [],
-                        'launcher':   launcher,  
+                        'launcher':   launcher,
                         'access':     [f'--account={account}'],
                         'features':   nodes_features}
                     )
@@ -557,7 +557,7 @@ def main(user_input, containers_search, devices_search, reservations_based):
                     if devices_search == 'y':
                         logger.debug('Detecting the devices...')
                         devices = []
-                        nodes_devices = subprocess.run(f'scontrol show nodes -o | grep "ActiveFeatures={",".join(nodes_features[0:-1])}"', 
+                        nodes_devices = subprocess.run(f'scontrol show nodes -o | grep "ActiveFeatures={",".join(nodes_features[0:-1])}"',
                                         stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                         universal_newlines=True, check=True, shell=True
                                         )
@@ -566,9 +566,9 @@ def main(user_input, containers_search, devices_search, reservations_based):
                         if user_input or devices_search:
                             devices_search = 'n'
                             if len(nodes_devices) != 1:
-                                logger.warning(f'Detected different devices in nodes with the same set of features.\n' +
-                                            f'Please check the devices option in the configuration file.' + 
-                                            f'{RFM_DOCUMENTATION["devices"]}\n')
+                                logger.warning('Detected different devices in nodes with the same set of features.\n'
+                                               'Please check the devices option in the configuration file.'
+                                               f'{RFM_DOCUMENTATION["devices"]}\n')
                             #FIXME : deal with nodes with different devices configurations
                             elif '(null)' in list(nodes_devices):
                                 logger.debug('No devices were found for this node type.\n')
@@ -576,43 +576,45 @@ def main(user_input, containers_search, devices_search, reservations_based):
                                 devices_search = 'y'
 
                     if containers_search == 'y' or devices_search == 'y':
-                        generate_submission_file(containers_search == 'y', devices_search == 'y', False, 
-                                        system_config['systems'][0]['partitions'][nodes_p+p_login-1]['name'], 
-                                        system_config['systems'][0]['partitions'][nodes_p+p_login-1]['access'])
-                        job_submitted = submit_autodetection()
-                        if job_submitted:
-                            containers_found, devices_found, _ = extract_info(containers_search == 'y', devices_search == 'y', False, 
-                                                    system_config['systems'][0]['partitions'][nodes_p+p_login-1]['name'])
-                            if containers_found:
-                                if module_system != 'lmod':
-                                    logger.warning(f'Container platforms were detected but the automatic detection ' +
-                                                   f'of required modules is not possible with {module_system}.\n')
-                                for cp_i, cp in enumerate(containers_found):
-                                    logger.debug(f'Detected container platform: {cp["type"]}')
-                                    system_config['systems'][0]['partitions'][nodes_p+p_login-1]['features'].append(cp["type"].lower())
+                        keep_tmpdir = True
+                        with change_dir(temp_dir):
+                            generate_submission_file(containers_search == 'y', devices_search == 'y', False,
+                                            system_config['systems'][0]['partitions'][nodes_p+p_login-1]['name'],
+                                            system_config['systems'][0]['partitions'][nodes_p+p_login-1]['access'])
+                            job_submitted = submit_autodetection(system_config['systems'][0]['partitions'][nodes_p+p_login-1]['name'])
+                            if job_submitted:
+                                containers_found, devices_found, _ = extract_info(containers_search == 'y', devices_search == 'y', False,
+                                                        system_config['systems'][0]['partitions'][nodes_p+p_login-1]['name'])
+                                if containers_found:
+                                    if module_system != 'lmod':
+                                        logger.warning('Container platforms were detected but the automatic detection '
+                                                       f'of required modules is not possible with {module_system}.\n')
+                                    for cp_i, cp in enumerate(containers_found):
+                                        logger.debug(f'Detected container platform: {cp["type"]}')
+                                        system_config['systems'][0]['partitions'][nodes_p+p_login-1]['features'].append(cp['type'].lower())
 
-                                system_config['systems'][0]['partitions'][nodes_p+p_login-1].update({'container_platforms': containers_found})   
+                                    system_config['systems'][0]['partitions'][nodes_p+p_login-1].update({'container_platforms': containers_found})
+                                else:
+                                    logger.debug('No container platforms were detected\n')
+
+                                if devices_found:
+                                    gpus_count_slurm = 0
+                                    for n_di, n_d in enumerate(nodes_devices):
+                                        n_d = n_d.split(':')
+                                        if n_d[0] == 'gpu':
+                                            gpus_count_slurm += n_d[1]
+                                    gpus_count_detect = 0
+                                    for model, number in devices_found['NVIDIA'].items():
+                                        devices.append({'type': 'gpu',
+                                                        'arch': nvidia_gpu_architecture.get(model),
+                                                        'num_devices': number})
+                                        gpus_count_detect += number
+                                    if gpus_count_detect != gpus_count_slurm:
+                                        logger.warning(f'The number of detected GPUs ({gpus_count_detect}) '
+                                                       f'differs from the one in GRes from slurm ({gpus_count_slurm}).\n')
+                                    system_config['systems'][0]['partitions'][nodes_p+p_login-1].update({'devices': devices})
                             else:
-                                logger.debug('No container platforms were detected\n')
-
-                            if devices_found:
-                                gpus_count_slurm = 0
-                                for n_di, n_d in enumerate(nodes_devices):
-                                    n_d = n_d.split(':')
-                                    if n_d[0] == 'gpu':
-                                        gpus_count_slurm += n_d[1]
-                                gpus_count_detect = 0
-                                for model, number in devices_found['NVIDIA'].items():
-                                    devices.append({'type': 'gpu',
-                                                    'arch': nvidia_gpu_architecture.get(model),
-                                                    'num_devices': number})
-                                    gpus_count_detect += number
-                                if gpus_count_detect != gpus_count_slurm:
-                                    logger.warning(f'The number of detected GPUs ({gpus_count_detect}) '+
-                                                f'differs from the one in GRes from slurm ({gpus_count_slurm}).\n')
-                                system_config['systems'][0]['partitions'][nodes_p+p_login-1].update({'devices': devices})
-                        else:
-                            logger.warning('The autodetection script could not be submitted, please check the sbatch options.\n')
+                                logger.warning('The autodetection script could not be submitted, please check the sbatch options.\n')
 
         # Creating an example of the reservation as partition (only when --reservations or user_input)
         reservations_p = 0
@@ -630,21 +632,21 @@ def main(user_input, containers_search, devices_search, reservations_based):
                             if p_r in reservations:
                                 wrong_p -= 1
                             else:
-                                new_partition = input(f'The reservation {p_r} is not in the system.\n' +
-                                                      f'Please check the syntax or enter n to skip:')
+                                new_partition = input(f'The reservation {p_r} is not in the system.\n'
+                                                      'Please check the syntax or enter n to skip:')
                                 if new_partition.lower() != "n":
                                     partitions_reservations[p_i] = new_partition
                                 else:
                                     index_remove.append(p_i)
                                     wrong_p -= 1
-                        if index_remove:                    
+                        if index_remove:
                             for i in index_remove[::-1]:
                                 partitions_reservations.pop(i)
                         index_remove = []
                     for pr in partitions_reservations:
                         reservations_p += 1
                         partition_name = input(f'How do you want to name the partition for reservation {pr}?:')
-                        maxjobs = input(f'Maximum number of forced local build or run jobs allowed?\n' +
+                        maxjobs = input('Maximum number of forced local build or run jobs allowed?\n'
                                         '(default is 100):')
                         if not maxjobs:
                             maxjobs = 100
@@ -654,13 +656,13 @@ def main(user_input, containers_search, devices_search, reservations_based):
                                 maxjobs = int(maxjobs)
                                 integer_value = True
                             except:
-                                maxjobs = input(f"It must be an integer:")
-                        time_limit = input(f'The time limit for the jobs submitted on this partition\n' +
-                                            'enter "null" for no time limit (default is 10m):')
+                                maxjobs = input(f'It must be an integer:')
+                        time_limit = input('The time limit for the jobs submitted on this partition\n'
+                                           'enter "null" for no time limit (default is 10m):')
                         if not time_limit:
                             time_limit = '10m'
                         system_config['systems'][0]['partitions'].append(
-                            {'name':     partition_name, 
+                            {'name':     partition_name,
                             'scheduler': scheduler,
                             'time_limit': time_limit,
                             'environs':   ['builtin'],
@@ -670,15 +672,15 @@ def main(user_input, containers_search, devices_search, reservations_based):
                             'features':   ['remote']}
                         )
                         logger.debug(f'I have added the associated group found with the slurm option -A and the --reservation={pr}')
-                        access_custom = input('Do you need any access options in slurm to access this reservation?\n' +
-                                              f'(if no, enter n):')
+                        access_custom = input('Do you need any access options in slurm to access this reservation?\n'
+                                              '(if no, enter n):')
                         if not access_custom:
                             pass
                         elif access_custom.lower() != 'n':
                             system_config['systems'][0]['partitions'][nodes_p+p_login+reservations_p-1]['access'].append(
                             f"{access_custom}"
                         )
-                        logger.info(f'Created {partition_name} partition with {scheduler} ' +
+                        logger.info(f'Created {partition_name} partition with {scheduler} '
                                     f'scheduler for {pr} reservation\n')
 
             else:
@@ -686,7 +688,7 @@ def main(user_input, containers_search, devices_search, reservations_based):
                     if res in reservations:
                         reservations_p += 1
                         system_config['systems'][0]['partitions'].append(
-                            {'name':     f'{res}', 
+                            {'name':     f'{res}',
                             'scheduler':  scheduler,
                             'time_limit': '10m',
                             'environs':   ['builtin'],
@@ -698,11 +700,11 @@ def main(user_input, containers_search, devices_search, reservations_based):
                         if hostname == 'eiger':
                             system_config['systems'][0]['partitions'][nodes_p+p_login+reservations_p-1]['access'].append('-Cmc')
 
-                        logger.info(f'Created {partition_name} partition with {scheduler} ' +
-                                            f'scheduler for {res} reservation\n')
+                        logger.info(f'Created {partition_name} partition with {scheduler} '
+                                    f'scheduler for {res} reservation\n')
                     else:
                         logger.warning(f'Reservation {res} not found in the system, skipping...\n')
-            
+
     else:
         nodes_p = 0
         reservations_p = 0
@@ -713,8 +715,8 @@ def main(user_input, containers_search, devices_search, reservations_based):
                 login_partition = input('Do you want to create a partition for the login node? (y/n):')
             if login_partition == 'y':
                 p_login = 1
-                maxjobs = input(f'Maximum number of forced local build or run jobs allowed?\n' +
-                                 '(default is 4 for login):')
+                maxjobs = input('Maximum number of forced local build or run jobs allowed?\n'
+                                '(default is 4 for login):')
                 if not maxjobs:
                     maxjobs = 4
                 integer_value = False
@@ -723,14 +725,14 @@ def main(user_input, containers_search, devices_search, reservations_based):
                         maxjobs = int(maxjobs)
                         integer_value = True
                     except:
-                        maxjobs = input(f'It must be an integer:')
-                time_limit = input(f'The time limit for the jobs submitted on this partition\n' +
-                                    'enter "null" for no time limit (default is 2m for login):')
+                        maxjobs = input('It must be an integer:')
+                time_limit = input('The time limit for the jobs submitted on this partition\n'
+                                   'enter "null" for no time limit (default is 2m for login):')
                 if not time_limit:
                     time_limit = '2m'
                 system_config['systems'][0].update({'partitions': []})
                 system_config['systems'][0]['partitions'].append(
-                    {'name':      'local', 
+                    {'name':      'local',
                     'descr':      'Login nodes',
                     'launcher':   'local',
                     'time_limit':  time_limit,
@@ -738,11 +740,11 @@ def main(user_input, containers_search, devices_search, reservations_based):
                     'scheduler':  'local',
                     'max_jobs':   maxjobs}
                 )
-                logger.info(f'Created login partition with local scheduler\n') 
+                logger.info('Created login partition with local scheduler\n')
         else:
             system_config['systems'][0].update({'partitions': []})
             system_config['systems'][0]['partitions'].append(
-                {'name':      'local', 
+                {'name':      'local',
                 'descr':      'Login nodes',
                 'launcher':   'local',
                 'time_limit':  '2m',
@@ -750,9 +752,9 @@ def main(user_input, containers_search, devices_search, reservations_based):
                 'scheduler':  'local',
                 'max_jobs':   4}
             )
-            logger.info(f'Created login partition with local scheduler\n') 
+            logger.info('Created login partition with local scheduler\n')
         logger.warning('Automatic detection of partition is only possible with slurm\n')
-        
+
     # If no partitions were created raise an error message
     if nodes_p + reservations_p + p_login == 0:
         logger.error('\nNo partitions were created. ReFrame requires at least 1 partition defintion to run.\n')
@@ -762,31 +764,34 @@ def main(user_input, containers_search, devices_search, reservations_based):
     system_config["environments"] = ['https://github.com/eth-cscs/cscs-reframe-tests/tree/alps/config/systems',
                                      'https://reframe-hpc.readthedocs.io/en/stable/config_reference.html#environment-configuration']
 
-    logger.debug(f'The following configuration files were generated:\n' +
-          f"JSON: {cluster_name}_config.json\n" +
-          f"PYTHON: {cluster_name}_config.py")
+    if keep_tmpdir:
+        logger.debug(f'You can check the job submissions in {temp_dir}.\n')
+
+    logger.debug(f'The following configuration files were generated:\n'
+                 f'JSON: {cluster_name}_config.json\n'
+                 f'PYTHON: {cluster_name}_config.py')
 
     # Write the Json config file
     with open(f'{cluster_name}_config.json', 'w') as py_file:
         json.dump(system_config, py_file, indent=4)
 
     # Set up Jinja2 environment and load the template
-    template_loader = FileSystemLoader(searchpath="./") 
+    template_loader = FileSystemLoader(searchpath='./')
     env = Environment(loader=template_loader, trim_blocks=True, lstrip_blocks=True)
-    rfm_config_template = env.get_template("reframe_config_template.j2")
+    rfm_config_template = env.get_template('reframe_config_template.j2')
 
-    system_config['systems'][0].update({'environments': ['https://github.com/eth-cscs/cscs-reframe-tests/tree/alps/config/systems',
-                                                        'https://reframe-hpc.readthedocs.io/en/stable/config_reference.html#environment-configuration']})
     # Render the template with the gathered information
     organized_config = rfm_config_template.render(system_config['systems'][0])
 
     # Output filename for the generated configuration
-    output_filename = f"{cluster_name}_config.py"
+    output_filename = f'{cluster_name}_config.py'
 
     # Write the rendered content to the output file
-    with open(output_filename, "w") as output_file:
+    with open(output_filename, 'w') as output_file:
         output_file.write(organized_config)
 
+    if not keep_tmpdir:
+        shutil.rmtree(temp_dir)
 
 if __name__ == '__main__':
     main(user_input, containers_search, devices_search, reservations_based)
