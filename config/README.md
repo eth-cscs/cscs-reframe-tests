@@ -6,7 +6,7 @@ The ReFrame configuration file can be automatically generated for a new system u
 
 -   Detection of system name
 -   Detection of hostname
--   Detection of module system 
+-   Detection of module system
 -   Detection of scheduler
 -   Detection of parallel launcher
 -   Detection of partitions based on node types (node features from Slurm) [only when the scheduler is **Slurm**]
@@ -35,7 +35,8 @@ The script is run in **interactive** mode. User input is used to detect and gene
 | Argument                                            | Description                                                                 |
 |-----------------------------------------------------|-----------------------------------------------------------------------------------------|
 | `--auto`                                            | Disables user input. |
-| `--no-remote-containers`                            | Disables the detection of containers in the remote partitions | 
+| `--exclude=[list_of_features]`                      | List of features to be excluded in the detection of node types |
+| `--no-remote-containers`                            | Disables the detection of containers in the remote partitions |
 | `--no-remote-devices`                               | Disables the detection of devices (slurm GRes) in the remote partitions |
 | `--reservations=[list_reservations]`                | Allows the specification of the reservations in the system for which a partitions should be created |
 
@@ -58,6 +59,18 @@ python3 generate_config.py --auto --reservations=reserv_1,reserv_2
 In the ```auto``` mode the detection of container platforms and devices is by default enabled. This requires the submission of a job per partition to detect these features. The script will wait until the job is completed. This job submission can be disabled through the options ```--no-remote-containers``` and ```--no-remote-devices``` respectively. Note that by default if no GRes is detected in a node, no device detection script will be submitted.
 
 The options ```--no-remote-containers```, ```--no-remote-devices``` and ```--reservations=[list_reservations]``` are only used in the ```auto``` mode.
+
+**Excluding node features from the node types filtering**
+
+In order to exclude some features from the detection of the different node types, these can be passed to the script in the command line using the option ```--exclude=[list_of_features]```. Patterns can also be specified in this option using ```*```.
+
+*Usage example:*
+
+```sh
+python3 generate_config.py --exclude=group*,c*,r*
+```
+
+Running this will ignore the node features that match those patterns. Node A with features ```(gpu,group2,column43,row9)``` and Node B ```(gpu,group8,column1,row75)``` will be identified as the same node type and included in the same partition.
 
 ## Generated configuration files
 

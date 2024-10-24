@@ -52,7 +52,6 @@ def parse_devices_output(file_path):
                 model = match.group(0).strip()
                 if model not in gpu_info["AMD"]:
                     gpu_info["AMD"].update({model : 1})
-                    print(gpu_info["AMD"])
                 else:
                     gpu_info["AMD"][model] += 1
 
@@ -63,7 +62,6 @@ def parse_devices_output(file_path):
                 model = match.group(0).strip()
                 if model not in gpu_info["Intel"]:
                     gpu_info["Intel"].update({model : 1})
-                    print(gpu_info["Intel"])
                 else:
                     gpu_info["Intel"][model] += 1
 
@@ -74,7 +72,6 @@ def parse_containers_output(file_path : str):
 
     containers_info = []
     containers_found = False
-    print(os.getcwd())
 
     with open(file_path, 'r') as file:
         lines = file.readlines()

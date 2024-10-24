@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import argparse
+import fnmatch
 import grp
 import json
 import os
@@ -36,6 +37,8 @@ parser.add_argument('--no-remote-containers', action='store_true', help='Disable
 parser.add_argument('--no-remote-devices', action='store_true', help='Disable devices detection in remote partition')
 # Define the '--reservations' flag
 parser.add_argument('--reservations', nargs='?', help='Specify the reservations that you want to create partitions for.')
+# Define the '--exclude' flag
+parser.add_argument('--exclude', nargs='?', help='Exclude the certain node features for the detection of node types')
 
 args = parser.parse_args()
 
@@ -54,11 +57,16 @@ if args.reservations:
 else:
     reservations_based = False
 
+if args.exclude:
+    exclude_feat = args.exclude.split(',')
+else:
+    exclude_feat = []
+
 user_input = not args.auto
 
 temp_dir = tempfile.mkdtemp(prefix='reframe_config_detection_', dir=os.getenv('SCRATCH'))
 
-def main(user_input, containers_search, devices_search, reservations_based):
+def main(user_input, containers_search, devices_search, reservations_based, exclude_feat):
 
     system_config['systems']   = []
     keep_tmpdir = False
@@ -339,7 +347,6 @@ def main(user_input, containers_search, devices_search, reservations_based):
                         universal_newlines=True, check=True, shell=True
                         )
         nodes_info = nodes_info.stdout
-        #DEBUG nodes_info+='ActiveFeatures=jaja,jeje\n'
         # Detect the default partition
         default_partition = subprocess.run('scontrol show partitions -o | grep "Default=YES"',
                         stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
@@ -356,14 +363,21 @@ def main(user_input, containers_search, devices_search, reservations_based):
             nodes_types = [[tuple(n[0].split(',')), tuple(n[1].split(','))] for n in nodes_features]
             # Retrieve the node types in the default partition
             # (if more than 1, then access options are enforced to reach the exact node type)
-            default_c = 0
             default_nodes = [] # Node type in the default partition
             nodes = [] # List of node types
             for n in nodes_types:
-                nodes.append(n[0])
+                node_f = []
+                for feat in list(n[0]):
+                    feat_valid = not any([fnmatch.fnmatch(feat, pattern) for pattern in exclude_feat])
+                    if feat_valid:
+                        node_f.append(feat)
+                if node_f:
+                    nodes.append(tuple(node_f))
                 if default_partition in n[1]:
-                    default_nodes.append(n[0])
-                    default_c += 1
+                    default_nodes.append(tuple(node_f))
+            default_nodes = set(default_nodes)
+            nodes = set(nodes)
+            default_c = len(default_nodes)
             logger.debug(f'The number of node types in the default partition is: {default_c}: {default_nodes}')
             nodes = set(nodes)
             if default_c > 1:
@@ -489,12 +503,12 @@ def main(user_input, containers_search, devices_search, reservations_based):
                         # Get additional access options
                         logger.debug('I have added the associated group found with the slurm option -A')
                         if n not in default_nodes:
-                            access_node = '&'.join(nodes_features)
+                            access_node = '&'.join(nodes_features[0:-1])
                             system_config['systems'][0]['partitions'][nodes_p+p_login-1]["access"].append(
-                                f'--constraint={access_node}'
+                                f'--constraint="{access_node}"'
                             )
                             logger.debug('This node type is not the node type by default so I added the required constraints:'
-                                         f'--constraints={access_node}.')
+                                         f'--constraints="{access_node}".')
                             access_custom = input('Do you need any additional ones? (if no, enter n):')
                             if not access_custom:
                                 pass
@@ -545,45 +559,45 @@ def main(user_input, containers_search, devices_search, reservations_based):
                         'features':   nodes_features}
                     )
                     if n not in default_nodes:
-                        access_node = '&'.join(nodes_features)
+                        access_node = '&'.join(nodes_features[0:-1])
                         system_config['systems'][0]['partitions'][nodes_p+p_login-1]['access'].append(
-                            f'--constraint={access_node}'
+                            f'--constraint="{access_node}"'
                         )
-                    # To prevent job submission failing in eiger
-                    if hostname == 'eiger':
+                        # To prevent job submission failing in eiger
+                    elif hostname == 'eiger':
                         system_config['systems'][0]['partitions'][nodes_p+p_login-1]['access'].append('-Cmc')
 
                 if create_partition == 'y':
+                    devices_search_n = 'n'
                     if devices_search == 'y':
                         logger.debug('Detecting the devices...')
                         devices = []
-                        nodes_devices = subprocess.run(f'scontrol show nodes -o | grep "ActiveFeatures={",".join(nodes_features[0:-1])}"',
+                        nodes_devices = subprocess.run(f'scontrol show nodes -o | grep "ActiveFeatures=.*{".*,.*".join(nodes_features[0:-1])}.*"',
                                         stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                         universal_newlines=True, check=True, shell=True
                                         )
                         nodes_devices = re.findall(r'Gres=([\w,:()]+)', nodes_devices.stdout)
                         nodes_devices = set(nodes_devices)
-                        if user_input or devices_search:
-                            devices_search = 'n'
-                            if len(nodes_devices) != 1:
-                                logger.warning('Detected different devices in nodes with the same set of features.\n'
-                                               'Please check the devices option in the configuration file.'
-                                               f'{RFM_DOCUMENTATION["devices"]}\n')
-                            #FIXME : deal with nodes with different devices configurations
-                            elif '(null)' in list(nodes_devices):
-                                logger.debug('No devices were found for this node type.\n')
-                            else:
-                                devices_search = 'y'
+                        if len(nodes_devices) != 1:
+                            logger.warning('Detected different devices in nodes with the same set of features.\n'
+                                            'Please check the devices option in the configuration file.'
+                                            f'{RFM_DOCUMENTATION["devices"]}\n')
+                        #FIXME : deal with nodes with different devices configurations
+                        elif '(null)' in list(nodes_devices):
+                            logger.debug('No devices were found for this node type.\n')
+                        else:
+                            devices_search_n = 'y'
 
-                    if containers_search == 'y' or devices_search == 'y':
+                    if containers_search == 'y' or devices_search_n == 'y':
                         keep_tmpdir = True
+                        logger.debug(temp_dir)
                         with change_dir(temp_dir):
-                            generate_submission_file(containers_search == 'y', devices_search == 'y', False,
+                            generate_submission_file(containers_search == 'y', devices_search_n == 'y', False,
                                             system_config['systems'][0]['partitions'][nodes_p+p_login-1]['name'],
                                             system_config['systems'][0]['partitions'][nodes_p+p_login-1]['access'])
                             job_submitted = submit_autodetection(system_config['systems'][0]['partitions'][nodes_p+p_login-1]['name'])
                             if job_submitted:
-                                containers_found, devices_found, _ = extract_info(containers_search == 'y', devices_search == 'y', False,
+                                containers_found, devices_found, _ = extract_info(containers_search == 'y', devices_search_n == 'y', False,
                                                         system_config['systems'][0]['partitions'][nodes_p+p_login-1]['name'])
                                 if containers_found:
                                     if module_system != 'lmod':
@@ -794,4 +808,4 @@ def main(user_input, containers_search, devices_search, reservations_based):
         shutil.rmtree(temp_dir)
 
 if __name__ == '__main__':
-    main(user_input, containers_search, devices_search, reservations_based)
+    main(user_input, containers_search, devices_search, reservations_based, exclude_feat)
