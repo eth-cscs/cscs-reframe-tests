@@ -28,22 +28,32 @@ class CustomFormatter(logging.Formatter):
 
 
 def parse_devices_output(file_path):
+
     gpu_info = defaultdict(lambda: {})
+    nvidia_gpus_found = False
 
     with open(file_path, 'r') as file:
         lines = file.readlines()
 
     for line in lines:
         # Check for NVIDIA GPUs
-        if "NVIDIA" in line and "GPUs" not in line:
-            # Extract NVIDIA models using a simpler regex
-            match = re.search(r'NVIDIA (.+)', line)
-            if match:
-                model = match.group(1).strip()
-                if model not in gpu_info["NVIDIA"]:
-                    gpu_info["NVIDIA"].update({model : 1})
-                else:
-                    gpu_info["NVIDIA"][model] += 1
+        if "NVIDIA GPUs installed" in line:
+            nvidia_gpus_found = True
+        elif line == "\n" or "Batch Job Summary" in line:
+            nvidia_gpus_found = False
+            break
+        elif nvidia_gpus_found:
+            model = [gpu_m for gpu_m in nvidia_gpu_architecture if gpu_m in line]
+            if not model:
+                break
+            elif len(model) > 1:
+                pass
+            else:
+                model = model[0]
+            if model not in gpu_info["NVIDIA"]:
+                gpu_info["NVIDIA"].update({model : 1})
+            else:
+                gpu_info["NVIDIA"][model] += 1
 
         # Check for AMD GPUs
         elif "AMD" in line or "Radeon" in line:
@@ -67,7 +77,6 @@ def parse_devices_output(file_path):
 
     return gpu_info
 
-
 def parse_containers_output(file_path : str):
 
     containers_info = []
@@ -79,6 +88,9 @@ def parse_containers_output(file_path : str):
     for line in lines:
         if "Installed containers" in line:
             containers_found = True
+        elif "GPU" in line or line == "\n" or "Batch Job Summary" in line:
+            containers_found = False
+            break
         elif containers_found:
             type = line.split(' modules: ')[0].strip()
             try:

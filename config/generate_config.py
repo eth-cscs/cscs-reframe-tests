@@ -381,7 +381,7 @@ def main(user_input, containers_search, devices_search, reservations_based, excl
             logger.debug(f'The number of node types in the default partition is: {default_c}: {default_nodes}')
             nodes = set(nodes)
             if default_c > 1:
-                default_nodes = None
+                default_nodes = []
             logger.debug('Detected the following node types:')
             logger.debug(f'{nodes}\n')
         except:
@@ -508,7 +508,7 @@ def main(user_input, containers_search, devices_search, reservations_based, excl
                                 f'--constraint="{access_node}"'
                             )
                             logger.debug('This node type is not the node type by default so I added the required constraints:'
-                                         f'--constraints="{access_node}".')
+                                         f'--constraint="{access_node}".')
                             access_custom = input('Do you need any additional ones? (if no, enter n):')
                             if not access_custom:
                                 pass
@@ -570,7 +570,7 @@ def main(user_input, containers_search, devices_search, reservations_based, excl
                 if create_partition == 'y':
                     devices_search_n = 'n'
                     if devices_search == 'y':
-                        logger.debug('Detecting the devices...')
+                        logger.debug('Detecting devices...')
                         devices = []
                         nodes_devices = subprocess.run(f'scontrol show nodes -o | grep "ActiveFeatures=.*{".*,.*".join(nodes_features[0:-1])}.*"',
                                         stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
@@ -583,9 +583,10 @@ def main(user_input, containers_search, devices_search, reservations_based, excl
                                             'Please check the devices option in the configuration file.'
                                             f'{RFM_DOCUMENTATION["devices"]}\n')
                         #FIXME : deal with nodes with different devices configurations
-                        elif '(null)' in list(nodes_devices):
+                        elif '(null)' in list(nodes_devices) or 'gpu' not in list(nodes_devices):
                             logger.debug('No devices were found for this node type.\n')
                         else:
+                            # Devices search is limited to gpus
                             devices_search_n = 'y'
 
                     if containers_search == 'y' or devices_search_n == 'y':
