@@ -77,7 +77,7 @@ def main(user_input, containers_search, devices_search, reservations_based, excl
         logger.info(f'System name is {cluster_name}\n')
     else:
         cluster_name = 'cluster'
-        logger.warning(f'System name not found set to "{cluster_name}\n"')
+        logger.warning(f'System name not found set to "{cluster_name}"\n')
 
     system_config['systems'].append({'name': cluster_name})
 
@@ -614,10 +614,11 @@ def main(user_input, containers_search, devices_search, reservations_based, excl
 
                                 if devices_found:
                                     gpus_count_slurm = 0
+                                    nodes_devices = next(iter(nodes_devices)).split(",")
                                     for n_di, n_d in enumerate(nodes_devices):
                                         n_d = n_d.split(':')
                                         if n_d[0] == 'gpu':
-                                            gpus_count_slurm += n_d[1]
+                                            gpus_count_slurm += int(n_d[1])
                                     gpus_count_detect = 0
                                     for model, number in devices_found['NVIDIA'].items():
                                         devices.append({'type': 'gpu',
