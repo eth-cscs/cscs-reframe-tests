@@ -169,7 +169,6 @@ def submit_autodetection(partition_name):
                                     universal_newlines=True, check = True, shell=True)
         return True
     except Exception as e:
-        raise e
         return False
 
 

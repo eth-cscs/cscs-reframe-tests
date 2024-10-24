@@ -6,6 +6,7 @@
 import argparse
 import fnmatch
 import grp
+from jinja2 import Environment, FileSystemLoader
 import json
 import os
 import re
@@ -13,7 +14,6 @@ import shutil
 import socket
 import subprocess
 import tempfile
-from jinja2 import Environment, FileSystemLoader
 from utilities.constants import *
 from utils import *
 
@@ -489,7 +489,7 @@ def main(user_input, containers_search, devices_search, reservations_based, excl
                             system_config['systems'][0].update({'partitions': []})
                         system_config['systems'][0]['partitions'].append(
                             {'name':      partition_name,
-                            'scheduler': scheduler,
+                            'scheduler':  scheduler,
                             'time_limit': time_limit,
                             'environs':   ['builtin'],
                             'max_jobs':   maxjobs,
@@ -583,7 +583,7 @@ def main(user_input, containers_search, devices_search, reservations_based, excl
                                             'Please check the devices option in the configuration file.'
                                             f'{RFM_DOCUMENTATION["devices"]}\n')
                         #FIXME : deal with nodes with different devices configurations
-                        elif '(null)' in list(nodes_devices) or 'gpu' not in list(nodes_devices):
+                        elif '(null)' in list(nodes_devices) or 'gpu' not in next(iter(nodes_devices)):
                             logger.debug('No devices were found for this node type.\n')
                         else:
                             # Devices search is limited to gpus
