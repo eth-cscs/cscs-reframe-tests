@@ -96,7 +96,10 @@ def parse_containers_output(file_path : str):
             try:
                 modules = line.split(' modules: ')[1].split(', ')
                 modules = [m.strip() for m in modules]
-                modules.append(type.lower())
+                if modules[0] != '':
+                    modules.append(type.lower())
+                else:
+                    modules = [type.lower()]
             except:
                 modules = []
             containers_info.append({'type': type, 'modules': modules})

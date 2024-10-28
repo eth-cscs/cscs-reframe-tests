@@ -9,7 +9,7 @@
 site_configuration = {
     'systems': [
         {
-            'name': '{{ name }}',  # Name of the system 
+            'name': '{{ name }}',  # Name of the system
             'descr': 'System description for {{ name }}',  # Description of the system
             'hostnames': {{hostnames}},  # Hostname used by this system
             'modules_system': '{{modules_system}}',
@@ -52,6 +52,9 @@ site_configuration = {
                     'devices' : [
                     {% for dev in partition.devices %}
                         { 'type' : '{{dev.type}}',
+                        {% if dev.arch %}
+                          'arch' : '{{dev.arch}}'
+                        {% endif %}
                           'num_devices' : {{dev.num_devices}}
                                 },
                     {% endfor %}
@@ -62,7 +65,7 @@ site_configuration = {
                     # https://reframe-hpc.readthedocs.io/en/stable/config_reference.html#container-platform-configuration
                     'container_platforms' : [
                     {% for c_p in partition.container_platforms %}
-                        { 'type' : '{{c_p.type}}', # Type of container platform 
+                        { 'type' : '{{c_p.type}}', # Type of container platform
                         {% if c_p.modules %}
                         # Specify here the modules required to run the container platforms (if any)
                           'modules' : {{c_p.modules}}

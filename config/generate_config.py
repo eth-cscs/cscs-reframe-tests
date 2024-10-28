@@ -577,15 +577,25 @@ def main(user_input, containers_search, devices_search, reservations_based, excl
                                         universal_newlines=True, check=True, shell=True
                                         )
                         nodes_devices = re.findall(r'Gres=([\w,:()]+)', nodes_devices.stdout)
-                        nodes_devices = set(nodes_devices)
-                        if len(nodes_devices) != 1:
+                        devices_dic  = {}
+                        devices_type = [item.rsplit(":", 1)[0] for item in nodes_devices]
+                        devices_type = set(devices_type)
+                        if len(devices_type) != 1:
                             logger.warning('Detected different devices in nodes with the same set of features.\n'
                                             'Please check the devices option in the configuration file.'
                                             f'{RFM_DOCUMENTATION["devices"]}\n')
                         #FIXME : deal with nodes with different devices configurations
-                        elif '(null)' in list(nodes_devices) or 'gpu' not in next(iter(nodes_devices)):
+                        elif '(null)' in list(devices_type) or 'gpu' not in next(iter(devices_type)):
                             logger.debug('No devices were found for this node type.\n')
                         else:
+                            # Get the minimum numbre of GPUs common to all nodes in a given partition
+                            for item in nodes_devices:
+                                try:
+                                    num_devices = devices_dic[item.rsplit(":", 1)[0]]
+                                    if int(item.rsplit(":", 1)[1]) < num_devices:
+                                        devices_dic[item.rsplit(":", 1)[0]] = int(item.rsplit(":", 1)[1])
+                                except KeyError:
+                                    devices_dic.update({item.rsplit(":", 1)[0]: int(item.rsplit(":", 1)[1])})
                             # Devices search is limited to gpus
                             devices_search_n = 'y'
 
@@ -597,6 +607,33 @@ def main(user_input, containers_search, devices_search, reservations_based, excl
                                             system_config['systems'][0]['partitions'][nodes_p+p_login-1]['name'],
                                             system_config['systems'][0]['partitions'][nodes_p+p_login-1]['access'])
                             job_submitted = submit_autodetection(system_config['systems'][0]['partitions'][nodes_p+p_login-1]['name'])
+                            added_part = False
+                            if job_submitted:
+                                pass
+                            else:
+                                logger.warning('My first attempt to submit the remote detection job failed')
+                                logger.debug('This is likely because of the sbatch options.')
+                                logger.debug('Trying to add the partition to the sbatch options...')
+                                try:
+                                    partition = subprocess.run(f'scontrol show nodes -o | grep "ActiveFeatures=.*{".*,.*".join(nodes_features[0:-1])}.*"',
+                                        stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                        universal_newlines=True, check=True, shell=True
+                                    )
+                                    nodes_partitions = re.findall(r'Partitions=([\w,:()]+)', partition.stdout)
+                                    nodes_partitions = set(nodes_partitions)
+                                    if len(nodes_partitions) > 1:
+                                        pass
+                                    elif len(next(iter(nodes_partitions)).split(",")) > 1:
+                                        pass
+                                    else:
+                                        # Try to resubmit the job with the partition option
+                                        generate_submission_file(containers_search == 'y', devices_search_n == 'y', False,
+                                            system_config['systems'][0]['partitions'][nodes_p+p_login-1]['name'],
+                                            system_config['systems'][0]['partitions'][nodes_p+p_login-1]['access'] + [f'-p{nodes_partitions.pop()}'])
+                                        job_submitted = submit_autodetection(system_config['systems'][0]['partitions'][nodes_p+p_login-1]['name'])
+                                        added_part = True
+                                except:
+                                    pass
                             if job_submitted:
                                 containers_found, devices_found, _ = extract_info(containers_search == 'y', devices_search_n == 'y', False,
                                                         system_config['systems'][0]['partitions'][nodes_p+p_login-1]['name'])
@@ -614,21 +651,33 @@ def main(user_input, containers_search, devices_search, reservations_based, excl
 
                                 if devices_found:
                                     gpus_count_slurm = 0
-                                    nodes_devices = next(iter(nodes_devices)).split(",")
-                                    for n_di, n_d in enumerate(nodes_devices):
-                                        n_d = n_d.split(':')
-                                        if n_d[0] == 'gpu':
-                                            gpus_count_slurm += int(n_d[1])
+                                    devices_type = next(iter(devices_type)).split(",")
+                                    for n_di, n_d in enumerate(devices_type):
+                                        if 'gpu' in n_d:
+                                            gpus_count_slurm += devices_dic[n_d]
                                     gpus_count_detect = 0
                                     for model, number in devices_found['NVIDIA'].items():
-                                        devices.append({'type': 'gpu',
+                                        devices.append({'type': model,
                                                         'arch': nvidia_gpu_architecture.get(model),
                                                         'num_devices': number})
                                         gpus_count_detect += number
-                                    if gpus_count_detect != gpus_count_slurm:
-                                        logger.warning(f'The number of detected GPUs ({gpus_count_detect}) '
-                                                       f'differs from the one in GRes from slurm ({gpus_count_slurm}).\n')
+                                    if n_di > 0:
+                                        logger.warning('I cannot check that the Gres config is the same I found in the node.')
+                                        logger.warning('The config file will reflect the GPUs that were found in the node.\n')
+                                    else:
+                                        if gpus_count_detect != gpus_count_slurm:
+                                            logger.warning(f'The number of detected GPUs ({gpus_count_detect}) '
+                                                        f'differs from the (minimum) in GRes from slurm ({gpus_count_slurm}).')
+                                            if gpus_count_detect > gpus_count_slurm:
+                                                logger.warning('It might be that nodes in this partition have different number of GPUs '
+                                                            'of the same model.\nIn the config, the minimum number of GPUs that will '
+                                                            'be found in the nodes of this partition is set.\n')
+                                            elif gpus_count_detect < gpus_count_slurm:
+                                                logger.error('Fewer number of GPUs were detected in the node.\n')
+
                                     system_config['systems'][0]['partitions'][nodes_p+p_login-1].update({'devices': devices})
+                                if added_part:
+                                    system_config['systems'][0]['partitions'][nodes_p+p_login-1]['access'].append(f'-p{nodes_partitions}')
                             else:
                                 logger.warning('The autodetection script could not be submitted, please check the sbatch options.\n')
 
