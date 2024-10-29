@@ -644,7 +644,7 @@ def main(user_input, containers_search, devices_search, reservations_based, excl
                                 containers_found, devices_found, _ = extract_info(containers_search == 'y', devices_search_n == 'y', False,
                                                         system_config['systems'][0]['partitions'][nodes_p+p_login-1]['name'])
                                 if containers_found:
-                                    if module_system != 'lmod' and 'tmod' not in module_system':
+                                    if module_system != 'lmod' and 'tmod' not in module_system:
                                         logger.warning('Container platforms were detected but the automatic detection '
                                                        f'of required modules is not possible with {module_system}.\n')
                                     for cp_i, cp in enumerate(containers_found):
