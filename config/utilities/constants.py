@@ -102,7 +102,7 @@ CONTAINERS=(
 # Array to hold installed containers
 installed=()
 
-# Function to check for module existence
+# Function to check for module existence (with lmod)
 check_module_spider() {
     output=$(module spider "$1" 2>&1)
     if echo $output | grep -q "error"; then
@@ -112,8 +112,26 @@ check_module_spider() {
     fi
 }
 
+# Function to check for module existence (with tmod)
+check_module_avail() {
+    output=$(module avail "$1" 2>&1)
+    if echo $output | grep -q "$1"; then
+        return 0
+    else
+        return 1
+    fi
+}
+
 check_lmod() {
     if [[ -n "$LMOD_CMD" ]]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+check_tmod() {
+    if [[ -n "modulecmd -V" ]]; then
         return 0
     else
         return 1
@@ -137,6 +155,15 @@ for container in "${CONTAINERS[@]}"; do
         if check_module_spider "$cmd"; then
             output=$(module spider "$cmd" 2>&1)
             modules_load=$(echo $output | grep -oP '(?<=available to load.).*?(?= Help)')
+            found_via_module=true
+        fi
+    fi
+
+    if check_tmod; then
+        # Check if it's available as a module, regardless of 'which' result
+        if check_module_avail "$cmd"; then
+            output=$(module avail "$cmd" 2>&1)
+            modules_load=""
             found_via_module=true
         fi
     fi
