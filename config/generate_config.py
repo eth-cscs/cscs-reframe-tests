@@ -638,12 +638,13 @@ def main(user_input, containers_search, devices_search, reservations_based, excl
                                                 job_submitted = submit_autodetection(system_config['systems'][0]['partitions'][nodes_p+p_login-1]['name'])
                                                 nodes_partitions = n_f
                                                 added_part = True
-                                        pass
+                                                break
                                     else:
                                         # Try to resubmit the job with the partition option
                                         generate_submission_file(containers_search == 'y', devices_search_n == 'y', False,
                                             system_config['systems'][0]['partitions'][nodes_p+p_login-1]['name'],
-                                            system_config['systems'][0]['partitions'][nodes_p+p_login-1]['access'] + [f'-p{nodes_partitions.pop()}'])
+                                            system_config['systems'][0]['partitions'][nodes_p+p_login-1]['access'] + [f'-p{next(iter(nodes_partitions))}'])
+                                        n_f = nodes_partitions.pop()
                                         job_submitted = submit_autodetection(system_config['systems'][0]['partitions'][nodes_p+p_login-1]['name'])
                                         added_part = True
                                 except:
@@ -693,7 +694,7 @@ def main(user_input, containers_search, devices_search, reservations_based, excl
 
                                     system_config['systems'][0]['partitions'][nodes_p+p_login-1].update({'devices': devices})
                                 if added_part:
-                                    system_config['systems'][0]['partitions'][nodes_p+p_login-1]['access'].append(f'-p{nodes_partitions}')
+                                    system_config['systems'][0]['partitions'][nodes_p+p_login-1]['access'].append(f'-p{n_f}')
                             else:
                                 logger.warning('The autodetection script could not be submitted, please check the sbatch options.\n')
 
