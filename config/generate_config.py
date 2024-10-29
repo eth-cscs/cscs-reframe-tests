@@ -578,7 +578,10 @@ def main(user_input, containers_search, devices_search, reservations_based, excl
                                         )
                         nodes_devices = re.findall(r'Gres=([\w,:()]+)', nodes_devices.stdout)
                         devices_dic  = {}
-                        devices_type = [item.rsplit(":", 1)[0] for item in nodes_devices]
+                        devices_type = []
+                        for devices_i in nodes_devices:
+                            devices_in_node = [item.rsplit(":", 1)[0] for item in devices_i.split(",")]
+                            devices_type.append(",".join(devices_in_node))
                         devices_type = set(devices_type)
                         if len(devices_type) != 1:
                             logger.warning('Detected different devices in nodes with the same set of features.\n'
@@ -591,11 +594,14 @@ def main(user_input, containers_search, devices_search, reservations_based, excl
                             # Get the minimum numbre of GPUs common to all nodes in a given partition
                             for item in nodes_devices:
                                 try:
-                                    num_devices = devices_dic[item.rsplit(":", 1)[0]]
-                                    if int(item.rsplit(":", 1)[1]) < num_devices:
-                                        devices_dic[item.rsplit(":", 1)[0]] = int(item.rsplit(":", 1)[1])
+                                    devices_in_node = item.split(",")
+                                    for d_i_n in devices_in_node:
+                                        if 'gpu' in d_i_n:
+                                            num_devices = devices_dic[d_i_n.rsplit(":",1)[0]]
+                                            if int(d_i_n.rsplit(":", 1)[1]) < num_devices:
+                                                devices_dic[d_i_n.rsplit(":", 1)[0]] = int(d_i_n.rsplit(":", 1)[1])
                                 except KeyError:
-                                    devices_dic.update({item.rsplit(":", 1)[0]: int(item.rsplit(":", 1)[1])})
+                                    devices_dic.update({d_i_n.rsplit(":", 1)[0]: int(d_i_n.rsplit(":", 1)[1])})
                             # Devices search is limited to gpus
                             devices_search_n = 'y'
 
@@ -638,7 +644,7 @@ def main(user_input, containers_search, devices_search, reservations_based, excl
                                 containers_found, devices_found, _ = extract_info(containers_search == 'y', devices_search_n == 'y', False,
                                                         system_config['systems'][0]['partitions'][nodes_p+p_login-1]['name'])
                                 if containers_found:
-                                    if module_system != 'lmod':
+                                    if module_system != 'lmod' and 'tmod' not in module_system':
                                         logger.warning('Container platforms were detected but the automatic detection '
                                                        f'of required modules is not possible with {module_system}.\n')
                                     for cp_i, cp in enumerate(containers_found):
@@ -652,8 +658,10 @@ def main(user_input, containers_search, devices_search, reservations_based, excl
                                 if devices_found:
                                     gpus_count_slurm = 0
                                     devices_type = next(iter(devices_type)).split(",")
+                                    gpu_dev_count = 0
                                     for n_di, n_d in enumerate(devices_type):
                                         if 'gpu' in n_d:
+                                            gpu_dev_count += 1
                                             gpus_count_slurm += devices_dic[n_d]
                                     gpus_count_detect = 0
                                     for model, number in devices_found['NVIDIA'].items():
@@ -661,7 +669,7 @@ def main(user_input, containers_search, devices_search, reservations_based, excl
                                                         'arch': nvidia_gpu_architecture.get(model),
                                                         'num_devices': number})
                                         gpus_count_detect += number
-                                    if n_di > 0:
+                                    if  gpu_dev_count > 1:
                                         logger.warning('I cannot check that the Gres config is the same I found in the node.')
                                         logger.warning('The config file will reflect the GPUs that were found in the node.\n')
                                     else:
