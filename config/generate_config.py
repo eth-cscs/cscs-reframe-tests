@@ -630,6 +630,14 @@ def main(user_input, containers_search, devices_search, reservations_based, excl
                                     if len(nodes_partitions) > 1:
                                         pass
                                     elif len(next(iter(nodes_partitions)).split(",")) > 1:
+                                        for n_f in nodes_features[0:-1]:
+                                            if n_f in next(iter(nodes_partitions)).split(","):
+                                                generate_submission_file(containers_search == 'y', devices_search_n == 'y', False,
+                                                    system_config['systems'][0]['partitions'][nodes_p+p_login-1]['name'],
+                                                    system_config['systems'][0]['partitions'][nodes_p+p_login-1]['access'] + [f'-p{n_f}'])
+                                                job_submitted = submit_autodetection(system_config['systems'][0]['partitions'][nodes_p+p_login-1]['name'])
+                                                nodes_partitions = n_f
+                                                added_part = True
                                         pass
                                     else:
                                         # Try to resubmit the job with the partition option
@@ -664,9 +672,9 @@ def main(user_input, containers_search, devices_search, reservations_based, excl
                                             gpu_dev_count += 1
                                             gpus_count_slurm += devices_dic[n_d]
                                     gpus_count_detect = 0
-                                    for model, number in devices_found['NVIDIA'].items():
+                                    for model, number in devices_found.items():
                                         devices.append({'type': model,
-                                                        'arch': nvidia_gpu_architecture.get(model),
+                                                        'arch': nvidia_gpu_architecture.get(model) or amd_gpu_architecture.get(model) ,
                                                         'num_devices': number})
                                         gpus_count_detect += number
                                     if  gpu_dev_count > 1:

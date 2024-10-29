@@ -31,6 +31,7 @@ def parse_devices_output(file_path):
 
     gpu_info = defaultdict(lambda: {})
     nvidia_gpus_found = False
+    amd_gpus_found = False
 
     with open(file_path, 'r') as file:
         lines = file.readlines()
@@ -39,31 +40,41 @@ def parse_devices_output(file_path):
         # Check for NVIDIA GPUs
         if "NVIDIA GPUs installed" in line:
             nvidia_gpus_found = True
-        elif line == "\n" or "Batch Job Summary" in line:
+        elif line == '\n':
             nvidia_gpus_found = False
+        elif not line or "Batch Job Summary" in line:
             break
         elif nvidia_gpus_found:
             model = [gpu_m for gpu_m in nvidia_gpu_architecture if gpu_m in line]
-            if not model:
-                break
-            elif len(model) > 1:
-                pass
-            else:
-                model = model[0]
-            if model not in gpu_info["NVIDIA"]:
-                gpu_info["NVIDIA"].update({model : 1})
-            else:
-                gpu_info["NVIDIA"][model] += 1
+            if len(model) > 1:
+                model = []
+            if model:
+                if model[0] not in gpu_info:
+                    gpu_info.update({model[0] : 1})
+                else:
+                    gpu_info[model[0]] += 1
 
         # Check for AMD GPUs
-        elif "AMD" in line or "Radeon" in line:
-            match = re.search(r'(\w+ \w+)', line)
-            if match:
-                model = match.group(0).strip()
-                if model not in gpu_info["AMD"]:
-                    gpu_info["AMD"].update({model : 1})
-                else:
-                    gpu_info["AMD"][model] += 1
+        if "AMD GPUs" in line:
+            amd_gpus_found = True
+            amd_lines = []
+        elif line == '\n' or "lspci" in line:
+            amd_gpus_found = False
+        elif not line or "Batch Job Summary" in line:
+            break
+        elif amd_gpus_found:
+            if line not in amd_lines:
+                amd_lines.append(line)
+                model = [gpu_m for gpu_m in amd_gpu_architecture if gpu_m in line]
+                if len(model) > 1:
+                    model = []
+                if model:
+                    if model[0] not in gpu_info:
+                        gpu_info.update({model[0] : 1})
+                    else:
+                        gpu_info[model[0]] += 1
+            else:
+                pass
 
         # Check for Intel GPUs
         elif "Intel" in line:
