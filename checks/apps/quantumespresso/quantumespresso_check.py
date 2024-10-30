@@ -103,8 +103,8 @@ class QuantumESPRESSOBase(rfm.RunOnlyRegressionTest):
 class UENV_QuantumESPRESSOCheck(QuantumESPRESSOBase,
                                 ExtraLauncherOptionsMixin,
                                 CudaVisibleDevicesAllMixin):
-    valid_systems = ['+uenv -amdgpu']
-    valid_prog_environs = ['+quantum-espresso +mpi +openmp']
+    valid_systems = ['-amdgpu']
+    valid_prog_environs = ['+quantum-espresso +mpi +openmp +uenv']
     use_multithreading = False
     test_name = parameter(['Au-surf'])
     tags = {'production', 'uenv'}
