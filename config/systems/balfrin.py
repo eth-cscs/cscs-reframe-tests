@@ -53,7 +53,7 @@ site_configuration = {
                         },
                     ],
                     'features': [
-                        'gpu', 'nvgpu', 'remote', 'sarus', 'scontrol'
+                        'gpu', 'nvgpu', 'uenv', 'remote', 'sarus', 'scontrol'
                     ],
                     'devices': [
                         {
@@ -89,7 +89,7 @@ site_configuration = {
                         },
                     ],
                     'features': [
-                        'remote', 'sarus', 'scontrol'
+                        'remote', 'uenv', 'sarus', 'scontrol'
                     ],
                     'launcher': 'srun'
                 },
