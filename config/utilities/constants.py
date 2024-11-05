@@ -1,20 +1,7 @@
-
-SCHEDULERS = [{'name': 'flux',   'cmd': 'flux'},
-              {'name': 'lsf',    'cmd': 'bsub'},
-              {'name': 'oar',    'cmd': 'oarsub'},
-              {'name': 'pbs',    'cmd': 'pbsnodes'},
-              {'name': 'sge',    'cmd': 'qconf'},
-              {'name': 'squeue', 'cmd': 'squeue'},
-              {'name': 'slurm',  'cmd': 'sacct'}]
-
-LAUNCHERS = [{'name': 'alps',    'cmd': 'aprun'},
-             {'name': 'clush',   'cmd': 'clush'},
-             {'name': 'ibrun',   'cmd': 'ibrun'},
-             {'name': 'lrun',    'cmd': 'lrun'},
-             {'name': 'mpirun',  'cmd': 'mpirun'},
-             {'name': 'mpiexec', 'cmd': 'mpiexec'},
-             {'name': 'pdsh',    'cmd': 'pdsh'},
-             {'name': 'srun',    'cmd': 'srun'}]
+# Copyright 2024 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# ReFrame Project Developers. See the top-level LICENSE file for details.
+#
+# SPDX-License-Identifier: BSD-3-Clause
 
 CONTAINERS = [{'name': 'Sarus',       'cmd': 'sarus'},
               {'name': 'Apptainer',   'cmd': 'apptainer'},
