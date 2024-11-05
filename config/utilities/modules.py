@@ -273,7 +273,7 @@ class LModImpl(TMod4Impl):
             completed = subprocess.run([f'{self._lmod_cmd}', '--version'],
                 stdout=subprocess.PIPE,stderr=subprocess.PIPE,
                 universal_newlines=True, check=True)
-        except OSError as e:
+        except subprocess.CalledProcessError as e:
             # print(f'could not find a sane Lmod installation: {e}')
             return False
 
@@ -289,7 +289,7 @@ class LModImpl(TMod4Impl):
             completed = subprocess.run(self.modulecmd(),
                 stdout=subprocess.PIPE,stderr=subprocess.PIPE,
                 universal_newlines=True, check=True)
-        except OSError as e:
+        except subprocess.CalledProcessError as e:
             # print( f'could not get the Python bindings for Lmod: {e}')
             return False
 
