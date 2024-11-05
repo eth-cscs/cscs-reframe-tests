@@ -284,13 +284,11 @@ class LModImpl(TMod4Impl):
             return False
 
         self._version = version_match.group(1)
-        try:
-            # Try the Python bindings now
-            completed = subprocess.run(self.modulecmd(),
-                stdout=subprocess.PIPE,stderr=subprocess.PIPE,
-                universal_newlines=True, check=True)
-        except subprocess.CalledProcessError as e:
-            # print( f'could not get the Python bindings for Lmod: {e}')
+        # Try the Python bindings now
+        completed = subprocess.run(self.modulecmd(),
+            stdout=subprocess.PIPE,stderr=subprocess.PIPE,
+            universal_newlines=True, check=False)
+        if '_mlstatus' not in completed.stdout:
             return False
 
         if re.search(r'Unknown shell type', completed.stderr):
