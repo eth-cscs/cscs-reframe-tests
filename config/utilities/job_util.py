@@ -18,6 +18,7 @@ from utilities.constants import *
 from utilities.io import *
 
 WDIR = os.getcwd()
+TIME_OUT_POLICY = 200
 
 @contextmanager
 def change_dir(destination : str):
@@ -543,7 +544,7 @@ class SlurmContext:
         status_task = None
         try:
             # 5 seconds delay until the bar appears
-            done, pending = await asyncio.wait([all_partitions, asyncio.sleep(5)], return_when=asyncio.FIRST_COMPLETED)
+            done, pending = await asyncio.wait([all_partitions, asyncio.sleep(10)], return_when=asyncio.FIRST_COMPLETED)
             # If the tasks are still running after 5 seconds, start the status bar
             if not all_partitions.done():
                 status_task = asyncio.ensure_future(status_bar())
@@ -614,14 +615,30 @@ class JobRemoteDetect:
             cmd_parts += [f'autodetection_{partition_name}.sh']
             cmd = ' '.join(cmd_parts)
             completed = await asyncio.create_subprocess_shell(cmd, stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-            stdout, stderr = await completed.communicate()
-            stdout = stdout.decode('utf-8')
-            stdout = stdout.strip()
+            cmd_out = await completed.stdout.readline()
+            cmd_out = cmd_out.decode().strip()
+            job_id = re.search(r'Submitted batch job (?P<jobid>\d+)', cmd_out)
+            if job_id:
+                job_id = job_id.group('jobid')
+                logger.info(f'\nJob submitted to partition {partition_name}: {job_id}')
+            elif 'error' in cmd_out or not cmd_out:
+                return False
+
+            try:
+                stdout, stderr = await asyncio.wait_for(completed.communicate(), timeout=TIME_OUT_POLICY)
+            except asyncio.TimeoutError:
+                logger.warning(f'\nJob submitted to {partition_name} took too long...')
+                logger.debug('Cancelling...')
+                subprocess.run(f'scancel {job_id}', universal_newlines=True, check=True, shell=True)
+                return False
+
             if completed.returncode != 0:
                 # print(f'Job submission failed with: {stderr.decode("utf-8").strip()}')
                 # Do not print error because we may try with a second attempt with -p
                 return False
 
+            stdout = stdout.decode('utf-8')
+            stdout = stdout.strip()
             if not wait:
                 jobid = re.search(r'Submitted batch job (?P<jobid>\d+)',
                                     stdout)
@@ -650,7 +667,7 @@ class JobRemoteDetect:
             self._extract_info( partition_name)
         elif not job_exec:
             access_options.append(f'--constraint="{access_node}"')
-            logger.error(f'The autodetection script for f"{partition_name}" could not be submitted\n'
+            logger.error(f'The autodetection script for "{partition_name}" could not be submitted\n'
                         'Please check the sbatch options ("access" field '
                         'in the partition description).')
         else:
