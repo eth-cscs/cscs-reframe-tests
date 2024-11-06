@@ -124,7 +124,7 @@ class Launcher:
 
 class SlurmContext:
 
-    def __init__(self, modules_system : str, detect_containers : bool = True, detect_devices : bool = True, wait : bool = True, tmp_dir : str = None):
+    def __init__(self, modules_system : str, detect_containers : bool = True, detect_devices : bool = True, wait : bool = True, access_opt : list = [], tmp_dir : str = None):
         self.node_types = []
         self.default_nodes = []
         self.reservations = []
@@ -134,6 +134,7 @@ class SlurmContext:
         self._detect_containers = detect_containers
         self._detect_devices = detect_devices
         self._wait = wait
+        self._access = access_opt
         self._job_poll = [] # Job id's to poll
         self._p_n = 0 # Number of partitions created
         self._keep_tmp_dir = False
@@ -384,6 +385,8 @@ class SlurmContext:
         if create_p:
             self._p_n += 1
             access_options = [f'--account={self._account}']
+            if self._access:
+                access_options = access_options + self._access
             access_node = []
             if node_feats not in self.default_nodes:
                 access_node = '&'.join(node_features)
@@ -630,7 +633,7 @@ class JobRemoteDetect:
                 logger.warning(f'\nJob submitted to {partition_name} took too long...')
                 logger.debug('Cancelling...')
                 subprocess.run(f'scancel {job_id}', universal_newlines=True, check=True, shell=True)
-                return False
+                return 'cancelled'
 
             if completed.returncode != 0:
                 # print(f'Job submission failed with: {stderr.decode("utf-8").strip()}')
@@ -653,6 +656,12 @@ class JobRemoteDetect:
 
         self._prepare_job(partition_name, access_options + [f'--constraint="{access_node}"'])
         job_exec = await self._submit_job(partition_name, wait)
+        cancelled = False
+        if job_exec == 'cancelled':
+            access_partition = '' # Avoid a resubmission
+            job_exec = False
+            cancelled = True
+            access_options.append(access_partition)
         if job_exec:
             access_options.append(f'--constraint="{access_node}"')
         elif access_partition:
@@ -660,12 +669,16 @@ class JobRemoteDetect:
             # print('Trying a second attempt...')
             self._prepare_job(partition_name, [access_partition])
             job_exec = await self._submit_job(partition_name, wait)
+            if job_exec == 'cancelled':
+                job_exec = False
+                cancelled = True
+                access_options.append(access_partition)
             if job_exec:
                 access_options.append(access_partition)
 
         if job_exec and wait:
             self._extract_info( partition_name)
-        elif not job_exec:
+        elif not job_exec and not cancelled:
             access_options.append(f'--constraint="{access_node}"')
             logger.error(f'The autodetection script for "{partition_name}" could not be submitted\n'
                         'Please check the sbatch options ("access" field '

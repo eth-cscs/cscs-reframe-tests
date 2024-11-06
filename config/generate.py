@@ -11,14 +11,14 @@ from utilities.io import logger
 
 JINJA2_TEMPLATE = 'reframe_config_template.j2'
 
-def main(user_input, containers_search, devices_search, reservs, exclude_feat, tmp_dir):
+def main(user_input, containers_search, devices_search, reservs, exclude_feat, access_opt, tmp_dir):
 
     # Initialize system configuration
     system_info = SystemConfig()
     # Build the configuration with the right options
     system_info.build_config(user_input=user_input, detect_containers=containers_search,
                             detect_devices=devices_search, exclude_feats=exclude_feats,
-                            reservs=reservs, tmp_dir=tmp_dir)
+                            reservs=reservs, access_opt=access_opt, tmp_dir=tmp_dir)
 
     # Set up Jinja2 environment and load the template
     template_loader = FileSystemLoader(searchpath='.')
@@ -56,6 +56,8 @@ if __name__ == '__main__':
     parser.add_argument('--exclude', nargs='?', help='Exclude the certain node features for the detection of node types')
     # Define the '--prefix' flag
     parser.add_argument('--prefix', action='store', help='Shared directory for remote detection jobs')
+    # Define the '--access' flag
+    parser.add_argument('--access', action='store', help='Compulsory options for accesing remote nodes with sbatch')
 
     args = parser.parse_args()
 
@@ -87,6 +89,11 @@ if __name__ == '__main__':
     else:
         tmp_dir = []
 
+    if args.access:
+        access_opt = args.access.split(',')
+    else:
+        access_opt = ''
+
     user_input = not args.auto
 
-    main(user_input, containers_search, devices_search, reservs, exclude_feats, tmp_dir)
+    main(user_input, containers_search, devices_search, reservs, exclude_feats, access_opt, tmp_dir)

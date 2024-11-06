@@ -101,7 +101,7 @@ class SystemConfig:
             self._resourcesdir = res_dir
 
     def find_scheduler(self, user_input : bool, detect_containers : bool,
-            detect_devices : bool, wait : bool, tmp_dir : Union[str, None]) -> Union[SlurmContext, None]:
+            detect_devices : bool, wait : bool, access_opt : list, tmp_dir : Union[str, None]) -> Union[SlurmContext, None]:
         '''Detect the remote scheduler'''
         scheduler = Scheduler()
         scheduler.detect_scheduler(user_input)
@@ -109,7 +109,8 @@ class SystemConfig:
         if self._remote_scheduler == 'slurm' or \
            self._remote_scheduler == 'squeue':
             return SlurmContext(self._modules_system, detect_containers=detect_containers,
-                                detect_devices=detect_devices, wait=wait, tmp_dir=tmp_dir)
+                                detect_devices=detect_devices, access_opt=access_opt,
+                                wait=wait, tmp_dir=tmp_dir)
         else:
             return None
 
@@ -121,7 +122,7 @@ class SystemConfig:
 
     def build_config(self, user_input : bool = True, detect_containers : bool = True,
             detect_devices : bool = True, wait : bool = True, exclude_feats : list = [],
-            reservs : list = [], tmp_dir : Union[str, None] = None):
+            reservs : list = [], access_opt : list = [], tmp_dir : Union[str, None] = None):
         '''Build the configuration with all the information'''
         # System name
         self.find_systemname()
@@ -139,7 +140,8 @@ class SystemConfig:
             self._get_resourcesdir()
         # Scheduler
         self._slurm_schd = self.find_scheduler(user_input, detect_containers=detect_containers,
-                                               detect_devices=detect_devices, wait=wait,tmp_dir=tmp_dir)
+                                               detect_devices=detect_devices, access_opt=access_opt,
+                                               wait=wait,tmp_dir=tmp_dir)
         # Launcher
         self.find_launcher(user_input)
         # Partition detection only available with Slurm
