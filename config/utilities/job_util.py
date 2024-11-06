@@ -654,7 +654,10 @@ class JobRemoteDetect:
 
     async def job_submission(self, partition_name : str, access_options : list, access_node : list, access_partition : Union[str, None], wait : bool = False):
 
-        self._prepare_job(partition_name, access_options + [f'--constraint="{access_node}"'])
+        if access_node:
+            self._prepare_job(partition_name, access_options + [f'--constraint="{access_node}"'])
+        else:
+            self._prepare_job(partition_name, access_options)
         job_exec = await self._submit_job(partition_name, wait)
         cancelled = False
         if job_exec == 'cancelled':

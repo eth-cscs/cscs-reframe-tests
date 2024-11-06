@@ -14,6 +14,7 @@ async def status_bar():
     """
     Asynchronous function that displays a rotating status bar.
     """
+    sys.stdout.write('\n')
     for symbol in itertools.cycle(["|", "/", "-", "\\"]):
         sys.stdout.write(f"\rWaiting for the submitted jobs... {symbol}")
         sys.stdout.flush()
