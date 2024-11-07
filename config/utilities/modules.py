@@ -306,7 +306,7 @@ class LModImpl(TMod4Impl):
         return [self._lmod_cmd, 'python', *args]
 
     def available_modules(self, substr : str) -> list:
-        output = self.execute('-t', 'avail', substr)
+        output = self._execute('-t', 'avail', substr)
         ret = []
         for line in output.split('\n'):
             if not line or line[-1] == ':':
@@ -314,7 +314,7 @@ class LModImpl(TMod4Impl):
                 continue
 
             module = re.sub(r'\(\S+\)', '', line)
-            ret.append(Module(module))
+            ret.append(module)
 
         return ret
 
