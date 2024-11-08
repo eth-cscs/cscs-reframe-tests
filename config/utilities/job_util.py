@@ -332,7 +332,8 @@ class SlurmContext:
         # Format the dictionary of the devices for the configuration file
         # and get the total number of GPUs found
         for gpu_job in node_devices_job:
-            devices.append({'type': gpu_job,
+            devices.append({'type': 'gpu',
+                            'model': gpu_job,
                             'arch': nvidia_gpu_architecture.get(gpu_job) or \
                                     amd_gpu_architecture.get(gpu_job),
                             'num_devices': node_devices_job[gpu_job]})
@@ -542,7 +543,7 @@ class SlurmContext:
         # With no status bar
         # await asyncio.gather(*(self.create_remote_partition(node,launcher, scheduler, user_input) for node in self.node_types))
 
-        all_partitions = asyncio.ensure_future(asyncio.gather(*(self.create_remote_partition(node, launcher, scheduler, user_input) for node in self.node_types)))
+        all_partitions = asyncio.ensure_future(asyncio.gather(*([asyncio.ensure_future(self.create_remote_partition(node, launcher, scheduler, user_input)) for node in self.node_types])))
 
         status_task = None
         try:

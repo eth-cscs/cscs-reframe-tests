@@ -52,6 +52,7 @@ site_configuration = {
                     'devices' : [
                     {% for dev in partition.devices %}
                         { 'type' : '{{dev.type}}',
+                          'model' : '{{dev.model}}',
                         {% if dev.arch %}
                           'arch' : '{{dev.arch}}',
                         {% endif %}
