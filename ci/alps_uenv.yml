@@ -10,7 +10,7 @@ stages:
 setup and pull:
   stage: pull
   extends: .f7t-baremetal-runner
-  variables:
+  # variables:
     # Valid MODE=('container-runner', 'baremetal', 'f7t-controller')
     # MODE: "${RFM_MODE}"
     # GIT_STRATEGY: "fetch"
@@ -57,11 +57,11 @@ reframe:
   stage: run
   extends: .f7t-baremetal-runner
   needs: ['setup and pull']
-  variables:
-    MODE: "${RFM_MODE}"
-    GIT_STRATEGY: "fetch"
-    SLURM_ACCOUNT: "${SLURM_ACCOUNT}"
-    FIRECREST_SYSTEM: "${FIRECREST_SYSTEM}"
+#   variables:
+#     MODE: "${RFM_MODE}"
+#     GIT_STRATEGY: "fetch"
+#     SLURM_ACCOUNT: "${SLURM_ACCOUNT}"
+#     FIRECREST_SYSTEM: "${FIRECREST_SYSTEM}"
   before_script:
     - echo "FIRECREST_SYSTEM=$FIRECREST_SYSTEM / F7T_URL=$F7T_URL / CLUSTER_NAME=$CLUSTER_NAME"
     - uname -a
