@@ -7,18 +7,20 @@ import asyncio
 import os
 import re
 import socket
-from utilities.io import *
-from utilities.job_util import *
-from utilities.modules import *
+from typing import Union
+from utilities.io import (logger, user_descr,
+                          user_selection, request_modules)
+from utilities.job_util import Launcher, Scheduler, SlurmContext
+from utilities.modules import ModulesSystem, modules_impl
+
 
 class SystemConfig:
     '''Describes the system configuration'''
 
     def __init__(self):
-        # Initialization to the reframe default
         self._systemname = ''
         self._hostnames = []
-        self._resourcesdir = '.'
+        self._resourcesdir = ''
         self._modules_system = 'nomod'
         self._modules = []
         self._partitions = {}
@@ -59,7 +61,8 @@ class SystemConfig:
             logger.info(f'System name is {systemname}')
         else:
             self._systemname = 'cluster'
-            logger.warning(f'System name not found set to "{self._systemname}"')
+            logger.warning(
+                f'System name not found set to "{self._systemname}"')
 
     def find_hostname(self):
         '''Try to get the hostname'''
@@ -81,7 +84,9 @@ class SystemConfig:
             modules_system = modules_impl[mod]
             if modules_system().found:
                 self._modules_system = modules_system().name
-                logger.info(f'Found a sane {self._modules_system} installation in the system')
+                logger.info(
+                    f'Found a sane {self._modules_system} '
+                    'installation in the system')
                 break
 
         if self._modules_system:
@@ -91,38 +96,47 @@ class SystemConfig:
 
     def _get_resourcesdir(self):
         '''Ask about a possible resources dir'''
-        res_dir = user_descr('Directory prefix where external test resources (e.g., large input files) are stored.',
-                             cancel_n = True)
+        res_dir = user_descr(('Directory prefix where external test resources '
+                             '(e.g., large input files) are stored.'),
+                             cancel_n=True)
         while not os.path.exists(res_dir) and not res_dir:
             logger.warning('The specified directory does not exist.')
-            res_dir = user_descr('Directory prefix where external test resources (e.g., large input files) are stored.',
-                                 cancel_n = True)
+            res_dir = user_descr(('Directory prefix where external test '
+                                  'resources (e.g., large input files) '
+                                  'are stored.'),
+                                 cancel_n=True)
         if res_dir:
             self._resourcesdir = res_dir
 
-    def find_scheduler(self, user_input : bool, detect_containers : bool,
-            detect_devices : bool, wait : bool, access_opt : list, tmp_dir : Union[str, None]) -> Union[SlurmContext, None]:
+    def find_scheduler(self, user_input: bool, detect_containers: bool,
+                       detect_devices: bool, wait: bool, access_opt: list,
+                       tmp_dir: Union[str, None]) -> Union[SlurmContext, None]:
         '''Detect the remote scheduler'''
         scheduler = Scheduler()
         scheduler.detect_scheduler(user_input)
         self._remote_scheduler = scheduler.name
         if self._remote_scheduler == 'slurm' or \
            self._remote_scheduler == 'squeue':
-            return SlurmContext(self._modules_system, detect_containers=detect_containers,
-                                detect_devices=detect_devices, access_opt=access_opt,
+            return SlurmContext(self._modules_system,
+                                detect_containers=detect_containers,
+                                detect_devices=detect_devices,
+                                access_opt=access_opt,
                                 wait=wait, tmp_dir=tmp_dir)
         else:
             return None
 
-    def find_launcher(self, user_input : bool):
+    def find_launcher(self, user_input: bool):
         '''Detect the parallel launcher'''
         launcher = Launcher()
         launcher.detect_launcher(user_input)
         self._remote_launcher = launcher.name
 
-    def build_config(self, user_input : bool = True, detect_containers : bool = True,
-            detect_devices : bool = True, wait : bool = True, exclude_feats : list = [],
-            reservs : list = [], access_opt : list = [], tmp_dir : Union[str, None] = None):
+    def build_config(self, user_input: bool = True,
+                     detect_containers: bool = True,
+                     detect_devices: bool = True,
+                     wait: bool = True, exclude_feats: list = [],
+                     reservs: list = [], access_opt: list = [],
+                     tmp_dir: Union[str, None] = None):
         '''Build the configuration with all the information'''
         # System name
         self.find_systemname()
@@ -130,18 +144,22 @@ class SystemConfig:
         self.find_hostname()
         # Modules system
         modules_system = self.find_modules_system()
-        #TODO: not available for spack yet
+        # TODO: not available for spack yet
         if modules_system and user_input:
             logger.debug('You can require some modules to be loaded '
-                  'every time reframe is run on this system')
+                         'every time reframe is run on this system')
             self._modules = request_modules(modules_system)
 
         if user_input:
             self._get_resourcesdir()
         # Scheduler
-        self._slurm_schd = self.find_scheduler(user_input, detect_containers=detect_containers,
-                                               detect_devices=detect_devices, access_opt=access_opt,
-                                               wait=wait,tmp_dir=tmp_dir)
+        self._slurm_schd = self.find_scheduler(
+            user_input,
+            detect_containers=detect_containers,
+            detect_devices=detect_devices,
+            access_opt=access_opt,
+            wait=wait, tmp_dir=tmp_dir
+        )
         # Launcher
         self.find_launcher(user_input)
         # Partition detection only available with Slurm
@@ -152,9 +170,10 @@ class SystemConfig:
             self._slurm_schd.create_login_partition(user_input=user_input)
             # Initialize the asynchronous loop
             loop = asyncio.get_event_loop()
-            loop.run_until_complete(self._slurm_schd.create_partitions(launcher=self._remote_launcher,
-                                                                       scheduler=self._remote_scheduler,
-                                                                       user_input=user_input))
+            loop.run_until_complete(self._slurm_schd.create_partitions(
+                launcher=self._remote_launcher,
+                scheduler=self._remote_scheduler,
+                user_input=user_input))
             loop.close()
             # Assign the partitions to SystemConfig object
             self._partitions = self._slurm_schd.partitions
@@ -164,23 +183,32 @@ class SystemConfig:
                 if not user_input:
                     for reserv in reservs:
                         if reserv not in self._slurm_schd.reservations:
-                            logger.warning(f'Reservation {reserv} not found, skipping...\n')
+                            logger.warning(
+                                f'Reservation {reserv} not found, '
+                                'skipping...\n')
                         else:
-                            self._slurm_schd.create_reserv_partition(launcher=self._remote_launcher,
-                                                                     scheduler=self._remote_scheduler,\
-                                                                     user_input=False,
-                                                                     reserv=reserv)
+                            self._slurm_schd.create_reserv_partition(
+                                launcher=self._remote_launcher,
+                                scheduler=self._remote_scheduler,
+                                user_input=False,
+                                reserv=reserv
+                            )
                 else:
                     reserv = True
                     while reserv:
-                        logger.debug(f'Do you want to create a partition for a reservation?')
+                        logger.debug(
+                            'Do you want to create a partition for '
+                            'a reservation?')
                         logger.debug(f'{self._slurm_schd.reservations}\n')
-                        reserv = user_selection(self._slurm_schd.reservations, cancel_n=True)
+                        reserv = user_selection(
+                            self._slurm_schd.reservations, cancel_n=True)
                         if reserv:
-                            self._slurm_schd.create_reserv_partition(launcher=self._remote_launcher,
-                                                                     scheduler=self._remote_scheduler,\
-                                                                     user_input=True,
-                                                                     reserv=reserv)
+                            self._slurm_schd.create_reserv_partition(
+                                launcher=self._remote_launcher,
+                                scheduler=self._remote_scheduler,
+                                user_input=True,
+                                reserv=reserv
+                            )
 
     def format_for_jinja(self) -> dict:
         '''Generate an iterable for the jinja template'''

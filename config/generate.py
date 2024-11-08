@@ -11,18 +11,23 @@ from utilities.io import logger
 
 JINJA2_TEMPLATE = 'reframe_config_template.j2'
 
-def main(user_input, containers_search, devices_search, reservs, exclude_feat, access_opt, tmp_dir):
+
+def main(user_input, containers_search, devices_search, reservs,
+         exclude_feat, access_opt, tmp_dir):
 
     # Initialize system configuration
     system_info = SystemConfig()
     # Build the configuration with the right options
-    system_info.build_config(user_input=user_input, detect_containers=containers_search,
-                            detect_devices=devices_search, exclude_feats=exclude_feats,
-                            reservs=reservs, access_opt=access_opt, tmp_dir=tmp_dir)
+    system_info.build_config(
+        user_input=user_input, detect_containers=containers_search,
+        detect_devices=devices_search, exclude_feats=exclude_feats,
+        reservs=reservs, access_opt=access_opt, tmp_dir=tmp_dir
+    )
 
     # Set up Jinja2 environment and load the template
     template_loader = FileSystemLoader(searchpath='.')
-    env = Environment(loader=template_loader, trim_blocks=True, lstrip_blocks=True)
+    env = Environment(loader=template_loader,
+                      trim_blocks=True, lstrip_blocks=True)
     rfm_config_template = env.get_template(JINJA2_TEMPLATE)
 
     systemn_info_jinja = system_info.format_for_jinja()
@@ -37,7 +42,8 @@ def main(user_input, containers_search, devices_search, reservs, exclude_feat, a
         output_file.write(organized_config)
 
     logger.debug(f'\nThe following configuration files was created:\n'
-          f'PYTHON: {system_info.systemname}_config.py')
+                 f'PYTHON: {system_info.systemname}_config.py')
+
 
 if __name__ == '__main__':
 
@@ -45,19 +51,37 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     # Define the '--auto' flag
-    parser.add_argument('--auto', action='store_true', help='Turn off interactive mode')
+    parser.add_argument('--auto', action='store_true',
+                        help='Turn off interactive mode')
     # Define the '--no-remote-containers' flag
-    parser.add_argument('--no-remote-containers', action='store_true', help='Disable container platform detection in remote partition')
+    parser.add_argument(
+        '--no-remote-containers', action='store_true',
+        help='Disable container platform detection in remote partition'
+    )
     # Define the '--no-remote-devices' flag
-    parser.add_argument('--no-remote-devices', action='store_true', help='Disable devices detection in remote partition')
+    parser.add_argument('--no-remote-devices', action='store_true',
+                        help='Disable devices detection in remote partition')
     # Define the '--reservations' flag
-    parser.add_argument('--reservations', nargs='?', help='Specify the reservations that you want to create partitions for.')
+    parser.add_argument(
+        '--reservations', nargs='?',
+        help='Specify the reservations that you want to create partitions for.'
+    )
     # Define the '--exclude' flag
-    parser.add_argument('--exclude', nargs='?', help='Exclude the certain node features for the detection of node types')
+    parser.add_argument(
+        '--exclude', nargs='?',
+        help='Exclude the certain node features for the detection ' +
+        'of node types'
+    )
     # Define the '--prefix' flag
-    parser.add_argument('--prefix', action='store', help='Shared directory for remote detection jobs')
+    parser.add_argument(
+        '--prefix', action='store',
+        help='Shared directory for remote detection jobs'
+    )
     # Define the '--access' flag
-    parser.add_argument('--access', action='store', help='Compulsory options for accesing remote nodes with sbatch')
+    parser.add_argument(
+        '--access', action='store',
+        help='Compulsory options for accesing remote nodes with sbatch'
+    )
 
     args = parser.parse_args()
 
@@ -96,4 +120,5 @@ if __name__ == '__main__':
 
     user_input = not args.auto
 
-    main(user_input, containers_search, devices_search, reservs, exclude_feats, access_opt, tmp_dir)
+    main(user_input, containers_search, devices_search,
+         reservs, exclude_feats, access_opt, tmp_dir)

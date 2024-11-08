@@ -8,6 +8,7 @@ import os
 import re
 import subprocess
 
+
 class ModulesSystem(abc.ABC):
     '''Abstract base class for module systems.
 
@@ -15,11 +16,11 @@ class ModulesSystem(abc.ABC):
     '''
 
     @abc.abstractmethod
-    def _execute(self, cmd : str, *args):
+    def _execute(self, cmd: str, *args):
         '''Execute an arbitrary command of the module system.'''
 
     @abc.abstractmethod
-    def available_modules(self, substr : str):
+    def available_modules(self, substr: str):
         '''Return a list of available modules, whose name contains ``substr``.
 
         This method returns a list of Module instances.
@@ -51,11 +52,12 @@ class TMod32Impl(ModulesSystem):
     def _do_validate(self) -> bool:
         # Try to figure out if we are indeed using the TCL version
         try:
-            completed = subprocess.run(['modulecmd','-V'],
-                stdout=subprocess.PIPE,stderr=subprocess.PIPE,
-                universal_newlines=True, check=True)
-        except:
-            # print('could not find a sane TMod installation')
+            completed = subprocess.run(
+                ['modulecmd', '-V'],
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                universal_newlines=True, check=True
+            )
+        except Exception:
             return False
 
         version_match = re.search(r'^VERSION=(\S+)', completed.stdout,
@@ -64,19 +66,15 @@ class TMod32Impl(ModulesSystem):
                                       re.MULTILINE)
 
         if version_match is None or tcl_version_match is None:
-            # print('could not find a sane TMod installation')
             return False
 
         version = version_match.group(1)
         try:
             ver_major, ver_minor = [int(v) for v in version.split('.')[:2]]
         except ValueError:
-            # print('could not parse TMod version string: ' + version)
             return False
 
         if (ver_major, ver_minor) < self.MIN_VERSION:
-            # print(f'unsupported TMod version: '
-            #     f'{version} (required >= {self.MIN_VERSION})')
             return False
 
         self._version = version
@@ -94,18 +92,20 @@ class TMod32Impl(ModulesSystem):
     def modulecmd(self, *args) -> str:
         return ['modulecmd', 'python', *args]
 
-    def _execute(self, cmd : str, *args) -> str:
+    def _execute(self, cmd: str, *args) -> str:
 
         modulecmd = self.modulecmd(cmd, *args)
-        completed = subprocess.run(modulecmd,
-                stdout=subprocess.PIPE,stderr=subprocess.PIPE,
-                universal_newlines=True, check=True)
+        completed = subprocess.run(
+            modulecmd,
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            universal_newlines=True, check=True
+        )
         if re.search(r'\bERROR\b', completed.stderr) is not None:
             return ''
 
         return completed.stderr
 
-    def available_modules(self, substr : str) -> list:
+    def available_modules(self, substr: str) -> list:
         output = self._execute('avail', '-t', substr)
         ret = []
         for line in output.split('\n'):
@@ -117,6 +117,7 @@ class TMod32Impl(ModulesSystem):
             ret.append(module)
 
         return ret
+
 
 class TMod31Impl(TMod32Impl):
     '''Module system for TMod (Tcl).'''
@@ -133,11 +134,11 @@ class TMod31Impl(TMod32Impl):
         try:
             modulecmd = os.getenv('MODULESHOME')
             modulecmd = os.path.join(modulecmd, 'modulecmd.tcl')
-            completed = subprocess.run([modulecmd],
-                stdout=subprocess.PIPE,stderr=subprocess.PIPE,
+            completed = subprocess.run(
+                [modulecmd],
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                 universal_newlines=True, check=True)
-        except OSError as e:
-            # print( f'could not find a sane TMod31 installation')
+        except OSError:
             return False
 
         version_match = re.search(r'Release Tcl (\S+)', completed.stderr,
@@ -145,19 +146,15 @@ class TMod31Impl(TMod32Impl):
         tcl_version_match = version_match
 
         if version_match is None or tcl_version_match is None:
-            # print('could not find a sane TMod31 installation')
             return False
 
         version = version_match.group(1)
         try:
             ver_major, ver_minor = [int(v) for v in version.split('.')[:2]]
         except ValueError:
-            # print('could not parse TMod31 version string: ' + version)
             return False
 
         if (ver_major, ver_minor) < self.MIN_VERSION:
-            # print(f'unsupported TMod version: {version} '
-            #     f'(required >= {self.MIN_VERSION})')
             return False
 
         self._version = version
@@ -172,24 +169,25 @@ class TMod31Impl(TMod32Impl):
     def modulecmd(self, *args):
         return [self._command, *args]
 
-    def _execute(self, cmd : str, *args) -> str:
+    def _execute(self, cmd: str, *args) -> str:
 
         modulecmd = self.modulecmd(cmd, *args)
-        completed = subprocess.run(modulecmd,
-                stdout=subprocess.PIPE,stderr=subprocess.PIPE,
-                universal_newlines=True, check=True)
+        completed = subprocess.run(
+            modulecmd,
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            universal_newlines=True, check=True
+        )
         if re.search(r'\bERROR\b', completed.stderr) is not None:
             return ''
 
         exec_match = re.search(r"^exec\s'(\S+)'", completed.stdout,
                                re.MULTILINE)
-        if exec_match is None:
-            raise ConfigError('could not use the python bindings')
 
         with open(exec_match.group(1), 'r') as content_file:
             cmd = content_file.read()
 
         return completed.stderr
+
 
 class TMod4Impl(TMod32Impl):
     '''Module system for TMod 4.'''
@@ -203,29 +201,26 @@ class TMod4Impl(TMod32Impl):
 
     def _do_validate(self):
         try:
-            completed = subprocess.run(self.modulecmd('-V'),
-                            stdout=subprocess.PIPE,stderr=subprocess.PIPE,
-                            universal_newlines=True, check=True)
-        except:
-            # print('could not find a sane TMod4 installation')
+            completed = subprocess.run(
+                self.modulecmd('-V'),
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                universal_newlines=True, check=True
+            )
+        except Exception:
             return False
 
         version_match = re.match(r'^Modules Release (\S+)\s+',
                                  completed.stderr)
         if not version_match:
-            # print('could not retrieve the TMod4 version')
             return False
 
         version = version_match.group(1)
         try:
             ver_major, ver_minor = [int(v) for v in version.split('.')[:2]]
         except ValueError:
-            # print(f'could not parse TMod4 version string: {version}')
             return False
 
         if (ver_major, ver_minor) < self.MIN_VERSION:
-            # print(f'unsupported TMod4 version: {version} '
-            #     f'(required >= {self.MIN_VERSION})')
             return False
 
         self._version = version
@@ -238,12 +233,14 @@ class TMod4Impl(TMod32Impl):
     def modulecmd(self, *args) -> list:
         return ['modulecmd', 'python', *args]
 
-    def _execute(self, cmd : str, *args) -> str:
+    def _execute(self, cmd: str, *args) -> str:
 
         modulecmd = self.modulecmd(cmd, *args)
-        completed = subprocess.run(modulecmd,
-                stdout=subprocess.PIPE,stderr=subprocess.PIPE,
-                universal_newlines=True, check=True)
+        completed = subprocess.run(
+            modulecmd,
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            universal_newlines=True, check=True
+        )
         namespace = {}
 
         # _mlstatus is set by the TMod4 only if the command was unsuccessful,
@@ -252,6 +249,7 @@ class TMod4Impl(TMod32Impl):
             return ''
 
         return completed.stderr
+
 
 class LModImpl(TMod4Impl):
     '''Module system for Lmod (Tcl/Lua).'''
@@ -265,35 +263,33 @@ class LModImpl(TMod4Impl):
         # Try to figure out if we are indeed using LMOD
         self._lmod_cmd = os.getenv('LMOD_CMD')
         if self._lmod_cmd is None:
-            # print('could not find a sane Lmod installation: '
-            #       'environment variable LMOD_CMD is not defined')
             return False
 
         try:
-            completed = subprocess.run([f'{self._lmod_cmd}', '--version'],
-                stdout=subprocess.PIPE,stderr=subprocess.PIPE,
-                universal_newlines=True, check=True)
-        except subprocess.CalledProcessError as e:
-            # print(f'could not find a sane Lmod installation: {e}')
+            completed = subprocess.run(
+                [f'{self._lmod_cmd}', '--version'],
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                universal_newlines=True, check=True
+            )
+        except Exception:
             return False
 
         version_match = re.search(r'.*Version\s*(\S+)', completed.stderr,
                                   re.MULTILINE)
         if version_match is None:
-            # print('could not retrieve Lmod version')
             return False
 
         self._version = version_match.group(1)
         # Try the Python bindings now
-        completed = subprocess.run(self.modulecmd(),
-            stdout=subprocess.PIPE,stderr=subprocess.PIPE,
-            universal_newlines=True, check=False)
+        completed = subprocess.run(
+            self.modulecmd(),
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            universal_newlines=True, check=False
+        )
         if '_mlstatus' not in completed.stdout:
             return False
 
         if re.search(r'Unknown shell type', completed.stderr):
-            # print('Python is not supported by '
-            #       'this Lmod installation')
             return False
 
         return True
@@ -305,7 +301,7 @@ class LModImpl(TMod4Impl):
     def modulecmd(self, *args) -> list:
         return [self._lmod_cmd, 'python', *args]
 
-    def available_modules(self, substr : str) -> list:
+    def available_modules(self, substr: str) -> list:
         output = self._execute('-t', 'avail', substr)
         ret = []
         for line in output.split('\n'):
@@ -318,9 +314,10 @@ class LModImpl(TMod4Impl):
 
         return ret
 
+
 modules_impl = {
-        'tmod31': TMod31Impl,
-        'tmod32': TMod32Impl,
-        'tmod4': TMod4Impl,
-        'lmod': LModImpl,
-    }
+    'tmod31': TMod31Impl,
+    'tmod32': TMod32Impl,
+    'tmod4': TMod4Impl,
+    'lmod': LModImpl,
+}

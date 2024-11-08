@@ -9,6 +9,7 @@ CONTAINERS = [{'name': 'Sarus',       'cmd': 'sarus'},
               {'name': 'Singularity', 'cmd': 'singularity'},
               {'name': 'Shifter',     'cmd': 'shifter'}]
 
+
 class bcolors:
     HEADER = '\033[95m'
     BLUE = '\033[94m'
@@ -20,9 +21,10 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
+
 RFM_DOCUMENTATION = {'modules':              'https://reframe-hpc.readthedocs.io/en/stable/config_reference.html#config.systems.modules',
                      'resourcesdir':         'https://reframe-hpc.readthedocs.io/en/stable/config_reference.html#config.systems.resourcesdir',
-                     'schedulers':           'https://reframe-hpc.readthedocs.io/en/stable/config_reference.html#config.systems.partitions.scheduler',\
+                     'schedulers':           'https://reframe-hpc.readthedocs.io/en/stable/config_reference.html#config.systems.partitions.scheduler',
                      'devices':              'https://reframe-hpc.readthedocs.io/en/stable/config_reference.html#config.systems.partitions.devices',
                      'sched_resources':      'https://reframe-hpc.readthedocs.io/en/stable/config_reference.html#custom-job-scheduler-resources',
                      'extras':               'https://reframe-hpc.readthedocs.io/en/stable/config_reference.html#config.systems.partitions.extras',
@@ -41,41 +43,41 @@ resources = [{'name': 'switches',
               'options': ['--mem={mem_per_node}']}]
 
 nvidia_gpu_architecture = {
-                            "Tesla K20": "sm_35",
-                            "Tesla K40": "sm_35",
-                            "Tesla P100": "sm_60",
-                            "Tesla V100": "sm_70",
-                            "Tesla T4": "sm_75",
-                            "Tesla A100": "sm_80",
-                            "Quadro RTX 8000": "sm_75",
-                            "Quadro RTX 6000": "sm_75",
-                            "Quadro P6000": "sm_61",
-                            "Quadro GV100": "sm_70",
-                            "GeForce GTX 1080": "sm_61",
-                            "GeForce GTX 1080 Ti": "sm_61",
-                            "GeForce GTX 1070": "sm_61",
-                            "GeForce GTX 1060": "sm_61",
-                            "GeForce GTX 1050": "sm_61",
-                            "GeForce RTX 2060": "sm_75",
-                            "GeForce RTX 2070": "sm_75",
-                            "GeForce RTX 2080": "sm_75",
-                            "GeForce RTX 2080 Ti": "sm_75",
-                            "GeForce RTX 3060": "sm_86",
-                            "GeForce RTX 3070": "sm_86",
-                            "GeForce RTX 3080": "sm_86",
-                            "GeForce RTX 3090": "sm_86",
-                            "GeForce RTX 4060": "sm_89",
-                            "GeForce RTX 4070": "sm_89",
-                            "GeForce RTX 4080": "sm_89",
-                            "GeForce RTX 4090": "sm_89",
-                            "A100": "sm_80",
-                            "H100": "sm_90",
-                            "H200": "sm_90",
-                            "H100 PCIe": "sm_90",
-                            "H100 SXM": "sm_90",
-                            "Titan V": "sm_70",
-                            "Titan RTX": "sm_75"
-                        }
+    "Tesla K20": "sm_35",
+    "Tesla K40": "sm_35",
+    "Tesla P100": "sm_60",
+    "Tesla V100": "sm_70",
+    "Tesla T4": "sm_75",
+    "Tesla A100": "sm_80",
+    "Quadro RTX 8000": "sm_75",
+    "Quadro RTX 6000": "sm_75",
+    "Quadro P6000": "sm_61",
+    "Quadro GV100": "sm_70",
+    "GeForce GTX 1080": "sm_61",
+    "GeForce GTX 1080 Ti": "sm_61",
+    "GeForce GTX 1070": "sm_61",
+    "GeForce GTX 1060": "sm_61",
+    "GeForce GTX 1050": "sm_61",
+    "GeForce RTX 2060": "sm_75",
+    "GeForce RTX 2070": "sm_75",
+    "GeForce RTX 2080": "sm_75",
+    "GeForce RTX 2080 Ti": "sm_75",
+    "GeForce RTX 3060": "sm_86",
+    "GeForce RTX 3070": "sm_86",
+    "GeForce RTX 3080": "sm_86",
+    "GeForce RTX 3090": "sm_86",
+    "GeForce RTX 4060": "sm_89",
+    "GeForce RTX 4070": "sm_89",
+    "GeForce RTX 4080": "sm_89",
+    "GeForce RTX 4090": "sm_89",
+    "A100": "sm_80",
+    "H100": "sm_90",
+    "H200": "sm_90",
+    "H100 PCIe": "sm_90",
+    "H100 SXM": "sm_90",
+    "Titan V": "sm_70",
+    "Titan RTX": "sm_75"
+}
 
 amd_gpu_architecture = {
     # RDNA 3 Series
