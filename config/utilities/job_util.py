@@ -665,7 +665,7 @@ class JobRemoteDetect:
             job_exec = False
             cancelled = True
             access_options.append(access_partition)
-        if job_exec:
+        if job_exec and access_node:
             access_options.append(f'--constraint="{access_node}"')
         elif access_partition:
             # print('First attempt to submit the remote detection job failed')
@@ -682,7 +682,8 @@ class JobRemoteDetect:
         if job_exec and wait:
             self._extract_info( partition_name)
         elif not job_exec and not cancelled:
-            access_options.append(f'--constraint="{access_node}"')
+            if access_node:
+                access_options.append(f'--constraint="{access_node}"')
             logger.error(f'The autodetection script for "{partition_name}" could not be submitted\n'
                         'Please check the sbatch options ("access" field '
                         'in the partition description).')
