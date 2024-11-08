@@ -70,6 +70,7 @@ nvidia_gpu_architecture = {
                             "GeForce RTX 4090": "sm_89",
                             "A100": "sm_80",
                             "H100": "sm_90",
+                            "H200": "sm_90",
                             "H100 PCIe": "sm_90",
                             "H100 SXM": "sm_90",
                             "Titan V": "sm_70",
