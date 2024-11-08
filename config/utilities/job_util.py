@@ -543,12 +543,12 @@ class SlurmContext:
         # With no status bar
         # await asyncio.gather(*(self.create_remote_partition(node,launcher, scheduler, user_input) for node in self.node_types))
 
-        all_partitions = asyncio.ensure_future(asyncio.gather(*([asyncio.ensure_future(self.create_remote_partition(node, launcher, scheduler, user_input)) for node in self.node_types])))
+        all_partitions = asyncio.ensure_future(asyncio.gather(*(self.create_remote_partition(node,launcher, scheduler, user_input) for node in self.node_types)))
 
         status_task = None
         try:
             # 5 seconds delay until the bar appears
-            done, pending = await asyncio.wait([all_partitions, asyncio.sleep(10)], return_when=asyncio.FIRST_COMPLETED)
+            done, pending = await asyncio.wait([all_partitions, asyncio.ensure_future(asyncio.sleep(10))], return_when=asyncio.FIRST_COMPLETED)
             # If the tasks are still running after 5 seconds, start the status bar
             if not all_partitions.done():
                 status_task = asyncio.ensure_future(status_bar())
