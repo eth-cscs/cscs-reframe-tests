@@ -125,6 +125,7 @@ site_configuration = {
                '--max-retries=1',
                '--report-file=$PWD/latest.json',
                '-c checks/prgenv/mpi.py',
+               '-c checks/apps/cp2k/cp2k.py',
            ],
            'target_systems': ['todi'],
        }
