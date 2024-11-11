@@ -9,6 +9,14 @@ import reframe as rfm
 import reframe.utility.sanity as sn
 
 
+class fetch_namd_resources(rfm.RunOnlyRegressionTest):
+    executable = 'wget https://jfrog.svc.cscs.ch/artifactory/cscs-reframe-tests/NAMD.tar.gz && tar -xvf LAMMPS.tar.gz'
+
+    @sanity_function
+    def validate_download(self):
+        return sn.assert_eq(self.job.exitcode, 0)
+
+
 @rfm.simple_test
 class NamdCheck(rfm.RunOnlyRegressionTest):
     scale = parameter(['small', 'large'])
@@ -21,6 +29,7 @@ class NamdCheck(rfm.RunOnlyRegressionTest):
     num_tasks_per_core = 2
     maintainers = ['CB', 'LM']
     tags = {'scs', 'external-resources'}
+    namd_resources = fixture(fetch_namd_resources, scope='session')
     extra_resources = {
         'switches': {
             'num_switches': 1
@@ -80,8 +89,8 @@ class NamdCheck(rfm.RunOnlyRegressionTest):
     @run_before('compile')
     def prepare_build(self):
         # Reset sources dir relative to the SCS apps prefix
-        self.sourcesdir = os.path.join(self.current_system.resourcesdir,
-                                       'NAMD', 'prod')
+        self.sourcesdir = os.path.join(self.namd_resources.stagedir,
+                                       'NAMD')
 
     @sanity_function
     def validate_energy(self):

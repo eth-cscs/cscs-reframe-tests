@@ -9,12 +9,21 @@ import reframe as rfm
 import reframe.utility.sanity as sn
 
 
+class fetch_lampps_resources(rfm.RunOnlyRegressionTest):
+    executable = 'wget https://jfrog.svc.cscs.ch/artifactory/cscs-reframe-tests/LAMMPS.tar.gz && tar -xvf LAMMPS.tar.gz'
+
+    @sanity_function
+    def validate_download(self):
+        return sn.assert_eq(self.job.exitcode, 0)
+
+
 class LAMMPSCheck(rfm.RunOnlyRegressionTest):
     scale = parameter(['small', 'large'])
     modules = ['cray-python', 'LAMMPS']
     tags = {'external-resources', 'maintenance', 'production'}
     maintainers = ['LM']
     strict_check = False
+    lammps_resources = fixture(fetch_lampps_resources, scope='session')
     extra_resources = {
         'switches': {
             'num_switches': 1
@@ -23,13 +32,15 @@ class LAMMPSCheck(rfm.RunOnlyRegressionTest):
 
     @run_after('init')
     def setup_by_system(self):
-        # Reset sources dir relative to the SCS apps prefix
-        self.sourcesdir = os.path.join(self.current_system.resourcesdir,
-                                       'LAMMPS')
         if self.current_system.name in ['eiger', 'pilatus']:
             self.valid_prog_environs = ['cpeGNU']
         else:
             self.valid_prog_environs = ['builtin']
+
+    @run_after('setup')
+    def setup_sourcesdir(self):
+        self.sourcesdir = os.path.join(self.lammps_resources.stagedir,
+                                       'LAMMPS')
 
     @performance_function('timesteps/s')
     def perf(self):
