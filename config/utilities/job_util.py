@@ -19,8 +19,8 @@ from utilities.constants import (amd_gpu_architecture,
                                  devices_detect_bash,
                                  nvidia_gpu_architecture,
                                  resources)
-from utilities.io import (logger, user_descr, user_integer,
-                          user_selection, user_yn, status_bar)
+from utilities.io import (getlogger, status_bar, user_descr,
+                          user_integer, user_selection, user_yn)
 
 WDIR = os.getcwd()
 TIME_OUT_POLICY = 200
@@ -67,10 +67,14 @@ class Scheduler:
 
         if not schedulers_found:
             self._scheduler = 'local'
-            logger.warning('No remote scheduler was detected in the system')
+            getlogger().warning(
+                'No remote scheduler was detected in the system'
+            )
         elif len(schedulers_found) > 1:
-            logger.debug('The following schedulers were found: '
-                         f'{", ".join(schedulers_found)}')
+            getlogger().debug(
+                'The following schedulers were found: '
+                f'{", ".join(schedulers_found)}'
+            )
             if user_input:
                 self._name = user_selection(schedulers_found)
             else:
@@ -78,7 +82,7 @@ class Scheduler:
         else:
             self._name = schedulers_found[0]
 
-        logger.info(f'The scheduler is set to {self._name}\n')
+        getlogger().info(f'The scheduler is set to {self._name}\n')
 
     @property
     def name(self):
@@ -116,10 +120,12 @@ class Launcher:
 
         if not launchers_found:
             self._name = 'local'
-            logger.warning('No parallel launcher was detected in the system')
+            getlogger().warning(
+                'No parallel launcher was detected in the system'
+            )
         elif len(launchers_found) > 1:
-            logger.debug('The following launchers were found: '
-                         f'{", ".join(launchers_found)}')
+            getlogger().debug('The following launchers were found: '
+                              f'{", ".join(launchers_found)}')
             if user_input:
                 self._name = user_selection(launchers_found)
             else:
@@ -127,7 +133,7 @@ class Launcher:
         else:
             self._name = launchers_found[0]
 
-        logger.info(f'The launcher is set to {self._name}\n')
+        getlogger().info(f'The launcher is set to {self._name}\n')
 
     @property
     def name(self):
@@ -161,7 +167,7 @@ class SlurmContext:
 
     def search_node_types(self, exclude_feats: list = []):
 
-        logger.debug('Filtering nodes based on ActiveFeatures...')
+        getlogger().debug('Filtering nodes based on ActiveFeatures...')
         try:
             nodes_info = subprocess.run(
                 'scontrol show nodes -o | grep "ActiveFeatures"',
@@ -177,7 +183,9 @@ class SlurmContext:
             raw_node_types = [[tuple(n[0].split(',')), tuple(
                 n[1].split(','))] for n in raw_node_types]
         except Exception:
-            logger.error('Node types could not be retrieved from scontrol')
+            getlogger().error(
+                'Node types could not be retrieved from scontrol'
+            )
             return
 
         default_partition = subprocess.run(
@@ -187,10 +195,10 @@ class SlurmContext:
         )
         default_partition = re.findall(
             r'PartitionName=([\w]+)', default_partition.stdout)[0]
-        logger.debug(f'Detected default partition: {default_partition}')
+        getlogger().debug(f'Detected default partition: {default_partition}')
         if not default_partition:
             default_partition = None
-            logger.warning('Default partition could not be detected')
+            getlogger().warning('Default partition could not be detected')
 
         self._set_nodes_types(exclude_feats, raw_node_types, default_partition)
 
@@ -223,12 +231,12 @@ class SlurmContext:
             # self.default_nodes = default_nodes[0][1] # Get the filtered feats
             self.default_nodes = default_nodes  # Get the filtered features
 
-        logger.debug(
+        getlogger().debug(
             f'\nThe following {len(set(node_types))} '
             'node types were detected:')
         for node_t in set(node_types):
-            logger.debug(node_t)
-        logger.debug('\n')
+            getlogger().debug(node_t)
+        getlogger().info('')
 
         self.node_types = set(node_types)  # Get the unique combinations
 
@@ -245,7 +253,7 @@ class SlurmContext:
 
     def _find_devices(self, node_feats: list) -> Union[dict, None]:
 
-        logger.debug(
+        getlogger().debug(
             f'Detecting devices for node with features {node_feats}...')
         devices = subprocess.run(
             'scontrol show nodes -o | grep '
@@ -255,7 +263,7 @@ class SlurmContext:
         try:
             devices_raw = re.findall(r'Gres=([\w,:()]+)', devices.stdout)[0]
         except Exception:
-            logger.warning('Unable to detect the devices in the node')
+            getlogger().warning('Unable to detect the devices in the node')
             return None
 
         devices = [item.rsplit(':', 1)[0]
@@ -267,18 +275,18 @@ class SlurmContext:
             # nodes have all the same model of GPUs but different
             # number, it is considered as the same devices type
             # so we don't raise this msg
-            logger.warning('Detected different devices in nodes '
-                           'with the same set of features.\n'
-                           'Please check the devices option in '
-                           'the configuration file.')
+            getlogger().warning('Detected different devices in nodes '
+                                'with the same set of features.\n'
+                                'Please check the devices option in '
+                                'the configuration file.')
             return None
         elif '(null)' in list(devices) or 'gpu' not in next(iter(devices)):
             # Detects if the nodes have no devices installed at
             # all or if not GPUs are installed
-            logger.debug('No devices were found for this node type.')
+            getlogger().debug('No devices were found for this node type.')
             return None
         else:
-            logger.debug('Detected GPUs.')
+            getlogger().debug('Detected GPUs.')
             # We only reach here if the devices installation
             # is homogeneous accross the nodes
             return self._count_gpus(devices_raw)
@@ -334,7 +342,7 @@ class SlurmContext:
 
     def search_reservations(self):
 
-        logger.debug('Searching for reservations...')
+        getlogger().debug('Searching for reservations...')
         reservations_info = subprocess.run(
             'scontrol show res | grep "ReservationName"',
             stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
@@ -347,8 +355,8 @@ class SlurmContext:
             r'ReservationName=([\w-]+)', reservations_info)
         self.reservations = reservations
         if not reservations:
-            logger.warning('Unable to retrieve reservations')
-        logger.debug('\n')
+            getlogger().warning('Unable to retrieve reservations')
+        getlogger().info('')
 
     @staticmethod
     def _check_gpus_count(node_devices_slurm: dict,
@@ -360,10 +368,12 @@ class SlurmContext:
 
         # Check that the same number of GPU models are the same
         if len(node_devices_job) != len(node_devices_slurm):
-            logger.warning('WARNING: discrepancy between the '
-                           'number of GPU models\n'
-                           f'GPU models from Gres ({len(node_devices_slurm)}) '
-                           f'GPU models from job ({len(node_devices_job)}) ')
+            getlogger().warning(
+                'WARNING: discrepancy between the '
+                'number of GPU models\n'
+                f'GPU models from Gres ({len(node_devices_slurm)}) '
+                f'GPU models from job ({len(node_devices_job)}) '
+            )
 
         # Get the total number of GPUs (independently of the model)
         for gpu_slurm in node_devices_slurm:
@@ -380,19 +390,19 @@ class SlurmContext:
             gpus_job_count += node_devices_job[gpu_job]
 
         if gpus_job_count != gpus_slurm_count:
-            logger.warning('The total number of detected GPUs '
-                           f'({gpus_job_count}) '
-                           'differs from the (minimum) in GRes '
-                           f'from slurm({gpus_slurm_count}).')
+            getlogger().warning('The total number of detected GPUs '
+                                f'({gpus_job_count}) '
+                                'differs from the (minimum) in GRes '
+                                f'from slurm({gpus_slurm_count}).')
             if gpus_job_count > gpus_slurm_count:
-                logger.debug('It might be that nodes in this partition '
-                             'have different number of GPUs '
-                             'of the same model.\nIn the config, the '
-                             'minimum number of GPUs that will '
-                             'be found in the nodes of this partition '
-                             'is set.\n')
+                getlogger().debug('It might be that nodes in this partition '
+                                  'have different number of GPUs '
+                                  'of the same model.\nIn the config, the '
+                                  'minimum number of GPUs that will '
+                                  'be found in the nodes of this partition '
+                                  'is set.\n')
             elif gpus_job_count < gpus_slurm_count:
-                logger.error(
+                getlogger().error(
                     'Lower number of GPUs were detected in the node.\n')
 
         return devices
@@ -420,7 +430,6 @@ class SlurmContext:
                  'environs':   ['builtin'],
                  'max_jobs':   max_jobs,
                  'launcher':   'local'})
-        logger.debug('\n')
 
     async def create_remote_partition(self, node_feats: tuple, launcher: str,
                                       scheduler: str, user_input: bool = True):
@@ -442,7 +451,7 @@ class SlurmContext:
                 access_node = '&'.join(node_features)
             name = f'partition_{self._p_n}'
             if not user_input:
-                logger.debug(f'{name} : {node_feats}')
+                getlogger().info(f'{name} : {node_feats}', color=False)
             max_jobs = 100
             time_limit = '10m'
             container_platforms = []
@@ -462,14 +471,16 @@ class SlurmContext:
                                         'no time limit',
                                         default_value=time_limit)
 
-                logger.debug(
+                getlogger().debug(
                     f'The associated group "{self._account}" was added to the '
                     'slurm access options -A'
                 )
                 if access_node:
-                    logger.debug('This node type is not the node type by '
-                                 'default, I added the required constraints:'
-                                 f' --constraint="{access_node}".')
+                    getlogger().debug(
+                        'This node type is not the node type by '
+                        'default, I added the required constraints:'
+                        f' --constraint="{access_node}".'
+                    )
                 access_user = user_descr(
                     'Do you need any additional access options?',
                     cancel_n=True
@@ -487,7 +498,7 @@ class SlurmContext:
                 # {'gpu:a100' : min(*)}
                 _detect_devices = self._find_devices(node_features)
 
-            logger.debug('\n')
+            getlogger().info('')
 
             # Handle the job submission only if required
             if _detect_devices or _detect_containers:
@@ -508,23 +519,23 @@ class SlurmContext:
                         container_platforms = remote_job.container_platforms
                         if 'tmod' not in self._modules_system and \
                                 'lmod' not in self._modules_system:
-                            logger.warning(
+                            getlogger().warning(
                                 '\nContainer platforms were '
                                 'detected but the automatic detection '
                                 'of required modules is not possible '
                                 f'with {self._modules_system}.'
                             )
                         else:
-                            logger.debug('\n')
+                            getlogger().info('')
                         # Add the container platforms in the features
                         for cp_i, cp in enumerate(container_platforms):
-                            logger.debug(
+                            getlogger().debug(
                                 f'Detected container platform {cp["type"]} '
                                 'in partition "{name}"'
                             )
                             node_features.append(cp['type'].lower())
                     else:
-                        logger.debug(
+                        getlogger().debug(
                             '\n\nNo container platforms were detected in '
                             f'partition "{name}"'
                         )
@@ -532,7 +543,7 @@ class SlurmContext:
                     if remote_job.devices:
                         # Issue any warning regarding missconfigurations
                         # between Gres and the detected devices
-                        logger.info(f"\nGPUs found in partition {name}")
+                        getlogger().info(f"\nGPUs found in partition {name}")
                         devices = self._check_gpus_count(
                             _detect_devices, remote_job.devices)
 
@@ -557,7 +568,7 @@ class SlurmContext:
                  'container_platforms': container_platforms}
             )
         else:
-            logger.debug('\n')
+            getlogger().info('')
 
     def create_reserv_partition(self, reserv: str, launcher: str,
                                 scheduler: str, user_input: bool = True):
@@ -567,8 +578,10 @@ class SlurmContext:
         access_options.append(f'--reservation={reserv}')
         name = f'{reserv}'
         if not user_input:
-            logger.debug(
-                f'Creating partition "{name}" for reservation: {reserv}')
+            getlogger().info(
+                f'Creating partition "{name}" for reservation: {reserv}',
+                color=False
+            )
         max_jobs = 100
         time_limit = '10m'
         max_jobs = 100
@@ -589,11 +602,11 @@ class SlurmContext:
                                     'on this partition?\nEnter "null" for no '
                                     'time limit', default_value=time_limit)
 
-            logger.debug(
+            getlogger().debug(
                 f'The associated group "{self._account}" was added to the '
                 'slurm access options - A'
             )
-            logger.debug(
+            getlogger().debug(
                 'The reservation was added to the slurm access options '
                 f'--reservation{reserv}.')
             access_user = user_descr(
@@ -617,7 +630,7 @@ class SlurmContext:
              'devices':    devices,
              'container_platforms': container_platforms}
         )
-        logger.debug('\n')
+        getlogger().info('')
 
     async def create_partitions(self, launcher: str, scheduler: str,
                                 user_input: bool = True):
@@ -653,15 +666,15 @@ class SlurmContext:
         finally:
             # Print warning if no partitions were created
             if not self.partitions:
-                logger.error(
+                getlogger().error(
                     '\nNo partitions were created, ReFrame '
                     'requires at least one.\n'
                 )
             # Remove unused temp dir or print it
             if self._keep_tmp_dir:
-                logger.debug(
+                getlogger().info(
                     '\nYou can check the job submissions '
-                    f'in {self.TMP_DIR}.\n'
+                    f'in {self.TMP_DIR}.\n', color=False
                 )
             else:
                 shutil.rmtree(self.TMP_DIR)
@@ -731,8 +744,9 @@ class JobRemoteDetect:
             job_id = re.search(r'Submitted batch job (?P<jobid>\d+)', cmd_out)
             if job_id:
                 job_id = job_id.group('jobid')
-                logger.info(
-                    f'\nJob submitted to partition {partition_name}: {job_id}')
+                getlogger().info(
+                    f'\nJob submitted to partition {partition_name}: {job_id}'
+                )
             elif 'error' in cmd_out or not cmd_out:
                 return False
 
@@ -741,9 +755,10 @@ class JobRemoteDetect:
                     completed.communicate(), timeout=TIME_OUT_POLICY
                 )
             except asyncio.TimeoutError:
-                logger.warning(
-                    f'\nJob submitted to {partition_name} took too long...')
-                logger.debug('Cancelling...')
+                getlogger().warning(
+                    f'\nJob submitted to {partition_name} took too long...'
+                )
+                getlogger().info('Cancelling...', color=False)
                 subprocess.run(
                     f'scancel {job_id}', universal_newlines=True,
                     check=True, shell=True
@@ -801,10 +816,12 @@ class JobRemoteDetect:
         elif not job_exec and not cancelled:
             if access_node:
                 access_options.append(f'--constraint="{access_node}"')
-            logger.error(f'The autodetection script for "{partition_name}" '
-                         'could not be submitted\n'
-                         'Please check the sbatch options ("access" field '
-                         'in the partition description).')
+            getlogger().error(
+                f'The autodetection script for "{partition_name}" '
+                'could not be submitted\n'
+                'Please check the sbatch options ("access" field '
+                'in the partition description).'
+            )
         else:
             # TODO I should check here that job_exec is a number
             self.job_id = job_exec

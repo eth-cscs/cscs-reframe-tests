@@ -4,10 +4,11 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import argparse
+import autopep8
 import os
 from jinja2 import Environment, FileSystemLoader
 from utilities.config import SystemConfig
-from utilities.io import logger
+from utilities.io import getlogger, set_logger_level
 
 JINJA2_TEMPLATE = 'reframe_config_template.j2'
 
@@ -37,12 +38,17 @@ def main(user_input, containers_search, devices_search, reservs,
     # Output filename for the generated configuration
     output_filename = f'{system_info.systemname}_config.py'
 
-    # Write the rendered content to the output file
-    with open(output_filename, 'w') as output_file:
-        output_file.write(organized_config)
+    # Format the content
+    formatted = autopep8.fix_code(organized_config)
 
-    logger.debug(f'\nThe following configuration files was created:\n'
-                 f'PYTHON: {system_info.systemname}_config.py')
+    # Overwrite the file with formatted content
+    with open(output_filename, "w") as output_file:
+        output_file.write(formatted)
+
+    getlogger().info(
+        f'\nThe following configuration files was created:\n'
+        f'PYTHON: {system_info.systemname}_config.py', color=False
+    )
 
 
 if __name__ == '__main__':
@@ -82,6 +88,11 @@ if __name__ == '__main__':
         '--access', action='store',
         help='Compulsory options for accesing remote nodes with sbatch'
     )
+    # Define the '--access' flag
+    parser.add_argument(
+        '-v', action='store_true',
+        help='Set the verbosity to debug for the auto mode'
+    )
 
     args = parser.parse_args()
 
@@ -119,6 +130,8 @@ if __name__ == '__main__':
         access_opt = ''
 
     user_input = not args.auto
+
+    set_logger_level(args.v or user_input)
 
     main(user_input, containers_search, devices_search,
          reservs, exclude_feats, access_opt, tmp_dir)

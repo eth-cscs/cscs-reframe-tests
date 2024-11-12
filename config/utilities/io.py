@@ -22,9 +22,7 @@ async def status_bar():
         await asyncio.sleep(0.2)  # Adjust for desired speed of the status bar
 
 
-# Define a custom logging format with colors
 class CustomFormatter(logging.Formatter):
-
     # Define ANSI escape codes for colors
     RESET = "\033[0m"
     COLORS = {
@@ -36,19 +34,60 @@ class CustomFormatter(logging.Formatter):
     }
 
     def format(self, record):
-        # Apply color based on the log level
-        color = self.COLORS.get(record.levelno, self.RESET)
+        # Check if the log has a 'color' attribute set for this message
+        color = self.COLORS.get(record.levelno, self.RESET) if getattr(
+            record, 'use_color', True) else ''
         message = super().format(record)
         return f"{color}{message}{self.RESET}"
 
 
-# Configure the logger
-logger = logging.getLogger()
-logging.getLogger('asyncio').setLevel(logging.WARNING)
-logger.setLevel(logging.DEBUG)
-console_handler = logging.StreamHandler()
-console_handler.setFormatter(CustomFormatter())
-logger.addHandler(console_handler)
+class CustomLogger(logging.Logger):
+    def __init__(self):
+        super().__init__("a")
+
+        # Create console handler and formatter
+        self.console_handler = logging.StreamHandler()
+        formatter = CustomFormatter()
+        self.console_handler.setFormatter(formatter)
+
+        self.addHandler(self.console_handler)
+        self.setLevel(logging.DEBUG)
+
+    def _log_with_color(self, level, msg, *args, **kwargs):
+        """Internal method to log with color control."""
+        # Check if the user has passed the 'color' argument
+        use_color = kwargs.pop('color', True)
+        extra = kwargs.setdefault('extra', {})
+        extra['use_color'] = use_color
+        super()._log(level, msg, args, **kwargs)
+
+    def debug(self, msg, *args, **kwargs):
+        self._log_with_color(logging.DEBUG, msg, *args, **kwargs)
+
+    def info(self, msg, *args, **kwargs):
+        self._log_with_color(logging.INFO, msg, *args, **kwargs)
+
+    def warning(self, msg, *args, **kwargs):
+        self._log_with_color(logging.WARNING, msg, *args, **kwargs)
+
+    def error(self, msg, *args, **kwargs):
+        self._log_with_color(logging.ERROR, msg, *args, **kwargs)
+
+    def critical(self, msg, *args, **kwargs):
+        self._log_with_color(logging.CRITICAL, msg, *args, **kwargs)
+
+
+_logger = CustomLogger()
+
+
+def set_logger_level(debug_info: bool = True):
+    global _logger
+    if not debug_info:
+        _logger.console_handler.setLevel(logging.INFO)
+
+
+def getlogger():
+    return _logger
 
 
 def user_yn(prompt: str) -> bool:
@@ -148,7 +187,7 @@ def request_modules(modules_system: ModulesSystem) -> list:
                                             cancel_n=True)
                 elif len(mod_options) > 1:
                     # Several versions were detected
-                    logger.debug(
+                    getlogger().debug(
                         'There are multiple versions of the '
                         f'module {module}: \n{mod_options}.\n'
                     )

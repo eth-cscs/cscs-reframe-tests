@@ -22,18 +22,24 @@ class bcolors:
     UNDERLINE = '\033[4m'
 
 
-RFM_DOCUMENTATION = {'modules':              'https://reframe-hpc.readthedocs.io/en/stable/config_reference.html#config.systems.modules',
-                     'resourcesdir':         'https://reframe-hpc.readthedocs.io/en/stable/config_reference.html#config.systems.resourcesdir',
-                     'schedulers':           'https://reframe-hpc.readthedocs.io/en/stable/config_reference.html#config.systems.partitions.scheduler',
-                     'devices':              'https://reframe-hpc.readthedocs.io/en/stable/config_reference.html#config.systems.partitions.devices',
-                     'sched_resources':      'https://reframe-hpc.readthedocs.io/en/stable/config_reference.html#custom-job-scheduler-resources',
-                     'extras':               'https://reframe-hpc.readthedocs.io/en/stable/config_reference.html#config.systems.partitions.extras',
-                     'partition_resources':  'https://reframe-hpc.readthedocs.io/en/stable/config_reference.html#config.systems.partitions.resources',
-                     'partition_envvars':    'https://reframe-hpc.readthedocs.io/en/stable/config_reference.html#config.systems.partitions.env_vars',
-                     'container_platforms':  'https://reframe-hpc.readthedocs.io/en/stable/config_reference.html#container-platform-configuration',
-                     'container_platformsm': 'https://reframe-hpc.readthedocs.io/en/stable/config_reference.html#config.systems.partitions.container_platforms.modules',
-                     'environments':         'https://reframe-hpc.readthedocs.io/en/stable/config_reference.html#environments',
-                     'modes':                'https://reframe-hpc.readthedocs.io/en/stable/config_reference.html#execution-mode-configuration'}
+rfm_url = 'https://reframe-hpc.readthedocs.io/en/stable/config_reference.html'
+
+
+RFM_DOCUMENTATION = {
+    'modules':              f'{rfm_url}#config.systems.modules',
+    'resourcesdir':         f'{rfm_url}#config.systems.resourcesdir',
+    'schedulers':           f'{rfm_url}#config.systems.partitions.scheduler',
+    'devices':              f'{rfm_url}#config.systems.partitions.devices',
+    'sched_resources':      f'{rfm_url}#custom-job-scheduler-resources',
+    'extras':               f'{rfm_url}#config.systems.partitions.extras',
+    'partition_resources':  f'{rfm_url}#config.systems.partitions.resources',
+    'partition_envvars':    f'{rfm_url}#config.systems.partitions.env_vars',
+    'container_platforms':  f'{rfm_url}#container-platform-configuration',
+    'container_platformsm': (f'{rfm_url}#config.systems.partitions.'
+                             'container_platforms.modules'),
+    'environments':         f'{rfm_url}#environments',
+    'modes':                f'{rfm_url}#execution-mode-configuration'
+}
 
 resources = [{'name': 'switches',
               'options': ['--switches={num_switches}']},
@@ -243,7 +249,7 @@ for container in "${CONTAINERS[@]}"; do
     fi
 
     if check_lmod; then
-        # Check if it's available as a module, regardless of 'which' result
+        # Check if it is available as a module, regardless of 'which' result
         if check_module_spider "$cmd"; then
             output=$(module spider "$cmd" 2>&1)
             modules_load=$(echo $output | grep -oP '(?<=available to load.).*?(?= Help)')
@@ -252,7 +258,7 @@ for container in "${CONTAINERS[@]}"; do
     fi
 
     if check_tmod; then
-        # Check if it's available as a module, regardless of 'which' result
+        # Check if it is available as a module, regardless of 'which' result
         if check_module_avail "$cmd"; then
             output=$(module avail "$cmd" 2>&1)
             modules_load=""
@@ -319,7 +325,7 @@ total_memory=$(echo "$output" | grep -i "mem:" | awk '{print $2}')
 
 # Output the total memory
 echo "Total memory: $total_memory"
-                '''
+'''
 
 slurm_submission_header = '''#!/bin/bash
 #SBATCH --job-name="Config_autodetection"

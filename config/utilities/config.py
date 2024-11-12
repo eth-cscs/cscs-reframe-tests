@@ -8,8 +8,8 @@ import os
 import re
 import socket
 from typing import Union
-from utilities.io import (logger, user_descr,
-                          user_selection, request_modules)
+from utilities.io import (getlogger, request_modules,
+                          user_descr, user_selection)
 from utilities.job_util import Launcher, Scheduler, SlurmContext
 from utilities.modules import ModulesSystem, modules_impl
 
@@ -58,11 +58,12 @@ class SystemConfig:
         systemname = os.getenv('CLUSTER_NAME')
         if systemname:
             self._systemname = systemname
-            logger.info(f'System name is {systemname}')
+            getlogger().info(f'System name is {systemname}')
         else:
             self._systemname = 'cluster'
-            logger.warning(
-                f'System name not found set to "{self._systemname}"')
+            getlogger().warning(
+                f'System name not found set to "{self._systemname}"'
+            )
 
     def find_hostname(self):
         '''Try to get the hostname'''
@@ -70,13 +71,13 @@ class SystemConfig:
             hostname = socket.gethostname()
         except Exception as e:
             self._hostnames.append('<hostname>')
-            logger.error('Hostname not found')
-            logger.error(f'Trying to retrieve the hostname raised:\n{e}')
+            getlogger().error('Hostname not found')
+            getlogger().error(f'Trying to retrieve the hostname raised:\n{e}')
         else:
             hostname = hostname.strip()
             hostname = re.search(r'^[A-Za-z]+', hostname)
             self._hostnames.append(hostname.group(0))
-            logger.info(f'Hostname is {hostname.group(0)}')
+            getlogger().info(f'Hostname is {hostname.group(0)}')
 
     def find_modules_system(self) -> Union[ModulesSystem, None]:
         '''Detect the modules system and return it'''
@@ -84,7 +85,7 @@ class SystemConfig:
             modules_system = modules_impl[mod]
             if modules_system().found:
                 self._modules_system = modules_system().name
-                logger.info(
+                getlogger().info(
                     f'Found a sane {self._modules_system} '
                     'installation in the system')
                 break
@@ -100,11 +101,10 @@ class SystemConfig:
                              '(e.g., large input files) are stored.'),
                              cancel_n=True)
         while not os.path.exists(res_dir) and not res_dir:
-            logger.warning('The specified directory does not exist.')
+            getlogger().warning('The specified directory does not exist.')
             res_dir = user_descr(('Directory prefix where external test '
                                   'resources (e.g., large input files) '
-                                  'are stored.'),
-                                 cancel_n=True)
+                                  'are stored.'), cancel_n=True)
         if res_dir:
             self._resourcesdir = res_dir
 
@@ -146,8 +146,8 @@ class SystemConfig:
         modules_system = self.find_modules_system()
         # TODO: not available for spack yet
         if modules_system and user_input:
-            logger.debug('You can require some modules to be loaded '
-                         'every time reframe is run on this system')
+            getlogger().debug('You can require some modules to be loaded '
+                              'every time reframe is run on this system')
             self._modules = request_modules(modules_system)
 
         if user_input:
@@ -183,7 +183,7 @@ class SystemConfig:
                 if not user_input:
                     for reserv in reservs:
                         if reserv not in self._slurm_schd.reservations:
-                            logger.warning(
+                            getlogger().warning(
                                 f'Reservation {reserv} not found, '
                                 'skipping...\n')
                         else:
@@ -196,10 +196,10 @@ class SystemConfig:
                 else:
                     reserv = True
                     while reserv:
-                        logger.debug(
+                        getlogger().debug(
                             'Do you want to create a partition for '
                             'a reservation?')
-                        logger.debug(f'{self._slurm_schd.reservations}\n')
+                        getlogger().debug(f'{self._slurm_schd.reservations}\n')
                         reserv = user_selection(
                             self._slurm_schd.reservations, cancel_n=True)
                         if reserv:
