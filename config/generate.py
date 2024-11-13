@@ -91,7 +91,7 @@ if __name__ == '__main__':
     # Define the '--access' flag
     parser.add_argument(
         '-v', action='store_true',
-        help='Set the verbosity to debug for the auto mode'
+        help='Set the verbosity to debug. Only effective if combined with --auto.'
     )
 
     args = parser.parse_args()

@@ -42,7 +42,7 @@ The script is run in **interactive** mode. User input is used to detect and gene
 | `--reservations=[list_reservations]`                | Allows the specification of the reservations in the system for which a partitions should be created |
 | `--prefix`                                          | Shared directory where the jobs for remote detection will be created and submitted |
 | `--access`                                          | Additional access options that must be included for the sbatch submission |
-| `-v`                                                | Adjust the verbosity level to debug in ```auto``` mode |
+| `-v`                                                | Adjust the verbosity level to debug in ```auto``` mode. The option is only effective if combined with ```--auto```. |
 
 ```sh
 python3 generate.py --auto
