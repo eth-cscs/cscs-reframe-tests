@@ -66,6 +66,10 @@ base_config = {
                     'name': 'memory',
                     'options': ['--mem={mem_per_node}']
                 },
+                {
+                    'name': 'reservation',
+                    'options': ['--reservation={reservation}']
+                },
             ],
             'devices': [
                 {
