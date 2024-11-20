@@ -10,27 +10,28 @@ import reframe.utility.udeps as udeps
 import uenv
 
 
-nb_gflops_ref = {
+ref_nb_gflops = {
     'a100': {'nb_gflops': (9746*2*0.85, -0.1, None, 'GFlops')},
     # https://www.nvidia.com/content/dam/en-zz/Solutions/Data-Center/a100/pdf/
     # + nvidia-a100-datasheet-us-nvidia-1758950-r4-web.pdf (FP64 Tensor Core)
+    'gh200': {'nb_gflops': (42700, -0.1, None, 'GFlops')},
+    # from https://confluence.cscs.ch/display/SCISWDEV/Feeds+and+Speeds
 }
 
 
 @rfm.simple_test
 class baremetal_cuda_node_burn(rfm.RegressionTest):
     valid_systems = ['*']
-    valid_prog_environs = ['builtin']  # ['+cuda']
+    valid_prog_environs = ['builtin']
     sourcesdir = 'src'
     num_gpus = variable(int, value=4)
     num_tasks_per_node = 4
     nb_duration = variable(int, value=10)
     nb_matrix_size = variable(int, value=30000)
-    # TODO: nb_matrix_size = parameter([nn for nn in range(4000, 32000, 2000)])
+    # NOTE: nb_matrix_size = parameter([nn for nn in range(4000, 32000, 2000)])
     executable = './cuda_visible_devices.sh build/burn'
     jfrog = variable(
-        str, value='https://jfrog.svc.cscs.ch/artifactory/cscs-reframe-tests/')
-    sourcesdir = None
+        str, value='https://jfrog.svc.cscs.ch/artifactory/cscs-reframe-tests')
     build_system = 'CMake'
 
     def fullpath(self, files):
@@ -54,9 +55,8 @@ class baremetal_cuda_node_burn(rfm.RegressionTest):
         self.build_system.nvcc = os.path.realpath(self.fullpath(nvcc_l))
 
         self.prebuild_cmds += [
-            # 'git clone --depth=1 https://github.com/bcumming/node-burn.git '
-            # 'node-burn.git',
-            'cp -r /users/piccinal/git/node-burn.git/* .',
+            'git clone --depth=1 https://github.com/bcumming/node-burn.git',
+            'mv node-burn/* .',
             f'wget -q {self.jfrog}/cmake/cmake-3.31.0-linux-{platform}.tar.gz',
             f'tar xf cmake-3.31.0-linux-{platform}.tar.gz',
             f'rm -f cmake-3.31.0-linux-{platform}.tar.gz'
@@ -68,16 +68,11 @@ class baremetal_cuda_node_burn(rfm.RegressionTest):
     @run_before('compile')
     def set_build_system_attrs(self):
         self.build_system.max_concurrency = 6
-        # self.prebuild_cmds += ['module list']
         self.build_system.srcdir = 'node-burn.git'
         self.build_system.builddir = 'build'
         c_part = self.current_partition
-        # gpu_sm = c_part.select_devices('gpu')[0].arch[-2:]
         self.build_system.config_opts = [
             '-DCMAKE_BUILD_TYPE=Release',
-            # f'-DCMAKE_CUDA_ARCHITECTURES:STRING={gpu_sm}',
-            # f'-S ../{self.build_system.srcdir}',
-            # TODO: '-DCMAKE_CXX_FLAGS="-march=znver2 -mtune=znver2"',
             '-DCMAKE_EXE_LINKER_FLAGS='
             '"/usr/lib64/openblas-pthreads/libopenblas.so.0"'
             # avoids "Looking for sgemm_ - not found"
@@ -87,7 +82,7 @@ class baremetal_cuda_node_burn(rfm.RegressionTest):
     def set_executable(self):
         self.executable_opts = [
             f'-ggemm,{self.nb_matrix_size}',
-            f'-d{self.nb_duration}',
+            f'-d{self.nb_duration}', '--batch'
         ]
 
     @sanity_function
@@ -101,14 +96,15 @@ class baremetal_cuda_node_burn(rfm.RegressionTest):
     @performance_function('GFlops')
     def nb_gflops(self):
         regex = r'nid\d+:gpu.*\s+(\d+\.\d+)\s+GFlops,'
-        return sn.extractsingle(regex, self.stdout, 1, float)
-        # NOTE: nodelist is reported in latest.json
+        return sn.min(sn.extractall(regex, self.stdout, 1, float))
+        # TODO: report power cap (nodelist is already in json)
 
     @run_before('performance')
     def validate_perf(self):
         self.uarch = uenv.uarch(self.current_partition)
+        print(f'self.uarch={self.uarch}')
         if self.uarch is not None and \
-           self.uarch in self.ref_nb_gflops:
+           self.uarch in ref_nb_gflops:
             self.reference = {
-                self.current_partition.fullname: nb_gflops_ref[self.uarch]
+                self.current_partition.fullname: ref_nb_gflops[self.uarch]
             }
