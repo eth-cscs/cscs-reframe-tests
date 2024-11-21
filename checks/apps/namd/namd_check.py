@@ -50,6 +50,26 @@ class namd_download(rfm.RunOnlyRegressionTest):
     def validate_download(self):
         return sn.assert_eq(self.job.exitcode, 0)
 
+class namd_input_download(rfm.RunOnlyRegressionTest):
+    '''
+    Download NAMD input files.
+    '''
+
+    descr = 'Fetch NAMD input files'
+    sourcedir = None
+    executable = 'curl'
+    executable_opts = [
+        '-f',  # Try to have curl not return 0 on server error
+        f'https://jfrog.svc.cscs.ch/artifactory/cscs-reframe-tests/NAMD-uenv.tar.gz',
+        '--output',
+        f'NAMD-uenv.tar.gz',
+    ]
+    local = True
+
+    @sanity_function
+    def validate_download(self):
+        return sn.assert_eq(self.job.exitcode, 0)
+
 
 class AutotoolsCustom(rfm.core.buildsystems.Autotools):
     '''
@@ -170,9 +190,20 @@ class NamdCheck(rfm.RunOnlyRegressionTest):
     valid_systems = ['*']
     executable = 'namd3'
     maintainers = ['SSA']
+    namd_input = fixture(namd_input_download, scope='session')
 
     @run_before('run')
     def prepare_run(self):
+        tarsource = os.path.join(
+            self.namd_input.stagedir,
+            f'NAMD-uenv.tar.gz',
+        )
+
+        # Extract source code and compiler bundled Charm++
+        self.prerun_cmds = [
+            f'tar -xzf {tarsource} -C {self.stagedir}',
+        ]
+
         self.uarch = uenv.uarch(self.current_partition)
         config = slurm_config[self.test_name][self.uarch]
 
