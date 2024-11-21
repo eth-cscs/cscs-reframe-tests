@@ -1,4 +1,3 @@
-# Copyright 2016-2024 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -157,8 +156,6 @@ class NamdBuildTest(rfm.CompileOnlyRegressionTest):
                 '--cuda-gencode arch=compute_90,code=sm_90',
             ]
 
-        self.extra_resources = {'reservation': {'reservation': 'NCCL'}}
-
     @sanity_function
     def validate_test(self):
         self.namd_executable = os.path.join(
@@ -196,7 +193,6 @@ class NamdCheck(rfm.RunOnlyRegressionTest):
             # It is required to make all the GPUs visible
             self.extra_resources = {
                 'gres': {'gres': 'gpu:4'},
-                'reservation': {'reservation': 'NCCL'},
             }
 
         self.executable_opts += ['stmv_gpures_nve.namd']
