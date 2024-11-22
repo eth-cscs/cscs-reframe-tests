@@ -199,7 +199,6 @@ class NamdCheck(rfm.RunOnlyRegressionTest):
             f'NAMD-uenv.tar.gz',
         )
 
-        # Extract source code and compiler bundled Charm++
         self.prerun_cmds = [
             f'tar -xzf {tarsource} -C {self.stagedir}',
         ]
