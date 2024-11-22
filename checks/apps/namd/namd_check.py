@@ -156,7 +156,7 @@ class NamdBuildTest(rfm.CompileOnlyRegressionTest):
             'sed -i \'s/-ltcl8.5/-ltcl8.6/g\' arch/Linux-ARM64.tcl',
         ]
 
-        prefix = '/user-environment/env/develop-single-node'
+        prefix = os.path.join(os.getenv('UENV_MOUNT_POINT'), 'env', 'develop-single-node')
 
         self.build_system.config_opts = [
             'Linux-ARM64-g++.cuda',
