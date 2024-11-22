@@ -6,7 +6,6 @@ import os
 
 import reframe as rfm
 import reframe.utility.sanity as sn
-import reframe.utility.udeps as udeps
 import uenv
 
 
@@ -21,15 +20,14 @@ ref_nb_gflops = {
 
 @rfm.simple_test
 class baremetal_cuda_node_burn(rfm.RegressionTest):
-    valid_systems = ['*']
+    valid_systems = ['+nvgpu +remote']
     valid_prog_environs = ['builtin']
-    sourcesdir = 'src'
     num_gpus = variable(int, value=4)
     num_tasks_per_node = 4
     nb_duration = variable(int, value=10)
     nb_matrix_size = variable(int, value=30000)
     # NOTE: nb_matrix_size = parameter([nn for nn in range(4000, 32000, 2000)])
-    executable = './cuda_visible_devices.sh build/burn'
+    executable = 'build/burn'
     jfrog = variable(
         str, value='https://jfrog.svc.cscs.ch/artifactory/cscs-reframe-tests')
     build_system = 'CMake'
@@ -40,6 +38,9 @@ class baremetal_cuda_node_burn(rfm.RegressionTest):
     @run_after('init')
     def set_num_tasks(self):
         self.num_tasks = self.num_gpus
+        self.extra_resources = {
+            'gres': {'gres': f'gpu:{self.num_tasks_per_node}'}
+        }
 
     @run_before('compile')
     def set_compilation_env(self):
@@ -91,7 +92,17 @@ class baremetal_cuda_node_burn(rfm.RegressionTest):
         nid002..:gpu 4 iterations, 16147.33 GFlops, 13.4 seconds, 21.600 Gbytes
         """
         regex = r'nid\d+:gpu.*\s+(\d+\.\d+)\s+GFlops,'
-        return sn.assert_found(regex, self.stdout)
+        num_gpus_res = sn.count(sn.extractall(regex, self.stdout, 1, float))
+        return sn.assert_eq(self.num_gpus, num_gpus_res)
+        # return sn.assert_found(regex, self.stdout)
+
+#     @sanity_function
+#     def assert_hsn_count(self):
+#         expected_devices = {f'hsn{i}' for i in range(self.cxi_device_count)}
+#         network_devices = sn.extractall(
+#             rf'Network device:\s*(?P<name>\S+)', self.stdout, 'name'
+#         )
+#         return sn.assert_eq(expected_devices, set(network_devices))
 
     @performance_function('GFlops')
     def nb_gflops(self):
@@ -102,7 +113,6 @@ class baremetal_cuda_node_burn(rfm.RegressionTest):
     @run_before('performance')
     def validate_perf(self):
         self.uarch = uenv.uarch(self.current_partition)
-        print(f'self.uarch={self.uarch}')
         if self.uarch is not None and \
            self.uarch in ref_nb_gflops:
             self.reference = {
