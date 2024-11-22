@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import os
-from types import FunctionType
 
 import reframe as rfm
 import reframe.utility.sanity as sn
@@ -49,6 +48,7 @@ class namd_download(rfm.RunOnlyRegressionTest):
     @sanity_function
     def validate_download(self):
         return sn.assert_eq(self.job.exitcode, 0)
+
 
 class namd_input_download(rfm.RunOnlyRegressionTest):
     '''
@@ -228,7 +228,8 @@ class NamdCheck(rfm.RunOnlyRegressionTest):
 
         self.executable_opts += ['stmv_gpures_nve.namd']
 
-        if self.uarch is not None and self.uarch in namd_references[self.test_name]:
+        if self.uarch is not None and \
+           self.uarch in namd_references[self.test_name]:
             self.reference = {
                 self.current_partition.fullname: namd_references[self.test_name][
                     self.uarch
