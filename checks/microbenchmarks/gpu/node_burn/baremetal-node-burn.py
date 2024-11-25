@@ -23,7 +23,7 @@ class baremetal_cuda_node_burn(rfm.RegressionTest):
     valid_systems = ['+nvgpu +remote']
     valid_prog_environs = ['builtin']
     num_gpus = variable(int, value=4)
-    num_tasks_per_node = 4
+    num_tasks_per_node = variable(int, value=4)
     nb_duration = variable(int, value=10)
     nb_matrix_size = variable(int, value=30000)
     # NOTE: nb_matrix_size = parameter([nn for nn in range(4000, 32000, 2000)])
@@ -58,6 +58,7 @@ class baremetal_cuda_node_burn(rfm.RegressionTest):
         self.prebuild_cmds += [
             'git clone --depth=1 https://github.com/bcumming/node-burn.git',
             'mv node-burn/* .',
+            # sles/15 comes with cmake/3.20.4
             f'wget -q {self.jfrog}/cmake/cmake-3.31.0-linux-{platform}.tar.gz',
             f'tar xf cmake-3.31.0-linux-{platform}.tar.gz',
             f'rm -f cmake-3.31.0-linux-{platform}.tar.gz'
@@ -94,15 +95,6 @@ class baremetal_cuda_node_burn(rfm.RegressionTest):
         regex = r'nid\d+:gpu.*\s+(\d+\.\d+)\s+GFlops,'
         num_gpus_res = sn.count(sn.extractall(regex, self.stdout, 1, float))
         return sn.assert_eq(self.num_gpus, num_gpus_res)
-        # return sn.assert_found(regex, self.stdout)
-
-#     @sanity_function
-#     def assert_hsn_count(self):
-#         expected_devices = {f'hsn{i}' for i in range(self.cxi_device_count)}
-#         network_devices = sn.extractall(
-#             rf'Network device:\s*(?P<name>\S+)', self.stdout, 'name'
-#         )
-#         return sn.assert_eq(expected_devices, set(network_devices))
 
     @performance_function('GFlops')
     def nb_gflops(self):
