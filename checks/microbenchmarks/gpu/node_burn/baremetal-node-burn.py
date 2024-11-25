@@ -34,15 +34,6 @@ class baremetal_cuda_node_burn(rfm.RegressionTest):
     def fullpath(self, files):
         return next((file for file in files if os.path.exists(file)), None)
 
-    @run_after('init')
-    def set_num_tasks(self):
-        self.skip_if_no_procinfo()
-
-        self.num_tasks = self.num_gpus
-        self.extra_resources = {
-            'gres': {'gres': f'gpu:{self.num_tasks_per_node}'}
-        }
-
     @run_before('compile')
     def set_compilation_env(self):
         gcc_l = [f'/usr/bin/gcc-{gnu_version}' for gnu_version in (13, 12, 11)]
@@ -82,8 +73,11 @@ class baremetal_cuda_node_burn(rfm.RegressionTest):
     @run_before('run')
     def set_executable(self):
         self.skip_if_no_procinfo()
+        self.num_tasks = self.num_gpus
         self.num_tasks_per_node = self.current_partition.devices[0].num_devices
-
+        self.extra_resources = {
+            'gres': {'gres': f'gpu:{self.num_tasks_per_node}'}
+        }
         self.executable_opts = [
             f'-ggemm,{self.nb_matrix_size}',
             f'-d{self.nb_duration}', '--batch'
