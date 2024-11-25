@@ -105,8 +105,10 @@ class baremetal_cuda_node_burn(rfm.RegressionTest):
     @run_before('performance')
     def validate_perf(self):
         self.uarch = uenv.uarch(self.current_partition)
-        if self.uarch is not None and \
-           self.uarch in ref_nb_gflops:
+        if (
+            self.uarch is not None and
+            self.uarch in ref_nb_gflops
+        ):
             self.reference = {
                 self.current_partition.fullname: ref_nb_gflops[self.uarch]
             }
