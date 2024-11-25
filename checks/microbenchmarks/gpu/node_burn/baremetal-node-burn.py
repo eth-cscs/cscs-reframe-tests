@@ -23,7 +23,6 @@ class baremetal_cuda_node_burn(rfm.RegressionTest):
     valid_systems = ['+nvgpu +remote']
     valid_prog_environs = ['builtin']
     num_gpus = variable(int, value=4)
-    num_tasks_per_node = variable(int, value=4)
     nb_duration = variable(int, value=10)
     nb_matrix_size = variable(int, value=30000)
     # NOTE: nb_matrix_size = parameter([nn for nn in range(4000, 32000, 2000)])
@@ -37,6 +36,9 @@ class baremetal_cuda_node_burn(rfm.RegressionTest):
 
     @run_after('init')
     def set_num_tasks(self):
+        self.skip_if_no_procinfo()
+        self.num_tasks_per_node = self.current_partition.devices[0].num_devices
+
         self.num_tasks = self.num_gpus
         self.extra_resources = {
             'gres': {'gres': f'gpu:{self.num_tasks_per_node}'}
