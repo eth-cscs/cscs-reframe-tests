@@ -81,7 +81,6 @@ class VaspCheck(rfm.RunOnlyRegressionTest):
                     vasp_references[self.test_name][self.uarch][self.num_nodes]
             }
 
-
     @sanity_function
     def assert_reference(self):
         force = sn.extractsingle(r'1 F=\s+(?P<result>\S+)',
