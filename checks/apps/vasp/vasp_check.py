@@ -53,7 +53,7 @@ class VaspCheck(rfm.RunOnlyRegressionTest):
         ]
         self.num_tasks_per_node = config['ntasks-per-node']
         self.num_tasks = self.num_nodes * self.num_tasks_per_node
-        self.num_cpus_per_task  = config['cpus-per-task']
+        self.num_cpus_per_task = config['cpus-per-task']
         self.num_tasks_per_socket = 1
         self.ntasks_per_core = 1
         self.time_limit = config['walltime']
