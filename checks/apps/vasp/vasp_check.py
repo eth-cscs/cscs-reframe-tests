@@ -142,7 +142,7 @@ class VaspBuildTest(rfm.CompileOnlyRegressionTest):
             'tar -xf vasp_src.tar.bz2',
             # The vasp tar ball contains inconsistent directory names between versions,
             # so we find the directory name and change it to vasp_src
-            'find . -maxdepth 1 -type d -name "vasp*" -exec mv {} vasp_src \;',
+            'find . -maxdepth 1 -type d -name "vasp*" -exec mv {} vasp_src \\;',
             'cd vasp_src',
             f'cp ../{makefile} makefile.include'
         ]
