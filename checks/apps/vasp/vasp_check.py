@@ -165,7 +165,6 @@ class VaspBuildCheck(VaspCheck):
     def setup_dependency(self):
         self.depends_on('VaspBuildTest', udeps.fully)
 
-
     @run_after('setup')
     def setup_executable(self):
         parent = self.getdep('VaspBuildTest')
