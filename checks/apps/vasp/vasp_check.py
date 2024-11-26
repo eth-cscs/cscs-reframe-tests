@@ -173,4 +173,3 @@ class VaspBuildCheck(VaspCheck):
         # The uenv version is patched, but for the source build we set this as a workaround
         self.env_vars['PMPI_GPU_AWARE'] = '1'
 
-
