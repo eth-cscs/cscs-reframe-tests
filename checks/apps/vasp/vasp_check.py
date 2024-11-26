@@ -133,15 +133,20 @@ class VaspBuildTest(rfm.CompileOnlyRegressionTest):
         if not os.path.isfile(makefile_path):
             self.skip(f'No makefile for uarch {self.uarch}')
 
-
-        vasp_download_cmd = f'curl --retry 5 -u ${{CSCS_REGISTRY_USERNAME}}:${{CSCS_REGISTRY_PASSWORD}} -X GET https://jfrog.svc.cscs.ch/artifactory/uenv-sources/vasp/vasp-{self.version}.tar.bz2 -o vasp_src.tar.bz2'
+        vasp_download_cmd = (
+            f'curl --retry 5 '
+            f'-u ${{CSCS_REGISTRY_USERNAME}}:${{CSCS_REGISTRY_PASSWORD}} '
+            '-X GET https://jfrog.svc.cscs.ch/artifactory'
+            '/uenv-sources/vasp/vasp-{self.version}.tar.bz2 '
+            '-o vasp_src.tar.bz2'
+        )
 
         # Download source and copy makfile matching uarch
         self.prebuild_cmds = [
             vasp_download_cmd,
             'tar -xf vasp_src.tar.bz2',
-            # The vasp tar ball contains inconsistent directory names between versions,
-            # so we find the directory name and change it to vasp_src
+            # The vasp tar ball contains inconsistent directory names between
+            # versions, so we find the directory name and change it to vasp_src
             'find . -maxdepth 1 -type d -name "vasp*" -exec mv {} vasp_src \\;',
             'cd vasp_src',
             f'cp ../{makefile} makefile.include'
@@ -170,6 +175,7 @@ class VaspBuildCheck(VaspCheck):
         parent = self.getdep('VaspBuildTest')
         self.executable = f'{parent.vasp_std_executable}'
         # VASP checks for CUDA aware MPI, which does not work with cray-mpich
-        # The uenv version is patched, but for the source build we set this as a workaround
+        # The uenv version is patched, but for the source build we set this
+        # as a workaround
         self.env_vars['PMPI_GPU_AWARE'] = '1'
 
