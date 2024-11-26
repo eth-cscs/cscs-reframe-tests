@@ -151,7 +151,6 @@ class VaspBuildTest(rfm.CompileOnlyRegressionTest):
             self.stagedir, 'vasp_src', 'bin', 'vasp_std'
         )
 
-
     @sanity_function
     def validate_test(self):
         return os.path.isfile(self.vasp_std_executable)
