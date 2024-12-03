@@ -33,7 +33,7 @@ class namd_download(rfm.RunOnlyRegressionTest):
 
     version = variable(str, value='3.0')
     descr = 'Fetch NAMD source code'
-    sourcedir = None
+    sourcesdir = None
     executable = 'curl'
     executable_opts = [
         '-f',  # Try to have curl not return 0 on server error
@@ -56,7 +56,7 @@ class namd_input_download(rfm.RunOnlyRegressionTest):
     '''
 
     descr = 'Fetch NAMD input files'
-    sourcedir = None
+    sourcesdir = None
     executable = 'curl'
     executable_opts = [
         '-f',  # Try to have curl not return 0 on server error
@@ -124,7 +124,7 @@ class NamdBuildTest(rfm.CompileOnlyRegressionTest):
 
     descr = 'NAMD Build Test'
     valid_prog_environs = ['+namd-single-node-dev']
-    valid_systems = ['*']
+    valid_systems = ['+nvgpu +uenv']
     build_system = AutotoolsCustom()
     sourcesdir = None
     maintainers = ['SSA']
@@ -156,7 +156,8 @@ class NamdBuildTest(rfm.CompileOnlyRegressionTest):
             'sed -i \'s/-ltcl8.5/-ltcl8.6/g\' arch/Linux-ARM64.tcl',
         ]
 
-        prefix = os.path.join(os.getenv('UENV_MOUNT_POINT'), 'env', 'develop-single-node')
+        # UENV_MOUNT_POINT is not available outside of an UENV
+        prefix = os.path.join('/user-environment', 'env', 'develop-single-node')
 
         self.build_system.config_opts = [
             'Linux-ARM64-g++.cuda',
@@ -187,7 +188,7 @@ class NamdBuildTest(rfm.CompileOnlyRegressionTest):
 class NamdCheck(rfm.RunOnlyRegressionTest):
     descr = 'NAMD STMV Benchmark'
     test_name = 'stmv'
-    valid_systems = ['*']
+    valid_systems = ['+nvgpu +uenv']
     executable = 'namd3'
     maintainers = ['SSA']
     namd_input = fixture(namd_input_download, scope='session')
