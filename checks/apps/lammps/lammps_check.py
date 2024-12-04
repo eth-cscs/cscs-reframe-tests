@@ -32,7 +32,6 @@ class LAMMPSBuildTest(rfm.CompileOnlyRegressionTest):
     '''
         Test LAMMPS build from source.
     '''
-
     descr = 'LAMMPS Build Test'
     valid_prog_environs = ['+lammps']
     valid_systems = ['gh200']
@@ -49,8 +48,7 @@ class LAMMPSBuildTest(rfm.CompileOnlyRegressionTest):
         cpu = self.current_partition.processor
         self.build_system = 'CMake'
         self.build_system.builddir = os.path.join(self.stagedir, 'build')
-        self.build_system.config_opts = []
-        self.build_system.config_opts += [
+        self.build_system.config_opts = [
             f'-C {self.stagedir + "/cmake/presets/kokkos-cuda.cmake"}'
             '-DKokkos_ENABLE_IMPL_CUDA_MALLOC_ASYNC=OFF',
             '-DKokkos_ARCH_NATIVE=yes',
