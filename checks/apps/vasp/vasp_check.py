@@ -137,7 +137,7 @@ class VaspBuildTest(rfm.CompileOnlyRegressionTest):
             f'curl --retry 5 '
             f'-u ${{CSCS_REGISTRY_USERNAME}}:${{CSCS_REGISTRY_PASSWORD}} '
             '-X GET https://jfrog.svc.cscs.ch/artifactory'
-            '/uenv-sources/vasp/vasp-{self.version}.tar.bz2 '
+            f'/uenv-sources/vasp/vasp-{self.version}.tar.bz2 '
             '-o vasp_src.tar.bz2'
         )
 
