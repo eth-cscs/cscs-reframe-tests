@@ -36,14 +36,16 @@ class namd_download(rfm.RunOnlyRegressionTest):
     descr = 'Fetch NAMD source code'
     sourcesdir = None
     executable = 'curl'
-    executable_opts = [
-        '-f',  # Try to have curl not return 0 on server error
-        '-u',
-        '${CSCS_REGISTRY_USERNAME}:${CSCS_REGISTRY_PASSWORD}',
-        f'{self.artifactory}/uenv-sources/namd/NAMD_{version}_Source.tar.gz',
-        '--output', f'NAMD_{version}_Source.tar.gz',
-    ]
     local = True
+    
+    @run_before('run')
+    def set_args(self):
+        executable_opts = [
+            '-f',  # Try to have curl not return 0 on server error
+            '-u', '${CSCS_REGISTRY_USERNAME}:${CSCS_REGISTRY_PASSWORD}',
+            f'{self.artifactory}/uenv-sources/namd/NAMD_{version}_Source.tar.gz',
+            '--output', f'NAMD_{version}_Source.tar.gz',
+        ]
 
     @sanity_function
     def validate_download(self):
@@ -59,12 +61,15 @@ class namd_input_download(rfm.RunOnlyRegressionTest):
     descr = 'Fetch NAMD input files'
     sourcesdir = None
     executable = 'curl'
-    executable_opts = [
-        '-f',  # Try to have curl not return 0 on server error
-        f'{self.artifactory}/cscs-reframe-tests/NAMD-uenv.tar.gz',
-        '--output', f'NAMD-uenv.tar.gz',
-    ]
     local = True
+    
+    @run_before('run')
+    def set_args(self):
+        executable_opts = [
+            '-f',  # Try to have curl not return 0 on server error
+            f'{self.artifactory}/cscs-reframe-tests/NAMD-uenv.tar.gz',
+            '--output', f'NAMD-uenv.tar.gz',
+        ]
 
     @sanity_function
     def validate_download(self):
