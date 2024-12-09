@@ -15,7 +15,7 @@ import uenv
 qe_references = {
     "Au surf": {
         "gh200": {"time_run": (14.02, None, 0.05, "s")},
-        "zen2": {"time_run": (99.45, None, 0.05, "s")}, # 1m44s
+        "zen2": {"time_run": (99.45, None, 0.05, "s")},  # 1m44s
     },
 }
 
@@ -50,11 +50,16 @@ class qe_download(rfm.RunOnlyRegressionTest):
     valid_prog_environs = ["*"]
     descr = "Fetch QE source code"
     sourcedir = None
-    executable = "wget"
-    executable_opts = [
-        f"https://gitlab.com/QEF/q-e/-/archive/qe-{version}/q-e-qe-{version}.tar.gz",
-    ]
+    executable = "wget"    
     local = True
+
+    @run_before('run')
+    def set_args(self):
+        self.executable_opts = [
+            '--quiet',
+            'https://gitlab.com/QEF/q-e/-/archive/'
+            f'qe-{self.version}/q-e-qe-{self.version}.tar.gz',
+        ]
 
     @sanity_function
     def validate_download(self):
@@ -114,7 +119,8 @@ class QeBuildTest(rfm.CompileOnlyRegressionTest):
 
     @sanity_function
     def validate_test(self):
-        self.pwx_executable = os.path.join(self.stagedir, "build", "bin", "pw.x")
+        self.pwx_executable = os.path.join(self.stagedir,
+                                           "build", "bin", "pw.x")
         return os.path.isfile(self.pwx_executable)
 
 
@@ -147,7 +153,8 @@ class QeCheck(rfm.RunOnlyRegressionTest):
             self.env_vars["OMP_NUM_THREADS"] = str(20)
 
         # set reference
-        if self.uarch is not None and self.uarch in qe_references[self.test_name]:
+        if self.uarch is not None and
+           self.uarch in qe_references[self.test_name]:
             self.reference = {
                 self.current_partition.fullname: qe_references[self.test_name][
                     self.uarch
