@@ -37,13 +37,14 @@ class namd_download(rfm.RunOnlyRegressionTest):
     sourcesdir = None
     executable = 'curl'
     local = True
-    
+
     @run_before('run')
     def set_args(self):
         executable_opts = [
             '-f',  # Try to have curl not return 0 on server error
             '-u', '${CSCS_REGISTRY_USERNAME}:${CSCS_REGISTRY_PASSWORD}',
-            f'{self.artifactory}/uenv-sources/namd/NAMD_{version}_Source.tar.gz',
+            f'{self.artifactory}/'
+            f'uenv-sources/namd/NAMD_{self.version}_Source.tar.gz',
             '--output', f'NAMD_{version}_Source.tar.gz',
         ]
 
@@ -62,7 +63,7 @@ class namd_input_download(rfm.RunOnlyRegressionTest):
     sourcesdir = None
     executable = 'curl'
     local = True
-    
+
     @run_before('run')
     def set_args(self):
         executable_opts = [
