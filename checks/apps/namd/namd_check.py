@@ -32,6 +32,7 @@ class namd_download(rfm.RunOnlyRegressionTest):
     '''
 
     version = variable(str, value='3.0')
+    artifactory = variable(str, value='https://jfrog.svc.cscs.ch/artifactory')
     descr = 'Fetch NAMD source code'
     sourcesdir = None
     executable = 'curl'
@@ -39,9 +40,8 @@ class namd_download(rfm.RunOnlyRegressionTest):
         '-f',  # Try to have curl not return 0 on server error
         '-u',
         '${CSCS_REGISTRY_USERNAME}:${CSCS_REGISTRY_PASSWORD}',
-        f'https://jfrog.svc.cscs.ch/artifactory/uenv-sources/namd/NAMD_{version}_Source.tar.gz',
-        '--output',
-        f'NAMD_{version}_Source.tar.gz',
+        f'{self.artifactory}/uenv-sources/namd/NAMD_{version}_Source.tar.gz',
+        '--output', f'NAMD_{version}_Source.tar.gz',
     ]
     local = True
 
@@ -55,14 +55,14 @@ class namd_input_download(rfm.RunOnlyRegressionTest):
     Download NAMD input files.
     '''
 
+    artifactory = variable(str, value='https://jfrog.svc.cscs.ch/artifactory')
     descr = 'Fetch NAMD input files'
     sourcesdir = None
     executable = 'curl'
     executable_opts = [
         '-f',  # Try to have curl not return 0 on server error
-        f'https://jfrog.svc.cscs.ch/artifactory/cscs-reframe-tests/NAMD-uenv.tar.gz',
-        '--output',
-        f'NAMD-uenv.tar.gz',
+        f'{self.artifactory}/cscs-reframe-tests/NAMD-uenv.tar.gz',
+        '--output', f'NAMD-uenv.tar.gz',
     ]
     local = True
 
@@ -150,14 +150,16 @@ class NamdBuildTest(rfm.CompileOnlyRegressionTest):
             f'tar --strip-components=1 -xzf {tarsource} -C {self.stagedir}',
             'tar -xf charm-8.0.0.tar',  # INFO: Depends on the NAMD version
             'cd charm-8.0.0',
-            f'./build charm++ multicore-linux-arm8 gcc --with-production --enable-tracing -j {self.build_system.max_concurrency}',
+            './build charm++ multicore-linux-arm8 gcc --with-production '
+            f'--enable-tracing -j {self.build_system.max_concurrency}',
             'cd ..',
             # Link against tcl8.6 (provided by the UENV)
             'sed -i \'s/-ltcl8.5/-ltcl8.6/g\' arch/Linux-ARM64.tcl',
         ]
 
         # UENV_MOUNT_POINT is not available outside of an UENV
-        prefix = os.path.join('/user-environment', 'env', 'develop-single-node')
+        prefix = os.path.join('/user-environment', 'env',
+                              'develop-single-node')
 
         self.build_system.config_opts = [
             'Linux-ARM64-g++.cuda',
@@ -231,9 +233,8 @@ class NamdCheck(rfm.RunOnlyRegressionTest):
         if self.uarch is not None and \
            self.uarch in namd_references[self.test_name]:
             self.reference = {
-                self.current_partition.fullname: namd_references[self.test_name][
-                    self.uarch
-                ]
+                self.current_partition.fullname:
+                    namd_references[self.test_name][self.uarch]
             }
 
     @sanity_function
@@ -255,7 +256,8 @@ class NamdCheck(rfm.RunOnlyRegressionTest):
                 sn.assert_eq(
                     sn.count(
                         sn.extractall(
-                            r'TIMING: (?P<step_num>\S+)  CPU:', self.stdout, 'step_num'
+                            r'TIMING: (?P<step_num>\S+)  CPU:',
+                            self.stdout, 'step_num'
                         )
                     ),
                     25,  # 500 steps and output frequency of 20
