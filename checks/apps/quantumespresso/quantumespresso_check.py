@@ -49,8 +49,8 @@ class qe_download(rfm.RunOnlyRegressionTest):
     valid_systems = ["*"]
     valid_prog_environs = ["*"]
     descr = "Fetch QE source code"
-    sourcedir = None
-    executable = "wget"    
+    sourcesdir = None
+    executable = "wget"
     local = True
 
     @run_before('run')
@@ -93,7 +93,8 @@ class QeBuildTest(rfm.CompileOnlyRegressionTest):
         self.build_system.max_concurrency = cpu.info["num_cpus_per_socket"]
 
         tarsource = os.path.join(
-            self.qe_sources.stagedir, f"q-e-qe-{self.qe_sources.version}.tar.gz"
+            self.qe_sources.stagedir,
+            f"q-e-qe-{self.qe_sources.version}.tar.gz"
         )
 
         # Extract source code
@@ -153,12 +154,11 @@ class QeCheck(rfm.RunOnlyRegressionTest):
             self.env_vars["OMP_NUM_THREADS"] = str(20)
 
         # set reference
-        if self.uarch is not None and
+        if self.uarch is not None and \
            self.uarch in qe_references[self.test_name]:
             self.reference = {
-                self.current_partition.fullname: qe_references[self.test_name][
-                    self.uarch
-                ]
+                self.current_partition.fullname:
+                    qe_references[self.test_name][self.uarch]
             }
 
     @sanity_function
