@@ -40,7 +40,7 @@ class namd_download(rfm.RunOnlyRegressionTest):
 
     @run_before('run')
     def set_args(self):
-        executable_opts = [
+        self.executable_opts = [
             '-f',  # Try to have curl not return 0 on server error
             '-u', '${CSCS_REGISTRY_USERNAME}:${CSCS_REGISTRY_PASSWORD}',
             f'{self.artifactory}/'
@@ -66,7 +66,7 @@ class namd_input_download(rfm.RunOnlyRegressionTest):
 
     @run_before('run')
     def set_args(self):
-        executable_opts = [
+        self.executable_opts = [
             '-f',  # Try to have curl not return 0 on server error
             f'{self.artifactory}/cscs-reframe-tests/NAMD-uenv.tar.gz',
             '--output', f'NAMD-uenv.tar.gz',
