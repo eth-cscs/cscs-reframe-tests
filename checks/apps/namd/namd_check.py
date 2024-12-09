@@ -45,7 +45,7 @@ class namd_download(rfm.RunOnlyRegressionTest):
             '-u', '${CSCS_REGISTRY_USERNAME}:${CSCS_REGISTRY_PASSWORD}',
             f'{self.artifactory}/'
             f'uenv-sources/namd/NAMD_{self.version}_Source.tar.gz',
-            '--output', f'NAMD_{version}_Source.tar.gz',
+            '--output', f'NAMD_{self.version}_Source.tar.gz',
         ]
 
     @sanity_function
