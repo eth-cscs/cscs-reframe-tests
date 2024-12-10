@@ -33,7 +33,7 @@ class LAMMPSBuildTest(rfm.CompileOnlyRegressionTest):
         Test LAMMPS build from source.
     '''
     descr = 'LAMMPS Build Test'
-    valid_prog_environs = ['+lammps']
+    valid_prog_environs = ['+lammps-kokkos-dev']
     valid_systems = ['gh200']
     maintainers = ['SSA']
     lammps_sources = fixture(lammps_download, scope='session')
