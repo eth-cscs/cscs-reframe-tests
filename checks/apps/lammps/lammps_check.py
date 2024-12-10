@@ -49,7 +49,7 @@ class LAMMPSBuildTest(rfm.CompileOnlyRegressionTest):
         self.build_system = 'CMake'
         self.build_system.builddir = os.path.join(self.stagedir, 'build')
         self.build_system.config_opts = [
-            f'-C {self.stagedir + "/cmake/presets/kokkos-cuda.cmake"}'
+            f'-C {self.stagedir + "/cmake/presets/kokkos-cuda.cmake " + "../cmake/"}'
             '-DKokkos_ENABLE_IMPL_CUDA_MALLOC_ASYNC=OFF',
             '-DKokkos_ARCH_NATIVE=yes',
             '-DKokkos_ARCH_HOPPER90=yes'
