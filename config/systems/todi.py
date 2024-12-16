@@ -109,7 +109,8 @@ site_configuration = {
            'options': [
                '--max-retries=1',
                '--report-file=$PWD/latest.json',
-               '-c checks'
+               '-c checks',
+               '--tag=production'
            ],
            'target_systems': ['todi'],
        },
@@ -119,6 +120,7 @@ site_configuration = {
                '--max-retries=1',
                '--report-file=$PWD/latest.json',
                '-c checks/apps',
+               '--tag=production'
            ],
            'target_systems': ['todi'],
        }

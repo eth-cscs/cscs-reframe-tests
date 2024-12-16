@@ -137,6 +137,7 @@ site_configuration = {
                '--max-retries=1',
                '--report-file=$PWD/latest.json',
                '-c checks/apps',
+               '--tag=production'
            ],
            'target_systems': ['daint'],
        }
