@@ -109,13 +109,7 @@ site_configuration = {
            'options': [
                '--max-retries=1',
                '--report-file=$PWD/latest.json',
-               '-c checks/system/integration/todi.py',
-               '-c checks/prgenv/mpi.py',
-               '-c checks/microbenchmarks/mpi/osu/osu_run.py',
-               '-c checks/microbenchmarks/mpi/osu/osu_tests.py',
-               '-c checks/microbenchmarks/cpu/alloc_speed/alloc_speed.py',
-               '-c checks/microbenchmarks/cpu/stream/stream.py',
-               '-c checks/prgenv/affinity_check.py',
+               '-c checks'
            ],
            'target_systems': ['todi'],
        },
@@ -124,7 +118,7 @@ site_configuration = {
            'options': [
                '--max-retries=1',
                '--report-file=$PWD/latest.json',
-               '-c checks/prgenv/mpi.py',
+               '-c checks/apps',
            ],
            'target_systems': ['todi'],
        }
