@@ -126,13 +126,8 @@ site_configuration = {
            'options': [
                '--max-retries=1',
                '--report-file=$PWD/latest.json',
-               '-c checks/system/integration/daint.py',
-               '-c checks/prgenv/mpi.py',
-               '-c checks/microbenchmarks/mpi/osu/osu_run.py',
-               '-c checks/microbenchmarks/mpi/osu/osu_tests.py',
-               '-c checks/microbenchmarks/cpu/alloc_speed/alloc_speed.py',
-               '-c checks/microbenchmarks/cpu/stream/stream.py',
-               '-c checks/prgenv/affinity_check.py',
+               '-c checks',
+               '--tag=production'
            ],
            'target_systems': ['daint'],
        },
@@ -141,7 +136,8 @@ site_configuration = {
            'options': [
                '--max-retries=1',
                '--report-file=$PWD/latest.json',
-               '-c checks/prgenv/mpi.py',
+               '-c checks/apps',
+               '--tag=production'
            ],
            'target_systems': ['daint'],
        }
