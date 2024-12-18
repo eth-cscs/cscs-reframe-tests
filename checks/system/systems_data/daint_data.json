@@ -21,29 +21,29 @@
             "fstype": "lustre"
         },
         {
-            "mount_point": "vast/users/cscs",
-            "fstype": "lustre"
+            "mount_point": "/users",
+            "fstype": "nfs"
         },
         {
             "mount_point": "/capstor/scratch/cscs"
         }
     ],
     "pkgs": [
-        "ltrace",
-        "pycxi-utils",
-        "lua-lmod",
-        "nnn",
-        "gcc12",
-        "gcc12-fortran",
-        "wget",
         "netcat",
-        "datacenter-gpu-manager",
+        "gcc12-fortran",
         "htop",
+        "lsof",
+        "libtool",
+        "ltrace",
         "ansible",
         "bubblewrap",
-        "lsof",
+        "nnn",
+        "wget",
+        "pycxi-utils",
+        "datacenter-gpu-manager",
         "gcc12-c++",
-        "libtool"
+        "lua-lmod",
+        "gcc12"
     ],
     "cscs_extra_vars": [
         {

@@ -81,9 +81,14 @@ def main(config_dir, system_name):
     if storage_vservice:
         for field in storage_vservice:
             if storage_vservice.get(field) == 'mounted':
-                mounted_path = field.replace("_state", "").replace('_', '/')
+                if 'vast_users_cscs_state' in field:
+                    mounted_path = '/users'
+                    fstype = 'nfs'
+                else:
+                    mounted_path = field.replace("_state", "").replace('_', '/')
+                    fstype = 'lustre'
                 mount_info.append({'mount_point': mounted_path,
-                                   'fstype': 'lustre'})
+                                   'fstype': fstype})
     else:
         print(f'\033[33mThe "{VSERVICES_DICT["storage"]}" '
               'vservice was not found\033[0m')
@@ -102,8 +107,8 @@ def main(config_dir, system_name):
                                        'fstype': m['fstype'],})
         for mount_var in MOUNT_VARS[1::]:
             if config_yaml_data.get(mount_var):
+                mounted_path = mount_var.replace("_path", "").replace('_', '/')
                 for i, mount_point in enumerate(mount_info):
-                    mounted_path = mount_var.replace("_path", "").replace('_', '/')
                     if mount_point["mount_point"] == mounted_path:
                         mount_info[i]["mount_point"] = config_yaml_data.get(
                             mount_var
