@@ -34,7 +34,6 @@ class SlurmSimpleBaseCheck(rfm.RunOnlyRegressionTest):
 class SlurmCompiledBaseCheck(rfm.RegressionTest):
     '''Base class for Slurm tests that require compiling some code'''
 
-    valid_systems = ['daint:normal']
     valid_prog_environs = ['PrgEnv-cray']
     tags = {'slurm', 'maintenance', 'ops',
             'production', 'single-node'}
@@ -172,15 +171,10 @@ class ConstraintRequestCabinetGrouping(SlurmSimpleBaseCheck):
 @rfm.simple_test
 class MemoryOverconsumptionCheck(SlurmCompiledBaseCheck):
     time_limit = '1m'
-    valid_systems += ['eiger:mc', 'pilatus:mc']
+    valid_systems = ['daint:normal', 'eiger:mc', 'pilatus:mc']
     tags.add('mem')
     sourcepath = 'eatmemory.c'
     executable_opts = ['4000M']
-
-    @run_after('init')
-    def set_skip(self):
-        self.skip_if(self.current_partition.name == 'login',
-                     'MemoryOverconsumptionCheck not needed on login node')
 
     @sanity_function
     def assert_found_exceeded_memory(self):
@@ -195,17 +189,11 @@ class MemoryOverconsumptionCheck(SlurmCompiledBaseCheck):
 @rfm.simple_test
 class MemoryOverconsumptionMpiCheck(SlurmCompiledBaseCheck):
     maintainers = ['@jgphpc', '@ekouts']
-    valid_systems += ['*']
-    valid_prog_environs += ['PrgEnv-gnu', 'PrgEnv-nvidia']
+    valid_systems = ['+remote']
     time_limit = '5m'
     build_system = 'SingleSource'
     sourcepath = 'eatmemory_mpi.c'
     tags.add('mem')
-
-    @run_after('setup')
-    def set_skip(self):
-        self.skip_if(self.current_partition.name == 'login',
-                     'MemoryOverconsumptionMpiCheck not needed on login node')
 
     @run_before('compile')
     def unset_ldflags(self):
