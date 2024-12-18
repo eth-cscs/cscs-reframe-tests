@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import re
+import subprocess
 
 import reframe as rfm
 import reframe.core.runtime as rt
