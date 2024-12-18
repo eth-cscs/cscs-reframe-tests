@@ -1,48 +1,58 @@
 {
     "filesystems": [
         {
-            "mount_point": "/capstor/scratch/cscs",
-            "fstype": "lustre",
-            "state": "mounted"
+            "mount_point": "capstor/scratch/cscs",
+            "fstype": "lustre"
         },
         {
-            "mount_point": "/capstor/apps/cscs",
-            "fstype": "lustre",
-            "state": "mounted"
+            "mount_point": "capstor/store/cscs",
+            "fstype": "lustre"
         },
         {
-            "mount_point": "/users",
-            "fstype": "lustre",
-            "state": "mounted"
+            "mount_point": "/users.OLD",
+            "fstype": "lustre"
         },
         {
-            "mount_point": "/store",
-            "fstype": "lustre",
-            "state": "mounted"
+            "mount_point": "iopsstor/scratch/cscs",
+            "fstype": "lustre"
         },
         {
-            "mount_point": "/mnt",
-            "fstype": "lustre",
-            "state": "mounted"
+            "mount_point": "iopsstor/store/cscs",
+            "fstype": "lustre"
+        },
+        {
+            "mount_point": "vast/users/cscs",
+            "fstype": "lustre"
+        },
+        {
+            "mount_point": "/capstor/scratch/cscs"
         }
     ],
-    "cscs_cluster_extra_pkgs": [
+    "pkgs": [
         "ltrace",
-        "bubblewrap",
-        "netcat",
-        "gcc12",
-        "nnn",
-        "gcc12-c++",
-        "gcc12-fortran",
-        "lua-lmod",
         "pycxi-utils",
+        "lua-lmod",
+        "nnn",
+        "gcc12",
+        "gcc12-fortran",
+        "wget",
+        "netcat",
         "datacenter-gpu-manager",
-        "ansible"
+        "htop",
+        "ansible",
+        "bubblewrap",
+        "lsof",
+        "gcc12-c++",
+        "libtool"
     ],
     "cscs_extra_vars": [
         {
             "env_var": "APPS",
             "env_value": "/capstor/apps/cscs/daint"
+        },
+        {
+            "env_var": "SCRATCH",
+            "env_value": "/capstor/scratch/cscs/"
         }
     ],
     "proxy_server": "http://proxy.cscs.ch",
@@ -53,6 +63,7 @@
         "localhost",
         "148.187.0.0/16",
         "10.0.0.0/8",
-        "172.16.0.0/12"
+        "172.16.0.0/12",
+        "192.168.0.0/16"
     ]
 }
