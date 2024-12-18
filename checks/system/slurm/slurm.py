@@ -15,9 +15,8 @@ class SlurmSimpleBaseCheck(rfm.RunOnlyRegressionTest):
     '''Base class for Slurm simple binary tests'''
 
     valid_systems = [
-        'daint:gpu', 'daint:mc'
-        'arolla:cn', 'arolla:pn', 'tsa:cn', 'tsa:pn',
-        'daint:xfer', 'eiger:mc', 'pilatus:mc'
+        'daint:normal', 'arolla:cn', 'arolla:pn', 'tsa:cn',
+        'tsa:pn', 'eiger:mc', 'pilatus:mc'
     ]
     valid_prog_environs = ['PrgEnv-cray']
     tags = {'slurm', 'maintenance', 'ops',
@@ -35,7 +34,7 @@ class SlurmSimpleBaseCheck(rfm.RunOnlyRegressionTest):
 class SlurmCompiledBaseCheck(rfm.RegressionTest):
     '''Base class for Slurm tests that require compiling some code'''
 
-    valid_systems = ['daint:gpu', 'daint:mc']
+    valid_systems = ['daint:normal']
     valid_prog_environs = ['PrgEnv-cray']
     tags = {'slurm', 'maintenance', 'ops',
             'production', 'single-node'}
@@ -52,17 +51,10 @@ class HostnameCheck(SlurmSimpleBaseCheck):
         'arolla:pn': r'^arolla-pp\d{3}$',
         'tsa:cn': r'^tsa-cn\d{3}$',
         'tsa:pn': r'^tsa-pp\d{3}$',
-        'daint:gpu': r'^nid\d{5}$',
-        'daint:mc': r'^nid\d{5}$',
-        'daint:xfer': r'^datamover\d{2}.cscs.ch$',
+        'daint:normal': r'^nid\d{6}$',
         'eiger:mc': r'^nid\d{6}$',
         'pilatus:mc': r'^nid\d{6}$'
     }
-
-    @run_before('run')
-    def set_pending_time(self):
-        if self.current_partition.name == 'xfer':
-            self.max_pending_time = '2m'
 
     @run_before('sanity')
     def set_sanity_patterns(self):
