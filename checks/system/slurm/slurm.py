@@ -403,3 +403,205 @@ class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
             self.assert_min_nodes(),
             self.assert_percentage_nodes(),
         ])
+
+
+class SlurmPrologCheck(rfm.RunOnlyRegressionTest):
+
+    valid_systems = ['*']
+    valid_prog_environs = ['builtin']
+    time_limit = '2m'
+    tags = {'vs-node-validator'}
+
+class SlurmPrologGPUCheck(SlurmPrologCheck):
+
+    prolog_file = '/etc/slurm/node_prolog.d/003_gpu_check.sh'
+
+@rfm.simple_test
+class SlurmPrologGPUModelCheck(SlurmPrologGPUCheck):
+
+    descr = 'Test the GPU model found in the node'
+    pattern = r"GPUTYPEEXPECTED='([^']+)'"
+    with open(SlurmPrologGPUCheck.prolog_file, 'r') as file:
+        file_content = file.read()
+    match = re.search(pattern, file_content)
+    if match:
+        GPUTYPEEXPECTED = match.group(1)
+    else:
+        valid_systems = []
+
+    @run_after('setup')
+    def set_executable(self):
+        self.executable = "/usr/bin/nvidia-smi -i 0 -q | grep 'Product Name' | awk -F': ' '{print $2}'"
+
+    @sanity_function
+    def validate(self):
+        return sn.assert_found(self.GPUTYPEEXPECTED, self.stdout,
+                               msg='GPU type is not the expected $GPUTYPEEXPECTED')
+
+@rfm.simple_test
+class SlurmPrologGPUNumberCheck(SlurmPrologGPUCheck):
+
+    descr = 'Test the number of GPUs found in the node'
+    pattern = r"GPUNUM=(\d+)"
+    with open(SlurmPrologGPUCheck.prolog_file, 'r') as file:
+        file_content = file.read()
+    match = re.search(pattern, file_content)
+    if match:
+        GPUNUM = int(match.group(1))
+    else:
+        valid_systems = []
+
+    @run_after('setup')
+    def set_executable(self):
+        self.executable = "/usr/bin/nvidia-smi --list-gpus | wc -l"
+
+    @sanity_function
+    def validate(self):
+        with open(str(self.stdout), "r") as file:
+            DETECTED_GPUS = int(file.read())
+        return sn.assert_eq(self.GPUNUM, DETECTED_GPUS,
+                            msg=f'Number of GPUs {DETECTED_GPUS}, expected {self.GPUNUM}')
+
+@rfm.simple_test
+class SlurmPrologGPUPowerCheck(SlurmPrologGPUCheck):
+
+    descr = 'Test the number of GPUs found in the node'
+    pattern = r"GPUNUM=(\d+)"
+    with open(SlurmPrologGPUCheck.prolog_file, 'r') as file:
+        file_content = file.read()
+    match = re.search(pattern, file_content)
+    if match:
+        gpu_num = parameter(list(range(int(match.group(1)))))
+    else:
+        valid_systems = []
+    pattern = r'POWERCAPEXPECTED="(\d+(\.\d+)?)\s([A-Za-z])"'
+    with open(SlurmPrologGPUCheck.prolog_file, 'r') as file:
+        file_content = file.read()
+    match = re.search(pattern, file_content)
+    if match and valid_systems:
+        POWERCAPEXPECTED = match.group(1)
+    else:
+        valid_systems = []
+
+    @run_after('setup')
+    def set_executable(self):
+        self.executable = f"/usr/bin/nvidia-smi -i {self.gpu_num} -q | grep -A2 'Module Power Readings' | tail -1 | awk -F': ' '{'{'}print $2{'}'}'"
+
+    @sanity_function
+    def validate(self):
+        return sn.assert_found(self.POWERCAPEXPECTED, self.stdout,
+                               msg=f"Power cap on GPU {self.gpu_num} does not match the expected {self.POWERCAPEXPECTED}")
+
+@rfm.simple_test
+class SlurmPrologGPUECCErrorsCheck(SlurmPrologGPUCheck):
+
+    descr = 'Test the number of GPUs found in the node'
+    pattern = r"GPUNUM=(\d+)"
+    with open(SlurmPrologGPUCheck.prolog_file, 'r') as file:
+        file_content = file.read()
+    match = re.search(pattern, file_content)
+    if match:
+        gpu_num = parameter(list(range(int(match.group(1)))))
+    else:
+        valid_systems = []
+
+    @run_after('setup')
+    def set_executable(self):
+        self.executable = f"nvidia-smi --query-gpu=ecc.errors.uncorrected.volatile.total --format=csv,noheader --id={self.gpu_num}"
+
+    @sanity_function
+    def validate(self):
+        status = "ok"
+        with open(str(self.stdout), "r") as file:
+            unrecorable_errors = file.read().strip().split()
+        for error in unrecorable_errors:
+            result = sn.assert_eq(int(error), 0,
+                                  msg=f'GPU {self.gpu_num}: {error} uncorrected ECC errors'
+                                  ' since last driver restart')
+            if not result:
+                return result
+        return result
+
+@rfm.simple_test
+class SlurmPrologllibfabricErrorCheck(SlurmPrologCheck):
+
+    @run_after('setup')
+    def set_executable(self):
+        self.executable = "/opt/cray/libfabric/1.15.2.0/bin/fi_info 2>&1 | awk -F'[:, ]' '/cxip_query_if_list/ {r=r s $13;s=\",\"} END{print r}'"
+
+    @sanity_function
+    def validate(self):
+        with open(str(self.stdout), "r") as file:
+            LIBFABERR = file.read().strip()
+        return sn.assert_false(LIBFABERR,
+                               msg = f'libfabric error on {LIBFABERR}')
+
+@rfm.simple_test
+class SlurmProloglcxistateCheck(SlurmPrologCheck):
+
+    @run_after('setup')
+    def set_executable(self):
+        self.executable = "cxi_stat |grep -c \"Link state: up\""
+
+    @sanity_function
+    def validate(self):
+        with open(str(self.stdout), "r") as file:
+            lstate = int(file.read())
+        return sn.assert_eq(lstate, 4,
+                            msg=f'cxi: only {lstate} are up')
+
+@rfm.simple_test
+class SlurmPrologPCIESpeedCheck(SlurmPrologCheck):
+
+    command = "cxi_stat -l"
+    result = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+    if result.returncode == 0:
+        cxi_param = parameter(result.stdout.splitlines())
+    else:
+        valid_systems = []
+
+    @run_after('setup')
+    def set_executable(self):
+        self.executable = f"cxi_stat -d {self.cxi_param}|awk '/PCIE speed\/width/{'{'}print $3, $6{'}'}'"
+
+    @sanity_function
+    def validate(self):
+        with open(str(self.stdout), "r") as file:
+            PCIE = file.read().strip().split()
+        if len(PCIE) == 2:
+            return sn.and_(sn.assert_eq(PCIE[0], "16.0",
+                                        msg=f'PCIE speed degrade on {self.cxi_param}: {PCIE[0]}'),
+                           sn.assert_eq(PCIE[1], "x16",
+                                        msg=f'PCIE speed degrade on {self.cxi_param}: {PCIE[0]}'))
+        else:
+            return False
+
+@rfm.simple_test
+class SlurmPrologHSNNumberCheck(SlurmPrologGPUCheck):
+
+    valid_systems = ['*']
+    valid_prog_environs = ['builtin']
+    time_limit = '2m'
+    prolog_file = '/etc/slurm/node_prolog.d/004_hsn.sh'
+    tags = {'vs-node-validator'}
+    descr = 'Test the number of HSN interfaces'
+    pattern = r"EXPECTED_HSN=(\d+)"
+    with open(prolog_file, 'r') as file:
+        file_content = file.read()
+    match = re.search(pattern, file_content)
+    if match:
+        EXPECTED_HSN = int(match.group(1))
+    else:
+        valid_systems = []
+
+    @run_after('setup')
+    def set_executable(self):
+        self.executable = "cxi_stat | grep 'Network device' | grep -oP 'hsn[0-3]' | wc -l"
+
+    @sanity_function
+    def validate(self):
+        with open(str(self.stdout), "r") as file:
+            NUM_HSN = int(file.read())
+        return sn.assert_eq(self.EXPECTED_HSN, NUM_HSN,
+                            msg=f'HSN interfaces found: {NUM_HSN}, expected {self.EXPECTED_HSN}')
+
