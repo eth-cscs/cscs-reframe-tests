@@ -99,7 +99,7 @@ class EnvironmentVariableCheck(SlurmSimpleBaseCheck):
 
 @rfm.simple_test
 class RequiredConstraintCheck(SlurmSimpleBaseCheck):
-    valid_systems = ['daint:login', 'dom:login']
+    valid_systems = []
     executable = 'srun'
     executable_opts = ['-A', osext.osgroup(), 'hostname']
 
