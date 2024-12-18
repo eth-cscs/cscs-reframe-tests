@@ -17,7 +17,7 @@ import json
 #                structure of the V-Clusters config files
 # ---------------------------------------------------------------------------
 
-system_data_file = "daint_data.json"
+system_data_file = "cluster_data.json"
 
 # Read the extracted info from the json file
 with open(os.path.join(json_file_path, system_data_file), 'r') as json_file:
