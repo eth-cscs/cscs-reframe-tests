@@ -348,13 +348,14 @@ class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
         all_matches = sn.extractall(fr'^{re.escape(self.slurm_partition)},up,'
                                     fr'(?P<nodes>\d+),.*', self.stdout,
                                     'nodes', int)
-        num_all_matches = sn.sum(all_matches)
-        diff_matches = num_all_matches - num_matches
+        self.num_all_matches = sn.sum(all_matches)
+        diff_matches = self.num_all_matches - num_matches
         return sn.assert_le(diff_matches,
-                            num_all_matches * self.ratio_minavail_nodes,
+                            self.num_all_matches * self.ratio_minavail_nodes,
                             msg=f'more than '
                                 f'{self.ratio_minavail_nodes * 100.0:.0f}% '
-                                f'({diff_matches} out of {num_all_matches}) '
+                                f'({diff_matches} out of '
+                                f'{self.num_all_matches}) '
                                 f'of nodes are unavailable for '
                                 f'partition {self.slurm_partition}')
 
@@ -365,3 +366,47 @@ class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
             self.assert_min_nodes(),
             self.assert_percentage_nodes(),
         ])
+
+    @performance_function('nodes')
+    def all_nodes(self):
+        return self.num_all_matches
+
+    @performance_function('nodes')
+    def idle_nodes(self):
+        return sn.sum(
+            sn.extractall(
+                fr'^{re.escape(self.slurm_partition)},up,'
+                fr'(?P<nodes>\d+),idle',
+                self.stdout, 'nodes', int
+            )
+        )
+
+    @performance_function('nodes')
+    def allocated_nodes(self):
+        return sn.sum(
+            sn.extractall(
+                fr'^{re.escape(self.slurm_partition)},up,'
+                fr'(?P<nodes>\d+),allocated',
+                self.stdout, 'nodes', int
+            )
+        )
+
+    @performance_function('nodes')
+    def mixed_nodes(self):
+        return sn.sum(
+            sn.extractall(
+                fr'^{re.escape(self.slurm_partition)},up,'
+                fr'(?P<nodes>\d+),mixed',
+                self.stdout, 'nodes', int
+            )
+        )
+
+    @performance_function('nodes')
+    def reserved_nodes(self):
+        return sn.sum(
+            sn.extractall(
+                fr'^{re.escape(self.slurm_partition)},up,'
+                fr'(?P<nodes>\d+),reserved',
+                self.stdout, 'nodes', int
+            )
+        )
