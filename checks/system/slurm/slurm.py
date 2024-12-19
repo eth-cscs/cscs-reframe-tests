@@ -299,8 +299,7 @@ def get_system_partitions():
 class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
     '''check system queue status'''
 
-    valid_systems = ['daint:login', 'eiger:login',
-                     'pilatus:login']
+    valid_systems = ['-remote']
     valid_prog_environs = ['builtin']
     tags = {'slurm', 'ops',
             'production', 'single-node'}
