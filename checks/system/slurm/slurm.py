@@ -309,7 +309,7 @@ class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
     reference = {
         '*': {
             'available_nodes': (min_avail_nodes, -0.0001, None, 'nodes'),
-            'available_nodes_percentage': (ratio_minavail_nodes, -0.0001, None, '%')
+            'available_nodes_percentage': (ratio_minavail_nodes*100, -0.0001, None, '%')
         }
     }
     maintainers = ['RS', 'VH']
@@ -414,7 +414,7 @@ class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
 
     @performance_function('nodes')
     def available_nodes(self):
-        return self.self.num_matches
+        return self.num_matches
 
     @performance_function('%')
     def available_nodes_percentage(self):
