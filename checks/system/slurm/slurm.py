@@ -246,7 +246,7 @@ class MemoryOverconsumptionMpiCheck(SlurmCompiledBaseCheck):
 class slurm_response_check(rfm.RunOnlyRegressionTest):
     command = parameter(['squeue', 'sacct'])
     descr = 'Slurm command test'
-    valid_systems = ['daint:login']
+    valid_systems = ['-remote']
     valid_prog_environs = ['builtin']
     num_tasks = 1
     num_tasks_per_node = 1
