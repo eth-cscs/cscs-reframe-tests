@@ -278,9 +278,6 @@ class slurm_response_check(rfm.RunOnlyRegressionTest):
 
 def get_system_partitions():
     system_partitions = {
-        'daint': [
-            'debug', 'normal*'
-        ],
         'eiger': [
             'debug', 'normal*', 'prepost', 'low'
         ],
@@ -292,7 +289,7 @@ def get_system_partitions():
     if cur_sys_name in system_partitions.keys():
         return system_partitions[cur_sys_name]
     else:
-        return ['normal']
+        return ['debug', 'normal']
 
 
 @rfm.simple_test
@@ -309,6 +306,12 @@ class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
     executable = 'sinfo'
     executable_opts = ['-o', '%P,%a,%D,%T']
     slurm_partition = parameter(get_system_partitions())
+    reference = {
+        '*': {
+            'available_nodes': (min_avail_nodes, -0.0001, None, 'nodes'),
+            'available_nodes_percentage': (ratio_minavail_nodes, -0.0001, None, '%')
+        }
+    }
     maintainers = ['RS', 'VH']
 
     @run_after('init')
@@ -317,25 +320,24 @@ class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
             self.ratio_minavail_nodes = 0.3
 
     def assert_partition_exists(self):
-        num_matches = sn.count(
-            sn.findall(fr'^{re.escape(self.slurm_partition)}.*', self.stdout)
-        )
-        return sn.assert_gt(num_matches, 0,
-                            msg=f'{self.slurm_partition!r} not defined for '
-                                f'partition {self.current_partition.fullname!r}')
-
-    def assert_min_nodes(self):
-        matches = sn.extractall(
+        avail_nodes = sn.extractall(
             fr'^{re.escape(self.slurm_partition)},up,'
             fr'(?P<nodes>\d+),(allocated|reserved|idle|mixed)',
             self.stdout, 'nodes', int
         )
-        num_matches = sn.sum(matches)
-        return sn.assert_ge(
-            num_matches, self.min_avail_nodes,
-            msg=f'found {num_matches} nodes in partition '
-                f'{self.slurm_partition} with status allocated, '
-                f'reserved, or idle. Expected at least {self.min_avail_nodes}')
+        self.num_matches = sn.sum(avail_nodes)
+
+        all_matches = sn.extractall(fr'^{re.escape(self.slurm_partition)},up,'
+                                    fr'(?P<nodes>\d+),.*', self.stdout,
+                                    'nodes', int)
+        self.num_all_matches = sn.sum(all_matches)
+
+        partition_matches = sn.count(
+            sn.findall(fr'^{re.escape(self.slurm_partition)}.*', self.stdout)
+        )
+        return sn.assert_gt(partition_matches, 0,
+                            msg=f'{self.slurm_partition!r} not defined for '
+                                f'partition {self.current_partition.fullname!r}')
 
     def assert_percentage_nodes(self):
         matches = sn.extractall(
@@ -362,8 +364,8 @@ class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
     def assert_partition_sanity(self):
         return sn.all([
             self.assert_partition_exists(),
-            self.assert_min_nodes(),
-            self.assert_percentage_nodes(),
+            # self.assert_min_nodes(),
+            # self.assert_percentage_nodes(),
         ])
 
     @performance_function('nodes')
@@ -409,3 +411,11 @@ class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
                 self.stdout, 'nodes', int
             )
         )
+
+    @performance_function('nodes')
+    def available_nodes(self):
+        return self.self.num_matches
+
+    @performance_function('%')
+    def available_nodes_percentage(self):
+        return 100.0 * self.num_matches / self.num_all_matches
