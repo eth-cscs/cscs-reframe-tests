@@ -289,7 +289,7 @@ def get_system_partitions():
     if cur_sys_name in system_partitions.keys():
         return system_partitions[cur_sys_name]
     else:
-        return ['debug', 'normal']
+        return ['debug', 'normal*']
 
 
 @rfm.simple_test
