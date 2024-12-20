@@ -12,7 +12,6 @@ class LibSciResolveBaseTest(rfm.CompileOnlyRegressionTest):
     sourcepath = 'libsci_resolve.f90'
     executable = 'libsciresolve.x'
     valid_systems = ['daint:login', 'daint:normal']
-    modules = ['craype-haswell']
     maintainers = ['AJ', 'LM']
     tags = {'production', 'craype'}
 
