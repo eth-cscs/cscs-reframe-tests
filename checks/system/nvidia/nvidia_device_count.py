@@ -105,6 +105,12 @@ class CPE_NvidiaDeviceCount(NvidiaDeviceCountBase):
     device_count_bin = fixture(CPE_BuildDeviceCount, scope='environment')
     tags = {'production'}
 
+    @run_after('init')
+    def skip_builtin(self):
+        if self.current_environ.name == 'builtin':
+            self.skip('CudaVisibleDevicesAllMixin does not work with builtin '
+                      'environments')
+
     @run_after('setup')
     def setup_modules(self):
         if 'PrgEnv-nvhpc' != self.current_environ.name:
