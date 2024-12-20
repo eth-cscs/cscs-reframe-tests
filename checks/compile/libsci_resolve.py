@@ -11,7 +11,7 @@ class LibSciResolveBaseTest(rfm.CompileOnlyRegressionTest):
     sourcesdir = 'src/libsci_resolve'
     sourcepath = 'libsci_resolve.f90'
     executable = 'libsciresolve.x'
-    valid_systems = ['daint:login', 'daint:gpu', 'dom:login', 'dom:gpu']
+    valid_systems = ['daint:login', 'daint:normal']
     modules = ['craype-haswell']
     maintainers = ['AJ', 'LM']
     tags = {'production', 'craype'}
@@ -23,7 +23,7 @@ class LibSciResolveBaseTest(rfm.CompileOnlyRegressionTest):
 
 @rfm.simple_test
 class NvidiaResolveTest(LibSciResolveBaseTest):
-    accel_nvidia_version = parameter(['60'])
+    accel_nvidia_version = parameter(['90'])
     valid_prog_environs = ['PrgEnv-cray', 'PrgEnv-gnu']
     build_system = 'SingleSource'
     compiler_version = '81'
