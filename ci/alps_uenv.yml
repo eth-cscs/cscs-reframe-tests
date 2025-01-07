@@ -12,10 +12,6 @@ setup and pull:
   extends: .f7t-baremetal-runner
   # variables:
     # Valid MODE=('container-runner', 'baremetal', 'f7t-controller')
-    # MODE: "${RFM_MODE}"
-    # GIT_STRATEGY: "fetch"
-    # SLURM_ACCOUNT: "${SLURM_ACCOUNT}"
-    # FIRECREST_SYSTEM: "${FIRECREST_SYSTEM}"
   before_script:
     - echo "FIRECREST_SYSTEM=$FIRECREST_SYSTEM / F7T_URL=$F7T_URL / CLUSTER_NAME=$CLUSTER_NAME"
     - pwd
@@ -32,7 +28,6 @@ setup and pull:
     uenv repo create
     uenv repo status
     for img in $imgs; do
-      # ./ci/scripts/alps.sh oras_pull_meta_dir "$img"
       ./ci/scripts/alps.sh uenv_pull_meta_dir "$img" &> .rc
       ./ci/scripts/alps.sh meta_has_reframe_yaml "$img" &> .rc
       cat .rc
@@ -57,11 +52,6 @@ reframe:
   stage: run
   extends: .f7t-baremetal-runner
   needs: ['setup and pull']
-#   variables:
-#     MODE: "${RFM_MODE}"
-#     GIT_STRATEGY: "fetch"
-#     SLURM_ACCOUNT: "${SLURM_ACCOUNT}"
-#     FIRECREST_SYSTEM: "${FIRECREST_SYSTEM}"
   before_script:
     - echo "FIRECREST_SYSTEM=$FIRECREST_SYSTEM / F7T_URL=$F7T_URL / CLUSTER_NAME=$CLUSTER_NAME"
     - uname -a
