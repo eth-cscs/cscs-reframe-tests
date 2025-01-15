@@ -5,6 +5,7 @@ import reframe.utility.sanity as sn
 import reframe.utility.udeps as udeps
 import uenv
 
+
 class lammps_download(rfm.RunOnlyRegressionTest):
     '''
     Download LAMMPS source code.
@@ -14,10 +15,9 @@ class lammps_download(rfm.RunOnlyRegressionTest):
     descr = 'Fetch LAMMPS source code'
     sourcedir = None
     executable = 'wget'
-   
     executable_opts = [
         '--quiet',
-        f'https://github.com/lammps/lammps/releases/download/stable_2Aug2023_update3/lammps-linux-x86_64-2Aug2023_update3.tar.gz',
+        'https://download.lammps.org/tars/lammps-2Aug2023.tar.gz',
         '-O',
         f'LAMMPS_{version}_Source.tar.gz',
     ]
@@ -26,18 +26,26 @@ class lammps_download(rfm.RunOnlyRegressionTest):
     @sanity_function
     def validate_download(self):
         return sn.assert_eq(self.job.exitcode, 0)
-    
+
+
 @rfm.simple_test
 class LAMMPSBuildTest(rfm.CompileOnlyRegressionTest):
     '''
-        Test LAMMPS build from source.
+    Test LAMMPS build from source.
+    # lammps:develop-gpu
+    # lammps:develop-kokkos
+    # lammps:gpu
+    # lammps:kokkos
+    # lammps:spack
     '''
     descr = 'LAMMPS Build Test'
     valid_prog_environs = ['+lammps-kokkos-dev']
-    valid_systems = ['gh200']
+    valid_systems = ['*']
     maintainers = ['SSA']
     lammps_sources = fixture(lammps_download, scope='session')
+    build_system = 'CMake'
     tags = {'uenv'}
+    build_locally = False
 
     @run_before('compile')
     def prepare_build(self):
@@ -46,13 +54,14 @@ class LAMMPSBuildTest(rfm.CompileOnlyRegressionTest):
         self.uarch = uenv.uarch(self.current_partition)
         self.skip_if_no_procinfo()
         cpu = self.current_partition.processor
-        self.build_system = 'CMake'
         self.build_system.builddir = os.path.join(self.stagedir, 'build')
         self.build_system.config_opts = [
-            f'-C {self.stagedir + "/cmake/presets/kokkos-cuda.cmake " + "../cmake/"}'
+            f'-C {self.stagedir}/lammps-2Aug2023/cmake/presets/kokkos-cuda.cmake',
+            f'{self.stagedir}/lammps-2Aug2023/cmake/',
             '-DKokkos_ENABLE_IMPL_CUDA_MALLOC_ASYNC=OFF',
-            '-DKokkos_ARCH_NATIVE=yes',
-            '-DKokkos_ARCH_HOPPER90=yes'
+            '-DKokkos_ARCH_NATIVE=ON',
+            '-DKokkos_ARCH_PASCAL60=OFF',
+            '-DKokkos_ARCH_HOPPER90=ON',
         ]
         self.build_system.max_concurrency = 64
 
@@ -68,6 +77,6 @@ class LAMMPSBuildTest(rfm.CompileOnlyRegressionTest):
 
     @sanity_function
     def validate_test(self):
-        self.lammps_executeable = os.path.join(self.stagedir,
-                                           "build", "bin", "lmp")
+        self.lammps_executeable = os.path.join(self.stagedir, "build",
+                                               "lmp")
         return os.path.isfile(self.lammps_executeable)
