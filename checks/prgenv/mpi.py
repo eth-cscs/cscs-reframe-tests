@@ -4,19 +4,26 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import os
+import pathlib
+import sys
 
 import reframe as rfm
 import reframe.utility.sanity as sn
 
+sys.path.append(str(pathlib.Path(__file__).parent.parent / 'mixins'))
+from container_engine_cpe import ContainerEngineMixinCPE  # noqa: E402
+
 
 @rfm.simple_test
-class MpiInitTest(rfm.RegressionTest):
+class MpiInitTest(rfm.RegressionTest, ContainerEngineMixinCPE):
     '''
     This test checks the value returned by calling MPI_Init_thread.
     '''
     required_threads = ['funneled', 'serialized', 'multiple']
-    valid_prog_environs = ['+mpi']
-    valid_systems = ['+remote']
+    valid_systems = ['+ce']
+    valid_prog_environs = ['*']
+    container_image = '/capstor/scratch/cscs/anfink/cpe/cpe-gnu.sqsh'
+    #ko? container_image = variable(str, value='/capstor/scratch/cscs/anfink/cpe/cpe-gnu.sqsh')
     build_system = 'Make'
     sourcesdir = 'src/mpi_thread'
     executable = 'mpi_init_thread_single.exe'
@@ -24,12 +31,10 @@ class MpiInitTest(rfm.RegressionTest):
     build_locally = False
     tags = {'production', 'craype', 'uenv'}
 
-    @run_before('run')
-    def set_job_parameters(self):
-        # To avoid: "MPIR_pmi_init(83)....: PMI2_Job_GetId returned 14"
-        self.job.launcher.options += (
-            self.current_environ.extras.get('launcher_options', [])
-        )
+    @run_after('setup')
+    def set_modules(self):
+        self.prebuild_cmds = self.prerun_cmds = ['pwd', 'module list']
+        # self.prerun_cmds = ['pwd', 'module list']
 
     @run_before('run')
     def pre_launch(self):
