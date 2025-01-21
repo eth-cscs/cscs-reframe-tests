@@ -5,6 +5,16 @@ import reframe.utility.sanity as sn
 import reframe.utility.udeps as udeps
 import uenv
 
+slurm_config = {
+    "lammps+gpu-lj": {
+        "gh200": {
+            "nodes": 2,
+            "ntasks-per-node": 32,
+            "walltime": "0d0h20m0s",
+            "gpu": True,
+        },
+    },
+}
 
 class lammps_download(rfm.RunOnlyRegressionTest):
     '''
@@ -80,3 +90,57 @@ class LAMMPSBuildTest(rfm.CompileOnlyRegressionTest):
         self.lammps_executeable = os.path.join(self.stagedir, "build",
                                                "lmp")
         return os.path.isfile(self.lammps_executeable)
+    
+# class LammpsGPUCheck(rfm.RunOnlyRegressionTest):
+#     executable = './mps-wrapper.sh lmp'
+#     valid_prog_environs = ['+lammps-gpu-prod']
+#     maintainers = ["SSA"]
+#     valid_systems = ["*"]
+#     test_name = "lammps+gpu-lj"
+#     executable_opts = ["-i", "lj.in"]
+#     energy_reference = -4.620456
+
+#     @run_before("run")
+#     def prepare_run(self):
+#         self.uarch = uenv.uarch(self.current_partition)
+#         config = slurm_config[self.test_name][self.uarch]
+#         # sbatch options
+#         self.extra_resources = {"gres": {"gpu": 4}}
+#         self.job.options = [
+#             f'--nodes={config["nodes"]}',
+#         ]
+#         self.num_tasks_per_node = config["ntasks-per-node"]
+#         self.num_tasks = config["nodes"] * self.num_tasks_per_node
+#         self.ntasks_per_core = 1
+#         self.time_limit = config["walltime"]
+
+#         # environment variables
+#         if self.uarch == "gh200":
+#             self.env_vars["MPICH_GPU_SUPPORT_ENABLED"] = "1"
+
+#     @sanity_function
+#     def assert_energy_diff(self):
+#         # TODO, update for QE
+#         energy = sn.extractsingle(
+#             r"^\s*1000\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+(-?\d+\.\d+)",
+#             self.stdout,
+#             "energy",
+#             float,
+#             item=-1,
+#         )
+#         energy_diff = sn.abs(energy - self.energy_reference)
+#         successful_termination = sn.assert_found(r"Total wall time", self.stdout)
+#         correct_energy = sn.assert_lt(energy_diff, 1e-4)
+#         return sn.all(
+#             [
+#                 successful_termination,
+#                 correct_energy,
+#             ]
+#         )
+
+#     # INFO: The name of this function needs to match with the reference dict!
+#     @performance_function("s")
+#     def time_run(self):
+#         return sn.extractsingle(r'electrons.+\s(?P<wtime>\S+)s WALL',
+#                                 self.stdout, 'wtime', float)
+    
