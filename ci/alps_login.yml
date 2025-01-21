@@ -1,0 +1,24 @@
+include:
+  - remote: 'https://gitlab.com/cscs-ci/recipes/-/raw/master/templates/v2/.ci-ext.yml'
+
+stages:
+  - run
+
+run rfm_test:
+  stage: run
+  tags: [daint-login-baremetal]
+  variables:
+    GIT_STRATEGY: fetch
+  script:
+    - rm -rf reframe
+    - git clone  https://github.com/reframe-hpc/reframe.git
+    - cd reframe
+    - ./bootstrap.sh
+    - export RFM_AUTODETECT_XTHOSTNAME=1
+    - ./bin/reframe -C ../config/cscs.py -c ../checks/ --report-junit=../report.xml -r
+  artifacts:
+    when: always
+    paths:
+      - report.xml
+    reports:
+      junit: report.xml
