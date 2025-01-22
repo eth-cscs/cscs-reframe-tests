@@ -113,11 +113,21 @@ site_configuration = {
                 'mkdir -p MF/opt/cscs/modulefiles',
                 'export UU=/user-environment',
                 # TODO: export UU=`echo $UENV_MOUNT_LIST |cut -d: -f2`
+                #
+                'ls -l /user-environment/opt/cray/pe/lmod/modulefiles/craype-targets/default/craype-arm-grace.lua',
+                'ls -l /user-environment/opt/cray/pe/lmod/modulefiles/craype-targets/default/craype-network-ofi.lua',
+                'ls -l /user-environment/opt/cray/pe/lmod/modulefiles/core/gcc-native/13.2.lua',
+                'ls -l /user-environment/opt/cray/pe/lmod/modulefiles/core/gcc-native/13.2.lua',
+                'ls -l /user-environment/opt/cray/pe/lmod/modulefiles/core/gcc-native/13.2.lua',
+                'ls -l /user-environment/opt/cray/pe/lmod/modulefiles/core/craype/2.7.32.lua',
+                'ls -l /user-environment/opt/cray/pe/lmod/modulefiles/comnet/gnu/12.0/ofi/1.0/cray-mpich/8.1.30.lua',
+                'ls -l /user-environment/opt/cscs/modulefiles/cuda/12.6.lua',
+                #
                 'cp -a $UU/opt/cray/pe/lmod/modulefiles/* MF/opt/cray/pe/lmod/modulefiles/',
                 'cp -a $UU/opt/cray/modulefiles/* MF/opt/cray/modulefiles/',
                 'cp -a $UU/opt/cscs/modulefiles/* MF/opt/cscs/modulefiles/',
                 'export XX=$PWD/MF',
-                # 'ls -l /opt/cray/pe/lmod/modulefiles/craype-targets/default/craype-arm-grace.lua',
+                #
                 'sed -i "s@/opt@$XX/opt@" $XX/opt/cray/pe/lmod/modulefiles/craype-targets/default/craype-arm-grace.lua',
                 'sed -i "s@/opt@$XX/opt@" $XX/opt/cray/pe/lmod/modulefiles/craype-targets/default/craype-network-ofi.lua',
                 'sed -i "s@/opt/cray/pe/@$XX/opt/cray/pe/@" $XX/opt/cray/pe/lmod/modulefiles/core/gcc-native/13.2.lua',
