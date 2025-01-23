@@ -17,9 +17,8 @@ class SlurmSimpleBaseCheck(rfm.RunOnlyRegressionTest):
     '''Base class for Slurm simple binary tests'''
 
     valid_systems = [
-        'daint:gpu', 'daint:mc', 'dom:gpu', 'dom:mc',
         'arolla:cn', 'arolla:pn', 'tsa:cn', 'tsa:pn',
-        'daint:xfer', 'dom:xfer', 'eiger:mc', 'pilatus:mc'
+        'eiger:mc', 'pilatus:mc'
     ]
     valid_prog_environs = ['PrgEnv-cray']
     tags = {'slurm', 'maintenance', 'ops',
@@ -37,8 +36,7 @@ class SlurmSimpleBaseCheck(rfm.RunOnlyRegressionTest):
 class SlurmCompiledBaseCheck(rfm.RegressionTest):
     '''Base class for Slurm tests that require compiling some code'''
 
-    valid_systems = ['daint:gpu', 'daint:mc',
-                     'dom:gpu', 'dom:mc']
+    valid_systems = []
     valid_prog_environs = ['PrgEnv-cray']
     tags = {'slurm', 'maintenance', 'ops',
             'production', 'single-node'}
@@ -82,12 +80,9 @@ class HostnameCheck(SlurmSimpleBaseCheck):
 @rfm.simple_test
 class EnvironmentVariableCheck(SlurmSimpleBaseCheck):
     num_tasks = 2
-    valid_systems = ['daint:gpu', 'daint:mc',
-                     'dom:gpu', 'dom:mc',
-                     'arolla:cn', 'arolla:pn',
+    valid_systems = ['arolla:cn', 'arolla:pn',
                      'tsa:cn', 'tsa:pn',
-                     'eiger:mc', 'pilatus:mc',
-                     'hohgant:nvgpu']
+                     'eiger:mc', 'pilatus:mc']
     executable = '/bin/echo'
     executable_opts = ['$MY_VAR']
     env_vars = {'MY_VAR': 'TEST123456!'}
@@ -101,7 +96,7 @@ class EnvironmentVariableCheck(SlurmSimpleBaseCheck):
 
 @rfm.simple_test
 class RequiredConstraintCheck(SlurmSimpleBaseCheck):
-    valid_systems = ['daint:login', 'dom:login']
+    valid_systems = []
     executable = 'srun'
     executable_opts = ['-A', osext.osgroup(), 'hostname']
 
@@ -115,7 +110,7 @@ class RequiredConstraintCheck(SlurmSimpleBaseCheck):
 
 @rfm.simple_test
 class RequestLargeMemoryNodeCheck(SlurmSimpleBaseCheck):
-    valid_systems = ['daint:mc']
+    valid_systems = []
     executable = '/usr/bin/free'
     executable_opts = ['-h']
 
@@ -132,8 +127,7 @@ class RequestLargeMemoryNodeCheck(SlurmSimpleBaseCheck):
 
 @rfm.simple_test
 class DefaultRequestGPU(SlurmSimpleBaseCheck):
-    valid_systems = ['daint:gpu', 'dom:gpu',
-                     'arolla:cn', 'tsa:cn']
+    valid_systems = ['arolla:cn', 'tsa:cn']
     executable = 'nvidia-smi'
 
     @sanity_function
@@ -144,7 +138,7 @@ class DefaultRequestGPU(SlurmSimpleBaseCheck):
 
 @rfm.simple_test
 class DefaultRequestGPUSetsGRES(SlurmSimpleBaseCheck):
-    valid_systems = ['daint:gpu', 'dom:gpu']
+    valid_systems = []
     executable = 'scontrol show job ${SLURM_JOB_ID}'
 
     @sanity_function
@@ -154,7 +148,7 @@ class DefaultRequestGPUSetsGRES(SlurmSimpleBaseCheck):
 
 @rfm.simple_test
 class DefaultRequestMC(SlurmSimpleBaseCheck):
-    valid_systems = ['daint:mc', 'dom:mc']
+    valid_systems = []
     # This is a basic test that should return the number of CPUs on the
     # system which, on a MC node should be 72
     executable = 'lscpu -p |grep -v "^#" -c'
@@ -166,8 +160,7 @@ class DefaultRequestMC(SlurmSimpleBaseCheck):
 
 @rfm.simple_test
 class ConstraintRequestCabinetGrouping(SlurmSimpleBaseCheck):
-    valid_systems = ['daint:gpu', 'daint:mc',
-                     'dom:gpu', 'dom:mc']
+    valid_systems = []
     executable = 'cat /proc/cray_xt/cname'
     cabinets = {
         'daint:gpu': 'c0-1',
@@ -279,7 +272,7 @@ class MemoryOverconsumptionMpiCheck(SlurmCompiledBaseCheck):
 class slurm_response_check(rfm.RunOnlyRegressionTest):
     command = parameter(['squeue', 'sacct'])
     descr = 'Slurm command test'
-    valid_systems = ['daint:login', 'dom:login', 'hohgant:login']
+    valid_systems = []
     valid_prog_environs = ['builtin']
     num_tasks = 1
     num_tasks_per_node = 1
@@ -337,8 +330,7 @@ def get_system_partitions():
 class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
     '''check system queue status'''
 
-    valid_systems = ['daint:login', 'dom:login', 'eiger:login',
-                     'pilatus:login']
+    valid_systems = ['eiger:login', 'pilatus:login']
     valid_prog_environs = ['builtin']
     tags = {'slurm', 'ops',
             'production', 'single-node'}

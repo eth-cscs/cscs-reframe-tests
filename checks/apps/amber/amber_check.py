@@ -66,12 +66,10 @@ class cscs_amber_check(amber_nve_check):
     @run_after('init')
     def scope_systems(self):
         valid_systems = {
-            'cuda': {1: ['daint:gpu', 'dom:gpu']},
+            'cuda': {1: []},
             'mpi': {
                 4: ['eiger:mc', 'pilatus:mc'],
-                6: ['daint:mc', 'dom:mc'],
                 8: ['eiger:mc', 'pilatus:mc'],
-                16: ['daint:mc']
             }
         }
         try:
