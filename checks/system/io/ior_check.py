@@ -57,8 +57,6 @@ class build_ior_benchmarks(rfm.CompileOnlyRegressionTest):
 
 class IorCheck(rfm.RunOnlyRegressionTest):
     base_dir = parameter(['/capstor/scratch/cscs',
-                          '/scratch/snx3000tds',
-                          '/scratch/snx3000',
                           '/scratch/shared/fulen',
                           '/users'])
     username = getpass.getuser()
@@ -87,20 +85,8 @@ class IorCheck(rfm.RunOnlyRegressionTest):
                     'num_tasks': 10,
                 }
             },
-            '/scratch/snx3000tds': {
-                'valid_systems': ['dom:gpu', 'dom:mc'],
-                'dom': {
-                    'num_tasks': 4,
-                }
-            },
-            '/scratch/snx3000': {
-                'valid_systems': ['daint:gpu', 'daint:mc'],
-                'daint': {
-                    'num_tasks': 10,
-                }
-            },
             '/users': {
-                'valid_systems': ['daint:gpu', 'dom:gpu', 'fulen:normal'],
+                'valid_systems': ['fulen:normal'],
                 'ior_block_size': '8g',
                 'daint': {},
                 'dom': {},

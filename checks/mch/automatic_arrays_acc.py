@@ -10,7 +10,7 @@ import reframe.utility.sanity as sn
 
 @rfm.simple_test
 class AutomaticArraysCheck(rfm.RegressionTest):
-    valid_systems = ['daint:gpu', 'dom:gpu', 'arolla:cn', 'tsa:cn']
+    valid_systems = ['arolla:cn', 'tsa:cn']
     valid_prog_environs = [
         'PrgEnv-cray', 'PrgEnv-cce', 'PrgEnv-pgi', 'PrgEnv-nvidia'
     ]

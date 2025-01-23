@@ -11,7 +11,7 @@ from hpctestlib.python.numpy.numpy_ops import numpy_ops_check
 @rfm.simple_test
 class cscs_numpy_test(numpy_ops_check):
     valid_prog_environs = ['builtin']
-    valid_systems = ['daint:gpu', 'daint:mc', 'dom:gpu', 'dom:mc']
+    valid_systems = []
     modules = ['numpy']
     num_tasks_per_node = 1
     use_multithreading = False

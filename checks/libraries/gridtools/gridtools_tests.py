@@ -58,7 +58,7 @@ class GridToolsBuildCheck(rfm.CompileOnlyRegressionTest):
 class GridToolsRunCheck(rfm.RunOnlyRegressionTest):
     valid_prog_environs = ['builtin']
     modules = ['CMake', 'Boost']
-    valid_systems = ['daint:gpu', 'dom:gpu']
+    valid_systems = []
     num_tasks = 1
 
     @sanity_function
