@@ -12,20 +12,14 @@ import reframe.utility.sanity as sn
 @rfm.simple_test
 class LibSciAccSymLinkTest(rfm.RunOnlyRegressionTest):
     lib_name = parameter([
-        'libsci_acc_gnu_81_nv35', 'libsci_acc_gnu_81_nv60',
-        'libsci_acc_cray_nv35', 'libsci_acc_cray_nv60',
-        'libsci_acc_cray_nv35_openacc', 'libsci_acc_cray_nv60_openacc'
+        'libsci_acc_cray_nv90', 'libsci_acc_gnu_nv90'
     ])
 
     def __init__(self):
         self.descr = f'LibSciAcc symlink check of {self.lib_name}'
         self.valid_systems = [
-            'daint:login', 'daint:gpu',
-            'dom:login', 'dom:gpu',
+            'daint:login', 'daint:normal'
         ]
-        regex = (r'libsci_acc_(?P<prgenv>[A-Za-z]+)_((?P<cver>[A-Za-z0-9]+)_)'
-                 r'?(?P<version>\S+)')
-        prgenv = re.match(regex, self.lib_name).group('prgenv')
 
         # The prgenv is irrelevant for this case, so just chose one
         self.valid_prog_environs = ['builtin']

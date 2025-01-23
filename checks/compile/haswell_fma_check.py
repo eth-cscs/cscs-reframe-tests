@@ -11,7 +11,7 @@ import reframe.utility.sanity as sn
 class HaswellFmaCheck(rfm.CompileOnlyRegressionTest):
     def __init__(self):
         self.descr = 'check for avx2 instructions'
-        self.valid_systems = ['dom:login', 'daint:login']
+        self.valid_systems = []
         self.valid_prog_environs = ['PrgEnv-cray', 'PrgEnv-gnu',
                                     'PrgEnv-intel', 'PrgEnv-pgi',
                                     'PrgEnv-nvidia']

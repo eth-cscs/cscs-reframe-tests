@@ -12,7 +12,8 @@ site_configuration = {
             'name': 'builtin',
             'cc': 'cc',
             'cxx': 'CC',
-            'ftn': 'ftn'
+            'ftn': 'ftn',
+            'features': ['builtin'],
         },
         {
             'name': 'builtin-gcc',

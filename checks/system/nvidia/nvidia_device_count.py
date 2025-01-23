@@ -101,7 +101,7 @@ class UENV_BuildDeviceCount(BuildDeviceCountBase):
 @rfm.simple_test
 class CPE_NvidiaDeviceCount(NvidiaDeviceCountBase):
     valid_systems = ['+nvgpu']
-    valid_prog_environs = ['-uenv']
+    valid_prog_environs = ['-uenv-builtin']
     device_count_bin = fixture(CPE_BuildDeviceCount, scope='environment')
     tags = {'production'}
 

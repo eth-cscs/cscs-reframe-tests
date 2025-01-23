@@ -12,18 +12,12 @@ import reframe.utility.sanity as sn
 class DefaultPrgEnvCheck(rfm.RunOnlyRegressionTest):
     descr = 'Ensure PrgEnv-cray is loaded by default'
     valid_prog_environs = ['builtin']
-    valid_systems = ['daint:login', 'dom:login',
-                     'eiger:login', 'pilatus:login',
-                     'hohgant:login']
+    valid_systems = ['daint:normal', 'eiger:login', 'pilatus:login']
+    modules = ['cray']
     executable = 'module'
     executable_opts = ['--terse', 'list']
     maintainers = ['TM', 'CB']
     tags = {'production', 'craype'}
-
-    @run_after('init')
-    def load_cray_module(self):
-        if self.current_system.name in ['hohgant', 'pilatus']:
-            self.modules = ['cray']
 
     @run_before('sanity')
     def set_sanity(self):
@@ -33,9 +27,7 @@ class DefaultPrgEnvCheck(rfm.RunOnlyRegressionTest):
 @rfm.simple_test
 class EnvironmentCheck(rfm.RunOnlyRegressionTest):
     descr = 'Ensure programming environment is loaded correctly'
-    valid_systems = ['daint:login', 'dom:login',
-                     'eiger:login', 'pilatus:login',
-                     'hohgant:login']
+    valid_systems = ['daint:login', 'eiger:login', 'pilatus:login']
     valid_prog_environs = ['PrgEnv-aocc', 'PrgEnv-cray', 'PrgEnv-gnu',
                            'PrgEnv-intel', 'PrgEnv-pgi', 'PrgEnv-nvidia']
     executable = 'module'
@@ -78,7 +70,7 @@ class CrayVariablesCheckDaint(CrayVariablesCheck):
         'cray-petsc-complex-64', 'cray-python', 'cray-R', 'cray-tpsl',
         'cray-tpsl-64', 'cudatoolkit', 'gcc', 'papi', 'pmi'
     ])
-    valid_systems = ['daint:login', 'dom:login']
+    valid_systems = []
 
     @run_after('init')
     def skip_modules(self):
@@ -98,7 +90,7 @@ class CrayVariablesCheckEiger(CrayVariablesCheck):
         'cray-mpich', 'cray-openshmemx', 'cray-parallel-netcdf', 'cray-pmi',
         'cray-python', 'cray-R', 'gcc', 'papi'
     ])
-    valid_systems = ['eiger:login', 'pilatus:login', 'hohgant:login']
+    valid_systems = ['eiger:login', 'pilatus:login']
 
     @run_after('init')
     def load_cray_module(self):
