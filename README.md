@@ -28,3 +28,18 @@ You can then list all the tests on any CSCS supported machine as follows:
 ```
 reframe -C config/cscs.py -c checks/ -R -l
 ```
+
+
+## Set-up Python Virtual environement
+
+Install python3.12 on your machine.
+
+Create a virtual environment:
+```console
+python3.12 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install --upgrade pip
+pip install -r requirements.txt
+
+
+## Debug 
