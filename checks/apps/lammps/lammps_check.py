@@ -51,7 +51,7 @@ class LAMMPSCheck(rfm.RunOnlyRegressionTest):
 
 @rfm.simple_test
 class LAMMPSGPUCheck(LAMMPSCheck):
-    valid_systems = ['daint:gpu']
+    valid_systems = []
     executable = 'lmp_mpi'
     executable_opts = ['-sf gpu', '-pk gpu 1', '-in in.lj.gpu']
     env_vars = {'CRAY_CUDA_MPS': 1}
@@ -70,7 +70,7 @@ class LAMMPSGPUCheck(LAMMPSCheck):
     def setup_by_scale(self):
         self.descr = f'LAMMPS GPU check (version: {self.scale})'
         if self.scale == 'small':
-            self.valid_systems += ['dom:gpu']
+            self.valid_systems += []
             self.num_tasks = 12
             self.num_tasks_per_node = 2
         else:
@@ -82,7 +82,7 @@ class LAMMPSGPUCheck(LAMMPSCheck):
 
 @rfm.simple_test
 class LAMMPSCPUCheck(LAMMPSCheck):
-    valid_systems = ['daint:mc', 'eiger:mc', 'pilatus:mc']
+    valid_systems = ['eiger:mc', 'pilatus:mc']
     refs_by_scale = {
         'small': {
             'dom:mc': {'perf': (4216.05, -0.10, None, 'timesteps/s')},
@@ -108,7 +108,7 @@ class LAMMPSCPUCheck(LAMMPSCheck):
             self.executable_opts = ['-sf omp', '-pk omp 1', '-in in.lj.cpu']
 
         if self.scale == 'small':
-            self.valid_systems += ['dom:mc']
+            self.valid_systems += []
             self.num_tasks = 216
             self.num_tasks_per_node = 36
         else:

@@ -10,7 +10,7 @@ from hpctestlib.interactive.jupyter.ipcmagic import ipcmagic_check
 
 @rfm.simple_test
 class cscs_ipcmagic_check(ipcmagic_check):
-    valid_systems = ['daint:gpu', 'dom:gpu']
+    valid_systems = []
     valid_prog_environs = ['builtin']
     modules = ['Horovod', 'jupyterlab']
 

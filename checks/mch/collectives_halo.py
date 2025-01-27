@@ -11,7 +11,7 @@ class CollectivesBaseTest(rfm.RegressionTest):
     variant = parameter(['default', 'nocomm', 'nocomp'])
 
     def __init__(self, bench_reference):
-        self.valid_systems = ['dom:gpu', 'daint:gpu', 'arolla:cn', 'tsa:cn']
+        self.valid_systems = ['arolla:cn', 'tsa:cn']
         self.valid_prog_environs = ['PrgEnv-gnu']
         self.env_vars = {'G2G': 1}
         self.executable = 'build/src/comm_overlap_benchmark'

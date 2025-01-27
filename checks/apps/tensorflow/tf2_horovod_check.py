@@ -15,7 +15,7 @@ class cscs_tensorflow_horovod_check(tensorflow_cnn_check):
     num_nodes = parameter([8, 32])
     num_tasks_per_node = 1
     batch_size = 64
-    valid_systems = ['daint:gpu']
+    valid_systems = []
     valid_prog_environs = ['builtin']
     modules = [
         f'Horovod/0.21.0-CrayGNU-{osext.cray_cdt_version()}-tf-2.4.0'
@@ -40,7 +40,7 @@ class cscs_tensorflow_horovod_check(tensorflow_cnn_check):
     @run_after('init')
     def setup_filtering_criteria(self):
         if self.num_nodes == 8:
-            self.valid_systems += ['dom:gpu']
+            self.valid_systems += []
 
     @run_before('run')
     def setup_run(self):
