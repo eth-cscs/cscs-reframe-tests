@@ -22,7 +22,8 @@ def latest_nvidia_pytorch_image_tags():
     image_tags_response = requests.get(tags_url, headers=headers)
 
     tags = image_tags_response.json().get("tags", [])
-    versions = [re.search(r"^(\d+\.\d+)-.+$", tag, re.IGNORECASE).group(1) for tag in tags if re.match(r"^\d+\.\d+-.+$", tag)]
+    #Note: the "-py3-igpu" image is not supported by the downstream tests (e.g. PyTorchDdpCeNv)
+    versions = [re.search(r"^(\d+\.\d+)-py3$", tag, re.IGNORECASE).group(1) for tag in tags if re.match(r"^\d+\.\d+-.+$", tag)]
     latest_version = sorted(versions, key=Version, reverse=True)[0]
     latest_tags = [tag for tag in tags if tag.startswith(latest_version)]
 
@@ -30,28 +31,25 @@ def latest_nvidia_pytorch_image_tags():
 
 
 @rfm.simple_test
-class version_test(rfm.RunOnlyRegressionTest):
+class test_image_latest_tag_retreival(rfm.RunOnlyRegressionTest):
     valid_systems = ['*']
     valid_prog_environs = ['*']
-    executable = 'echo "hello"'
+    executable = 'echo'
 
     @sanity_function
     def validate(self):
-        return sn.assert_found(r'hello', self.stdout)
+        return sn.assert_found(r'latest tags:', self.stdout)
     
     @run_before('run')
     def set_container_variables(self):
-        tags = latest_nvidia_pytorch_image_tags()
-        print(tags)
-            
-
+        self.executable_opts = "latest tags:" + ",".join(latest_nvidia_pytorch_image_tags())
 
 
 @rfm.simple_test
 class PyTorchDdpSarus(PyTorchTestBase):
     valid_systems = ['+nvgpu +sarus']
     platform = 'Sarus'
-    latest_images = parameter(["nvcr.io#nvidia/pytorch:" + tag for tag in latest_nvidia_pytorch_image_tags()])
+    latest_images = parameter(["nvcr.io/nvidia/pytorch:" + tag for tag in latest_nvidia_pytorch_image_tags()])
 
     @run_before('run')
     def set_container_variables(self):
