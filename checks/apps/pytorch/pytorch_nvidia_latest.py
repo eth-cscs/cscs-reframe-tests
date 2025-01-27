@@ -22,8 +22,8 @@ def latest_nvidia_pytorch_image_tags():
     image_tags_response = requests.get(tags_url, headers=headers)
 
     tags = image_tags_response.json().get("tags", [])
-    #Note: the "-py3-igpu" image is not supported by the downstream tests (e.g. PyTorchDdpCeNv)
-    versions = [re.search(r"^(\d+\.\d+)-py3$", tag, re.IGNORECASE).group(1) for tag in tags if re.match(r"^\d+\.\d+-.+$", tag)]
+    #Note: onle the "-py3" image is supported by the downstream tests (e.g. PyTorchDdpCeNv)
+    versions = [tag.removesuffix('-py3') for tag in tags if re.match(r"^\d+\.\d+-py3$", tag)]
     latest_version = sorted(versions, key=Version, reverse=True)[0]
     latest_tags = [tag for tag in tags if tag.startswith(latest_version)]
 
