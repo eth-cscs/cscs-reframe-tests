@@ -37,8 +37,8 @@ def latest_nvidia_pytorch_image_tags():
 
 @rfm.simple_test
 class test_image_latest_tag_retreival(rfm.RunOnlyRegressionTest):
-    valid_systems = ['*']
-    valid_prog_environs = ['*']
+    valid_systems = ['+nvgpu']
+    valid_prog_environs = ['builtin']
     executable = 'echo'
 
     @sanity_function
