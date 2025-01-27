@@ -12,9 +12,7 @@ from pytorch_nvidia import PyTorchDdpCeNv  # noqa: E402
 def latest_nvidia_pytorch_image_tags():
 
     token_response = requests.get("https://nvcr.io/proxy_auth?scope=repository:nvidia/pytorch:pull,push")
-
-
-    tags_url = "https://nvcr.io/v2/nvidia/pytorch/tags/list?n=5"
+    tags_url = "https://nvcr.io/v2/nvidia/pytorch/tags/list"
     headers = {
         "Authorization": f"Bearer {token_response.json().get('token')}"
     }
