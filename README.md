@@ -23,23 +23,30 @@ git clone https://github.com/eth-cscs/cscs-reframe-tests
 cd cscs-reframe-tests
 ```
 
-You can then list all the tests on any CSCS supported machine as follows:
-
-```
-reframe -C config/cscs.py -c checks/ -R -l
-```
-
 
 ## Set-up Python Virtual environement
 
-Install python3.12 on your machine.
+Install python3.11 on your machine.
 
 Create a virtual environment:
 ```console
-python3.12 -m venv .venv
+python3.11 -m venv --system-site-packages .venv
 source .venv/bin/activate
 python3 -m pip install --upgrade pip
 pip install -r requirements.txt
+```
 
+## Run and Debug
+```console
+cd cscs-reframe-tests
+source .venv/bin/activate
 
-## Debug 
+reframe -V
+
+reframe \
+-C config/cscs.py \
+-c checks/microbenchmarks/gpu/node_burn/baremetal-node-burn.py \
+-l \
+--skip-prgenv-check --skip-system-check
+
+```
