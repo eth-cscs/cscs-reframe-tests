@@ -51,12 +51,13 @@ class version_test(rfm.RunOnlyRegressionTest):
 class PyTorchDdpSarus(PyTorchTestBase):
     valid_systems = ['+nvgpu +sarus']
     platform = 'Sarus'
+    latest_images = parameter(["nvcr.io/nvidia/pytorch:" + tag for tag in latest_nvidia_pytorch_image_tags()])
 
     @run_before('run')
     def set_container_variables(self):
         self.container_platform = self.platform
         self.container_platform.command = self.executable
-        self.container_platform.image = parameter(["nvcr.io/nvidia/pytorch:" + tag for tag in latest_nvidia_pytorch_image_tags()])
+        self.container_platform.image = self.latest_images
         self.job.launcher.options.append('--mpi=pmi2')
 
 @rfm.simple_test
