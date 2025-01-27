@@ -11,7 +11,7 @@ import reframe.utility.sanity as sn
 class HeterogenousSlurmJobTest(rfm.RegressionTest):
     descr = 'Heterogenous Slurm job test'
     sourcepath = 'heterogeneous.c'
-    valid_systems = ['daint:gpu', 'daint:mc', 'dom:gpu', 'dom:mc']
+    valid_systems = []
     valid_prog_environs = ['PrgEnv-cray']
     num_tasks = 12
     num_tasks_per_node = 3

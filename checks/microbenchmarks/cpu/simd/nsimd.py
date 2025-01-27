@@ -34,7 +34,7 @@ class NsimdTest(rfm.RegressionTest):
     '''
     bench_name = parameter(['mul.avx2.f32.cpp', 'mul.avx2.f64.cpp'])
 
-    valid_systems = ['dom:mc', 'dom:gpu', 'eiger:mc']
+    valid_systems = ['eiger:mc']
     valid_prog_environs = ['PrgEnv-gnu']
     build_system = 'SingleSource'
 

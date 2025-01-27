@@ -56,8 +56,7 @@ class GREASYCheck(rfm.RegressionTest):
 
     @run_after('init')
     def set_valid_systems(self):
-        self.valid_systems = [f'daint:{self.partition}',
-                              f'dom:{self.partition}']
+        self.valid_systems = []
 
     @run_before('compile')
     def setup_build_system(self):
