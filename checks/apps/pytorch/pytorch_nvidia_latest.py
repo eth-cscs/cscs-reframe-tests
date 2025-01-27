@@ -27,9 +27,10 @@ def latest_nvidia_pytorch_image_tags():
     latest_tags = []
     for flavor in supported_flavors:
 
-        versions = [tag[:-len(flavor)] for tag in tags if re.match(rf"^\d+\.\d{flavor}$", tag)]
-        latest_version = sorted(versions, key=Version, reverse=True)[0]
-        latest_tags += [tag for tag in tags if tag.startswith(latest_version+flavor)]
+        versions = [tag[:-len(flavor)] for tag in tags if re.match(rf"^\d+\.\d+{flavor}$", tag)]
+        if versions:
+            latest_version = sorted(versions, key=Version, reverse=True)[0]
+            latest_tags += [tag for tag in tags if tag.startswith(latest_version+flavor)]
 
     return latest_tags
 
