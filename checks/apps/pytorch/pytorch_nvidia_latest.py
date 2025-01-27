@@ -18,14 +18,18 @@ def latest_nvidia_pytorch_image_tags():
     headers = {
         "Authorization": f"Bearer {token_response.json().get('token')}"
     }
+    
+    #Note: onle the "-py3" image is supported by the downstream tests (e.g. PyTorchDdpCeNv)
+    supported_flavors = ["-py3"] 
 
     image_tags_response = requests.get(tags_url, headers=headers)
-
     tags = image_tags_response.json().get("tags", [])
-    #Note: onle the "-py3" image is supported by the downstream tests (e.g. PyTorchDdpCeNv)
-    versions = [tag[:-4] for tag in tags if re.match(r"^\d+\.\d+-py3$", tag)]
-    latest_version = sorted(versions, key=Version, reverse=True)[0]
-    latest_tags = [tag for tag in tags if tag.startswith(latest_version)]
+    latest_tags = []
+    for flavor in supported_flavors:
+
+        versions = [tag[:-len(flavor)] for tag in tags if re.match(rf"^\d+\.\d{flavor}$", tag)]
+        latest_version = sorted(versions, key=Version, reverse=True)[0]
+        latest_tags += [tag for tag in tags if tag.startswith(latest_version+flavor)]
 
     return latest_tags
 
