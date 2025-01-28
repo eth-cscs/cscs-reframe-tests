@@ -15,6 +15,7 @@ _RFM_META = pathlib.Path('extra') / 'reframe.yaml'
 _RFM_META_DIR = pathlib.Path('meta')
 
 
+# {{{ 
 def uarch(partition):
     """
     Return the uenv uarch tag of the nodes in a reframe partition description.
@@ -42,6 +43,7 @@ def uarch(partition):
         return 'zen3'
 
     return None
+# }}}
 
 
 def _get_uenvs():
@@ -69,6 +71,10 @@ def _get_uenvs():
             target_system = '*'
             image_path = uenv_path
             rfm_meta = image_path.parent / _RFM_META_DIR / _RFM_META
+            # print(f'# --- {image_path.parent}')
+            # print(f'# --- {rfm_meta}')
+            # --- /capstor/scratch/cscs/piccinal/santis/rfm/CPE/BUILDJG
+            # --- /capstor/scratch/cscs/piccinal/santis/rfm/CPE/BUILDJG/meta/extra/reframe.yaml
         else:
             inspect_cmd = f'{_UENV_CLI} image inspect {uenv_name} --format'
 
@@ -106,6 +112,10 @@ def _get_uenvs():
                 'target_systems': [target_system]
             }
             env.update(v)
+            #print(f'# activation={activation}')
+            #print(f'# views={views}')
+            # activation=['module list']
+            # views=[]
 
             if isinstance(activation, list):
                 env['prepare_cmds'] = activation
@@ -133,6 +143,8 @@ def _get_uenvs():
 
             uenv_environments.append(env)
 
+    print(f'# RETURN uenv_environments={uenv_environments}')
+    # RETURN uenv_environments=[{'target_systems': ['*'], 'features': ['cuda', 'mpi', 'openmp', 'serial', 'uenv'], 'cc': 'cc', 'cxx': 'CC', 'ftn': 'ftn', 'prepare_cmds': ['module list'], 'name': '_capstor_scratch_cscs_piccinal_daint_rfm_CPE_cpe-gnu.sqsh_default', 'resources': {'uenv': {'mount': '/user-environment', 'file': '/capstor/scratch/cscs/piccinal/daint/rfm/CPE/cpe-gnu.sqsh'}}}]
     return uenv_environments
 
 
