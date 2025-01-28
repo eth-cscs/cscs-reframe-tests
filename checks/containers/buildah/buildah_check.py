@@ -23,11 +23,10 @@ class BuildahTestBase(rfm.RunOnlyRegressionTest):
     @run_after('setup')
     def setup_buildah(self):
         self.archive_name = self.image_tag.split(':')[0]
-        self.graphroot = '/scratch/local/$USER/buildah_root'
-        self.runroot = '/scratch/local/$USER/buildah_runroot'
-        self.env_vars = {
-            'XDG_DATA_HOME': '/scratch/local/$USER/xdg_data_home'
-        }
+        self.graphroot = '/dev/shm/$USER/buildah_root'
+        self.runroot = '/dev/shm/$USER/buildah_runroot'
+        self.env_vars = {'XDG_DATA_HOME': '/dev/shm/$USER/xdg_data_home'}
+        self.prerun_cmds = ['unset XDG_RUNTIME_DIR'] + self.prerun_cmds
         self.prerun_cmds += [
             f'rm -f {self.runroot}/{self.archive_name}.tar',
             f'rm -f {self.stagedir}/{self.archive_name}.tar'
@@ -55,8 +54,6 @@ class BuildahTestBase(rfm.RunOnlyRegressionTest):
     def set_job_options(self):
         self.job.launcher = getlauncher('local')()
         self.job.options += ['--nodes=1']
-        if self.current_system.name in {'dom', 'daint'}:
-            self.job.options += ['--constraint=contbuild']
 
     @sanity_function
     def assert_committed_image(self):

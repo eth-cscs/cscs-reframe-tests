@@ -30,7 +30,7 @@ class build_ior_benchmarks(rfm.CompileOnlyRegressionTest):
     ior_benchmarks = fixture(fetch_ior_benchmarks, scope='session')
 
     # Build on the remote system for consistency
-    build_locally = False 
+    build_locally = False
 
     @run_after('init')
     def load_cray_module(self):
