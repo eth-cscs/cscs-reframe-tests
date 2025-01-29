@@ -285,21 +285,21 @@ class NamdCheckUENV(rfm.RunOnlyRegressionTest):
 
 
 @rfm.simple_test
-class NamdCheckUenvExec(NamdCheck):
+class NamdCheckUENVExec(NamdCheckUENV):
     valid_prog_environs = ['+namd-single-node']
     tags = {'uenv', 'production'}
 
 
 @rfm.simple_test
-class NamdCheckCustomExec(NamdCheck):
+class NamdCheckUENVCustomExec(NamdCheckUENV):
     valid_prog_environs = ['+namd-single-node-dev']
     tags = {'uenv'}
 
     @run_after('init')
     def setup_dependency(self):
-        self.depends_on('NamdBuildTest', udeps.fully)
+        self.depends_on('NamdBuildTestUENV', udeps.fully)
 
     @run_after('setup')
     def setup_executable(self):
-        parent = self.getdep('NamdBuildTest')
+        parent = self.getdep('NamdBuildTestUENV')
         self.executable = f'{parent.namd_executable}'
