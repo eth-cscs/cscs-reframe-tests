@@ -23,7 +23,7 @@ class PyTorchNCCLAllReduce(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     num_nodes = parameter([4], loggable=True)
     sourcesdir = 'src'
     # sizes = list(range(15,32))
-    sizes = [20]
+    sizes = [26]
     size = parameter(sizes, loggable=True)
     aws_ofi_nccl = parameter([True])
     image = parameter([
@@ -68,6 +68,7 @@ class PyTorchNCCLAllReduce(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
         self.job.options = ['--gpus-per-task=4']
         self.executable = 'python -u -m torch.distributed.run ' + \
                           f'--nproc_per_node={self.num_gpus_per_node} ' + \
+                          f'--nnodes={self.num_nodes} ' + \
                           '--rdzv_endpoint $(scontrol show hostnames $SLURM_JOB_NODELIST | head -n 1):6000 ' + \
                           '--rdzv_backend c10d ' + \
                           'all_reduce.py'
@@ -77,10 +78,6 @@ class PyTorchNCCLAllReduce(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
         self.executable_opts = [
             f'{self.size}'
         ]
-
-    @run_before('run')
-    def set_pmi2(self):
-        self.job.launcher.options += ['--mpi=pmi2']
 
     @sanity_function
     def assert_sanity(self):
