@@ -1,23 +1,51 @@
 import sys
 import pathlib
 import reframe as rfm
+import requests
+import re
+from packaging.version import Version
 from pytorch_test_base import PyTorchTestBase
-
 sys.path.append(str(pathlib.Path(__file__).parent.parent.parent / 'mixins'))
 from container_engine import ContainerEngineMixin  # noqa: E402
 
 
-@rfm.simple_test
-class PyTorchDdpSarus(PyTorchTestBase):
-    valid_systems = ['+nvgpu +sarus']
-    platform = 'Sarus'
 
+def latest_nvidia_pytorch_image_tags():
+
+    token_response = requests.get("https://nvcr.io/proxy_auth?scope=repository:nvidia/pytorch:pull,push")
+    tags_url = "https://nvcr.io/v2/nvidia/pytorch/tags/list"
+    headers = {
+        "Authorization": f"Bearer {token_response.json().get('token')}"
+    }
+    
+    #Note: onle the "-py3" image is supported by the downstream tests (e.g. PyTorchDdpCeNv)
+    supported_flavors = ["-py3"] 
+
+    image_tags_response = requests.get(tags_url, headers=headers)
+    tags = image_tags_response.json().get("tags", [])
+    latest_tags = []
+    for flavor in supported_flavors:
+
+        versions = [tag[:-len(flavor)] for tag in tags if re.match(rf"^\d+\.\d+{flavor}$", tag)]
+        if versions:
+            latest_version = sorted(versions, key=Version, reverse=True)[0]
+            latest_tags += [latest_version+flavor]
+
+    return latest_tags
+
+@rfm.simple_test
+class test_image_latest_tag_retreival(rfm.RunOnlyRegressionTest):
+    valid_systems = ['+nvgpu']
+    valid_prog_environs = ['builtin']
+    executable = 'echo'
+
+    @sanity_function
+    def validate(self):
+        return sn.assert_found(r'latest tags:', self.stdout)
+    
     @run_before('run')
     def set_container_variables(self):
-        self.container_platform = self.platform
-        self.container_platform.command = self.executable
-        self.container_platform.image = 'nvcr.io/nvidia/pytorch:22.12-py3'  # cuda11.8 pt1.14.0
-        self.job.launcher.options.append('--mpi=pmi2')
+        self.executable_opts = ["latest tags:" + ",".join(latest_nvidia_pytorch_image_tags())]
 
 
 @rfm.simple_test
@@ -25,12 +53,15 @@ class PyTorchDdpCeNv(PyTorchTestBase, ContainerEngineMixin):
     descr = 'Check the training throughput using the ContainerEngine and NVIDIA NGC'
     valid_systems = ['+ce +nvgpu']
     aws_ofi_nccl = parameter([True])
-    image = parameter([
+    curated_images = [
         'nvcr.io#nvidia/pytorch:22.08-py3', # same as AMD   pt1.13.1
         'nvcr.io#nvidia/pytorch:22.12-py3', # same as Sarus pt1.14.0
         'nvcr.io#nvidia/pytorch:23.10-py3', # same as AMD   pt2.1.0
         'nvcr.io#nvidia/pytorch:24.01-py3', # Latest        pt2.2.0
-    ])
+    ]
+    latest_images = ["nvcr.io#nvidia/pytorch:" + tag for tag in latest_nvidia_pytorch_image_tags()]
+    image = parameter(curated_images + latest_images)
+
     env_vars = {
         'NCCL_DEBUG': 'Info',
     }
@@ -52,9 +83,12 @@ class PyTorchDdpCeNv(PyTorchTestBase, ContainerEngineMixin):
 class PyTorchDdpCeNvlarge(PyTorchDdpCeNv):
     aws_ofi_nccl = parameter([True, False])
     num_nodes = parameter([3, 8])
-    image = parameter([
+
+    curated_images = [
         'nvcr.io#nvidia/pytorch:24.01-py3', # Latest        pt2.2.0
-    ])
+    ]
+    latest_images = ["nvcr.io#nvidia/pytorch:" + tag for tag in latest_nvidia_pytorch_image_tags()]
+    image = parameter(curated_images + latest_images)
 
 
 @rfm.simple_test
