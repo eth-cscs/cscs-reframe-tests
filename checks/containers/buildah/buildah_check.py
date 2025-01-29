@@ -13,7 +13,6 @@ class BuildahTestBase(rfm.RunOnlyRegressionTest):
     num_nodes = 1
     time_limit = '1h'
     executable = 'buildah'
-    modules = ['Buildah']
     prerun_cmds = ['buildah --version']
     graphroot = variable(str)
     runroot = variable(str)
