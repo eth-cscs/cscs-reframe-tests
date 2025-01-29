@@ -55,9 +55,9 @@ class PyTorchDdpCeNv(PyTorchTestBase, ContainerEngineMixin):
     valid_systems = ['+ce +nvgpu']
     aws_ofi_nccl = parameter([True])
     curated_images = [
-        'nvcr.io#nvidia/pytorch:22.08-py3', # same as AMD   pt1.13.1
-        'nvcr.io#nvidia/pytorch:22.12-py3', # same as Sarus pt1.14.0
-        'nvcr.io#nvidia/pytorch:23.10-py3', # same as AMD   pt2.1.0
+        #'nvcr.io#nvidia/pytorch:22.08-py3', # same as AMD   pt1.13.1
+        #'nvcr.io#nvidia/pytorch:22.12-py3', # same as Sarus pt1.14.0
+        #'nvcr.io#nvidia/pytorch:23.10-py3', # same as AMD   pt2.1.0
         'nvcr.io#nvidia/pytorch:24.01-py3', # Latest        pt2.2.0
     ]
     latest_images = ["nvcr.io#nvidia/pytorch:" + tag for tag in latest_nvidia_pytorch_image_tags()]
@@ -98,8 +98,8 @@ class PyTorchDdpMambaNv(PyTorchTestBase):
     valid_systems = ['+nvgpu']
     time_limit = '30m'
     torch_version = parameter([
-        'pytorch torchvision nccl pytorch-cuda=11.8', # Latest cu11.8
-        # 'pytorch torchvision nccl pytorch-cuda=12.1', # Latest cu12.1; incompatible driver
+        #'pytorch torchvision nccl pytorch-cuda=11.8', # Latest cu11.8; aws-ofi-ccl-plugin/cuda11 not available
+         'pytorch torchvision nccl pytorch-cuda=12.1', # Latest cu12.1; incompatible driver
     ])
     tags = {'production'}
 
