@@ -85,13 +85,10 @@ class LAMMPSCPUCheck(LAMMPSCheck):
     valid_systems = ['eiger:mc', 'pilatus:mc']
     refs_by_scale = {
         'small': {
-            'dom:mc': {'perf': (4216.05, -0.10, None, 'timesteps/s')},
-            'daint:mc': {'perf': (2523.077, -0.10, None, 'timesteps/s')},
             'eiger:mc': {'perf': (3807.095, -0.10, None, 'timesteps/s')},
             'pilatus:mc': {'perf': (4828.986, -0.10, None, 'timesteps/s')}
         },
         'large': {
-            'daint:mc': {'perf': (2076.665, -0.10, None, 'timesteps/s')},
             'eiger:mc': {'perf': (4922.81, -0.10, None, 'timesteps/s')},
             'pilatus:mc': {'perf': (7247.484, -0.10, None, 'timesteps/s')}
         }

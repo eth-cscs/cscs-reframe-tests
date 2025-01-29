@@ -133,6 +133,9 @@ site_configuration = {
         {
             'name': 'PrgEnv-intel',
             'target_systems': ['eiger'],
+            'modules': ['cray', 'PrgEnv-intel'],
+            'features': ['serial', 'openmp', 'mpi', 'cuda', 'alloc_speed',
+                         'hdf5', 'netcdf-hdf5parallel', 'pnetcdf', 'openmp'],
             'modules': ['cray', 'PrgEnv-intel']
         },
         {
