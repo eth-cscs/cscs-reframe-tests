@@ -1,6 +1,7 @@
 import sys
 import pathlib
 import reframe as rfm
+import reframe.utility.sanity as sn
 import requests
 import re
 from packaging.version import Version
