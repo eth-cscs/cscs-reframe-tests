@@ -20,13 +20,6 @@ class Cp2kCheck(rfm.RunOnlyRegressionTest):
         }
     }
 
-    @run_after('init')
-    def set_prgenv(self):
-        if self.current_system.name in ['eiger', 'pilatus']:
-            self.valid_prog_environs = ['cpeGNU']
-        else:
-            self.valid_prog_environs = ['builtin']
-
     @sanity_function
     def assert_energy_diff(self):
         energy = sn.extractsingle(
@@ -53,7 +46,8 @@ class Cp2kCheck(rfm.RunOnlyRegressionTest):
 @rfm.simple_test
 class Cp2kCpuCheck(Cp2kCheck):
     scale = parameter(['small', 'large'])
-    valid_systems = ['daint:mc', 'eiger:mc', 'pilatus:mc']
+    valid_systems = ['eiger:mc', 'pilatus:mc']
+    valid_prog_environs = ['cpeGNU']
     refs_by_scale = {
         'small': {
             'eiger:mc': {'time': (76.116, None, 0.08, 's')},
@@ -109,6 +103,7 @@ class Cp2kCpuCheck(Cp2kCheck):
 class Cp2kGpuCheck(Cp2kCheck):
     scale = parameter(['small', 'large'])
     valid_systems = []
+    valid_prog_environs = []
     num_gpus_per_node = 1
     num_tasks_per_node = 6
     num_cpus_per_task = 2
