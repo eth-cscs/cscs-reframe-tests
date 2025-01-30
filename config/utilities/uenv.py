@@ -73,16 +73,16 @@ def _get_uenvs():
             inspect_cmd = f'{_UENV_CLI} image inspect {uenv_name} --format'
 
             image_path = osext.run_command(
-                f"{inspect_cmd} '{{sqfs}}'", shell=True).stdout.strip()
+                f"{inspect_cmd}='{{sqfs}}'", shell=True).stdout.strip()
             target_system = osext.run_command(
-                f"{inspect_cmd} '{{system}}'", shell=True).stdout.strip()
+                f"{inspect_cmd}='{{system}}'", shell=True).stdout.strip()
 
             image_path = pathlib.Path(image_path)
 
             # FIXME temporary workaround for older uenv versions
             if Version(uenv_version) >= Version('5.1.0-dev'):
                 meta_path = osext.run_command(
-                    f"{inspect_cmd} '{{meta}}'", shell=True
+                    f"{inspect_cmd}='{{meta}}'", shell=True
                 ).stdout.strip()
                 rfm_meta = pathlib.Path(meta_path) / _RFM_META
             else:
