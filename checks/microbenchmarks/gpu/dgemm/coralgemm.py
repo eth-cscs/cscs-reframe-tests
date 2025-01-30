@@ -63,7 +63,6 @@ class CoralGemm(rfm.RunOnlyRegressionTest):
 
     sourcesdir = 'https://github.com/AMD-HPC/CoralGemm.git'
     num_tasks_per_node = 1
-    # num_gpus = 4
 
     @run_after('setup')
     def set_num_gpus(self):
