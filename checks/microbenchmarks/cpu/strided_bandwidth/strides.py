@@ -11,8 +11,7 @@ import reframe.utility.sanity as sn
 class StridedBandwidthTest(rfm.RegressionTest):
     sourcepath = 'strides.cpp'
     build_system = 'SingleSource'
-    valid_systems = ['daint:gpu', 'dom:gpu', 'daint:mc', 'dom:mc',
-                     'eiger:mc', 'pilatus:mc']
+    valid_systems = ['eiger:mc', 'pilatus:mc']
     valid_prog_environs = ['PrgEnv-gnu']
     num_tasks = 1
     num_tasks_per_node = 1

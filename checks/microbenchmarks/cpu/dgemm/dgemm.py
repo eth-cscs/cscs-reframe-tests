@@ -14,8 +14,7 @@ class DGEMMTest(rfm.RegressionTest):
 
     # the perf patterns are automaticaly generated inside sanity
     perf_patterns = {}
-    valid_systems = ['daint:gpu', 'daint:mc', 'dom:gpu', 'dom:mc',
-                     'arolla:cn', 'arolla:pn', 'tsa:cn', 'tsa:pn',
+    valid_systems = ['arolla:cn', 'arolla:pn', 'tsa:cn', 'tsa:pn',
                      'eiger:mc', 'pilatus:mc']
     num_tasks = 0
     use_multithreading = False

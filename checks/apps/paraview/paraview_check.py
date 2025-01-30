@@ -9,8 +9,7 @@ import reframe.utility.sanity as sn
 
 @rfm.simple_test
 class ParaViewCheck(rfm.RunOnlyRegressionTest):
-    valid_systems = ['daint:gpu', 'daint:mc', 'dom:gpu', 'dom:mc',
-                     'eiger:mc', 'pilatus:mc']
+    valid_systems = ['eiger:mc', 'pilatus:mc']
     valid_prog_environs = ['builtin']
     num_tasks = 12
     num_tasks_per_node = 12
