@@ -410,21 +410,19 @@ class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
 @rfm.simple_test
 class SlurmPrologEpilogCheck(rfm.RunOnlyRegressionTest):
 
-    valid_systems = ['daint:login']
+    valid_systems = ['*']
     valid_prog_environs = ['builtin']
     time_limit = '2m'
-    tags = {}
-    test_file = parameter(['/etc/slurm/node_prolog.d/001_fabric_check.sh',
-                           '/etc/slurm/node_prolog.d/002_csi_check.sh',
-                           '/etc/slurm/node_prolog.d/003_gpu_check.sh',
-                           '/etc/slurm/node_prolog.d/004_hsn.sh',
-                           '/etc/slurm/node_prolog.d/005_data_width.sh',
-                           '/etc/slurm/node_prolog.d/006-bugs.sh',
-                           '/etc/slurm/node_prolog.d/020-gpumem.sh',
-                           '/etc/slurm/node_epilog.d/002-slowlink',
-                           '/etc/slurm/node_prolog.d/006-bugs.sh',
-                           '/etc/slurm/node_prolog.d/020-gpumem.sh'])
-
+    prolog_dir = '/etc/slurm/node_prolog.d/'
+    epilog_dir = '/etc/slurm/node_epilog.d/'
+    prefix_name = 'test_'
+    test_files = []
+    for file in os.listdir(epilog_dir):
+        if os.path.isfile(os.path.join(epilog_dir, file)):
+            if file.startswith(prefix_name):
+                test_files.append(os.path.join(epilog_dir, file))
+    test_file = parameter(test_files)
+    tags = {'vs-node-validator'}
 
     @run_after('setup')
     def set_executable(self):
