@@ -19,11 +19,10 @@ class PyTorchNCCLAllReduce(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     valid_systems = ['+nvgpu']
     valid_prog_environs = ['builtin']
     sourcesdir = None
-    time_limit = '20m'
-    num_nodes = parameter([4], loggable=True)
+    num_nodes = parameter([8], loggable=True) # 32 ranks
     sourcesdir = 'src'
     # sizes = list(range(15,32))
-    sizes = [26]
+    sizes = [32] # Message size is 16GB
     size = parameter(sizes, loggable=True)
     aws_ofi_nccl = parameter([True])
     image = parameter([
@@ -37,11 +36,11 @@ class PyTorchNCCLAllReduce(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     all_ref = {
         'sm_80':
             {'*':
-                {'GB/s': (75.0, -0.05, None, 'GB/s')}
+                {'GB/s': (91.04, -0.05, None, 'GB/s')}
             }, # Taken from NCCLTest
         'sm_90':
             {'*':
-                {'GB/s': (75.0, -0.05, None, 'GB/s')}
+                {'GB/s': (91.04, -0.05, None, 'GB/s')}
             }, # Taken from NCCLTest
     }
 
@@ -62,7 +61,6 @@ class PyTorchNCCLAllReduce(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     def setup_test(self):
         curr_part = self.current_partition
         self.num_gpus_per_node = curr_part.select_devices('gpu')[0].num_devices
-        self.num_gpus_per_task = curr_part.select_devices('gpu')[0].num_devices
         self.num_tasks_per_node = 1
         self.num_tasks = self.num_nodes
         self.job.options = ['--gpus-per-task=4']
