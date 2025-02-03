@@ -99,7 +99,7 @@ class PyTorchDdpMambaNv(PyTorchTestBase):
     time_limit = '30m'
     torch_version = parameter([
         #'pytorch torchvision nccl pytorch-cuda=11.8', # Latest cu11.8; aws-ofi-ccl-plugin/cuda11 not available
-         'pytorch torchvision nccl pytorch-cuda=12.1', # Latest cu12.1; incompatible driver
+         'nccl cuda=12.6', # Latest cu12.6; incompatible driver
     ])
     tags = {'production'}
 
@@ -110,8 +110,9 @@ class PyTorchDdpMambaNv(PyTorchTestBase):
             f'conda create -p $PWD/forge/envs/rfm {self.torch_version} '
             f'-c pytorch -c nvidia -y',
             f'conda activate $PWD/forge/envs/rfm',
+            f'pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu126',
             f'pip install python-hostlist',
-            f'. activate_ofi.sh cuda11',
+            f'. activate_ofi.sh cuda12',
         ]
 
         self.postrun_cmds = ['rm Miniforge*.sh', 'rm -rf forge']
