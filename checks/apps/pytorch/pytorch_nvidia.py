@@ -108,7 +108,7 @@ class PyTorchDdpMambaNv(PyTorchTestBase):
         self.prerun_cmds = [
             f'set -xe', f'. setup_conda.sh $PWD/forge',
             f'conda create -p $PWD/forge/envs/rfm {self.torch_version} '
-            f'-c pytorch -c nvidia -y',
+            f'-c nvidia -y',
             f'conda activate $PWD/forge/envs/rfm',
             f'pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu126',
             f'pip install python-hostlist',
