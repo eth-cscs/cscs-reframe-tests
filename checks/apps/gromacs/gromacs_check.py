@@ -2,6 +2,8 @@
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
+import os
+import shutil
 
 import reframe as rfm
 from hpctestlib.sciapps.gromacs.benchmarks import gromacs_check
@@ -17,11 +19,27 @@ gromacs_references = {
                 'perf_4gpu':  (140, None, None, 'ns/day'),
             },
         },
-    }
+    },
+    'hEGFRDimerPair': {
+        'single-node': {
+            'gh200': {
+                'perf_4gpu':  (56, None, None, 'ns/day'),
+            },
+        },
+    },
 }
 
 slurm_config = {
     'STMV': {
+        'gh200': {
+            'nodes': 1,
+            'ntasks-per-node': 8,
+            'cpus-per-task': 32,
+            'walltime': '0d0h5m0s',
+            'gpu': True,
+        }
+    },
+    'hEGFRDimerPair': {
         'gh200': {
             'nodes': 1,
             'ntasks-per-node': 8,
@@ -65,6 +83,7 @@ class GROMACSBuildTest(rfm.CompileOnlyRegressionTest):
     gromacs_sources = fixture(gromacs_download, scope='session')
     build_locally = False
     tags = {'uenv'}
+    valid_prog_environs = ['builtin']
 
     @run_before('compile')
     def prepare_build(self):
@@ -85,7 +104,7 @@ class GROMACSBuildTest(rfm.CompileOnlyRegressionTest):
 
         self.build_system.config_opts = [
             '-DREGRESSIONTEST_DOWNLOAD=ON',
-            '-DGMX_MPI=on,
+            '-DGMX_MPI=on',
             '-DGMX_BUILD_OWN_FFTW=ON',
             '-DCP2K_USE_SPGLIB=ON',
             '-DGMX_HWLOC=ON',
@@ -101,7 +120,7 @@ class GROMACSBuildTest(rfm.CompileOnlyRegressionTest):
     @sanity_function
     def validate_test(self):
         # source from /usr/local/gromacs/bin/GMXRC to get the installed folder path
-        folder = # add folder path
+        folder = '/usr/local/gromacs/bin/GMXRC' # add folder path
         self.gromacs_executable = os.path.join(self.stagedir, 'exe', folder,
                                             'gmx-mpi')
         return os.path.isfile(self.gromacs_executable)
