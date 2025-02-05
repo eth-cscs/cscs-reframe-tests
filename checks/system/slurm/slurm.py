@@ -413,8 +413,10 @@ class SlurmPrologEpilogCheck(rfm.RunOnlyRegressionTest):
     valid_systems = ['*']
     valid_prog_environs = ['builtin']
     time_limit = '2m'
+    kafka_logger = '/etc/slurm/utils/kafka_logger'
     prolog_dir = '/etc/slurm/node_prolog.d/'
     epilog_dir = '/etc/slurm/node_epilog.d/'
+    prerun_comds = [f'ln -s {kafka_logger} ./kafka_logger']
     prefix_name = 'test_'
     test_files = []
     for file in os.listdir(epilog_dir):
@@ -431,5 +433,8 @@ class SlurmPrologEpilogCheck(rfm.RunOnlyRegressionTest):
     @sanity_function
     def validate(self):
         reason = sn.extractsingle("reason:\s*(.*)", self.stdout)
-        result = sn.assert_not_found("will be drained with reason", self.stdout, msg=f"{reason}")
-        return result
+        if not reason:
+            return True
+        else:
+            result = sn.assert_not_found("will be drained with reason", self.stdout, msg=f"{reason}")
+            return result
