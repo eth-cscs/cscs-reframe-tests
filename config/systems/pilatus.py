@@ -12,7 +12,7 @@ import copy
 
 base_config = {
     'modules_system': 'lmod',
-    'resourcesdir': '/apps/common/UES/reframe/resources',
+    'resourcesdir': '/capstor/apps/cscs/common/regression/resources',
     'partitions': [
         {
             'name': 'login',
@@ -44,7 +44,7 @@ base_config = {
                 },
                 {
                     'type': 'Singularity',
-                    'modules': ['cray', 'singularity/3.5.3-eiger']
+                    'modules': ['cray', 'singularity/3.6.4-eiger']
                 }
             ],
             'environs': [
