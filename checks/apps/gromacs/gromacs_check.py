@@ -102,7 +102,47 @@ class gromacs_build_test(rfm.CompileOnlyRegressionTest):
         folder = 'bin' # add folder path
         self.gromacs_executable = os.path.join(self.stagedir, folder,
                                             'gmx-mpi')
+        print(self.gromacs_executable)
         return os.path.isfile(self.gromacs_executable)
+
+
+class gromacs_run_test(rfm.RunOnlyRegressionTest):
+    executable = './mps-wrapper.sh -- gmx-mpi mdrun -s'
+    maintainers = ['SSA']
+    valid_systems = ['*']
+    valid_prog_environs = ['+gromacs']
+
+    @run_before('run')
+    def prepare_run(self):
+        self.uarch = uarch(self.current_partition)
+        config = slurm_config[self.test_name][self.uarch]
+        # sbatch options
+        self.job.options = [
+            f'--nodes={config["nodes"]}',
+        ]
+        self.num_tasks_per_node = config['ntasks-per-node']
+        self.num_tasks = config['nodes'] * self.num_tasks_per_node
+        self.num_cpus_per_task = config['cpus-per-task']
+        self.time_limit = config['walltime']
+
+        # environment variables
+        self.env_vars['OMP_NUM_THREADS'] = str(self.num_cpus_per_task)
+        self.env_vars['FI_CXI_RX_MATCH_MODE'] = 'software'
+
+        if self.uarch == 'gh200':
+            self.env_vars['MPICH_GPU_SUPPORT_ENABLED'] = '1'
+            self.env_vars['GMX_GPU_DD_COMMS'] = 'true'
+            self.env_vars['GMX_GPU_PME_PP_COMMS'] = 'true'
+            self.env_vars['GMX_ENABLE_DIRECT_GPU_COMM'] = '1'
+            self.env_vars['GMX_FORCE_GPU_AWARE_MPI'] = '1'
+
+        # set reference
+        if self.uarch is not None and \
+           self.uarch in gromacs_references[self.test_name]:
+            self.reference = {
+                self.current_partition.fullname:
+                    gromacs_references[self.test_name][self.uarch]
+            }
 
 # @rfm.simple_test
 # class cscs_gromacs_check(gromacs_check):
