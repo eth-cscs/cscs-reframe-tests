@@ -64,8 +64,8 @@ class CPMDCheck(rfm.RunOnlyRegressionTest):
 
         # setup system filter
         valid_systems = {
-            6: ['daint:gpu', 'daint:mc', 'dom:gpu', 'dom:mc'],
-            16: ['daint:gpu', 'daint:mc']
+            6: [],
+            16: []
         }
 
         self.skip_if(self.num_nodes not in valid_systems,

@@ -1,8 +1,20 @@
+# Copyright 2016-2023 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# ReFrame Project Developers. See the top-level LICENSE file for details.
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
+import pathlib
+import sys
+
 import reframe as rfm
 import reframe.utility.sanity as sn
 
+sys.path.append(str(pathlib.Path(__file__).parent.parent.parent / 'mixins'))
 
-class BaseCheck(rfm.RunOnlyRegressionTest):
+from sarus_extra_launcher_options import SarusExtraLauncherOptionsMixin  # noqa: E402
+
+
+class BaseCheck(SarusExtraLauncherOptionsMixin, rfm.RunOnlyRegressionTest):
     valid_systems = ['+sarus']
     valid_prog_environs = ['builtin']
     container_platform = 'Sarus'
@@ -10,17 +22,10 @@ class BaseCheck(rfm.RunOnlyRegressionTest):
     num_tasks = 2
     num_tasks_per_node = 1
     num_gpus_per_node = 1
-    maintainers = ['amadonna', 'taliaga']
-    tags = {'production'}
 
     @run_after('init')
     def set_descr(self):
         self.descr = f'{self.name} on {self.num_tasks} nodes(s)'
-
-    @run_after('setup')
-    def set_launcher_options(self):
-        if self.current_system.name in {'hohgant'}:
-            self.job.launcher.options = ['--mpi=pmi2']
 
     @run_after('setup')
     def set_prerun_cmds(self):
@@ -57,7 +62,7 @@ class SarusOSULatency(BaseCheck):
     @run_after('setup')
     def setup_container_platform(self):
         self.container_platform.image = self.sarus_image
-        self.container_platform.command  = (
+        self.container_platform.command = (
             '/usr/local/libexec/osu-micro-benchmarks/mpi/pt2pt/osu_latency'
         )
         self.container_platform.with_mpi = True
@@ -92,10 +97,10 @@ class SarusOSULatencyWithSshLauncher(BaseCheck):
             '--mount=src=${SCRATCH:-/scratch},dst=${SCRATCH:-/scratch},type=bind',
             '--ssh'
         ]
-        self.container_platform.command  = (
+        self.container_platform.command = (
             "bash -c 'syncfile=$SCRATCH/syncfile-$SLURM_JOB_ID;"
             "if [ $SLURM_PROCID = 0 ]; then"
-            "   mpirun -launcher=ssh /usr/local/libexec/osu-micro-benchmarks/mpi/pt2pt/osu_latency;"
+            "   mpirun -launcher=ssh /usr/local/libexec/osu-micro-benchmarks/mpi/pt2pt/osu_latency;"  # noqa: E501
             "   touch $syncfile;"
             "else"
             "   while [ ! -e $syncfile ]; do"
@@ -143,7 +148,7 @@ class SarusOSUBandwidth(BaseCheck):
             'bandwidth_4M':  (24000., -0.15, None, 'MB/s')
         },
     }
-    
+
     @run_after('setup')
     def setup_container_platform(self):
         self.container_platform.image = self.sarus_image

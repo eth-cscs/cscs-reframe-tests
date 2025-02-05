@@ -10,7 +10,7 @@ from hpctestlib.data_analytics.spark.spark_checks import compute_pi_check
 
 @rfm.simple_test
 class cscs_compute_pi_check(compute_pi_check):
-    valid_systems = ['daint:gpu', 'daint:mc', 'dom:gpu', 'dom:mc']
+    valid_systems = []
     valid_prog_environs = ['builtin']
     modules = ['Spark']
     spark_prefix = '$EBROOTSPARK'

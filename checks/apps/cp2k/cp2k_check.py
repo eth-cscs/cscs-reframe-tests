@@ -20,13 +20,6 @@ class Cp2kCheck(rfm.RunOnlyRegressionTest):
         }
     }
 
-    @run_after('init')
-    def set_prgenv(self):
-        if self.current_system.name in ['eiger', 'pilatus']:
-            self.valid_prog_environs = ['cpeGNU']
-        else:
-            self.valid_prog_environs = ['builtin']
-
     @sanity_function
     def assert_energy_diff(self):
         energy = sn.extractsingle(
@@ -53,16 +46,14 @@ class Cp2kCheck(rfm.RunOnlyRegressionTest):
 @rfm.simple_test
 class Cp2kCpuCheck(Cp2kCheck):
     scale = parameter(['small', 'large'])
-    valid_systems = ['daint:mc', 'eiger:mc', 'pilatus:mc']
+    valid_systems = ['eiger:mc', 'pilatus:mc']
+    valid_prog_environs = ['cpeGNU']
     refs_by_scale = {
         'small': {
-            'dom:mc': {'time': (169.619, None, 0.10, 's')},
-            'daint:mc': {'time': (208.108, None, 0.10, 's')},
             'eiger:mc': {'time': (76.116, None, 0.08, 's')},
             'pilatus:mc': {'time': (70.568, None, 0.08, 's')}
         },
         'large': {
-            'daint:mc': {'time': (114.629, None, 0.10, 's')},
             'eiger:mc': {'time': (54.381, None, 0.05, 's')},
             'pilatus:mc': {'time': (49.916, None, 0.05, 's')}
         }
@@ -73,38 +64,29 @@ class Cp2kCpuCheck(Cp2kCheck):
         self.descr = f'CP2K CPU check (version: {self.scale})'
         self.tags |= {'maintenance', 'production'}
         if self.scale == 'small':
-            self.valid_systems += ['dom:mc']
-            if self.current_system.name in ['daint', 'dom']:
-                self.num_tasks = 216
-                self.num_tasks_per_node = 36
-            elif self.current_system.name in ['eiger', 'pilatus']:
-                self.num_tasks = 96
-                self.num_tasks_per_node = 16
-                self.num_cpus_per_task = 16
-                self.num_tasks_per_core = 1
-                self.use_multithreading = False
-                self.env_vars = {
-                    'MPICH_OFI_STARTUP_CONNECT': 1,
-                    'OMP_NUM_THREADS': 8,
-                    'OMP_PLACES': 'cores',
-                    'OMP_PROC_BIND': 'close'
-                }
+            self.num_tasks = 96
+            self.num_tasks_per_node = 16
+            self.num_cpus_per_task = 16
+            self.num_tasks_per_core = 1
+            self.use_multithreading = False
+            self.env_vars = {
+                'MPICH_OFI_STARTUP_CONNECT': 1,
+                'OMP_NUM_THREADS': 8,
+                'OMP_PLACES': 'cores',
+                'OMP_PROC_BIND': 'close'
+            }
         else:
-            if self.current_system.name in ['daint', 'dom']:
-                self.num_tasks = 576
-                self.num_tasks_per_node = 36
-            elif self.current_system.name in ['eiger', 'pilatus']:
-                self.num_tasks = 256
-                self.num_tasks_per_node = 16
-                self.num_cpus_per_task = 16
-                self.num_tasks_per_core = 1
-                self.use_multithreading = False
-                self.env_vars = {
-                    'MPICH_OFI_STARTUP_CONNECT': 1,
-                    'OMP_NUM_THREADS': 8,
-                    'OMP_PLACES': 'cores',
-                    'OMP_PROC_BIND': 'close'
-                }
+            self.num_tasks = 256
+            self.num_tasks_per_node = 16
+            self.num_cpus_per_task = 16
+            self.num_tasks_per_core = 1
+            self.use_multithreading = False
+            self.env_vars = {
+                'MPICH_OFI_STARTUP_CONNECT': 1,
+                'OMP_NUM_THREADS': 8,
+                'OMP_PLACES': 'cores',
+                'OMP_PROC_BIND': 'close'
+            }
 
         self.reference = self.refs_by_scale[self.scale]
 
@@ -120,7 +102,8 @@ class Cp2kCpuCheck(Cp2kCheck):
 @rfm.simple_test
 class Cp2kGpuCheck(Cp2kCheck):
     scale = parameter(['small', 'large'])
-    valid_systems = ['daint:gpu']
+    valid_systems = []
+    valid_prog_environs = []
     num_gpus_per_node = 1
     num_tasks_per_node = 6
     num_cpus_per_task = 2
@@ -142,7 +125,7 @@ class Cp2kGpuCheck(Cp2kCheck):
     def setup_by_scale(self):
         self.descr = f'CP2K GPU check (version: {self.scale})'
         if self.scale == 'small':
-            self.valid_systems += ['dom:gpu']
+            self.valid_systems += []
             self.num_tasks = 36
         else:
             self.num_tasks = 96

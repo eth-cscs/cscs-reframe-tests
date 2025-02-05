@@ -57,11 +57,17 @@ site_configuration = {
                 },
                 {
                     'type': 'httpjson',
+                    # We are setting this from the environment
+                    # to avoid polluting the logs from tests in the
+                    # login nodes
                     'url': 'http://httpjson-server:12345/rfm',
                     'level': 'info',
                     'extras': {
-                        'facility': 'reframe',
-                        'data-version': '1.0',
+                        'data_stream': {
+                            'type': 'logs',
+                            'dataset': 'performance_values',
+                            'namespace': 'reframe'
+                        },
                     },
                     'ignore_keys': ['check_perfvalues']
                 }
@@ -107,5 +113,8 @@ site_configuration = {
             'check_search_recursive': True,
             'remote_detect': True
         }
-    ]
+    ],
+#     'autodetect_methods': [
+#         'cat /etc/xthostname', 'hostname'
+#     ]
 }

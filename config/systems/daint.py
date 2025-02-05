@@ -1,4 +1,4 @@
-# Copyright 2016-2023 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright 2024 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -11,8 +11,8 @@ import copy
 
 
 base_config = {
-    'modules_system': 'tmod',
-    'resourcesdir': '/apps/common/UES/reframe/resources',
+    'modules_system': 'lmod',
+    # 'resourcesdir': '/apps/common/UES/reframe/resources',
     'partitions': [
         {
             'name': 'login',
@@ -22,45 +22,40 @@ base_config = {
                 'builtin',
                 'PrgEnv-cray',
                 'PrgEnv-gnu',
-                'PrgEnv-intel',
-                'PrgEnv-nvidia'
+                'PrgEnv-nvidia',
+                'PrgEnv-nvhpc'
             ],
             'descr': 'Login nodes',
             'max_jobs': 4,
             'launcher': 'local'
         },
         {
-            'name': 'gpu',
+            'name': 'normal',
+            'descr': 'GH200',
             'scheduler': 'slurm',
             'time_limit': '10m',
             'container_platforms': [
-                {
-                    'type': 'Sarus',
-                    'modules': ['sarus']
-                },
-                {
-                    'type': 'Singularity',
-                    'modules': ['singularity/3.6.4-daint']
-                }
-            ],
-            'modules': ['daint-gpu'],
-            'access': [
-                f'--constraint=gpu',
-                f'--account={osext.osgroup()}'
+#                 {
+#                     'type': 'Sarus',
+#                     #'modules': ['sarus']
+#                 },
+#                 {
+#                     'type': 'Singularity',
+#                     #'modules': ['singularity/3.6.4-todi']
+#                 }
             ],
             'environs': [
                 'builtin',
                 'PrgEnv-cray',
                 'PrgEnv-gnu',
-                'PrgEnv-intel',
-                'PrgEnv-nvidia'
+                'PrgEnv-nvidia',
+                'PrgEnv-nvhpc'
             ],
-            'descr': 'Hybrid nodes (Haswell/P100)',
             'max_jobs': 100,
             'extras': {
-                'cn_memory': 64,
+                'cn_memory': 825,
             },
-            'features': ['gpu', 'nvgpu', 'remote', 'sarus', 'singularity'],
+            'features': ['ce', 'gpu', 'nvgpu', 'remote', 'scontrol', 'uenv'],
             'resources': [
                 {
                     'name': 'switches',
@@ -69,144 +64,82 @@ base_config = {
                 {
                     'name': 'gres',
                     'options': ['--gres={gres}']
-                }
+                },
+                {
+                    'name': 'memory',
+                    'options': ['--mem={mem_per_node}']
+                },
             ],
             'devices': [
                 {
                     'type': 'gpu',
-                    'arch': 'sm_60',
-                    'num_devices': 1
+                    'arch': 'sm_90',
+                    'num_devices': 4
                 }
                 ],
             'launcher': 'srun',
         },
-        {
-            'name': 'mc',
-            'scheduler': 'slurm',
-            'time_limit': '10m',
-            'container_platforms': [
-                {
-                    'type': 'Sarus',
-                    'modules': ['sarus']
-                },
-                {
-                    'type': 'Singularity',
-                    'modules': ['singularity/3.6.4-daint']
-                }
-            ],
-            'modules': ['daint-mc'],
-            'access': [
-                f'--constraint=mc',
-                f'--account={osext.osgroup()}'
-            ],
-            'environs': [
-                'builtin',
-                'PrgEnv-cray',
-                'PrgEnv-gnu',
-                'PrgEnv-intel',
-                'PrgEnv-nvidia'
-            ],
-            'descr': 'Multicore nodes (Broadwell)',
-            'max_jobs': 100,
-            'extras': {
-                'cn_memory': 64,
-            },
-            'features': ['remote', 'sarus', 'singularity'],
-            'resources': [
-                {
-                    'name': 'switches',
-                    'options': ['--switches={num_switches}']
-                },
-                {
-                    'name': 'gres',
-                    'options': ['--gres={gres}']
-                }
-            ],
-            'launcher': 'srun'
-        },
-        {
-            'name': 'jupyter_gpu',
-            'scheduler': 'slurm',
-            'time_limit': '10m',
-            'environs': ['builtin'],
-            'access': [
-                f'-Cgpu',
-                f'--reservation=interact_gpu',
-                f'--account={osext.osgroup()}'
-            ],
-            'descr': 'JupyterHub GPU nodes',
-            'max_jobs': 10,
-            'launcher': 'srun',
-            'features': ['gpu', 'nvgpu', 'remote'],
-        },
-        {
-            'name': 'jupyter_mc',
-            'scheduler': 'slurm',
-            'time_limit': '10m',
-            'environs': ['builtin'],
-            'access': [
-                f'-Cmc',
-                f'--reservation=interact_mc',
-                f'--account={osext.osgroup()}'
-            ],
-            'descr': 'JupyterHub multicore nodes',
-            'max_jobs': 10,
-            'launcher': 'srun',
-            'features': ['remote'],
-        },
-        {
-            'name': 'xfer',
-            'scheduler': 'slurm',
-            'time_limit': '10m',
-            'environs': ['builtin'],
-            'access': [
-                f'--partition=xfer',
-                f'--account={osext.osgroup()}'
-            ],
-            'descr': 'Nordend nodes for internal transfers',
-            'max_jobs': 10,
-            'launcher': 'srun',
-            'features': ['remote'],
-        }
     ]
 }
 
-daint_sys = copy.deepcopy(base_config)
-daint_sys['name'] = 'daint'
-daint_sys['descr'] = 'Piz Daint'
-daint_sys['hostnames'] = ['daint']
-
-dom_sys = copy.deepcopy(base_config)
-dom_sys['name'] = 'dom'
-dom_sys['descr'] = 'Dom TDS'
-dom_sys['hostnames'] = ['dom']
+base_config['name'] = 'daint'
+base_config['descr'] = 'Piz Daint vcluster'
+base_config['hostnames'] = ['daint']
 
 site_configuration = {
     'systems': [
-        daint_sys,
-        dom_sys
+        base_config,
     ],
     'environments': [
         {
             'name': 'PrgEnv-cray',
-            'modules': ['PrgEnv-cray'],
-            'target_systems': ['daint', 'dom'],
+            'features': ['serial', 'openmp', 'mpi', 'cuda', 'openacc', 'hdf5',
+                         'netcdf-hdf5parallel', 'pnetcdf'],
+            'target_systems': ['daint'],
+            'modules': ['cray', 'PrgEnv-cray', 'craype-arm-grace']
         },
         {
             'name': 'PrgEnv-gnu',
-            'modules': ['PrgEnv-gnu'],
-            'target_systems': ['daint', 'dom'],
-        },
-        {
-            'name': 'PrgEnv-intel',
-            'modules': ['PrgEnv-intel'],
-            'target_systems': ['daint', 'dom'],
+            'target_systems': ['daint'],
+            'features': ['serial', 'openmp', 'mpi', 'cuda', 'alloc_speed',
+                         'hdf5', 'netcdf-hdf5parallel', 'pnetcdf', 'openmp'],
+            'modules': ['cray', 'PrgEnv-gnu', 'craype-arm-grace']
         },
         {
             'name': 'PrgEnv-nvidia',
-            'modules': ['PrgEnv-nvidia'],
-            'features': ['cuda'],
-            'target_systems': ['daint', 'dom'],
-        }
+            'target_systems': ['daint'],
+            'features': ['serial', 'openmp', 'mpi', 'cuda', 'alloc_speed',
+                         'hdf5', 'netcdf-hdf5parallel', 'pnetcdf'],
+            'modules': ['cray', 'PrgEnv-gnu', 'craype-arm-grace']
+        },
+        {
+            'name': 'PrgEnv-nvhpc',
+            'target_systems': ['daint'],
+            'features': ['serial', 'openmp', 'mpi', 'cuda', 'alloc_speed',
+                         'hdf5', 'netcdf-hdf5parallel', 'pnetcdf'],
+            'modules': ['cray', 'PrgEnv-gnu', 'craype-arm-grace']
+        },
     ],
+    'modes': [
+       {
+           'name': 'cpe_production',
+           'options': [
+               '--max-retries=1',
+               '--report-file=$PWD/latest.json',
+               '-c checks',
+               '--tag=production'
+           ],
+           'target_systems': ['daint'],
+       },
+       {
+           'name': 'uenv_production',
+           'options': [
+               '--max-retries=1',
+               '--report-file=$PWD/latest.json',
+               '-c checks/apps',
+               '--tag=production'
+           ],
+           'target_systems': ['daint'],
+       }
+   ]
 }

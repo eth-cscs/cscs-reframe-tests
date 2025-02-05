@@ -7,8 +7,7 @@ from reframe.core.backends import getlauncher
 
 
 class BuildahTestBase(rfm.RunOnlyRegressionTest):
-    valid_systems = ['dom:gpu', 'dom:mc', 'daint:gpu', 'daint:mc',
-            'eiger:mc', 'pilatus:mc', 'hohgant:nvgpu', 'hohgant:cpu']
+    valid_systems = ['eiger:mc', 'pilatus:mc']
     valid_prog_environs = ['builtin']
     num_tasks = 1
     num_nodes = 1
@@ -27,10 +26,6 @@ class BuildahTestBase(rfm.RunOnlyRegressionTest):
         self.runroot = '/dev/shm/$USER/buildah_runroot'
         self.env_vars = {'XDG_DATA_HOME': '/dev/shm/$USER/xdg_data_home'}
         self.prerun_cmds = ['unset XDG_RUNTIME_DIR'] + self.prerun_cmds
- 
-        if self.current_system.name in {'dom', 'daint'}:
-            self.modules = ['Buildah']
-
         self.prerun_cmds += [
             f'rm -f {self.runroot}/{self.archive_name}.tar',
             f'rm -f {self.stagedir}/{self.archive_name}.tar'
@@ -71,7 +66,7 @@ class BuildahTestBase(rfm.RunOnlyRegressionTest):
 
 @rfm.simple_test
 class BuildahCudaDeviceQueryTest(BuildahTestBase):
-    valid_systems = ['dom:gpu', 'daint:gpu', 'hohgant:nvgpu']
+    valid_systems = []
     dockerfile = 'Dockerfile_cuda'
     image_tag = 'cuda_query:latest'
 
@@ -84,7 +79,7 @@ class BuildahMpichOSUTest(BuildahTestBase):
 
 @rfm.simple_test
 class ContainerCudaDeviceQueryTest(rfm.RunOnlyRegressionTest):
-    valid_systems = ['dom:gpu', 'daint:gpu', 'hohgant:nvgpu']
+    valid_systems = []
     valid_prog_environs = ['builtin']
     platform = parameter(['Sarus', 'Singularity'])
     num_tasks = 1
@@ -139,25 +134,12 @@ class ContainerCudaDeviceQueryTest(rfm.RunOnlyRegressionTest):
 
 @rfm.simple_test
 class ContainerMpichOSUTest(rfm.RunOnlyRegressionTest):
-    valid_systems = ['dom:gpu', 'dom:mc', 'daint:gpu', 'daint:mc',
-            'eiger:mc', 'pilatus:mc', 'hohgant:nvgpu', 'hohgant:cpu']
+    valid_systems = ['eiger:mc', 'pilatus:mc']
     valid_prog_environs = ['builtin']
     platform = parameter(['Sarus', 'Singularity'])
     num_tasks_per_node = 1
     num_tasks = 2
     reference = {
-        'daint:gpu': {
-            'bw': (9607.0, -0.15, None, 'MB/s')
-        },
-        'daint:mc': {
-            'bw': (9649.0, -0.15, None, 'MB/s')
-        },
-        'dom:gpu': {
-            'bw': (9360.0, -0.10, None, 'MB/s')
-        },
-        'dom:mc': {
-            'bw': (9528.4, -0.15, None, 'MB/s')
-        },
         '*': {
             'bw': (24000.0, -0.15, None, 'MB/s')
         },
@@ -206,23 +188,9 @@ class ContainerMpichOSUTest(rfm.RunOnlyRegressionTest):
                f'docker-archive:{self.image_path}'
             ]
 
-    @run_after('setup')
-    def set_launcher_options(self):
-        if self.current_system.name in {'hohgant'}: 
-            self.job.launcher.options = ['--mpi=pmi2']
-
     @sanity_function
     def assert_message_4KB_bw(self):
         return sn.assert_found(r'^4194304\s+\S+', self.stdout)
-
-    @run_before('performance')
-    def set_singularity_hohgant_perf(self):
-        # No mpi replacement is performed when using singularity on hohgant
-        if (self.current_system.name == 'hohgant' and 
-            self.platform == 'Singularity'):
-            self.reference = {'hohgant:nvgpu':
-                {'bw': (2570.0, -0.10, None, 'MB/s')}
-            }
 
     @performance_function('MB/s')
     def bw(self):

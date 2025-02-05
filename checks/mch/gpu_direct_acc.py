@@ -12,7 +12,7 @@ import reframe.utility.sanity as sn
 class GpuDirectAccCheck(rfm.RegressionTest):
     def __init__(self):
         self.descr = 'tests gpu-direct for Fortran OpenACC'
-        self.valid_systems = ['daint:gpu', 'dom:gpu', 'arolla:cn', 'tsa:cn']
+        self.valid_systems = ['arolla:cn', 'tsa:cn']
         self.valid_prog_environs = ['PrgEnv-cray', 'PrgEnv-pgi',
                                     'PrgEnv-nvidia']
         if self.current_system.name in ['daint', 'dom']:

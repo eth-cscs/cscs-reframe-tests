@@ -1,93 +1,61 @@
-# Copyright 2016-2022 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright 2016-2023 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
+import pathlib
 import re
+import sys
 import reframe as rfm
 import reframe.utility.sanity as sn
 
-from reframe.core.logging import getlogger
+sys.path.append(str(pathlib.Path(__file__).parent.parent / 'mixins'))
+from extra_launcher_options import ExtraLauncherOptionsMixin
 
 
-class workaround_22_08_1_1(rfm.RegressionMixin):
-    @run_before('compile')
-    def libsci_22_08_1_1_workaround(self):
-        if (self.current_environ.name == 'PrgEnv-aocc' and
-            self.lang in ['cpp', 'f90']):
-            # Known bug in cray-libsci/22.08.1.1, switch to 21.08.1.2
-            self.prebuild_cmds += [
-                'if [[ $(module list 2> >(grep cray-libsci/22.08.1.1)) ]]; '
-                'then module switch cray-libsci cray-libsci/21.08.1.2 && '
-                'echo "FIX: switching default cray-libsci to '
-                'cray-libsci/21.08.1.2"; fi'
-            ]
-
-
-class HelloWorldBaseTest(rfm.RegressionTest):
-    linking = parameter(['dynamic', 'static'])
-    lang = parameter(['c', 'cpp', 'f90'])
-    prgenv_flags = {}
-    sourcepath = 'hello_world'
+class HelloWorldBaseTest(rfm.RegressionTest, ExtraLauncherOptionsMixin):
+    linking = parameter(['dynamic'])
+    lang = parameter(['c', 'cpp', 'F90'])
+    sourcesdir = 'src/hello'
+    sourcepath = 'hello'
+    build_locally = False
     build_system = 'SingleSource'
     prebuild_cmds = ['_rfm_build_time="$(date +%s%N)"']
     postbuild_cmds = [
         '_rfm_build_time="$(($(date +%s%N)-_rfm_build_time))"',
         'echo "Compilations time (ns): $_rfm_build_time"'
     ]
-    valid_systems = ['daint:gpu', 'daint:mc', 'dom:gpu', 'dom:mc',
-                     'arolla:cn', 'arolla:pn', 'tsa:cn', 'tsa:pn']
-    valid_prog_environs = ['PrgEnv-aocc', 'PrgEnv-cray',
-                           'PrgEnv-cray_classic', 'PrgEnv-gnu',
-                           'PrgEnv-intel', 'PrgEnv-pgi',
-                           'PrgEnv-gnu-nocuda', 'PrgEnv-pgi-nocuda']
+    valid_systems = ['+remote']
     reference = {
         '*': {
             'compilation_time': (60, None, 0.1, 's')
         }
     }
     exclusive_access = True
-    maintainers = ['VH', 'EK']
-    tags = {'production', 'craype'}
+
+    # This is valid only for non-cray MPICH
+    env_vars = {
+        'MPIR_CVAR_ENABLE_GPU': 0,
+    }
+    tags = {'production', 'craype', 'uenv'}
 
     @run_after('init')
     def set_description(self):
         lang_names = {
             'c': 'C',
             'cpp': 'C++',
-            'f90': 'Fortran 90'
+            'F90': 'Fortran 90'
         }
         self.descr = f'{lang_names[self.lang]} Hello, World'
-
-    @run_after('init')
-    def adapt_valid_systems(self):
-        if self.linking == 'dynamic':
-            self.valid_systems += ['eiger:mc', 'pilatus:mc', 'hohgant:nvgpu']
-
-    @run_before('compile')
-    def skip_static_builds_on_alps(self):
-        self.skip_if('squashfs' in self.current_environ.features and
-                     self.linking == 'static',
-                     'static linking not needed with squashfs')
 
     @run_before('compile')
     def prepare_build(self):
         self.env_vars['CRAYPE_LINK_TYPE'] = self.linking
-        envname = re.sub(r'(PrgEnv-\w+).*', lambda m: m.group(1),
-                         self.current_environ.name)
-        try:
-            prgenv_flags = self.prgenv_flags[envname]
-        except KeyError:
-            prgenv_flags = []
-
-        self.build_system.cflags = prgenv_flags
-        self.build_system.cxxflags = prgenv_flags
-        self.build_system.fflags = prgenv_flags
 
     @sanity_function
     def assert_hello_world(self):
-        result = sn.findall(r'Hello, World from thread \s*(\d+) out '
-                            r'of \s*(\d+) from process \s*(\d+) out of '
+        result = sn.findall(r'Hello, World from thread\s*(\d+) out '
+                            r'of\s*(\d+)\s*from rank\s*(\d+) out of'
                             r'\s*(\d+)', self.stdout)
 
         num_tasks = sn.getattr(self, 'num_tasks')
@@ -104,19 +72,6 @@ class HelloWorldBaseTest(rfm.RegressionTest):
 
         def num_ranks(match):
             return int(match.group(4))
-
-        workaround_found = sn.count(
-            sn.findall(
-                'FIX: switching default cray-libsci to '
-                'cray-libsci/21.08.1.2', self.build_stdout
-            )
-        )
-        if workaround_found:
-            getlogger().warning(
-                f"Workaround in {self.info()}: rerun with "
-                f"'--disable-hook=libsci_22_08_1_1_workaround' to see if the "
-                f"issue is fixed"
-            )
 
         return sn.all(sn.chain(
                 [sn.assert_eq(sn.count(result), num_tasks*num_cpus_per_task)],
@@ -144,66 +99,42 @@ class HelloWorldBaseTest(rfm.RegressionTest):
 
 @rfm.simple_test
 class HelloWorldTestSerial(HelloWorldBaseTest):
-    sourcesdir = 'src/serial'
     num_tasks = 1
     num_tasks_per_node = 1
     num_cpus_per_task = 1
-
-    @run_after('init')
-    def extend_valid_prog_environs(self):
-        self.valid_prog_environs += ['PrgEnv-gnu-nompi', 'PrgEnv-pgi-nompi',
-                                     'PrgEnv-gnu-nompi-nocuda',
-                                     'PrgEnf-pgi-nompi-nocuda']
-        if (self.current_system.name in ['arolla', 'tsa'] and
-            self.linking == 'dynamic'):
-            self.valid_prog_environs += ['PrgEnv-pgi-nompi',
-                                         'PrgEnv-pgi-nompi-nocuda',
-                                         'PrgEnv-gnu-nompi',
-                                         'PrgEnv-gnu-nompi-nocuda']
+    valid_prog_environs = ['+serial']
 
     @run_after('init')
     def update_description(self):
-        self.descr += ' Serial ' + self.linking.capitalize()
+        self.descr += f' Serial {self.linking.capitalize()}'
 
     @run_before('compile')
     def update_sourcepath(self):
-        self.sourcepath += f'_serial.{self.lang}'
+        self.sourcepath += f'.{self.lang}'
 
 
 @rfm.simple_test
-class HelloWorldTestOpenMP(HelloWorldBaseTest, workaround_22_08_1_1):
-    sourcesdir = 'src/openmp'
+class HelloWorldTestOpenMP(HelloWorldBaseTest):
     num_tasks = 1
     num_tasks_per_node = 1
     num_cpus_per_task = 4
+    valid_prog_environs = ['+openmp']
 
-    @run_after('init')
-    def set_prgenv_compilation_flags_map(self):
-        self.prgenv_flags = {
-            'PrgEnv-aocc': ['-fopenmp'],
-            'PrgEnv-cray': ['-homp' if self.lang == 'f90' else '-fopenmp'],
-            'PrgEnv-cray_classic': ['-homp'],
-            'PrgEnv-gnu': ['-fopenmp'],
-            'PrgEnv-intel': ['-qopenmp'],
-            'PrgEnv-pgi': ['-mp']
-        }
-
-    @run_after('init')
-    def extend_valid_prog_environs(self):
-        if (self.current_system.name in ['arolla', 'tsa'] and
-            self.linking == 'dynamic'):
-            self.valid_prog_environs += ['PrgEnv-pgi-nompi',
-                                         'PrgEnv-pgi-nompi-nocuda',
-                                         'PrgEnv-gnu-nompi',
-                                         'PrgEnv-gnu-nompi-nocuda']
+    @run_before('compile')
+    def set_openmp_flags(self):
+        self.build_system.cflags = self.current_environ.extras.get(
+            'c_openmp_flags', ['-fopenmp'])
+        self.build_system.cxxflags = self.build_system.cflags
+        self.build_system.fflags = self.current_environ.extras.get(
+            'f_openmp_flags', self.build_system.cflags )
 
     @run_after('init')
     def update_description(self):
-        self.descr += ' OpenMP ' + self.linking.capitalize()
+        self.descr += f' OpenMP {self.linking.capitalize()}'
 
     @run_before('compile')
     def update_sourcepath(self):
-        self.sourcepath += '_openmp.' + self.lang
+        self.sourcepath += '.' + self.lang
 
     @run_before('run')
     def set_omp_env_variable(self):
@@ -214,48 +145,47 @@ class HelloWorldTestOpenMP(HelloWorldBaseTest, workaround_22_08_1_1):
 
 @rfm.simple_test
 class HelloWorldTestMPI(HelloWorldBaseTest):
-    sourcesdir = 'src/mpi'
     # for the MPI test the self.num_tasks_per_node should always be one. If
     # not, the test will fail for the total number of lines in the output
     # file is different then self.num_tasks * self.num_tasks_per_node
     num_tasks = 2
     num_tasks_per_node = 1
     num_cpus_per_task = 1
+    valid_prog_environs = ['+mpi']
 
     @run_after('init')
     def update_description(self):
-        self.descr += ' MPI ' + self.linking.capitalize()
+        self.descr += f' MPI {self.linking.capitalize()}'
 
     @run_before('compile')
     def update_sourcepath(self):
-        self.sourcepath += '_mpi.' + self.lang
+        self.sourcepath += '.' + self.lang
+        self.build_system.cppflags += ['-DUSE_MPI']
 
 
 @rfm.simple_test
-class HelloWorldTestMPIOpenMP(HelloWorldBaseTest, workaround_22_08_1_1):
-    sourcesdir = 'src/mpi_openmp'
+class HelloWorldTestMPIOpenMP(HelloWorldBaseTest):
     num_tasks = 6
     num_tasks_per_node = 3
     num_cpus_per_task = 4
-
-    @run_after('init')
-    def set_prgenv_compilation_flags_map(self):
-        self.prgenv_flags = {
-            'PrgEnv-aocc': ['-fopenmp'],
-            'PrgEnv-cray': ['-homp' if self.lang == 'f90' else '-fopenmp'],
-            'PrgEnv-cray_classic': ['-homp'],
-            'PrgEnv-gnu': ['-fopenmp'],
-            'PrgEnv-intel': ['-qopenmp'],
-            'PrgEnv-pgi': ['-mp']
-        }
+    valid_prog_environs = ['+mpi +openmp']
 
     @run_after('init')
     def update_description(self):
-        self.descr += ' MPI + OpenMP ' + self.linking.capitalize()
+        self.descr += f' MPI + OpenMP {self.linking.capitalize()}'
+
+    @run_before('compile')
+    def set_openmp_flags(self):
+        self.build_system.cflags = self.current_environ.extras.get(
+            'c_openmp_flags', ['-fopenmp'])
+        self.build_system.cxxflags = self.build_system.cflags
+        self.build_system.fflags = self.current_environ.extras.get(
+            'f_openmp_flags',  self.build_system.cflags)
 
     @run_before('compile')
     def update_sourcepath(self):
-        self.sourcepath += '_mpi_openmp.' + self.lang
+        self.sourcepath += '.' + self.lang
+        self.build_system.cppflags += ['-DUSE_MPI']
 
     @run_before('run')
     def set_omp_env_variable(self):

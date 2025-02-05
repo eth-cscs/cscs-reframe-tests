@@ -176,20 +176,20 @@ class cscs_gromacs_check(gromacs_check):
         # Setup system filtering
         valid_systems = {
             'cpu': {
-                1: ['daint:mc', 'dom:mc', 'eiger:mc', 'pilatus:mc'],
-                2: ['daint:mc', 'dom:mc', 'eiger:mc', 'pilatus:mc'],
-                4: ['daint:mc', 'dom:mc', 'eiger:mc', 'pilatus:mc'],
-                6: ['daint:mc', 'dom:mc', 'eiger:mc', 'pilatus:mc'],
-                8: ['daint:mc', 'eiger:mc'],
-                16: ['daint:mc', 'eiger:mc']
+                1: ['eiger:mc', 'pilatus:mc'],
+                2: ['eiger:mc', 'pilatus:mc'],
+                4: ['eiger:mc', 'pilatus:mc'],
+                6: ['eiger:mc', 'pilatus:mc'],
+                8: ['eiger:mc'],
+                16: ['eiger:mc']
             },
             'gpu': {
-                1: ['daint:gpu', 'dom:gpu', 'eiger:gpu', 'pilatus:gpu'],
-                2: ['daint:gpu', 'dom:gpu', 'eiger:gpu', 'pilatus:gpu'],
-                4: ['daint:gpu', 'dom:gpu', 'eiger:gpu', 'pilatus:gpu'],
-                6: ['daint:gpu', 'dom:gpu', 'eiger:gpu', 'pilatus:gpu'],
-                8: ['daint:gpu', 'eiger:gpu'],
-                16: ['daint:gpu', 'eiger:gpu']
+                1: [],
+                2: [],
+                4: [],
+                6: [],
+                8: [],
+                16: []
             }
         }
         try:

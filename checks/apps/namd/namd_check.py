@@ -12,9 +12,9 @@ import reframe.utility.sanity as sn
 @rfm.simple_test
 class NamdCheck(rfm.RunOnlyRegressionTest):
     scale = parameter(['small', 'large'])
-    arch = parameter(['gpu', 'cpu'])
-
-    valid_prog_environs = ['builtin', 'cpeGNU']
+    arch = parameter(['cpu'])
+    valid_systems = ['eiger:mc', 'pilatus:mc']
+    valid_prog_environs = ['cpeGNU']
     modules = ['NAMD']
     executable = 'namd2'
     use_multithreading = True
@@ -33,50 +33,17 @@ class NamdCheck(rfm.RunOnlyRegressionTest):
         self.tags |= {'maintenance', 'production'}
 
     @run_after('init')
-    def adapt_valid_systems(self):
-        if self.arch == 'gpu':
-            self.valid_systems = ['daint:gpu']
-            if self.scale == 'small':
-                self.valid_systems += ['dom:gpu']
-        else:
-            self.valid_systems = ['daint:mc', 'eiger:mc', 'pilatus:mc']
-            if self.scale == 'small':
-                self.valid_systems += ['dom:mc']
-
-    @run_after('init')
-    def adapt_valid_prog_environs(self):
-        if self.current_system.name in ['eiger', 'pilatus']:
-            self.valid_prog_environs.remove('builtin')
-
-    @run_after('init')
     def setup_parallel_run(self):
-        if self.arch == 'gpu':
-            self.executable_opts = ['+idlepoll', '+ppn 23', 'stmv.namd']
-            self.num_cpus_per_task = 24
-            self.num_gpus_per_node = 1
-        else:
-            # On Eiger a no-smp NAMD version is the default
-            if self.current_system.name in ['eiger', 'pilatus']:
-                self.executable_opts = ['+idlepoll', 'stmv.namd']
-                self.num_cpus_per_task = 2
-            else:
-                self.executable_opts = ['+idlepoll', '+ppn 71', 'stmv.namd']
-                self.num_cpus_per_task = 72
+        # On Eiger a no-smp NAMD version is the default
+        self.executable_opts = ['+idlepoll', 'stmv.namd']
+        self.num_cpus_per_task = 2
+
         if self.scale == 'small':
-            # On Eiger a no-smp NAMD version is the default
-            if self.current_system.name in ['eiger', 'pilatus']:
-                self.num_tasks = 768
-                self.num_tasks_per_node = 128
-            else:
-                self.num_tasks = 6
-                self.num_tasks_per_node = 1
+            self.num_tasks = 768
+            self.num_tasks_per_node = 128
         else:
-            if self.current_system.name in ['eiger', 'pilatus']:
-                self.num_tasks = 2048
-                self.num_tasks_per_node = 128
-            else:
-                self.num_tasks = 16
-                self.num_tasks_per_node = 1
+            self.num_tasks = 2048
+            self.num_tasks_per_node = 128
 
     @run_before('compile')
     def prepare_build(self):
@@ -101,30 +68,16 @@ class NamdCheck(rfm.RunOnlyRegressionTest):
 
     @run_before('performance')
     def set_reference(self):
-        if self.arch == 'gpu':
-            if self.scale == 'small':
-                self.reference = {
-                    'dom:gpu': {'days_ns': (0.149, None, 0.10, 'days/ns')},
-                    'daint:gpu': {'days_ns': (0.178, None, 0.10, 'days/ns')}
-                }
-            else:
-                self.reference = {
-                    'daint:gpu': {'days_ns': (0.072, None, 0.15, 'days/ns')}
-                }
+        if self.scale == 'small':
+            self.reference = {
+                'eiger:mc': {'days_ns': (0.126, None, 0.05, 'days/ns')},
+                'pilatus:mc': {'days_ns': (0.128, None, 0.05, 'days/ns')},
+            }
         else:
-            if self.scale == 'small':
-                self.reference = {
-                    'dom:mc': {'days_ns': (0.543, None, 0.10, 'days/ns')},
-                    'daint:mc': {'days_ns': (0.513, None, 0.10, 'days/ns')},
-                    'eiger:mc': {'days_ns': (0.126, None, 0.05, 'days/ns')},
-                    'pilatus:mc': {'days_ns': (0.128, None, 0.05, 'days/ns')},
-                }
-            else:
-                self.reference = {
-                    'daint:mc': {'days_ns': (0.425, None, 0.10, 'days/ns')},
-                    'eiger:mc': {'days_ns': (0.057, None, 0.05, 'days/ns')},
-                    'pilatus:mc': {'days_ns': (0.054, None, 0.10, 'days/ns')}
-                }
+            self.reference = {
+                'eiger:mc': {'days_ns': (0.057, None, 0.05, 'days/ns')},
+                'pilatus:mc': {'days_ns': (0.054, None, 0.10, 'days/ns')}
+            }
 
     @performance_function('days/ns')
     def days_ns(self):

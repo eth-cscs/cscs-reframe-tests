@@ -1,3 +1,8 @@
+# Copyright 2016-2023 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# ReFrame Project Developers. See the top-level LICENSE file for details.
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
 import os
 import tempfile
 
@@ -14,8 +19,6 @@ class SarusRootSquashBindMount(rfm.RunOnlyRegressionTest):
     container_platform = 'Sarus'
     num_tasks = 1
     num_tasks_per_node = 1
-    maintainers = ['amadonna', 'taliaga']
-    tags = {'production'}
 
     @run_after('setup')
     def set_commands_and_executable(self):

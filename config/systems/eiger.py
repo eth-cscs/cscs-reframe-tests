@@ -59,10 +59,18 @@ base_config = {
                 'cpeIntel'
             ],
             'max_jobs': 100,
+
+            #FIXME temporary workaround for uenv=prgenv-gnu_23.11
+            'env_vars': [
+                [
+                    'LD_LIBRARY_PATH',
+                    '$LD_LIBRARY_PATH:/opt/cray/libfabric/1.15.2.0/lib64'
+                ]
+            ],
             'extras': {
                 'cn_memory': 256,
             },
-            'features': ['remote', 'sarus', 'singularity'],
+            'features': ['remote', 'sarus', 'singularity', 'uenv'],
             'access': ['-Cmc', f'--account={osext.osgroup()}'],
             'resources': [
                 {
@@ -108,21 +116,30 @@ site_configuration = {
         {
             'name': 'PrgEnv-aocc',
             'target_systems': ['eiger'],
-            'modules': ['cray', 'PrgEnv-aocc']
+            'modules': ['cray', 'PrgEnv-aocc'],
+            'features': ['serial', 'openmp', 'mpi', 'cuda',
+                         'hdf5', 'netcdf-hdf5parallel', 'pnetcdf', 'openmp']
         },
         {
             'name': 'PrgEnv-cray',
+            'features': ['serial', 'openmp', 'mpi', 'cuda', 'openacc', 'hdf5',
+                         'netcdf-hdf5parallel', 'pnetcdf', 'openmp', 'opencl'],
             'target_systems': ['eiger'],
             'modules': ['cray', 'PrgEnv-cray']
         },
         {
             'name': 'PrgEnv-gnu',
             'target_systems': ['eiger'],
+            'features': ['serial', 'openmp', 'mpi', 'cuda', 'alloc_speed',
+                         'hdf5', 'netcdf-hdf5parallel', 'pnetcdf', 'openmp'],
             'modules': ['cray', 'PrgEnv-gnu']
         },
         {
             'name': 'PrgEnv-intel',
             'target_systems': ['eiger'],
+            'modules': ['cray', 'PrgEnv-intel'],
+            'features': ['serial', 'openmp', 'mpi', 'cuda', 'alloc_speed',
+                         'hdf5', 'pnetcdf', 'openmp'],
             'modules': ['cray', 'PrgEnv-intel']
         },
         {
@@ -146,4 +163,25 @@ site_configuration = {
             'modules': ['cray', 'cpeIntel']
         },
     ],
+    'modes': [
+       {
+           'name': 'cpe_production',
+           'options': [
+               '--max-retries=1',
+               '--report-file=$PWD/latest.json',
+               '-c checks',
+               '--tag=production'
+           ],
+           'target_systems': ['eiger'],
+       },
+       {
+           'name': 'uenv_production',
+           'options': [
+               '--max-retries=1',
+               '--report-file=$PWD/latest.json',
+               '-c checks/apps',
+           ],
+           'target_systems': ['eiger'],
+       }
+   ]
 }

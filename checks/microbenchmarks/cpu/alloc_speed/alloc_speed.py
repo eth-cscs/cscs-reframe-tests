@@ -11,11 +11,9 @@ import reframe.utility.sanity as sn
 class AllocSpeedTest(rfm.RegressionTest):
     hugepages = parameter(['no', '2M'])
     sourcepath = 'alloc_speed.cpp'
-    valid_systems = ['daint:gpu', 'daint:mc', 'dom:gpu', 'dom:mc',
-                     'eiger:mc', 'pilatus:mc']
-    valid_prog_environs = ['PrgEnv-gnu']
+    valid_systems = ['+remote']
+    valid_prog_environs = ['+alloc_speed']
     build_system = 'SingleSource'
-    maintainers = ['AK', 'VH']
     tags = {'production', 'craype'}
 
     @run_after('init')
@@ -23,16 +21,16 @@ class AllocSpeedTest(rfm.RegressionTest):
         self.descr = (f'Time to allocate 4096 MB using {self.hugepages} '
                       f'hugepages')
 
-    @run_after('init')
-    def add_valid_systems(self):
-        if self.hugepages == 'no':
-            self.valid_systems += ['arolla:cn', 'arolla:pn',
-                                   'tsa:cn', 'tsa:pn']
-
-    @run_after('init')
+    @run_after('setup')
     def set_modules(self):
-        if self.hugepages != 'no':
-            self.modules = [f'craype-hugepages{self.hugepages}']
+        if self.hugepages == 'no':
+            return
+
+        variant = f'hugepages{self.hugepages}'
+        if variant in self.current_environ.extras:
+            self.modules = self.current_environ.extras[variant]
+        else:
+            self.skip(f'No hugepage {self.hugepages} module')
 
     @run_before('compile')
     def set_cxxflags(self):
@@ -44,43 +42,17 @@ class AllocSpeedTest(rfm.RegressionTest):
 
     @run_before('performance')
     def set_reference(self):
+        base_perf = 0.12
         sys_reference = {
             'no': {
-                'dom:gpu': {
-                    'time': (1.32, None, 0.15, 's')
-                },
-                'dom:mc': {
-                    'time': (1.51, None, 0.15, 's')
-                },
-                'daint:gpu': {
-                    'time': (1.32, None, 0.15, 's')
-                },
-                'daint:mc': {
-                    'time': (1.51, None, 0.15, 's')
-                },
                 'eiger:mc': {
                     'time': (0.14, None, 0.15, 's')
                 },
                 'pilatus:mc': {
                     'time': (0.14, None, 0.15, 's')
-                },
+                }
             },
             '2M': {
-                'dom:gpu': {
-                    'time': (0.11, None, 0.15, 's')
-                },
-                'dom:mc': {
-                    'time': (0.20, None, 0.15, 's')
-                },
-                'daint:gpu': {
-                    'time': (0.11, None, 0.15, 's')
-                },
-                'daint:mc': {
-                    'time': (0.20, None, 0.15, 's')
-                },
-                'eiger:mc': {
-                    'time': (0.07, None, 0.15, 's')
-                },
                 'pilatus:mc': {
                     'time': (0.07, None, 0.15, 's')
                 },

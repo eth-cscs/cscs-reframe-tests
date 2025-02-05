@@ -9,6 +9,7 @@ import reframe.utility.sanity as sn
 
 @rfm.simple_test
 class VASPCheck(rfm.RunOnlyRegressionTest):
+    valid_prog_environs = ['cpeIntel']
     modules = ['VASP']
     executable = 'vasp_std'
     extra_resources = {
@@ -25,26 +26,12 @@ class VASPCheck(rfm.RunOnlyRegressionTest):
     num_nodes = parameter([6, 16], loggable=True)
     allref = {
         6: {
-            'sm_60': {
-                'dom:gpu': {'elapsed_time': (66.811, None, 0.10, 's')},
-                'daint:gpu': {'elapsed_time': (67.407, None, 0.10, 's')},
-            },
-            'broadwell': {
-                'dom:mc': {'elapsed_time': (57.745, None, 0.10, 's')},
-                'daint:mc': {'elapsed_time': (65.62, None, 0.10, 's')},
-            },
             'zen2': {
                 'eiger:mc': {'elapsed_time': (112.347, None, 0.10, 's')},
                 'pilatus:mc': {'elapsed_time': (89.083, None, 0.10, 's')},
             },
         },
         16: {
-            'sm_60': {
-                'daint:gpu': {'elapsed_time': (61.393, None, 0.10, 's')},
-            },
-            'broadwell': {
-                'daint:mc': {'elapsed_time': (45.404, None, 0.10, 's')},
-            },
             'zen2': {
                 'eiger:mc': {'elapsed_time': (69.459, None, 0.10, 's')},
                 'pilatus:mc': {'elapsed_time': (100.0, None, 0.10, 's')}
@@ -70,9 +57,8 @@ class VASPCheck(rfm.RunOnlyRegressionTest):
 
         # setup system filter
         valid_systems = {
-            6: ['daint:gpu', 'daint:mc', 'dom:gpu', 'dom:mc',
-                'eiger:mc', 'pilatus:mc'],
-            16: ['daint:gpu', 'daint:mc', 'eiger:mc']
+            6: ['eiger:mc', 'pilatus:mc'],
+            16: ['eiger:mc']
         }
 
         self.skip_if(self.num_nodes not in valid_systems,
@@ -80,10 +66,6 @@ class VASPCheck(rfm.RunOnlyRegressionTest):
         self.valid_systems = valid_systems[self.num_nodes]
 
         # setup programming environment filter
-        if self.current_system.name in ['eiger', 'pilatus']:
-            self.valid_prog_environs = ['cpeIntel']
-        else:
-            self.valid_prog_environs = ['builtin']
 
     @run_before('run')
     def setup_run(self):
@@ -91,10 +73,6 @@ class VASPCheck(rfm.RunOnlyRegressionTest):
         self.skip_if_no_procinfo()
         proc = self.current_partition.processor
         arch = proc.arch
-
-        # set architecture for GPU partition (no auto-detection)
-        if self.current_partition.fullname in ['daint:gpu', 'dom:gpu']:
-            arch = 'sm_60'
 
         try:
             found = self.allref[self.num_nodes][arch]

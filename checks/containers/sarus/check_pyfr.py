@@ -1,3 +1,8 @@
+# Copyright 2016-2023 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# ReFrame Project Developers. See the top-level LICENSE file for details.
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
 import reframe as rfm
 import reframe.utility.sanity as sn
 
@@ -10,9 +15,6 @@ class SarusPyFRCheck(rfm.RunOnlyRegressionTest):
     container_platform = 'Sarus'
     num_tasks = 1
     num_tasks_per_node = 1
-    num_gpus_per_node = 1
-    maintainers = ['amadonna', 'taliaga']
-    tags = {'production'}
 
     @run_after('init')
     def set_valid_systems(self):
@@ -25,9 +27,10 @@ class SarusPyFRCheck(rfm.RunOnlyRegressionTest):
     def set_cuda_visible_devices(self):
         if self.backend == 'cuda':
             curr_part = self.current_partition
-            self.gpu_count = curr_part.select_devices('gpu')[0].num_devices
-            cuda_visible_devices = ','.join(f'{i}' for i in range(self.gpu_count))
+            gpu_count = curr_part.select_devices('gpu')[0].num_devices
+            cuda_visible_devices = ','.join(f'{i}' for i in range(gpu_count))
             self.env_vars['CUDA_VISIBLE_DEVICES'] = cuda_visible_devices
+            self.num_gpus_per_node = gpu_count
 
     @run_after('setup')
     def setup_container_platform(self):

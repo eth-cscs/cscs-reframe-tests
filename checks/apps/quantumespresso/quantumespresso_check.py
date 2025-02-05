@@ -51,7 +51,7 @@ class QuantumESPRESSOCheck(rfm.RunOnlyRegressionTest):
 
 @rfm.simple_test
 class QuantumESPRESSOCpuCheck(QuantumESPRESSOCheck):
-    valid_systems = ['daint:mc', 'eiger:mc', 'pilatus:mc']
+    valid_systems = ['eiger:mc', 'pilatus:mc']
     energy_tolerance = 1.0e-6
 
     @run_after('init')
@@ -59,51 +59,39 @@ class QuantumESPRESSOCpuCheck(QuantumESPRESSOCheck):
         self.descr = (f'QuantumESPRESSO CPU check (version: {self.scale}, '
                       f'{self.variant})')
         if self.scale == 'small':
-            self.valid_systems += ['dom:mc']
             self.energy_reference = -11427.09017218
-            if self.current_system.name in ['daint', 'dom']:
-                self.num_tasks = 216
-                self.num_tasks_per_node = 36
-            elif self.current_system.name in ['eiger', 'pilatus']:
-                self.num_tasks = 96
-                self.num_tasks_per_node = 16
-                self.num_cpus_per_task = 16
-                self.num_tasks_per_core = 1
-                self.env_vars = {
-                    'MPICH_OFI_STARTUP_CONNECT': 1,
-                    'OMP_NUM_THREADS': 8,
-                    'OMP_PLACES': 'cores',
-                    'OMP_PROC_BIND': 'close'
-                }
+            self.num_tasks = 96
+            self.num_tasks_per_node = 16
+            self.num_cpus_per_task = 16
+            self.num_tasks_per_core = 1
+            self.env_vars = {
+                'MPICH_OFI_STARTUP_CONNECT': 1,
+                'OMP_NUM_THREADS': 8,
+                'OMP_PLACES': 'cores',
+                'OMP_PROC_BIND': 'close'
+            }
 
         else:
             self.energy_reference = -11427.09017152
-            if self.current_system.name in ['daint']:
-                self.num_tasks = 576
-                self.num_tasks_per_node = 36
-            elif self.current_system.name in ['eiger', 'pilatus']:
-                self.num_tasks = 256
-                self.num_tasks_per_node = 16
-                self.num_cpus_per_task = 16
-                self.num_tasks_per_core = 1
-                self.env_vars = {
-                    'MPICH_OFI_STARTUP_CONNECT': 1,
-                    'OMP_NUM_THREADS': 8,
-                    'OMP_PLACES': 'cores',
-                    'OMP_PROC_BIND': 'close'
-                }
+            self.num_tasks = 256
+            self.num_tasks_per_node = 16
+            self.num_cpus_per_task = 16
+            self.num_tasks_per_core = 1
+            self.env_vars = {
+                'MPICH_OFI_STARTUP_CONNECT': 1,
+                'OMP_NUM_THREADS': 8,
+                'OMP_PLACES': 'cores',
+                'OMP_PROC_BIND': 'close'
+            }
 
     @run_before('performance')
     def set_reference(self):
         references = {
             'small': {
-                'dom:mc': {'time': (109.814, None, 0.10, 's')},
-                'daint:mc': {'time': (98.475, None, 0.10, 's')},
                 'eiger:mc': {'time': (55.51, None, 0.10, 's')},
                 'pilatus:mc': {'time': (50.981, None, 0.10, 's')}
             },
             'large': {
-                'daint:mc': {'time': (125.648, None, 0.10, 's')},
                 'eiger:mc': {'time': (47.165, None, 0.10, 's')},
                 'pilatus:mc': {'time': (43.211, None, 0.10, 's')}
             }
@@ -121,7 +109,7 @@ class QuantumESPRESSOCpuCheck(QuantumESPRESSOCheck):
 
 @rfm.simple_test
 class QuantumESPRESSOGpuCheck(QuantumESPRESSOCheck):
-    valid_systems = ['daint:gpu']
+    valid_systems = []
     num_gpus_per_node = 1
     num_tasks_per_node = 1
     num_cpus_per_task = 12
@@ -132,7 +120,7 @@ class QuantumESPRESSOGpuCheck(QuantumESPRESSOCheck):
         self.descr = (f'QuantumESPRESSO GPU check (version: {self.scale}, '
                       f'{self.variant})')
         if self.scale == 'small':
-            self.valid_systems += ['dom:gpu']
+            self.valid_systems += []
             self.num_tasks = 6
             self.energy_reference = -11427.09017168
         else:

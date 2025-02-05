@@ -5,38 +5,27 @@
 
 
 import os
-import json
 
 import reframe as rfm
 import reframe.utility.sanity as sn
 import reframe.utility.osext as osext
-from reframe.core.exceptions import SanityError
+from reframe.core.exceptions import SanityError, ReframeError
 
 
-@rfm.simple_test
 class CompileAffinityTool(rfm.CompileOnlyRegressionTest):
     valid_systems = [
-        'daint:gpu', 'daint:mc', 'dom:gpu', 'dom:mc',
-        'eiger:mc', 'pilatus:mc', 'hohgant:nvgpu',
-        'ault:amdv100'
+        '*'
     ]
-    valid_prog_environs = [
-        'PrgEnv-gnu', 'PrgEnv-cray', 'PrgEnv-intel', 'PrgEnv-nvidia'
-    ]
+    valid_prog_environs = ['+mpi']
     build_system = 'Make'
+    build_locally = False
 
-    # The github URL can not be specifid as `self.sourcedir` as that
-    # would prevent the src folder from being copied to stage which is
-    # necessary since these tests need files from it.
-    sourcesdir = os.path.join('src/affinity_ref')
-    prebuild_cmds = ['git clone https://github.com/vkarak/affinity']
-    postbuild_cmds = ['ls affinity']
-    maintainers = ['RS', 'SK']
+    sourcesdir = 'https://github.com/vkarak/affinity'
     tags = {'production', 'scs', 'maintenance', 'craype'}
 
     @run_before('compile')
     def set_build_opts(self):
-        self.build_system.options = ['-C affinity', 'MPI=1']
+        self.build_system.options = ['MPI=1']
 
     @run_before('compile')
     def prgenv_nvidia_workaround(self):
@@ -48,106 +37,84 @@ class CompileAffinityTool(rfm.CompileOnlyRegressionTest):
 
     @sanity_function
     def assert_exec_exists(self):
-        return sn.assert_found(r'affinity', self.stdout)
+        return sn.path_exists(os.path.join(self.stagedir, 'affinity'))
 
 
-@rfm.simple_test
 class CompileAffinityToolNoOmp(CompileAffinityTool):
-    valid_systems = ['eiger:mc', 'pilatus:mc', 'hohgant:nvgpu']
+    valid_systems = ['*']
+    valid_prog_environs = ['+mpi +openmp']
 
     @run_before('compile')
     def set_build_opts(self):
-        self.build_system.options = ['-C affinity', 'MPI=1', 'OPENMP=0']
+        self.build_system.options = ['MPI=1', 'OPENMP=0']
 
 
 class AffinityTestBase(rfm.RunOnlyRegressionTest):
     '''Base class for the affinity checks.
 
-    It reads a reference file for each valid system, which allows this base
-    class to figure out the processor's topology. The content of this reference
-    file is simply the output of the `lscpu -e -J` command. For more info on
-    this, see the `read_proc_topo` hook.
+    It sets up the processor's topology, based on the configuration.
     '''
 
     # Variables to control the hint and binding options on the launcher.
     multithread = variable(bool, type(None), value=None)
     cpu_bind = variable(str, type(None), value=None)
     hint = variable(str, type(None), value=None)
-
-    # Variable to specify system specific launcher options. This will override
-    # any of the above global options.
-    #
-    # Example:
-    #
-    # system = {
-    #     'daint:mc': {
-    #         'multithreading': False,
-    #         'cpu_bind':       'none',
-    #         'hint':           'nomultithread',
-    #     }
-    # }
-    system = variable(dict, value={})
+    affinity_tool = fixture(CompileAffinityTool, scope='environment')
+    sourcesdir = None
 
     valid_systems = [
-        'daint:gpu', 'daint:mc', 'dom:gpu', 'dom:mc',
-        'eiger:mc', 'pilatus:mc', 'hohgant:nvgpu',
-        'ault:amdv100'
+        '+remote'
     ]
     valid_prog_environs = [
-        'PrgEnv-gnu', 'PrgEnv-cray', 'PrgEnv-intel', 'PrgEnv-nvidia'
+        '+openmp'
     ]
 
-    @run_before('run')
-    def set_pmi2(self):
-        sys_name = self.current_system.name
-        env_name = self.current_environ.name
-        if sys_name == 'hohgant' and env_name == 'PrgEnv-nvidia':
-            self.job.launcher.options = ['--mpi=pmi2']
-
-    # Dict with the partition's topology - output of "lscpu -e"
-    topology = variable(dict, value={
-        'dom:gpu':    'topo_dom_gpu.json',
-        'dom:mc':     'topo_dom_mc.json',
-        'daint:gpu':  'topo_dom_gpu.json',
-        'daint:mc':   'topo_dom_mc.json',
-        'eiger:mc':   'topo_eiger_mc.json',
-        'pilatus:mc':   'topo_eiger_mc.json',
-        'hohgant:nvgpu':   'topo_hohgant_nvgpu.json',
-        'ault:amdv100': 'topo_ault_amdv100.json',
-    })
-
-    # Reference topology file as required variable
-    topo_file = variable(str)
-
-    maintainers = ['RS', 'SK']
     tags = {'production', 'scs', 'maintenance', 'craype'}
 
-    @run_after('init')
-    def set_deps(self):
-        self.depends_on('CompileAffinityTool')
+    @run_after('setup')
+    def skip_cpe_2312(self):
+        cpe = osext.cray_cdt_version()
+        self.skip_if(cpe == '23.12' and
+                     'uenv' not in self.current_environ.features,
+                     f'skipping xpmem_attach known error with cpe/{cpe}')
 
-    @require_deps
-    def set_executable(self, CompileAffinityTool):
-        self.executable = os.path.join(
-            CompileAffinityTool().stagedir, 'affinity/affinity'
+    @run_before('run')
+    def add_launcher_opts_from_env_extras(self):
+        self.job.launcher.options += (
+            self.current_environ.extras.get('launcher_options', [])
         )
 
-    @require_deps
-    def set_topo_file(self, CompileAffinityTool):
-        '''Set the topo_file variable.
+    @run_before('run')
+    def set_executable(self):
+        scheduler = (
+            self.affinity_tool.current_partition.scheduler.registered_name
+        )
+        if scheduler != 'firecrest-slurm':
+            remote_stagedir = self.affinity_tool.stagedir
+        else:
+            remote_stagedir = self.affinity_tool.build_job.remotedir
 
-        If not present in the topology dict, leave it as required.
-        '''
-        cp = self.current_partition.fullname
-        if cp in self.topology:
-            self.topo_file = os.path.join(
-                CompileAffinityTool().stagedir, self.topology[cp]
-            )
+        self.executable = os.path.join(
+            remote_stagedir, 'affinity'
+        )
 
-    # FIXME: Update the hook below once the PR #1773 is merged.
-    @run_after('compile')
-    def read_proc_topo(self):
-        '''Import the processor's topology from the reference file.
+    def bitmask_to_list(self, bitmask):
+        positions = []
+        position = 0
+
+        bitmask_int = int(bitmask, 16)
+        while bitmask_int:
+            if bitmask_int & 1:
+                positions.append(position)
+
+            bitmask_int >>= 1
+            position += 1
+
+        return positions
+
+    @run_after('setup')
+    def setup_proc_topo(self):
+        '''Import the processor's topology from the partition's configuration.
 
         This hook inserts the following attributes based on the processor's
         topology:
@@ -156,51 +123,37 @@ class AffinityTestBase(rfm.RunOnlyRegressionTest):
             - num_cpus_per_core
             - num_numa_nodes
             - num_sockets
-            - numa_nodes: dictionary containing the cpu sets for each numa
-                node. The keys of the dictionary are simply the ID of the
-                numa node.
-            - sockets: dictionary containing the cpu sets for each socket.
-                The keys of the dictionary are simply the socket IDs.
-
-        This hook requires the reference file, so the earliest it can run is
-        after the compilation stage, once the required files have been copied
-        over to the stage directory.
+            - numa_nodes: list containing the cpu sets for each numa node
+            - sockets: list containing the cpu sets for each socket
+            - cores: list containing the cpu sets for each core
         '''
 
-        cp = self.current_partition.fullname
-        with osext.change_dir(self.stagedir):
-            with open(self.topo_file, 'r') as topo:
-                lscpu = json.load(topo)['cpus']
-
+        self.skip_if_no_procinfo()
+        processor_info = self.current_partition.processor
         # Build the cpu set
-        self.cpu_set = {int(x['cpu']) for x in lscpu}
-        self.num_cpus = len(self.cpu_set)
+        self.num_cpus = processor_info.num_cpus
+        self.cpu_set = {i for i in range(self.num_cpus)}
 
         # Build the numa sets
-        self.num_numa_nodes = len({int(x['node']) for x in lscpu})
-        self.num_cpus_per_core = int(
-            self.num_cpus/len({int(x['core']) for x in lscpu})
-        )
-        self.numa_nodes = []
-        for i in range(self.num_numa_nodes):
-            self.numa_nodes.append({
-                int(y['cpu']) for y in [
-                    x for x in lscpu if int(x['node']) == i
-                ]
-            })
+        self.numa_nodes = [
+            set(self.bitmask_to_list(i))
+            for i in processor_info.topology['numa_nodes']
+        ]
+        self.num_numa_nodes = len(self.numa_nodes)
+
+        # Build the core sets
+        self.num_cpus_per_core = processor_info.num_cpus_per_core
+        self.cores = [
+            set(self.bitmask_to_list(i))
+            for i in processor_info.topology['cores']
+        ]
 
         # Build the socket sets
-        self.num_sockets = len({int(x['socket']) for x in lscpu})
-        self.sockets = []
-        for i in range(self.num_sockets):
-            self.sockets.append({
-                int(y['cpu']) for y in [
-                    x for x in lscpu if int(x['socket']) == i
-                ]
-            })
-
-        # Store the lscpu output
-        self._lscpu = lscpu
+        self.num_sockets = processor_info.num_sockets
+        self.sockets = [
+            set(self.bitmask_to_list(i))
+            for i in processor_info.topology['sockets']
+        ]
 
     def get_sibling_cpus(self, cpuid, by=None):
         '''Return a cpu set where cpuid belongs to.
@@ -215,15 +168,23 @@ class AffinityTestBase(rfm.RunOnlyRegressionTest):
         if by is None:
             raise ReframeError('must specify the sibling level')
         else:
-            if by not in self._lscpu[0]:
+            if by == 'core':
+                for cpu_set in self.cores:
+                    if cpuid in cpu_set:
+                        return cpu_set
+            elif by == 'socket':
+                for cpu_set in self.sockets:
+                    if cpuid in cpu_set:
+                        return cpu_set
+            elif by == 'node':
+                for cpu_set in self.numa_nodes:
+                    if cpuid in cpu_set:
+                        return cpu_set
+            else:
                 raise ReframeError('invalid sibling level')
 
-        sibling_id = [x for x in self._lscpu if int(x['cpu']) == cpuid][0][by]
-        return {
-            int(y['cpu']) for y in [
-                x for x in self._lscpu if x[by] == sibling_id
-            ]
-        }
+            return ReframeError(f'could not find the siblings by {by} '
+                                f'for cpu {cpuid}')
 
     @sanity_function
     def assert_consumed_cpu_set(self):
@@ -250,30 +211,15 @@ class AffinityTestBase(rfm.RunOnlyRegressionTest):
 
     @run_before('run')
     def set_multithreading(self):
-        '''Hook to control multithreading settings for each system.'''
-
-        cp = self.current_partition.fullname
-        mthread = (
-            self.system.get(cp, {}).get('multithreading', None) or
-            self.multithread
-        )
-        if mthread:
-            self.use_multithreading = mthread
+        self.use_multithreading = self.multithread
 
     @run_before('run')
     def set_launcher(self):
-        '''Hook to control hints and cpu-bind for each system.'''
+        if self.cpu_bind:
+            self.job.launcher.options += [f'--cpu-bind={self.cpu_bind}']
 
-        cp = self.current_partition.fullname
-        cpu_bind = (
-            self.system.get(cp, {}).get('cpu-bind', None) or self.cpu_bind
-        )
-        if cpu_bind:
-            self.job.launcher.options += [f'--cpu-bind={cpu_bind}']
-
-        hint = self.system.get(cp, {}).get('hint', None) or self.hint
-        if hint:
-            self.job.launcher.options += [f'--hint={hint}']
+        if self.hint:
+            self.job.launcher.options += [f'--hint={self.hint}']
 
 
 class AffinityOpenMPBase(AffinityTestBase):
@@ -360,7 +306,7 @@ class OneThreadPerPhysicalCoreOpenMP(AffinityOpenMPBase):
 
             # All CPUs in the set must belong to the same core
             if (not all(x in self.cpu_set for x in affinity_set) or
-                not all(x in cpu_siblings for x in affinity_set)):
+               not all(x in cpu_siblings for x in affinity_set)):
                 raise SanityError('incorrect affinity set')
 
             # Decrement the cpu set with all the CPUs that belong to this core
@@ -408,7 +354,7 @@ class OneThreadPerSocketOpenMP(AffinityOpenMPBase):
 
             # Alll CPUs in the affinity set must belong to the same socket
             if (not all(x in self.cpu_set for x in affinity_set) or
-                not all(x in cpu_siblings for x in affinity_set)):
+               not all(x in cpu_siblings for x in affinity_set)):
                 raise SanityError('incorrect affinity set')
 
             # Decrement all the CPUs in this socket from the cpu set.
@@ -458,7 +404,7 @@ class OneTaskPerSocketOpenMPnomt(AffinityOpenMPBase):
             # The size of the affinity set matches the number of OMP threads
             # and all CPUs from the set belong to the same socket.
             if ((self.num_omp_threads != len(affinity_set)) or
-                not all(x in cpu_siblings for x in affinity_set)):
+               not all(x in cpu_siblings for x in affinity_set)):
                 raise SanityError('incorrect affinity set')
 
         # Remove the sockets the cpu set.
@@ -481,6 +427,11 @@ class OneTaskPerSocketOpenMP(OneTaskPerSocketOpenMPnomt):
     @property
     def num_omp_threads(self):
         return int(self.num_cpus/self.num_sockets)
+
+    @run_after('setup')
+    def skip_if_no_mt(self):
+        self.skip_if(self.num_cpus_per_core == 1,
+                     'the cpu does not support multithreading')
 
 
 @rfm.simple_test
@@ -529,7 +480,7 @@ class ConsecutiveSocketFilling(AffinityTestBase):
                 next(iter(cpus_present)), by='socket'
             )
             if (not all(cpu in cpuset_by_socket for cpu in cpus_present) and
-                len(cpuset_by_socket) == len(cpus_present)):
+               len(cpuset_by_socket) == len(cpus_present)):
                 raise SanityError(
                     f'socket {socket_number} not filled in order'
                 )
@@ -569,8 +520,8 @@ class AlternateSocketFilling(AffinityTestBase):
 
                 # Only 1 CPU per affinity set is allowed
                 if ((len(affinity_set) > 1) or
-                    (any(cpu in sockets[s] for cpu in affinity_set)) or
-                    (any(cpu not in self.sockets[s] for cpu in affinity_set))):
+                   (any(cpu in sockets[s] for cpu in affinity_set)) or
+                   (any(cpu not in self.sockets[s] for cpu in affinity_set))):
                     raise SanityError(
                         f'incorrect affinity set for task {task_count}'
                     )
@@ -583,7 +534,8 @@ class AlternateSocketFilling(AffinityTestBase):
                 task_count += 1
 
             # Check that all sockets have the same CPU count
-            if not all(len(s) == (task+1)*2 for s in sockets):
+            if not all(len(s) == (task + 1) * self.num_cpus_per_core
+                       for s in sockets):
                 self.cpu_set.add(-1)
 
         # Decrement the socket set from the CPU set
@@ -600,38 +552,30 @@ class OneTaskPerNumaNode(AffinityTestBase):
     Multithreading is disabled.
     '''
 
-    valid_systems = ['eiger:mc', 'pilatus:mc', 'hohgant:nvgpu']
+    valid_systems = ['+remote']
     use_multithreading = False
     num_cpus_per_task = required
+    affinity_tool = fixture(CompileAffinityToolNoOmp, scope='environment')
 
-    @run_after('init')
-    def set_deps(self):
-        self.depends_on('CompileAffinityToolNoOmp')
-
-    @require_deps
-    def set_executable(self, CompileAffinityToolNoOmp):
-        self.executable = os.path.join(
-            CompileAffinityToolNoOmp().stagedir, 'affinity/affinity'
+    @run_before('run')
+    def set_executable(self):
+        scheduler = (
+            self.affinity_tool.current_partition.scheduler.registered_name
         )
+        if scheduler != 'firecrest-slurm':
+            remote_stagedir = self.affinity_tool.stagedir
+        else:
+            remote_stagedir = self.affinity_tool.build_job.remotedir
 
-    @require_deps
-    def set_topo_file(self, CompileAffinityToolNoOmp):
-        '''Set the topo_file variable.
-
-        If not present in the topology dict, leave it as required.
-        '''
-        cp = self.current_partition.fullname
-        if cp in self.topology:
-            self.topo_file = os.path.join(
-                CompileAffinityToolNoOmp().stagedir, self.topology[cp]
-            )
+        self.executable = os.path.join(
+            remote_stagedir, 'affinity'
+        )
 
     @run_before('run')
     def set_tasks(self):
         self.num_tasks = self.num_numa_nodes
-        if self.current_partition.fullname in {'eiger:mc', 'pilatus:mc',
-                                               'hohgant:nvgpu'}:
-            self.num_cpus_per_task = 16
+        self.num_cpus_per_task = int(self.num_cpus / self.num_numa_nodes
+                                     / self.num_cpus_per_core)
 
     @run_before('sanity')
     def consume_cpu_set(self):
@@ -645,7 +589,7 @@ class OneTaskPerNumaNode(AffinityTestBase):
         for numa_node, aff_set in enumerate(self.aff_cpus):
             cpuset_by_numa = self.get_sibling_cpus(aff_set[0], by='node')
             if (len(aff_set) != self.num_cpus_per_task or
-                any(cpu not in cpuset_by_numa for cpu in aff_set)):
+               any(cpu not in cpuset_by_numa for cpu in aff_set)):
                 raise SanityError(
                     f'incorrect affinity set for numa node {numa_node}'
                 )
