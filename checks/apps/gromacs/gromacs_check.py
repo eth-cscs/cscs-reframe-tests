@@ -1,21 +1,20 @@
-# Copyright 2016-2022 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 import os
-import shutil
+# import shutil
 
 import reframe as rfm
-from hpctestlib.sciapps.gromacs.benchmarks import gromacs_check
-
+# from hpctestlib.sciapps.gromacs.benchmarks import gromacs_check
 import reframe.utility.sanity as sn
 import reframe.utility.udeps as udeps
-import uenv
+from uenv import uarch
+# import uenv
 
 gromacs_references = {
     'STMV'          : {'gh200': {'time_run': (140, None, None, 'ns/day')}},
     'hEGFRDimerPair': {'gh200': {'time_run': (56, None, None, 'ns/day')}},
-    
 }
 
 slurm_config = {
@@ -39,18 +38,18 @@ slurm_config = {
     },
 }
 
-class gromacs_download(rfm.RunOnlyRegressionTest):
-    """
-    Download GROMACS source code.
-    """
 
+class gromacs_download(rfm.RunOnlyRegressionTest):
+    descr = 'Fetch GROMACS source code'
     maintainers = ['SSA']
     version = variable(str, value='2024.3')
-    descr = 'Fetch GROMACS source code'
-    sourcedir = None
+    sourcesdir = None
     executable = 'wget'
     executable_opts = [
-        f'https://github.com/gromacs/gromacs/archive/refs/tags/v{version}.tar.gz',
+        '--quiet',
+        'https://jfrog.svc.cscs.ch/artifactory/cscs-reframe-tests/gromacs/'
+        f'v{version}.tar.gz',
+        # https://github.com/gromacs/gromacs/archive/refs/tags/v2024.3.tar.gz
     ]
     local = True
 
@@ -58,38 +57,34 @@ class gromacs_download(rfm.RunOnlyRegressionTest):
     def validate_download(self):
         return sn.assert_eq(self.job.exitcode, 0)
 
-@rfm.simple_test
-class GROMACSBuildTest(rfm.CompileOnlyRegressionTest):
-    """
-    Test GROMACS build from source.
-    """
 
+@rfm.simple_test
+class gromacs_build_test(rfm.CompileOnlyRegressionTest):
+    """
+    Test GROMACS build from source using the develop view
+    """
     descr = 'GROMACS Build Test'
+    valid_prog_environs = ['+gromacs-dev']
     valid_systems = ['*']
     build_system = 'CMake'
     maintainers = ['SSA']
+    sourcesdir = None
     gromacs_sources = fixture(gromacs_download, scope='session')
     build_locally = False
     tags = {'uenv'}
-    valid_prog_environs = ['+gromacs-dev']
 
     @run_before('compile')
     def prepare_build(self):
-        self.uarch = uenv.uarch(self.current_partition)
-        self.build_system.builddir = os.path.join(self.stagedir, 'build')
+        self.uarch = uarch(self.current_partition)
+        # self.build_system.builddir = os.path.join(self.stagedir, 'build')
         self.skip_if_no_procinfo()
         cpu = self.current_partition.processor
         self.build_system.max_concurrency = cpu.info['num_cpus_per_socket']
-
         tarsource = os.path.join(
-            self.gromacs_sources.stagedir, f'v{self.gromacs_sources.version}.tar.gz'
+            self.gromacs_sources.stagedir,
+            f'v{self.gromacs_sources.version}.tar.gz'
         )
-
-        # Extract source code
-        self.prebuild_cmds = [
-            f'tar --strip-components=1 -xzf {tarsource} -C {self.stagedir}'
-        ]
-
+        self.prebuild_cmds = [f'tar --strip-components=1 -xzf {tarsource}']
         self.build_system.config_opts = [
             '-DREGRESSIONTEST_DOWNLOAD=ON',
             '-DGMX_MPI=on',
@@ -99,11 +94,8 @@ class GROMACSBuildTest(rfm.CompileOnlyRegressionTest):
             '-DGMX_SIMD=ARM_NEON_ASIMD',
             '-DGMX_INSTALL_NBLIB_API=ON',
         ]
-
         if self.uarch == 'gh200':
-            self.build_system.config_opts += [
-                '-DGMX_GPU=CUDA',
-            ]
+            self.build_system.config_opts += ['-DGMX_GPU=CUDA']
 
     @sanity_function
     def validate_test(self):
