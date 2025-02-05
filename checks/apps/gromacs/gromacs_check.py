@@ -99,9 +99,8 @@ class gromacs_build_test(rfm.CompileOnlyRegressionTest):
 
     @sanity_function
     def validate_test(self):
-        # source from /usr/local/gromacs/bin/GMXRC to get the installed folder path
-        folder = '/usr/local/gromacs/bin/GMXRC' # add folder path
-        self.gromacs_executable = os.path.join(self.stagedir, 'exe', folder,
+        folder = 'bin' # add folder path
+        self.gromacs_executable = os.path.join(self.stagedir, folder,
                                             'gmx-mpi')
         return os.path.isfile(self.gromacs_executable)
 
