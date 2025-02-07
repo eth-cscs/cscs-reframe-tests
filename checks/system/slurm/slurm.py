@@ -416,13 +416,17 @@ class SlurmPrologEpilogCheck(rfm.RunOnlyRegressionTest):
     kafka_logger = '/etc/slurm/utils/kafka_logger'
     prolog_dir = '/etc/slurm/node_prolog.d/'
     epilog_dir = '/etc/slurm/node_epilog.d/'
-    prerun_comds = [f'ln -s {kafka_logger} ./kafka_logger']
+    prerun_cmds = [f'ln -s {kafka_logger} ./kafka_logger']
     prefix_name = 'test_'
     test_files = []
     for file in os.listdir(epilog_dir):
         if os.path.isfile(os.path.join(epilog_dir, file)):
             if file.startswith(prefix_name):
                 test_files.append(os.path.join(epilog_dir, file))
+    for file in os.listdir(prolog_dir):
+        if os.path.isfile(os.path.join(prolog_dir, file)):
+            if file.startswith(prefix_name):
+                test_files.append(os.path.join(prolog_dir, file))
     test_file = parameter(test_files)
     tags = {'vs-node-validator'}
 

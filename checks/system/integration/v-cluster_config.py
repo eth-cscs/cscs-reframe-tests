@@ -6,8 +6,8 @@
 from utils import *
 from constants import *
 import os
-import reframe as rfm
-import reframe.utility.sanity as sn
+# import reframe as rfm
+# import reframe.utility.sanity as sn
 import glob
 import json
 
@@ -133,7 +133,6 @@ class EnvVariableConfigTest(rfm.RunOnlyRegressionTest):
     valid_prog_environs = ['builtin']
     time_limit = '2m'
     tags = {'env_var', 'vs-node-validator'}
-    valid_systems = []
 
     @run_after('setup')
     def set_executable(self):
