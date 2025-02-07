@@ -6,8 +6,8 @@
 from utils import *
 from constants import *
 import os
-# import reframe as rfm
-# import reframe.utility.sanity as sn
+import reframe as rfm
+import reframe.utility.sanity as sn
 import glob
 import json
 
