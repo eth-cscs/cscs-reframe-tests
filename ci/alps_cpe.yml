@@ -25,6 +25,8 @@ reframe_tests:
     - export RFM_AUTODETECT_XTHOSTNAME=1
     - export CPE=$PWD/config/systems/EDF/cpe-gnu.toml
     - reframe -V
+    - pip list
+    - pip install toml
     - ./ci/scripts/alps.sh launch_reframe_1arg "--mode cpe_production -x SocketFilling -x OneThread"
   artifacts:
     when: always
