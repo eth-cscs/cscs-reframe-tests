@@ -275,7 +275,8 @@ install_reframe() {
     export PATH="$(pwd)/reframe-develop/bin:$PATH"
     echo "$(pwd)/reframe-develop/bin"
     # deps for cscs-reframe-tests.git:
-    pip install -r config/utilities/requirements.txt # pyfirecrest + python-hostlist
+    python3 -m pip install pyfirecrest python-hostlist
+    # pip install -r config/utilities/requirements.txt # pyfirecrest + python-hostlist
     pip install requests toml &> .deps.cscs-reframe-tests
     # (wget --quiet "https://github.com/reframe-hpc/reframe/archive/refs/tags/v4.5.2.tar.gz" && \
     # tar xf v4.5.2.tar.gz && \
