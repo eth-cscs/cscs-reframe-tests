@@ -274,7 +274,7 @@ install_reframe() {
     export PATH="$(pwd)/reframe-develop/bin:$PATH"
     echo "$(pwd)/reframe-develop/bin"
     # deps for cscs-reframe-tests.git:
-    pip install python-hostlist requests &> .deps.cscs-reframe-tests
+    pip install python-hostlist requests toml &> .deps.cscs-reframe-tests
     # (wget --quiet "https://github.com/reframe-hpc/reframe/archive/refs/tags/v4.5.2.tar.gz" && \
     # tar xf v4.5.2.tar.gz && \
     # cd reframe-4.5.2 && \
