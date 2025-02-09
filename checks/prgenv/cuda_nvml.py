@@ -12,6 +12,7 @@ class NvmlBase(rfm.RegressionTest):
     build_locally = False
     build_system = 'SingleSource'
     sourcesdir = None
+    executable = '$SLURM_SUBMIT_DIR/exe'
 
     @sanity_function
     def set_sanity(self):
@@ -24,7 +25,7 @@ class NvmlBase(rfm.RegressionTest):
         cp = self.current_partition
         self.gpu_count = cp.select_devices('gpu')[0].num_devices
         regex_devices = rf'Found {self.gpu_count} devices'
-        regex_pciinfo = r'\d+.\s+(\S+\s+){2}\[\S+\]'
+        regex_pciinfo = r'\d+\.\s+(?P<name>([\w-]+\s+)+)(?P<busid>\[\S+\])'
         regex_mode = 'Need root privileges to do that: Insufficient Permission'
         return sn.all([
             sn.assert_found(regex_devices, self.stdout),
@@ -36,7 +37,8 @@ class NvmlBase(rfm.RegressionTest):
 @rfm.simple_test
 class CPE_NVMLCheck(NvmlBase):
     valid_systems = ['+nvgpu']
-    valid_prog_environs = ['+cuda -uenv']
+    valid_prog_environs = ['+cuda -uenv', '+cpe_ce']
+    time_limit = '2m'
     tags = {'production', 'external-resources', 'health', 'craype'}
 
     @run_after('setup')

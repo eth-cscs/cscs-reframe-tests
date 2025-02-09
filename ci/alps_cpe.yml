@@ -6,18 +6,23 @@ stages:
   - status
 
 # {{{ reframe
-reframe:
+reframe_tests:
   stage: run
-  extends: .f7t-baremetal-runner
+  tags: [daint-login-baremetal]
+  # extends: .f7t-baremetal-runner
+  variables:
+    GIT_STRATEGY: fetch
   before_script:
     - echo "FIRECREST_SYSTEM=$FIRECREST_SYSTEM / F7T_URL=$F7T_URL / CLUSTER_NAME=$CLUSTER_NAME"
     - uname -a
     - pwd
   script:
+    # - rm -fr reframe
     - hostname
     - rfm_path=$(./ci/scripts/alps.sh install_reframe)
     - echo "rfm_path=$rfm_path"
     - export PATH=$rfm_path:$PATH
+    - export RFM_AUTODETECT_XTHOSTNAME=1
     - reframe -V
     - ./ci/scripts/alps.sh launch_reframe_1arg "--mode cpe_production"
   artifacts:
@@ -34,7 +39,7 @@ reframe:
 # {{{ status_page
 status_page:
   stage: status
-  needs: ['reframe']
+  needs: ['reframe_tests']
   extends: .container-runner-lightweight-zen2
   image: python:3.9
   script:
