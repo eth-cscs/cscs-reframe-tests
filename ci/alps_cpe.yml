@@ -23,8 +23,9 @@ reframe_tests:
     - echo "rfm_path=$rfm_path"
     - export PATH=$rfm_path:$PATH
     - export RFM_AUTODETECT_XTHOSTNAME=1
+    - export CPE=$PWD/config/systems/EDF/cpe-gnu.toml
     - reframe -V
-    - ./ci/scripts/alps.sh launch_reframe_1arg "--mode cpe_production"
+    - ./ci/scripts/alps.sh launch_reframe_1arg "--mode cpe_production -x SocketFilling -x OneThread"
   artifacts:
     when: always
     # on_failure

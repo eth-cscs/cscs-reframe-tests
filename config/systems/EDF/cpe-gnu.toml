@@ -1,0 +1,5 @@
+image = "/capstor/scratch/cscs/anfink/cpe/cpe-gnu.sqsh"
+mounts = ["/capstor/scratch/cscs/jenkssl:/capstor/scratch/cscs/jenkssl"]
+# workdir = "/capstor/scratch/cscs/piccinal/santis/rfm/CPE"
+# workdir = "/capstor/scratch/cscs/piccinal/daint/rfm/CPE/src"
+writable = true
