@@ -264,9 +264,9 @@ uenv_pull_sqfs() {
 install_reframe() {
     # all must be quiet because of last echo
     rm -fr rfm_venv reframe
-    python3 -m venv rfm_venv
+    python3 -m venv rfm_venv &> /dev/null
     source rfm_venv/bin/activate
-    pip install -U pip
+    pip install -U pip &> /dev/null
     # pip install --upgrade reframe-hpc
     # git clone --depth 1 https://github.com/reframe-hpc/reframe.git
     # multi-uenv support only in reframe > v4.5.2:
