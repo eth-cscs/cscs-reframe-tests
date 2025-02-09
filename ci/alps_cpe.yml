@@ -22,8 +22,8 @@ reframe_tests:
     - hostname
     - echo "# --- install_reframe:"
     - rfm_path=$(./ci/scripts/alps.sh install_reframe)
-    - echo "rfm_path=$rfm_path"
-    - export PATH=$PWD/reframe-develop/bin:$PATH
+    # - echo "rfm_path=$rfm_path"
+    - export PATH=$rfm_path:$PATH
     - export RFM_AUTODETECT_XTHOSTNAME=1
     - export CPE=$PWD/config/systems/EDF/cpe-gnu.toml
     - reframe -V

@@ -273,17 +273,18 @@ install_reframe() {
     (wget --quiet "https://github.com/reframe-hpc/reframe/archive/refs/heads/develop.zip" && \
     unzip -qq "develop.zip" && cd reframe-develop && ./bootstrap.sh &> /dev/null)
     export PATH="$(pwd)/reframe-develop/bin:$PATH"
-    echo "$(pwd)/reframe-develop/bin"
     # deps for cscs-reframe-tests.git:
-    python3 -m pip install pyfirecrest python-hostlist
+    python3 -m pip install pyfirecrest python-hostlist &> .deps.cscs-reframe-tests
+    pip install requests toml >> .deps.cscs-reframe-tests 2>&1
     # pip install -r config/utilities/requirements.txt # pyfirecrest + python-hostlist
-    pip install requests toml &> .deps.cscs-reframe-tests
     # (wget --quiet "https://github.com/reframe-hpc/reframe/archive/refs/tags/v4.5.2.tar.gz" && \
     # tar xf v4.5.2.tar.gz && \
     # cd reframe-4.5.2 && \
     # ./bootstrap.sh)
     # echo "$PWD/reframe-4.5.2/bin"
     # export PATH="$(pwd)/reframe/bin:$PATH"
+    # --- return the path (use /dev/null to avoid clutter):
+    echo "$(pwd)/reframe-develop/bin"
 }    
 # }}}
 # {{{ install_reframe_tests (alps branch) 

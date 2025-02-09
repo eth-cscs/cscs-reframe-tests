@@ -79,7 +79,7 @@ def _get_cpe_ce():
     #SBATCH --container-workdir=$SLURM_SUBMIT_DIR
     #slurmstepd: error: pyxis: couldn't chdir to $SLURM_SUBMIT_DIR: No such file or directory
     cpe_environments.append(env)
-    print(f'# RETURN cpe_environments1={cpe_environments}')
+    # print(f'# RETURN cpe_environments1={cpe_environments}')
     # RETURN cpe_environments1=[{'name': '_capstor_scratch_cscs_anfink_cpe_cpe-gnu.sqsh', 'target_systems': ['*'], 'resources': {'cpe': {'file': '/users/piccinal/.edf/cpe-gnu.toml'}}, 'features': ['cuda', 'mpi', 'openmp', 'serial', 'uenv']}]
     return cpe_environments
 
