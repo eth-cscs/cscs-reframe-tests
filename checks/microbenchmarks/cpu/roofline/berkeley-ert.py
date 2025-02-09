@@ -246,7 +246,7 @@ class HWL_RunErt(RunErt_Base):
     # {{{ pe
     cpu = 'HWL'
     descr = f'Collect ERT data from INTEL {cpu}'
-    valid_systems = ['dom:gpu']
+    valid_systems = []
     valid_prog_environs = ['PrgEnv-gnu']
     # }}}
 
@@ -286,7 +286,7 @@ class HWL_PlotErt(PlotErt_Base):
 
     cpu = 'HWL'
     descr = f'Plot ERT data on the Roofline chart (INTEL {cpu})'
-    valid_systems = ['dom:login']
+    valid_systems = []
     valid_prog_environs = ['PrgEnv-gnu']
     maintainers = ['JG']
     tags = {'cpu'}
@@ -350,7 +350,7 @@ class BWL_RunErt(RunErt_Base):
     # {{{ pe
     cpu = 'BWL'
     descr = f'Collect ERT data from INTEL {cpu}'
-    valid_systems = ['dom:mc']
+    valid_systems = []
     valid_prog_environs = ['PrgEnv-gnu']
     # }}}
 
@@ -390,7 +390,7 @@ class BWL_PlotErt(PlotErt_Base):
 
     cpu = 'BWL'
     descr = f'Plot ERT data on the Roofline chart (INTEL {cpu})'
-    valid_systems = ['dom:login']
+    valid_systems = []
     valid_prog_environs = ['PrgEnv-gnu']
     maintainers = ['JG']
     tags = {'cpu'}

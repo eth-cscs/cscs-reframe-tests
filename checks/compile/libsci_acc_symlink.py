@@ -19,10 +19,7 @@ class LibSciAccSymLinkTest(rfm.RunOnlyRegressionTest):
 
     def __init__(self):
         self.descr = f'LibSciAcc symlink check of {self.lib_name}'
-        self.valid_systems = [
-            'daint:login', 'daint:gpu',
-            'dom:login', 'dom:gpu',
-        ]
+        self.valid_systems = []
         regex = (r'libsci_acc_(?P<prgenv>[A-Za-z]+)_((?P<cver>[A-Za-z0-9]+)_)'
                  r'?(?P<version>\S+)')
         prgenv = re.match(regex, self.lib_name).group('prgenv')

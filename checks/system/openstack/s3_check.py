@@ -10,7 +10,7 @@ import getpass
 
 class S3apiCheck(rfm.RunOnlyRegressionTest):
     descr = 'S3API check for (object.cscs.ch)'
-    valid_systems = ['dom:gpu', 'daint:gpu']
+    valid_systems = []
     valid_prog_environs = ['builtin']
     time_limit = '5m'
     executable = 's3_test.sh'

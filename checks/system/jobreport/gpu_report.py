@@ -22,7 +22,7 @@ class gpu_usage_report_check(gpu_burn_check):
     check can be adjusted with the test variable `perf_floor`.
     '''
 
-    valid_systems = ['daint:gpu', 'dom:gpu']
+    valid_systems = []
     descr = 'Check GPU usage from job report'
     gpu_build = 'cuda'
     num_tasks = 2

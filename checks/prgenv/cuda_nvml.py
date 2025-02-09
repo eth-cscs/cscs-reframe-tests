@@ -21,6 +21,11 @@ class NvmlBase(rfm.RegressionTest):
         0. NVIDIA A100-SXM4-80GB [00000000:03:00.0]
         Changing device's compute mode from 'Exclusive Process' to 'Prohibited'
         Need root privileges to do that: Insufficient Permissions # <-- OK
+
+        Listing devices:
+        0. NVIDIA A100-SXM4-80GB [00000000:03:00.0]
+        Changing device's compute mode from 'Exclusive Process' to 'Prohibited'
+        Need root privileges to do that: Insufficient Permissions # <-- OK
         """
         cp = self.current_partition
         self.gpu_count = cp.select_devices('gpu')[0].num_devices
@@ -43,12 +48,9 @@ class CPE_NVMLCheck(NvmlBase):
 
     @run_after('setup')
     def setup_modules(self):
-        if 'PrgEnv-nvhpc' != self.current_environ.name:
-            sm = self.current_partition.select_devices('gpu')[0].arch[-2:]
-            self.modules = ['cudatoolkit', f'craype-accel-nvidia{sm}']
-            self.sourcepath = '$CUDATOOLKIT_HOME/nvml/example/example.c'
-        else:
-            self.sourcepath = '$NVIDIA_PATH/cuda/bin/../nvml/example/example.c'
+        sm = self.current_partition.select_devices('gpu')[0].arch[-2:]
+        self.modules = ['cudatoolkit', f'craype-accel-nvidia{sm}']
+        self.sourcepath = '$CUDATOOLKIT_HOME/nvml/example/example.c'
 
     @run_before('compile')
     def set_build_flags(self):
