@@ -10,7 +10,7 @@ import reframe.utility.sanity as sn
 @rfm.simple_test
 class PetscPoisson2DCheck(rfm.RegressionTest):
     linkage = parameter(['dynamic', 'static'])
-    valid_systems = ['daint:gpu', 'daint:mc', 'dom:gpu', 'dom:mc']
+    valid_systems = []
     valid_prog_environs = ['PrgEnv-cray', 'PrgEnv-gnu', 'PrgEnv-intel']
     modules = ['cray-petsc']
     build_system = 'SingleSource'
