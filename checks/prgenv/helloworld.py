@@ -18,6 +18,7 @@ class HelloWorldBaseTest(rfm.RegressionTest, ExtraLauncherOptionsMixin):
     lang = parameter(['c', 'cpp', 'F90'])
     sourcesdir = 'src/hello'
     sourcepath = 'hello'
+    executable = '$SLURM_SUBMIT_DIR/hello.exe'
     build_locally = False
     build_system = 'SingleSource'
     prebuild_cmds = ['_rfm_build_time="$(date +%s%N)"']
@@ -25,7 +26,7 @@ class HelloWorldBaseTest(rfm.RegressionTest, ExtraLauncherOptionsMixin):
         '_rfm_build_time="$(($(date +%s%N)-_rfm_build_time))"',
         'echo "Compilations time (ns): $_rfm_build_time"'
     ]
-    valid_systems = ['+remote']
+    valid_systems = ['+remote', '+cpe_ce']
     reference = {
         '*': {
             'compilation_time': (60, None, 0.1, 's')

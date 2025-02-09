@@ -12,64 +12,64 @@ import copy
 
 base_config = {
     'modules_system': 'lmod',
-    # 'resourcesdir': '/apps/common/UES/reframe/resources',
     'partitions': [
-        {
-            'name': 'login',
-            'scheduler': 'local',
-            'time_limit': '10m',
-            'environs': [
-                'builtin',
-                'PrgEnv-cray',
-                'PrgEnv-gnu',
-                'PrgEnv-nvidia',
-                'PrgEnv-nvhpc'
-            ],
-            'descr': 'Login nodes',
-            'max_jobs': 4,
-            'launcher': 'local'
-        },
+#login         {
+#login             'name': 'login',
+#login             'descr': 'Login nodes',
+#login             'scheduler': 'local',
+#login             'time_limit': '10m',
+#login             'environs': [
+#login                 'builtin',
+#login                 #'PrgEnv-cray',
+#login                 'PrgEnv-gnu',
+#login                 #'PrgEnv-nvidia',
+#login                 #'PrgEnv-nvhpc'
+#login             ],
+#login             'max_jobs': 4,
+#login             'launcher': 'local'
+#login         },
         {
             'name': 'normal',
             'descr': 'GH200',
             'scheduler': 'slurm',
+            'launcher': 'srun',
             'time_limit': '10m',
-            'container_platforms': [
-#                 {
-#                     'type': 'Sarus',
-#                     #'modules': ['sarus']
-#                 },
-#                 {
-#                     'type': 'Singularity',
-#                     #'modules': ['singularity/3.6.4-todi']
-#                 }
-            ],
+            'sched_options': {
+                'use_nodes_option': True
+            },
             'environs': [
                 'builtin',
-                'PrgEnv-cray',
+                # 'PrgEnv-cray',
                 'PrgEnv-gnu',
-                'PrgEnv-nvidia',
-                'PrgEnv-nvhpc'
+                # 'PrgEnv-nvidia',
+                # 'PrgEnv-nvhpc'
             ],
             'max_jobs': 100,
+            'container_platforms': [],
             'extras': {
                 'cn_memory': 825,
             },
-            'features': ['ce', 'gpu', 'nvgpu', 'remote', 'scontrol', 'uenv'],
-            'resources': [
-                {
-                    'name': 'switches',
-                    'options': ['--switches={num_switches}']
-                },
-                {
-                    'name': 'gres',
-                    'options': ['--gres={gres}']
-                },
-                {
-                    'name': 'memory',
-                    'options': ['--mem={mem_per_node}']
-                },
-            ],
+            # 'features': ['ce', 'gpu', 'nvgpu', 'remote', 'scontrol', 'uenv'],
+            'features': ['uenv', 'remote', 'cpe_ce'],
+#ok             'resources': [
+#ok                 {
+#ok                     'name': 'switches',
+#ok                     'options': ['--switches={num_switches}']
+#ok                 },
+#ok                 {
+#ok                     'name': 'gres',
+#ok                     'options': ['--gres={gres}']
+#ok                 },
+#ok                 {
+#ok                     'name': 'memory',
+#ok                     'options': ['--mem={mem_per_node}']
+#ok                 },
+#ok                 {
+#ok                     'name': 'cpe',
+#ok                     # 'options': ['--environment=/capstor/scratch/cscs/anfink/cpe/cpe-gnu.sqsh']
+#ok                     'options': ['--environment={cpe_sqfs}']
+#ok                 }
+#ok             ],
             'devices': [
                 {
                     'type': 'gpu',
@@ -77,13 +77,12 @@ base_config = {
                     'num_devices': 4
                 }
                 ],
-            'launcher': 'srun',
         },
     ]
 }
 
 base_config['name'] = 'daint'
-base_config['descr'] = 'Piz Daint vcluster'
+base_config['descr'] = 'Alps daint vcluster'
 base_config['hostnames'] = ['daint']
 
 site_configuration = {
@@ -91,34 +90,52 @@ site_configuration = {
         base_config,
     ],
     'environments': [
-        {
-            'name': 'PrgEnv-cray',
-            'features': ['serial', 'openmp', 'mpi', 'cuda', 'openacc', 'hdf5',
-                         'netcdf-hdf5parallel', 'pnetcdf'],
-            'target_systems': ['daint'],
-            'modules': ['cray', 'PrgEnv-cray', 'craype-arm-grace']
-        },
+#         {
+#             'name': 'PrgEnv-cray',
+#             'features': ['serial', 'openmp', 'mpi', 'cuda', 'openacc', 'hdf5',
+#                          'netcdf-hdf5parallel', 'pnetcdf'],
+#             'target_systems': ['daint'],
+#             'modules': ['cray', 'PrgEnv-cray', 'craype-arm-grace']
+#         },
         {
             'name': 'PrgEnv-gnu',
             'target_systems': ['daint'],
-            'features': ['serial', 'openmp', 'mpi', 'cuda', 'alloc_speed',
-                         'hdf5', 'netcdf-hdf5parallel', 'pnetcdf', 'openmp'],
-            'modules': ['cray', 'PrgEnv-gnu', 'craype-arm-grace']
+            # NOTE: DO NOT USE -p PrgEnv-gnu !
+            #'features': ['serial', 'openmp', 'mpi', 'cuda', 'alloc_speed', 'uenv',
+            #             'hdf5', 'netcdf-hdf5parallel', 'pnetcdf', 'openmp'],
+            'features': ['mpi'],
+            #'resources': {
+            #    'name': 'cpe',
+            #    'options': '--environment=/users/piccinal/.edf/cpe-gnu.toml'
+            #}
+
+            # -------------------------- 
+            # #SBATCH --environment=cpe-gnu
+            # 'extras': {'cpe_sqfs': '/capstor/scratch/cscs/anfink/cpe/cpe-gnu.sqsh'}
+            # -------------------------- 
+            # 'modules': ['cray', 'PrgEnv-gnu', 'craype-arm-grace'],
+            # {{{ CPEJG
+#yaml             'prepare_cmds': [
+#yaml                 'source /user-environment/etc/environment',
+#yaml                 'source /user-environment/etc/profile.d/zz_default-modules.sh',
+#yaml                 'module list',
+#yaml             ],
+            # }}}
         },
-        {
-            'name': 'PrgEnv-nvidia',
-            'target_systems': ['daint'],
-            'features': ['serial', 'openmp', 'mpi', 'cuda', 'alloc_speed',
-                         'hdf5', 'netcdf-hdf5parallel', 'pnetcdf'],
-            'modules': ['cray', 'PrgEnv-gnu', 'craype-arm-grace']
-        },
-        {
-            'name': 'PrgEnv-nvhpc',
-            'target_systems': ['daint'],
-            'features': ['serial', 'openmp', 'mpi', 'cuda', 'alloc_speed',
-                         'hdf5', 'netcdf-hdf5parallel', 'pnetcdf'],
-            'modules': ['cray', 'PrgEnv-gnu', 'craype-arm-grace']
-        },
+#         {
+#             'name': 'PrgEnv-nvidia',
+#             'target_systems': ['daint'],
+#             'features': ['serial', 'openmp', 'mpi', 'cuda', 'alloc_speed',
+#                          'hdf5', 'netcdf-hdf5parallel', 'pnetcdf'],
+#             'modules': ['cray', 'PrgEnv-gnu', 'craype-arm-grace']
+#         },
+#         {
+#             'name': 'PrgEnv-nvhpc',
+#             'target_systems': ['daint'],
+#             'features': ['serial', 'openmp', 'mpi', 'cuda', 'alloc_speed',
+#                          'hdf5', 'netcdf-hdf5parallel', 'pnetcdf'],
+#             'modules': ['cray', 'PrgEnv-gnu', 'craype-arm-grace']
+#         },
     ],
     'modes': [
        {

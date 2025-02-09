@@ -264,23 +264,27 @@ uenv_pull_sqfs() {
 install_reframe() {
     # all must be quiet because of last echo
     rm -fr rfm_venv reframe
-    python3 -m venv rfm_venv
+    python3 -m venv rfm_venv &> /dev/null
     source rfm_venv/bin/activate
+    pip install -U pip &> /dev/null
     # pip install --upgrade reframe-hpc
     # git clone --depth 1 https://github.com/reframe-hpc/reframe.git
     # multi-uenv support only in reframe > v4.5.2:
     (wget --quiet "https://github.com/reframe-hpc/reframe/archive/refs/heads/develop.zip" && \
     unzip -qq "develop.zip" && cd reframe-develop && ./bootstrap.sh &> /dev/null)
     export PATH="$(pwd)/reframe-develop/bin:$PATH"
-    echo "$(pwd)/reframe-develop/bin"
     # deps for cscs-reframe-tests.git:
-    pip install python-hostlist requests &> .deps.cscs-reframe-tests
+    python3 -m pip install pyfirecrest python-hostlist &> .deps.cscs-reframe-tests
+    pip install requests toml >> .deps.cscs-reframe-tests 2>&1
+    # pip install -r config/utilities/requirements.txt # pyfirecrest + python-hostlist
     # (wget --quiet "https://github.com/reframe-hpc/reframe/archive/refs/tags/v4.5.2.tar.gz" && \
     # tar xf v4.5.2.tar.gz && \
     # cd reframe-4.5.2 && \
     # ./bootstrap.sh)
     # echo "$PWD/reframe-4.5.2/bin"
     # export PATH="$(pwd)/reframe/bin:$PATH"
+    # --- return the path (use /dev/null to avoid clutter):
+    echo "$(pwd)/reframe-develop/bin"
 }    
 # }}}
 # {{{ install_reframe_tests (alps branch) 
@@ -332,8 +336,10 @@ launch_reframe_1arg() {
     export RFM_AUTODETECT_METHODS="cat /etc/xthostname,hostname"
     export RFM_USE_LOGIN_SHELL=1
     # export RFM_AUTODETECT_XTHOSTNAME=1
-    # reframe -V
-    echo "UENV=$UENV"
+    source rfm_venv/bin/activate
+    reframe -V
+    echo "# UENV=$UENV"
+    echo "# CPE=$CPE"
     echo "# img=$img"
     reframe -C ./config/cscs.py \
         --report-junit=report.xml \

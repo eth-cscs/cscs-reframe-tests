@@ -6,20 +6,29 @@ stages:
   - status
 
 # {{{ reframe
-reframe:
+reframe_tests:
   stage: run
-  extends: .f7t-baremetal-runner
+  tags: [daint-login-baremetal]
+  # extends: .f7t-baremetal-runner
+  variables:
+    GIT_STRATEGY: fetch
   before_script:
-    - echo "FIRECREST_SYSTEM=$FIRECREST_SYSTEM / F7T_URL=$F7T_URL / CLUSTER_NAME=$CLUSTER_NAME"
+    # - echo "FIRECREST_SYSTEM=$FIRECREST_SYSTEM / F7T_URL=$F7T_URL"
+    - echo "CLUSTER_NAME=$CLUSTER_NAME"
     - uname -a
     - pwd
   script:
+    # - rm -fr reframe
     - hostname
+    - echo "# --- install_reframe:"
     - rfm_path=$(./ci/scripts/alps.sh install_reframe)
-    - echo "rfm_path=$rfm_path"
+    - echo -e "\nrfm_path=$rfm_path\n"
     - export PATH=$rfm_path:$PATH
+    - export RFM_AUTODETECT_XTHOSTNAME=1
+    - export CPE=$PWD/config/systems/EDF/cpe-gnu.toml
     - reframe -V
-    - ./ci/scripts/alps.sh launch_reframe_1arg "--mode cpe_production"
+    - echo "# --- launch_reframe_1arg:"
+    - ./ci/scripts/alps.sh launch_reframe_1arg "--mode cpe_production -x SocketFilling -x OneThread"
   artifacts:
     when: always
     # on_failure
@@ -34,7 +43,7 @@ reframe:
 # {{{ status_page
 status_page:
   stage: status
-  needs: ['reframe']
+  needs: ['reframe_tests']
   extends: .container-runner-lightweight-zen2
   image: python:3.9
   script:

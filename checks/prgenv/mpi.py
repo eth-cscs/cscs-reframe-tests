@@ -7,6 +7,7 @@ import os
 
 import reframe as rfm
 import reframe.utility.sanity as sn
+# import uenv  # <-----------------
 
 
 @rfm.simple_test
@@ -15,27 +16,28 @@ class MpiInitTest(rfm.RegressionTest):
     This test checks the value returned by calling MPI_Init_thread.
     '''
     required_threads = ['funneled', 'serialized', 'multiple']
+    valid_systems = ['+uenv +remote', '+cpe_ce +remote']
     valid_prog_environs = ['+mpi']
-    valid_systems = ['+remote']
     build_system = 'Make'
     sourcesdir = 'src/mpi_thread'
-    executable = 'mpi_init_thread_single.exe'
+    executable = '$SLURM_SUBMIT_DIR/mpi_init_thread_single.exe'
+    maintainers = ['VCUE']
     time_limit = '2m'
     build_locally = False
     tags = {'production', 'craype', 'uenv'}
 
-    @run_before('run')
-    def set_job_parameters(self):
-        # To avoid: "MPIR_pmi_init(83)....: PMI2_Job_GetId returned 14"
-        self.job.launcher.options += (
-            self.current_environ.extras.get('launcher_options', [])
-        )
+#     @run_before('run')
+#     def set_job_parameters(self):
+#         # To avoid: "MPIR_pmi_init(83)....: PMI2_Job_GetId returned 14"
+#         self.job.launcher.options += (
+#             self.current_environ.extras.get('launcher_options', [])
+#         )
 
     @run_before('run')
-    def pre_launch(self):
+    def pre_run(self):
         cmd = self.job.launcher.run_command(self.job)
         self.prerun_cmds = [
-            f'{cmd} mpi_init_thread_{ii}.exe &> {ii}.rpt'
+            f'{cmd} $SLURM_SUBMIT_DIR/mpi_init_thread_{ii}.exe &> {ii}.rpt'
             for ii in self.required_threads
         ]
         self.postrun_cmds = ['ln -s rfm_job.out single.rpt']
