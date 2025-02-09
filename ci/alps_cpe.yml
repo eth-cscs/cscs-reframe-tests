@@ -20,14 +20,14 @@ reframe_tests:
   script:
     # - rm -fr reframe
     - hostname
+    - echo "# --- install_reframe:"
     - rfm_path=$(./ci/scripts/alps.sh install_reframe)
-    # - echo "rfm_path=$rfm_path"
+    - echo "rfm_path=$rfm_path"
     - export PATH=$rfm_path:$PATH
     - export RFM_AUTODETECT_XTHOSTNAME=1
     - export CPE=$PWD/config/systems/EDF/cpe-gnu.toml
     - reframe -V
-    # - pip list
-    # - pip install toml
+    - echo "# --- launch_reframe_1arg:"
     - ./ci/scripts/alps.sh launch_reframe_1arg "--mode cpe_production -x SocketFilling -x OneThread"
   artifacts:
     when: always
