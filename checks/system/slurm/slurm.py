@@ -3,7 +3,9 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
+import os
 import re
+import subprocess
 
 import reframe as rfm
 import reframe.core.runtime as rt
@@ -395,3 +397,41 @@ class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
             self.assert_min_nodes(),
             self.assert_percentage_nodes(),
         ])
+
+
+@rfm.simple_test
+class SlurmPrologEpilogCheck(rfm.RunOnlyRegressionTest):
+
+    valid_systems = ['*']
+    valid_prog_environs = ['builtin']
+    time_limit = '2m'
+    kafka_logger = '/etc/slurm/utils/kafka_logger'
+    prolog_dir = '/etc/slurm/node_prolog.d/'
+    epilog_dir = '/etc/slurm/node_epilog.d/'
+    prerun_cmds = [f'ln -s {kafka_logger} ./kafka_logger']
+    prefix_name = 'test_'
+    test_files = []
+    for file in os.listdir(epilog_dir):
+        if os.path.isfile(os.path.join(epilog_dir, file)):
+            if file.startswith(prefix_name):
+                test_files.append(os.path.join(epilog_dir, file))
+    for file in os.listdir(prolog_dir):
+        if os.path.isfile(os.path.join(prolog_dir, file)):
+            if file.startswith(prefix_name):
+                test_files.append(os.path.join(prolog_dir, file))
+    test_file = parameter(test_files)
+    tags = {'vs-node-validator'}
+
+    @run_after('setup')
+    def set_executable(self):
+        self.executable = f'bash {self.test_file} --drain=off'
+
+    @sanity_function
+    def validate(self):
+        reason = sn.extractall("reason:\s*(.*)", self.stdout, tag=1)
+
+        if reason:
+            return sn.assert_not_found("will be drained with reason", self.stdout, msg=f"{reason[0]}")
+        else:
+            return True
+
