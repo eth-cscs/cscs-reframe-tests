@@ -12,7 +12,7 @@ class FFTWTest(rfm.RegressionTest):
     exec_mode = parameter(['nompi', 'mpi'])
     sourcepath = 'fftw_benchmark.c'
     build_system = 'SingleSource'
-    valid_systems = ['daint:gpu', 'dom:gpu']
+    valid_systems = []
     # Cray FFTW library is not officially supported for the PGI
     valid_prog_environs = ['PrgEnv-cray', 'PrgEnv-gnu']
     modules = ['cray-fftw']

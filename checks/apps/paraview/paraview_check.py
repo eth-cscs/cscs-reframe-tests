@@ -9,8 +9,7 @@ import reframe.utility.sanity as sn
 
 @rfm.simple_test
 class ParaViewCheck(rfm.RunOnlyRegressionTest):
-    valid_systems = ['daint:gpu', 'daint:mc', 'dom:gpu', 'dom:mc',
-                     'eiger:mc', 'pilatus:mc']
+    valid_systems = ['eiger:mc', 'pilatus:mc']
     valid_prog_environs = ['builtin']
     num_tasks = 12
     num_tasks_per_node = 12
@@ -23,7 +22,7 @@ class ParaViewCheck(rfm.RunOnlyRegressionTest):
     @run_after('init')
     def set_prgenv_alps(self):
         if self.current_system.name in {'eiger', 'pilatus'}:
-            self.valid_prog_environs = ['cpeCray']
+            self.valid_prog_environs = ['cpeGNU']
 
     @sanity_function
     def assert_vendor_renderer(self):

@@ -12,7 +12,7 @@ class SSHLoginEnvCheck(rfm.RunOnlyRegressionTest):
     def __init__(self):
         self.descr = ('Check the values of a set of environment variables '
                       'when accessing remotely over SSH')
-        self.valid_systems = ['daint:login', 'dom:login']
+        self.valid_systems = []
         self.sourcesdir = None
         self.valid_prog_environs = ['PrgEnv-cray']
         reference = {

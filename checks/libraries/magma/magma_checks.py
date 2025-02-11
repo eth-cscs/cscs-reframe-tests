@@ -11,7 +11,7 @@ import reframe.utility.sanity as sn
 class MagmaCheck(rfm.RegressionTest):
     subtest = parameter(['cblas_z', 'zgemm', 'zsymmetrize', 'ztranspose',
                          'zunmbr'])
-    valid_systems = ['daint:gpu', 'dom:gpu']
+    valid_systems = []
     valid_prog_environs = ['builtin']
     num_gpus_per_node = 1
     prebuild_cmds = ['patch < patch.txt']

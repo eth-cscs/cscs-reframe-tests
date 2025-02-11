@@ -63,7 +63,7 @@ class CPUBandwidth(MemBandwidthTest):
                           for k in ['load_avx', 'store_avx']],
                         ['memory', 'load_avx'],
                         ['memory', 'store_mem_avx']])
-    valid_systems = ['daint:mc', 'daint:gpu', 'dom:gpu', 'dom:mc']
+    valid_systems = []
     # the kernel to run in likwid
     kernel_name = variable(str)
     mem_level = variable(str)
@@ -123,7 +123,7 @@ class CPUBandwidth(MemBandwidthTest):
 class CPUBandwidthCrossSocket(MemBandwidthTest):
     descr = ('CPU S0 <- main memory S1 read '
              'CPU S1 <- main memory S0 read')
-    valid_systems = ['daint:mc', 'dom:mc']
+    valid_systems = []
     kernel_name = 'load_avx'
     reference = {
         'daint:mc': {

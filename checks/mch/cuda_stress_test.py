@@ -10,7 +10,7 @@ import reframe.utility.sanity as sn
 @rfm.simple_test
 class cuda_stress_test(rfm.RegressionTest):
     descr = 'MCH CUDA stress test'
-    valid_systems = ['daint:gpu', 'dom:gpu', 'arolla:cn', 'tsa:cn']
+    valid_systems = ['arolla:cn', 'tsa:cn']
     valid_prog_environs = ['*']
     sourcepath = 'cuda_stencil_test.cu'
     build_system = 'SingleSource'

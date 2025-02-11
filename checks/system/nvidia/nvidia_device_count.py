@@ -16,7 +16,6 @@ from cuda_visible_devices_all import CudaVisibleDevicesAllMixin
 
 class BuildDeviceCountBase(rfm.CompileOnlyRegressionTest):
     '''Fixture for building the device count binary'''
-    valid_prog_environs = ['+cuda']
     build_locally = False
     build_system = 'SingleSource'
     sourcepath = 'deviceCount.cu'
@@ -42,7 +41,8 @@ class NvidiaDeviceCountBase(CudaVisibleDevicesAllMixin,
        The above option can be combined with a particular nodelist to check
        the health of the nodes on demand.
     '''
-    valid_prog_environs = ['+cuda']
+
+    valid_systems = ['+nvgpu']
     num_tasks_per_node = 1
     num_tasks = 1
 
@@ -76,7 +76,7 @@ class NvidiaDeviceCountBase(CudaVisibleDevicesAllMixin,
 
 
 class CPE_BuildDeviceCount(BuildDeviceCountBase):
-    valid_prog_environs = ['-uenv']
+    valid_prog_environs = ['+cuda -uenv']
 
     # FIXME: version of clang compiler and default gcc not compatible
     # with the default cudatoolkit (11.6)
@@ -89,32 +89,28 @@ class CPE_BuildDeviceCount(BuildDeviceCountBase):
 
     @run_before('compile')
     def setup_modules(self):
-        if 'PrgEnv-nvhpc' != self.current_environ.name:
-            sm = self.current_partition.select_devices('gpu')[0].arch[-2:]
-            self.modules = ['cudatoolkit', f'craype-accel-nvidia{sm}']
+        sm = self.current_partition.select_devices('gpu')[0].arch[-2:]
+        self.modules = ['cudatoolkit', f'craype-accel-nvidia{sm}']
 
 
 class UENV_BuildDeviceCount(BuildDeviceCountBase):
-    valid_prog_environs = ['+uenv']
+    valid_prog_environs = ['+cuda +uenv']
 
 
 @rfm.simple_test
 class CPE_NvidiaDeviceCount(NvidiaDeviceCountBase):
-    valid_systems = ['+nvgpu']
-    valid_prog_environs = ['-uenv']
+    valid_prog_environs = ['+cuda -uenv']
     device_count_bin = fixture(CPE_BuildDeviceCount, scope='environment')
     tags = {'production'}
 
     @run_after('setup')
     def setup_modules(self):
-        if 'PrgEnv-nvhpc' != self.current_environ.name:
-            sm = self.current_partition.select_devices('gpu')[0].arch[-2:]
-            self.modules = ['cudatoolkit', f'craype-accel-nvidia{sm}']
+        sm = self.current_partition.select_devices('gpu')[0].arch[-2:]
+        self.modules = ['cudatoolkit', f'craype-accel-nvidia{sm}']
 
 
 @rfm.simple_test
 class UENV_NvidiaDeviceCount(NvidiaDeviceCountBase):
-    valid_systems = ['+nvgpu']
-    valid_prog_environs = ['+uenv']
+    valid_prog_environs = ['+cuda +uenv']
     device_count_bin = fixture(UENV_BuildDeviceCount, scope='environment')
     tags = {'production'}
