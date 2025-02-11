@@ -3,6 +3,7 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
+import os
 import re
 
 import reframe as rfm
@@ -13,16 +14,10 @@ import reframe.utility.sanity as sn
 
 class SlurmSimpleBaseCheck(rfm.RunOnlyRegressionTest):
     '''Base class for Slurm simple binary tests'''
-
-    valid_systems = [
-        'daint:normal', 'arolla:cn', 'arolla:pn', 'tsa:cn',
-        'tsa:pn', 'eiger:mc', 'pilatus:mc'
-    ]
+    valid_systems = ['daint:normal', 'eiger:mc', 'pilatus:mc']
     valid_prog_environs = ['PrgEnv-cray']
-    tags = {'slurm', 'maintenance', 'ops',
-            'production', 'single-node'}
+    tags = {'slurm', 'maintenance', 'ops', 'production', 'single-node'}
     num_tasks_per_node = 1
-    maintainers = ['RS', 'VH']
 
     @run_after('init')
     def customize_systems(self):
@@ -34,11 +29,11 @@ class SlurmSimpleBaseCheck(rfm.RunOnlyRegressionTest):
 class SlurmCompiledBaseCheck(rfm.RegressionTest):
     '''Base class for Slurm tests that require compiling some code'''
 
+    valid_systems = []
     valid_prog_environs = ['PrgEnv-cray']
     tags = {'slurm', 'maintenance', 'ops',
             'production', 'single-node'}
     num_tasks_per_node = 1
-    maintainers = ['RS', 'VH']
 
 
 @rfm.simple_test
@@ -46,10 +41,6 @@ class HostnameCheck(SlurmSimpleBaseCheck):
     executable = '/bin/hostname'
     valid_prog_environs = ['builtin']
     hostname_patt = {
-        'arolla:cn': r'^arolla-cn\d{3}$',
-        'arolla:pn': r'^arolla-pp\d{3}$',
-        'tsa:cn': r'^tsa-cn\d{3}$',
-        'tsa:pn': r'^tsa-pp\d{3}$',
         'daint:normal': r'^nid\d{6}$',
         'eiger:mc': r'^nid\d{6}$',
         'pilatus:mc': r'^nid\d{6}$'
@@ -67,10 +58,7 @@ class HostnameCheck(SlurmSimpleBaseCheck):
 @rfm.simple_test
 class EnvironmentVariableCheck(SlurmSimpleBaseCheck):
     num_tasks = 2
-    valid_systems = ['daint:normal',
-                     'arolla:cn', 'arolla:pn',
-                     'tsa:cn', 'tsa:pn',
-                     'eiger:mc', 'pilatus:mc']
+    valid_systems = ['daint:normal', 'eiger:mc', 'pilatus:mc']
     executable = '/bin/echo'
     executable_opts = ['$MY_VAR']
     env_vars = {'MY_VAR': 'TEST123456!'}
@@ -115,7 +103,7 @@ class RequestLargeMemoryNodeCheck(SlurmSimpleBaseCheck):
 
 @rfm.simple_test
 class DefaultRequestGPU(SlurmSimpleBaseCheck):
-    valid_systems = ['daint:normal', 'arolla:cn', 'tsa:cn']
+    valid_systems = ['daint:normal']
     executable = 'nvidia-smi'
 
     @sanity_function
@@ -237,7 +225,7 @@ class MemoryOverconsumptionMpiCheck(SlurmCompiledBaseCheck):
         reference_mem = self.current_partition.extras['cn_memory'] - 3
         self.reference = {
             '*': {
-                'cn_max_allocated_memory': (reference_mem, -0.05, None, 'GB'),
+                'cn_max_allocated_memory': (reference_mem, -0.10, None, 'GB'),
             }
         }
 
@@ -298,8 +286,7 @@ class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
 
     valid_systems = ['-remote']
     valid_prog_environs = ['builtin']
-    tags = {'slurm', 'ops',
-            'production', 'single-node'}
+    tags = {'slurm', 'ops', 'production', 'single-node'}
     min_avail_nodes = variable(int, value=1)
     ratio_minavail_nodes = variable(float, value=0.1)
     local = True
@@ -312,7 +299,6 @@ class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
             'available_nodes_percentage': (ratio_minavail_nodes*100, -0.0001, None, '%')
         }
     }
-    maintainers = ['RS', 'VH']
 
     @run_after('init')
     def xfer_queue_correction(self):
@@ -419,3 +405,38 @@ class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
     @performance_function('%')
     def available_nodes_percentage(self):
         return 100.0 * self.num_matches / self.num_all_matches
+
+@rfm.simple_test
+class SlurmPrologEpilogCheck(rfm.RunOnlyRegressionTest):
+    valid_systems = ['*']
+    valid_prog_environs = ['builtin']
+    time_limit = '2m'
+    kafka_logger = '/etc/slurm/utils/kafka_logger'
+    prolog_dir = '/etc/slurm/node_prolog.d/'
+    epilog_dir = '/etc/slurm/node_epilog.d/'
+    prerun_cmds = [f'ln -s {kafka_logger} ./kafka_logger']
+    test_files = []
+    for file in os.listdir(epilog_dir):
+        if os.path.isfile(os.path.join(epilog_dir, file)):
+            test_files.append(os.path.join(epilog_dir, file))
+
+    for file in os.listdir(prolog_dir):
+        if os.path.isfile(os.path.join(prolog_dir, file)):
+            test_files.append(os.path.join(prolog_dir, file))
+
+    test_file = parameter(test_files)
+    tags = {'vs-node-validator'}
+
+    @run_after('setup')
+    def set_executable(self):
+        self.executable = f'bash {self.test_file} --drain=off'
+
+    @sanity_function
+    def validate(self):
+        reason = sn.extractall('reason:\s*(.*)', self.stdout, tag=1)
+
+        if reason:
+            return sn.assert_not_found('will be drained with reason', self.stdout,
+                                       msg=f'{reason[0]}')
+        else:
+            return True

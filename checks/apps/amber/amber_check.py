@@ -11,7 +11,7 @@ from hpctestlib.sciapps.amber.nve import amber_nve_check
 @rfm.simple_test
 class cscs_amber_check(amber_nve_check):
     modules = ['Amber']
-    valid_prog_environs = ['builtin']
+    valid_prog_environs = ['cpeIntel']
     extra_resources = {
         'switches': {
             'num_switches': 1
@@ -66,23 +66,16 @@ class cscs_amber_check(amber_nve_check):
     @run_after('init')
     def scope_systems(self):
         valid_systems = {
-            'cuda': {1: ['daint:gpu', 'dom:gpu']},
+            'cuda': {1: []},
             'mpi': {
                 4: ['eiger:mc', 'pilatus:mc'],
-                6: ['daint:mc', 'dom:mc'],
                 8: ['eiger:mc', 'pilatus:mc'],
-                16: ['daint:mc']
             }
         }
         try:
             self.valid_systems = valid_systems[self.variant][self.num_nodes]
         except KeyError:
             self.valid_systems = []
-
-    @run_after('init')
-    def set_hierarchical_prgenvs(self):
-        if self.current_system.name in ['eiger', 'pilatus']:
-            self.valid_prog_environs = ['cpeIntel']
 
     @run_after('init')
     def set_num_gpus_per_node(self):
@@ -111,10 +104,7 @@ class cscs_amber_check(amber_nve_check):
     def set_perf_reference(self):
         proc = self.current_partition.processor
         pname = self.current_partition.fullname
-        if pname in ('daint:gpu', 'dom:gpu'):
-            arch = 'p100'
-        else:
-            arch = proc.arch
+        arch = proc.arch
 
         with contextlib.suppress(KeyError):
             self.reference = {

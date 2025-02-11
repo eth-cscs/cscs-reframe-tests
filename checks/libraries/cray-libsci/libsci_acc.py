@@ -10,7 +10,7 @@ import reframe.utility.sanity as sn
 # @rfm.parameterized_test(['dgemm'])
 class LibsciAccBaseCheck(rfm.RegressionTest):
     def __init__(self):
-        self.valid_systems = ['daint:gpu', 'dom:gpu']
+        self.valid_systems = []
         self.valid_prog_environs = ['PrgEnv-cray', 'PrgEnv-gnu']
         self.prebuild_cmds = ['module list']
         # FIXME: https://jira.cscs.ch/browse/PROGENV-24

@@ -11,7 +11,7 @@ import reframe.utility.typecheck as typ
 @rfm.simple_test
 class nvidia_smi_check(rfm.RunOnlyRegressionTest):
     gpu_mode = parameter(['accounting', 'compute', 'ecc'])
-    valid_systems = ['daint:gpu', 'dom:gpu']
+    valid_systems = []
     valid_prog_environs = ['builtin']
     executable = 'nvidia-smi'
     executable_opts = ['-a', '-d']

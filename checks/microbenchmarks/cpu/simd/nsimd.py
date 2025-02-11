@@ -33,18 +33,16 @@ class NsimdTest(rfm.RegressionTest):
           * speedup: 12.306 x (ns)
     '''
     bench_name = parameter(['mul.avx2.f32.cpp', 'mul.avx2.f64.cpp'])
-
-    valid_systems = ['dom:mc', 'dom:gpu', 'eiger:mc']
+    valid_systems = ['eiger:mc']
     valid_prog_environs = ['PrgEnv-gnu']
     build_system = 'SingleSource'
-
     # c++ test code generated with:
     #   python3 egg/hatch.py --benches --simd avx2 -m mul
     # and benches.hpp copied from:
     #   https://github.com/agenium-scale/nsimd/blob/master/benches/
     sourcesdir = 'benches'
     modules = ['nsimd', 'googlebenchmark', 'sleef', 'MIPP']
-    maintainers = ['JG']
+    maintainers = ['@jgphpc']
     exclusive = True
     num_tasks = 1
     num_tasks_per_node = 1
@@ -59,6 +57,10 @@ class NsimdTest(rfm.RegressionTest):
     @run_after('init')
     def set_descr(self):
         self.descr = f'testing {self.bench_name}'
+
+    @run_before('compile')
+    def skip_test(self):
+        self.skip_if(True, 'skipping legacy test (nsimd no longer installed)')
 
     @run_before('compile')
     def setup_build(self):

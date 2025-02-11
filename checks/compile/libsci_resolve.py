@@ -25,7 +25,6 @@ class NvidiaResolveTest(LibSciResolveBaseTest):
     accel_nvidia_version = parameter(['90'])
     valid_prog_environs = ['PrgEnv-cray', 'PrgEnv-gnu']
     build_system = 'SingleSource'
-    compiler_version = '81'
 
     @run_after('init')
     def set_description(self):
@@ -38,29 +37,22 @@ class NvidiaResolveTest(LibSciResolveBaseTest):
 
     @run_after('setup')
     def set_modules(self):
-        # FIXME: https://jira.cscs.ch/browse/PROGENV-24
-        self.modules += [f'craype-accel-nvidia{self.accel_nvidia_version}',
-                         'cray-libsci_acc']
+        self.modules += [
+            'cudatoolkit', f'craype-accel-nvidia{self.accel_nvidia_version}',
+            'cray-libsci_acc'
+        ]
 
     @sanity_function
     def libsci_acc_resolve(self):
-        # here lib_name is in the format: libsci_acc_gnu_48_nv35.so or
+        # here lib_name is in the format: libsci_acc_gnu_nv35.so or
         #                                 libsci_acc_cray_nv35.so
         regex = (r'.*\(NEEDED\).*libsci_acc_(?P<prgenv>[A-Za-z]+)_'
-                 r'((?P<cver>[A-Za-z0-9]+)_)?(?P<version>\S+)\.so')
+                 r'(?P<version>\S+)\.so')
         prgenv = self.current_environ.name.split('-')[1]
-        cver = self.compiler_version
         mod_name = f'nv{self.accel_nvidia_version}'
-        if self.current_environ.name == 'PrgEnv-cray':
-            cver_sanity = sn.assert_found(regex, self.stdout)
-        else:
-            cver_sanity = sn.assert_eq(
-                sn.extractsingle(regex, self.stdout, 'cver'), cver)
-
         return sn.all([
             sn.assert_eq(
                 sn.extractsingle(regex, self.stdout, 'prgenv'), prgenv),
-            cver_sanity,
             sn.assert_eq(
                 sn.extractsingle(regex, self.stdout, 'version'), mod_name)
         ])

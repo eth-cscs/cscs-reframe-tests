@@ -10,7 +10,7 @@ import reframe.utility.sanity as sn
 @rfm.simple_test
 class TrilinosTest(rfm.RegressionTest):
     linkage = parameter(['static', 'dynamic'])
-    valid_systems = ['daint:gpu', 'daint:mc', 'dom:gpu', 'dom:mc']
+    valid_systems = []
     valid_prog_environs = ['PrgEnv-cray', 'PrgEnv-gnu', 'PrgEnv-intel']
     prgenv_flags = {
         'PrgEnv-cray': ['-fopenmp', '-O2', '-ffast-math', '-std=c++11',
