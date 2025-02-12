@@ -28,7 +28,7 @@ class SSHLoginEnvCheck(rfm.RunOnlyRegressionTest):
 
     @run_before('run')
     def set_exec_opts(self):
-        echo_args = '.join(f'{i}=${i}' for i in self.var_ref.keys())
+        echo_args = ' '.join(f'{i}=${i}' for i in self.var_ref.keys())
         self.executable_opts = [self.current_system.name, 'echo',
                                 f"'{echo_args}'"]
 
