@@ -26,10 +26,6 @@ class BuildahTestBase(rfm.RunOnlyRegressionTest):
         self.runroot = '/dev/shm/$USER/buildah_runroot'
         self.env_vars = {'XDG_DATA_HOME': '/dev/shm/$USER/xdg_data_home'}
         self.prerun_cmds = ['unset XDG_RUNTIME_DIR'] + self.prerun_cmds
- 
-        if self.current_system.name in {'dom', 'daint'}:
-            self.modules = ['Buildah']
-
         self.prerun_cmds += [
             f'rm -f {self.runroot}/{self.archive_name}.tar',
             f'rm -f {self.stagedir}/{self.archive_name}.tar'

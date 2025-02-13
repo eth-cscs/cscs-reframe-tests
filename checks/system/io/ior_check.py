@@ -30,7 +30,7 @@ class build_ior_benchmarks(rfm.CompileOnlyRegressionTest):
     ior_benchmarks = fixture(fetch_ior_benchmarks, scope='session')
 
     # Build on the remote system for consistency
-    build_locally = False 
+    build_locally = False
 
     @run_after('init')
     def load_cray_module(self):
@@ -57,8 +57,6 @@ class build_ior_benchmarks(rfm.CompileOnlyRegressionTest):
 
 class IorCheck(rfm.RunOnlyRegressionTest):
     base_dir = parameter(['/capstor/scratch/cscs',
-                          '/scratch/snx3000tds',
-                          '/scratch/snx3000',
                           '/scratch/shared/fulen',
                           '/users'])
     username = getpass.getuser()

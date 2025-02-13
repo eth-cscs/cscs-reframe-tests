@@ -32,8 +32,8 @@ class NsimdTest(rfm.RegressionTest):
           * num_tasks: 1
           * speedup: 12.306 x (ns)
     '''
-    bench_name = parameter(['mul.avx2.f64.cpp'])
-    valid_systems = ['*']
+    bench_name = parameter(['mul.avx2.f32.cpp', 'mul.avx2.f64.cpp'])
+    valid_systems = ['eiger:mc']
     valid_prog_environs = ['PrgEnv-gnu']
     build_system = 'SingleSource'
     # c++ test code generated with:
