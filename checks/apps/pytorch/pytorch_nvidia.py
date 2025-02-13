@@ -2,37 +2,16 @@ import sys
 import pathlib
 import reframe as rfm
 import reframe.utility.sanity as sn
-import requests
-import re
-from packaging.version import Version
+
+
+
 from pytorch_test_base import PyTorchTestBase
 sys.path.append(str(pathlib.Path(__file__).parent.parent.parent / 'mixins'))
 from container_engine import ContainerEngineMixin  # noqa: E402
 
+from nvcr_utility import latest_nvidia_image_tags
 
 
-def latest_nvidia_pytorch_image_tags():
-
-    token_response = requests.get("https://nvcr.io/proxy_auth?scope=repository:nvidia/pytorch:pull,push")
-    tags_url = "https://nvcr.io/v2/nvidia/pytorch/tags/list"
-    headers = {
-        "Authorization": f"Bearer {token_response.json().get('token')}"
-    }
-    
-    #Note: onle the "-py3" image is supported by the downstream tests (e.g. PyTorchDdpCeNv)
-    supported_flavors = ["-py3"] 
-
-    image_tags_response = requests.get(tags_url, headers=headers)
-    tags = image_tags_response.json().get("tags", [])
-    latest_tags = []
-    for flavor in supported_flavors:
-
-        versions = [tag[:-len(flavor)] for tag in tags if re.match(rf"^\d+\.\d+{flavor}$", tag)]
-        if versions:
-            latest_version = sorted(versions, key=Version, reverse=True)[0]
-            latest_tags += [latest_version+flavor]
-
-    return latest_tags
 
 @rfm.simple_test
 class test_image_latest_tag_retreival(rfm.RunOnlyRegressionTest):
@@ -46,7 +25,7 @@ class test_image_latest_tag_retreival(rfm.RunOnlyRegressionTest):
     
     @run_before('run')
     def set_container_variables(self):
-        self.executable_opts = ["latest tags:" + ",".join(latest_nvidia_pytorch_image_tags())]
+        self.executable_opts = ["latest tags:" + ",".join(latest_nvidia_image_tags("pytorch")))]
 
 
 @rfm.simple_test
@@ -60,7 +39,7 @@ class PyTorchDdpCeNv(PyTorchTestBase, ContainerEngineMixin):
         #'nvcr.io#nvidia/pytorch:23.10-py3', # same as AMD   pt2.1.0
         'nvcr.io#nvidia/pytorch:24.01-py3', # Latest        pt2.2.0
     ]
-    latest_images = ["nvcr.io#nvidia/pytorch:" + tag for tag in latest_nvidia_pytorch_image_tags()]
+    latest_images = ["nvcr.io#nvidia/pytorch:" + tag for tag in latest_nvidia_image_tags("pytorch")]
     image = parameter(curated_images + latest_images)
 
     env_vars = {
@@ -88,7 +67,7 @@ class PyTorchDdpCeNvlarge(PyTorchDdpCeNv):
     curated_images = [
         'nvcr.io#nvidia/pytorch:24.01-py3', # Latest        pt2.2.0
     ]
-    latest_images = ["nvcr.io#nvidia/pytorch:" + tag for tag in latest_nvidia_pytorch_image_tags()]
+    latest_images = ["nvcr.io#nvidia/pytorch:" + tag for tag in latest_nvidia_image_tags("pytorch")]
     image = parameter(curated_images + latest_images)
 
 
