@@ -25,7 +25,7 @@ class test_image_latest_tag_retreival(rfm.RunOnlyRegressionTest):
     
     @run_before('run')
     def set_container_variables(self):
-        self.executable_opts = ["latest tags:" + ",".join(latest_nvidia_image_tags("pytorch")))]
+        self.executable_opts = ["latest tags:" + ",".join(latest_nvidia_image_tags("pytorch"))]
 
 
 @rfm.simple_test
