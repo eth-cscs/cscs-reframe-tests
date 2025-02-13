@@ -87,7 +87,6 @@ class PyTorchDdpMambaNv(PyTorchTestBase):
         self.prerun_cmds = [
             f'set -xe', f'. setup_conda.sh $PWD/forge',
             f'conda clean --all',
-            f'conda remove -n nvidia --all',
             f'conda create -p $PWD/forge/envs/rfm {self.torch_version} '
             f'-c nvidia -y',
             f'conda activate $PWD/forge/envs/rfm',
