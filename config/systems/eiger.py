@@ -116,7 +116,9 @@ site_configuration = {
         {
             'name': 'PrgEnv-aocc',
             'target_systems': ['eiger'],
-            'modules': ['cray', 'PrgEnv-aocc']
+            'modules': ['cray', 'PrgEnv-aocc'],
+            'features': ['serial', 'openmp', 'mpi', 'cuda',
+                         'hdf5', 'netcdf-hdf5parallel', 'pnetcdf', 'openmp']
         },
         {
             'name': 'PrgEnv-cray',
