@@ -130,6 +130,8 @@ site_configuration = {
         {
             'name': 'PrgEnv-gnu',
             'target_systems': ['eiger'],
+            'features': ['serial', 'openmp', 'mpi', 'cuda', 'alloc_speed',
+                         'hdf5', 'netcdf-hdf5parallel', 'pnetcdf', 'openmp'],
             'modules': ['cray', 'PrgEnv-gnu']
         },
         {
