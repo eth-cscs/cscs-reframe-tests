@@ -1,9 +1,8 @@
 import requests
-import re
-from packaging.version import Version
+from typing import List
 
 
-def nvidia_image_tags(image_name:str):
+def nvidia_image_tags(image_name: str) -> List[str]:
     token_response = requests.get(
         f'https://nvcr.io/proxy_auth?scope=repository:nvidia/{image_name}:pull'
     )

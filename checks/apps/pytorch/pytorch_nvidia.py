@@ -12,7 +12,7 @@ from container_engine import ContainerEngineMixin  # noqa: E402
 sys.path.append(
     str(pathlib.Path(__file__).parent.parent.parent.parent / 'utility')
 )
-from nvidia_nvcr.nvcr_utility import nvidia_image_tags
+from nvcr import nvidia_image_tags
 
 
 @rfm.simple_test
