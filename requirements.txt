@@ -1,3 +1,3 @@
-reframe-hpc
+Reframe-HPC
 pyfirecrest==2.5.0
 python-hostlist==1.23.0
