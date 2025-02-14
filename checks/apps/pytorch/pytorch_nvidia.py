@@ -71,10 +71,14 @@ class PyTorchDdpCeNvlarge(PyTorchDdpCeNv):
     image = parameter(curated_images + latest_images)
 
 
+# DISABLED - lib comatibility issue on Clariden
+# + srun -l --gpus-per-task=1 python cnn_distr.py
+# srun: /lib64/libc.so.6: version `GLIBC_2.34' not found (required by /opt/cscs/aws-ofi-ccl-plugin/cuda12/libnccl-net.so)
+# TODO: build libnccl-net.so plug-in in the test setup pahse
 @rfm.simple_test
 class PyTorchDdpMambaNv(PyTorchTestBase):
     descr = 'Check the training throughput on bare-metal'
-    valid_systems = ['+nvgpu']
+    valid_systems = []  #DISABLED TEST, change to ['+nvgpu'] to renable it
     time_limit = '30m'
     torch_version = parameter([
         #'pytorch torchvision nccl pytorch-cuda=11.8', # Latest cu11.8; aws-ofi-ccl-plugin/cuda11 not available
