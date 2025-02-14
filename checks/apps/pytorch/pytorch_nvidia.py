@@ -1,48 +1,63 @@
+import re
 import sys
 import pathlib
 import reframe as rfm
 import reframe.utility.sanity as sn
 
 
-
 from pytorch_test_base import PyTorchTestBase
 sys.path.append(str(pathlib.Path(__file__).parent.parent.parent / 'mixins'))
 from container_engine import ContainerEngineMixin  # noqa: E402
 
-sys.path.append(str(pathlib.Path(__file__).parent.parent.parent.parent / 'utility'))
-from nvidia_nvcr.nvcr_utility import latest_nvidia_image_tags
-
+sys.path.append(
+    str(pathlib.Path(__file__).parent.parent.parent.parent / 'utility')
+)
+from nvidia_nvcr.nvcr_utility import nvidia_image_tags
 
 
 @rfm.simple_test
-class test_image_latest_tag_retreival(rfm.RunOnlyRegressionTest):
+class test_image_tag_retrieval(rfm.RunOnlyRegressionTest):
     valid_systems = ['+nvgpu']
     valid_prog_environs = ['builtin']
     executable = 'echo'
 
     @sanity_function
-    def validate(self):
-        return sn.assert_found(r'latest tags:', self.stdout)
+    def assert_found_tags(self):
+        return sn.assert_found(r'pytorch tags: \S+', self.stdout)
     
     @run_before('run')
     def set_container_variables(self):
-        self.executable_opts = ["latest tags:" + ",".join(latest_nvidia_image_tags("pytorch"))]
+        self.executable_opts = [
+            f'pytorch tags: {",".join(nvidia_image_tags("pytorch"))}'
+        ]
 
 
 @rfm.simple_test
 class PyTorchDdpCeNv(PyTorchTestBase, ContainerEngineMixin):
-    descr = 'Check the training throughput using the ContainerEngine and NVIDIA NGC'
+    descr = ('Check the training throughput using the ContainerEngine and '
+             'NVIDIA NGC')
     valid_systems = ['+ce +nvgpu']
     aws_ofi_nccl = parameter([True])
-    curated_images = [
-        #'nvcr.io#nvidia/pytorch:22.08-py3', # same as AMD   pt1.13.1
-        #'nvcr.io#nvidia/pytorch:22.12-py3', # same as Sarus pt1.14.0
-        #'nvcr.io#nvidia/pytorch:23.10-py3', # same as AMD   pt2.1.0
-        'nvcr.io#nvidia/pytorch:24.01-py3', # Latest        pt2.2.0
-    ]
-    latest_images = ["nvcr.io#nvidia/pytorch:" + tag for tag in latest_nvidia_image_tags("pytorch")]
-    image = parameter(curated_images + latest_images)
+    curated_images = ['nvcr.io#nvidia/pytorch:24.01-py3']
 
+    # NOTE: only the "-py3" image is supported by the test
+    supported_flavors = ["-py3"] 
+
+    pytorch_tags = nvidia_image_tags('pytorch')
+    latest_tags = []
+
+    for flavor in supported_flavors:
+        versions = []
+        for tag in pytorch_tags:
+            if re.match(rf'^\d+\.\d+{flavor}$', tag):
+                versions.append(tag[:-len(flavor)])
+
+        if versions:
+            latest_version = max(versions)
+            latest_tags += [f'{latest_version}+{flavor}']
+
+    latest_images = [f'nvcr.io#nvidia/pytorch:{tag}' for tag in latest_tags]
+    image = parameter(curated_images + latest_images)
     env_vars = {
         'NCCL_DEBUG': 'Info',
     }
@@ -52,7 +67,8 @@ class PyTorchDdpCeNv(PyTorchTestBase, ContainerEngineMixin):
     def set_image(self):
         self.container_image = self.image
         if self.aws_ofi_nccl:
-            cuda_major = 'cuda12' if self.image > 'nvcr.io#nvidia/pytorch:23' else 'cuda11'
+            # Only cuda12 is supported at the moment
+            cuda_major = 'cuda12'
             self.container_env_table = {
                 'annotations.com.hooks': {
                     'aws_ofi_nccl.enabled': 'true',
@@ -62,27 +78,20 @@ class PyTorchDdpCeNv(PyTorchTestBase, ContainerEngineMixin):
 
 @rfm.simple_test
 class PyTorchDdpCeNvlarge(PyTorchDdpCeNv):
-    aws_ofi_nccl = parameter([True, False])
     num_nodes = parameter([3, 8])
 
-    curated_images = [
-        'nvcr.io#nvidia/pytorch:24.01-py3', # Latest        pt2.2.0
-    ]
-    latest_images = ["nvcr.io#nvidia/pytorch:" + tag for tag in latest_nvidia_image_tags("pytorch")]
-    image = parameter(curated_images + latest_images)
 
-
-# DISABLED - lib comatibility issue on Clariden
+# FIXME: libc comptibility issue on Clariden
 # + srun -l --gpus-per-task=1 python cnn_distr.py
-# srun: /lib64/libc.so.6: version `GLIBC_2.34' not found (required by /opt/cscs/aws-ofi-ccl-plugin/cuda12/libnccl-net.so)
-# TODO: build libnccl-net.so plug-in in the test setup pahse
+# srun: /lib64/libc.so.6: version `GLIBC_2.34' not found
+# (required by /opt/cscs/aws-ofi-ccl-plugin/cuda12/libnccl-net.so)
+# TODO: build libnccl-net.so plug-in in the test setup phase
 @rfm.simple_test
 class PyTorchDdpMambaNv(PyTorchTestBase):
     descr = 'Check the training throughput on bare-metal'
     valid_systems = []  #DISABLED TEST, change to ['+nvgpu'] to renable it
     time_limit = '30m'
     torch_version = parameter([
-        #'pytorch torchvision nccl pytorch-cuda=11.8', # Latest cu11.8; aws-ofi-ccl-plugin/cuda11 not available
          'nccl cuda=12.6', # Latest cu12.6; incompatible driver
     ])
     tags = {'production'}
@@ -96,7 +105,8 @@ class PyTorchDdpMambaNv(PyTorchTestBase):
             f'conda create -p $PWD/forge/envs/rfm {self.torch_version} '
             f'-c nvidia -y',
             f'conda activate $PWD/forge/envs/rfm',
-            f'pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu126',
+            f'pip install torch torchvision torchaudio --index-url '
+            f'https://download.pytorch.org/whl/cu126',
             f'pip install python-hostlist',
             f'. activate_ofi.sh cuda12',
         ]
