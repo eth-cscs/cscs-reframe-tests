@@ -9,7 +9,8 @@ from pytorch_test_base import PyTorchTestBase
 sys.path.append(str(pathlib.Path(__file__).parent.parent.parent / 'mixins'))
 from container_engine import ContainerEngineMixin  # noqa: E402
 
-from nvcr_utility import latest_nvidia_image_tags
+sys.path.append(str(pathlib.Path(__file__).parent.parent.parent.parent / 'utility'))
+from nvidia_nvcr.nvcr_utility import latest_nvidia_image_tags
 
 
 
