@@ -170,7 +170,7 @@ class gromacs_run_test(rfm.RunOnlyRegressionTest):
         sn.assert_lt(energy_diff, 1644) #1% tolerance
 
     @performance_function('ns/day')
-    def ns_day(self):
+    def time_run(self):
         # TODO Write RegEx to extract from md.log or slurm-XXX.out
         return sn.extractsingle(
                 r'^Performance:\s+(?P<nspd>\S+)\s+',
