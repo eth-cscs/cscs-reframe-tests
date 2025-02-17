@@ -151,8 +151,9 @@ class gromacs_run_test(rfm.RunOnlyRegressionTest):
             self.prerun_cmds = ['wget https://jfrog.svc.cscs.ch/artifactory/cscs-reframe-tests/gromacs/STMV/topol.tpr']
 
 
-    @run_after("run")
+    @run_after('setup')
     def postproc_run(self):
+        # extract Bond Energy from the binary .edr file and write it to a readable .xvg file and then write it to stdout
         self.postrun_cmds = [
             'echo -e "1\n" |'
             'gmx_mpi energy -f ener.edr -o ener.xvg',
@@ -161,7 +162,7 @@ class gromacs_run_test(rfm.RunOnlyRegressionTest):
         
     @sanity_function
     def validate_bond_energy(self):
-        # TODO Write RegEx to extract from ener.xvg
+        # RegEx to extract from ener.xvg
         regex = r'^@.*\"Bond\"\n\s+\S+\s+(?P<energy>\S+)$'
         energy = sn.avg(sn.extractall(regex, self.stdout, 'energy', float))
 
@@ -172,10 +173,10 @@ class gromacs_run_test(rfm.RunOnlyRegressionTest):
 
     @performance_function('ns/day')
     def time_run(self):
-        # TODO Write RegEx to extract from md.log or slurm-XXX.out
+        # RegEx to extract from slurm-XXX.out
         return sn.extractsingle(
                 r'^Performance:\s+(?P<nspd>\S+)\s+',
-                self.stdout,
+                self.stderr,
                 'ns_day',
                 float,
             )
