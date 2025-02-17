@@ -155,7 +155,7 @@ class gromacs_run_test(rfm.RunOnlyRegressionTest):
     def postproc_run(self):
         # extract Bond Energy from the binary .edr file and write it to a readable .xvg file and then write it to stdout
         self.postrun_cmds = [
-            'echo -e "1\n" |'
+            'echo -e "1\\n" |'
             'gmx_mpi energy -f ener.edr -o ener.xvg',
             'cat ener.xvg'
         ]
