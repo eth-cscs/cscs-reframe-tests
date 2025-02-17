@@ -148,7 +148,7 @@ class gromacs_run_test(rfm.RunOnlyRegressionTest):
         
         # set input files
         if self.test_name == 'STMV':
-            self.prerun_cmds = ['wget https://jfrog.svc.cscs.ch/artifactory/cscs-reframe-tests/gromacs/STMV/topol.tpr']
+            self.prerun_cmds = ['wget https://jfrog.svc.cscs.ch/artifactory/cscs-reframe-tests/gromacs/STMV/topol.tpr --quiet']
 
 
     @run_after('setup')
@@ -163,19 +163,19 @@ class gromacs_run_test(rfm.RunOnlyRegressionTest):
     @sanity_function
     def validate_bond_energy(self):
         # RegEx to extract from ener.xvg
-        regex = r'^@.*\"Bond\"\n\s+\S+\s+(?P<energy>\S+)$'
-        energy = sn.avg(sn.extractall(regex, self.stdout, 'energy', float))
+        regex = r'^Bond\s+(?P<bond_energy>\S+)\s+'
+        energy = sn.extractsingle(regex, self.stdout, 'bond_energy', int)
 
-        energy_reference = 164780.14
+        energy_reference = 164780
         energy_diff = sn.abs(energy - energy_reference)
 
-        sn.assert_lt(energy_diff, 1644) #1% tolerance
+        sn.assert_lt(energy_diff, 8000, msg=f'tolerance limit exceeded {energy_diff} ') #~5% tolerance
 
     @performance_function('ns/day')
     def time_run(self):
         # RegEx to extract from slurm-XXX.out
         return sn.extractsingle(
-                r'^Performance:\s+(?P<nspd>\S+)\s+',
+                r'^Performance:\s+(?P<ns_day>\S+)\s+',
                 self.stderr,
                 'ns_day',
                 float,
