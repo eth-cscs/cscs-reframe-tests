@@ -100,13 +100,12 @@ class gromacs_build_test(rfm.CompileOnlyRegressionTest):
     @sanity_function
     def validate_test(self):
         folder = 'bin' # add folder path
-        self.gromacs_executable = os.path.join(self.stagedir, folder, 'gmx-mpi')
+        self.gromacs_executable = os.path.join('bin', 'gmx_mpi')
         print(self.gromacs_executable)
         return os.path.isfile(self.gromacs_executable)
 
 
 class gromacs_run_test(rfm.RunOnlyRegressionTest):
-    #TODO put the name of the input file here
     executable = './mps-wrapper.sh -- gmx-mpi mdrun -s topol.tpr'
     executable_opts = ['-dlb no', '-ntomp 32', '-pme gpu', '-npme 1', '-bonded gpu', '-nb gpu', '-nsteps 10000', '-update gpu', '-pin off', '-v', '-noconfout', '-nstlist 300']
     maintainers = ['SSA']
@@ -147,7 +146,6 @@ class gromacs_run_test(rfm.RunOnlyRegressionTest):
             }
         
         # set input files
-        #TODO upload STMV input file in JFrog artifactory and update link
         if self.test_name == 'STMV':
             self.prerun_cmds = ['wget https://jfrog.svc.cscs.ch/artifactory/cscs-reframe-tests/gromacs/STMV/topol.tpr']
 
@@ -156,30 +154,26 @@ class gromacs_run_test(rfm.RunOnlyRegressionTest):
     def postproc_run(self):
         self.postrun_cmds = [
             'echo -e "1\n" |'
-            'gmx_mpi energy -f ener.edr -o ener.xvg']
+            'gmx_mpi energy -f ener.edr -o ener.xvg',
+            'cat ener.xvg'
+        ]
         
     @sanity_function
     def validate_bond_energy(self):
         # TODO Write RegEx to extract from ener.xvg
-        energy = sn.avg(
-            sn.extractall(
-                r'ENERGY:([ \t]+\S+){10}[ \t]+(?P<energy>\S+)',
-                self.stdout,
-                'energy',
-                float,
-            )
-        )
+        regex = r'^@.*\"Bond\"\n\s+\S+\s+(?P<energy>\S+)$'
+        energy = sn.avg(sn.extractall(regex, self.stdout, 'energy', float))
 
-        energy_reference = 164454
+        energy_reference = 164780.14
         energy_diff = sn.abs(energy - energy_reference)
 
-        sn.assert_lt(energy_diff, 1644)
+        sn.assert_lt(energy_diff, 1644) #1% tolerance
 
     @performance_function('ns/day')
     def ns_day(self):
         # TODO Write RegEx to extract from md.log or slurm-XXX.out
         return sn.extractsingle(
-                r'PERFORMANCE:.* averaging (?P<ns_day>\S+) ns/day',
+                r'^Performance:\s+(?P<nspd>\S+)\s+',
                 self.stdout,
                 'ns_day',
                 float,
