@@ -104,12 +104,13 @@ class gromacs_build_test(rfm.CompileOnlyRegressionTest):
         print(self.gromacs_executable)
         return os.path.isfile(self.gromacs_executable)
 
-
+@rfm.simple_test
 class gromacs_run_test(rfm.RunOnlyRegressionTest):
     executable = './mps-wrapper.sh -- gmx-mpi mdrun -s topol.tpr'
     executable_opts = ['-dlb no', '-ntomp 32', '-pme gpu', '-npme 1', '-bonded gpu', '-nb gpu', '-nsteps 10000', '-update gpu', '-pin off', '-v', '-noconfout', '-nstlist 300']
     maintainers = ['SSA']
     valid_systems = ['*']
+    test_name = variable(str, value='STMV')
     valid_prog_environs = ['+gromacs']
 
     @run_before('run')
