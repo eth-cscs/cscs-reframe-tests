@@ -94,7 +94,8 @@ class SarusOSULatencyWithSshLauncher(BaseCheck):
     def setup_container_platform(self):
         self.container_platform.image = self.sarus_image
         self.container_platform.options = [
-            '--mount=src=/scratch,dst=/scratch,type=bind', '--ssh'
+            '--mount=src=${SCRATCH:-/scratch},dst=${SCRATCH:-/scratch},type=bind',
+            '--ssh'
         ]
         self.container_platform.command = (
             "bash -c 'syncfile=$SCRATCH/syncfile-$SLURM_JOB_ID;"
