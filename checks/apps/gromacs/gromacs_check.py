@@ -3,20 +3,17 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 import os
-# import shutil
 
 import reframe as rfm
-# from hpctestlib.sciapps.gromacs.benchmarks import gromacs_check
 import reframe.utility.sanity as sn
 import reframe.utility.udeps as udeps
 from uenv import uarch
-# import uenv
 
 gromacs_references = {
     'STMV': {
         'gh200': {
-            'perf1': (117, 2, None, 'ns/day'),
-            'perf2': (164780, 1, None, 'ns/day'),
+            'perf': (117, -0.02, None, 'ns/day'),
+            'bondenergy': (164780, -0.01, None, 'kJ/mol'),
         }
     },
  }
@@ -187,11 +184,11 @@ class gromacs_run_test(rfm.RunOnlyRegressionTest):
     #     sn.assert_lt(energy_diff, 8000, msg=f'tolerance limit exceeded {energy_diff} ') #~5% tolerance
 
     @performance_function('ns/day')
-    def perf1(self):
+    def perf(self):
         regex = r'^Performance:\s+(?P<ns_day>\S+)\s+'
         return sn.extractsingle(regex, self.stderr, 'ns_day', float)
 
-    @performance_function('ns/day')
-    def perf2(self):
+    @performance_function('kJ/mol')
+    def bondenergy(self):
         regex = r'^Bond\s+(?P<bond_energy>\S+)\s+'
         return sn.extractsingle(regex, self.stdout, 'bond_energy', int)
