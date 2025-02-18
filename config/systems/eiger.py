@@ -12,7 +12,7 @@ import copy
 
 base_config = {
     'modules_system': 'lmod',
-    'resourcesdir': '/apps/common/UES/reframe/resources',
+    'resourcesdir': '/capstor/apps/cscs/common/regression/resources',
     'partitions': [
         {
             'name': 'login',
@@ -44,7 +44,7 @@ base_config = {
                 },
                 {
                     'type': 'Singularity',
-                    'modules': ['cray', 'singularity/3.5.3-eiger']
+                    'modules': ['cray', 'singularity/3.6.4-eiger']
                 }
             ],
             'environs': [
@@ -108,10 +108,9 @@ eiger_sys['partitions'].append(
     }
 )
 
-
 site_configuration = {
     'systems': [
-        eiger_sys,
+        eiger_sys
     ],
     'environments': [
         {
@@ -140,7 +139,8 @@ site_configuration = {
             'target_systems': ['eiger'],
             'modules': ['cray', 'PrgEnv-intel'],
             'features': ['serial', 'openmp', 'mpi', 'cuda', 'alloc_speed',
-                         'hdf5', 'netcdf-hdf5parallel', 'pnetcdf', 'openmp']
+                         'hdf5', 'pnetcdf', 'openmp'],
+            'modules': ['cray', 'PrgEnv-intel']
         },
         {
             'name': 'cpeAMD',

@@ -69,7 +69,7 @@ class cp2k_download(rfm.RunOnlyRegressionTest):
 
 
 @rfm.simple_test
-class Cp2kBuildTest(rfm.CompileOnlyRegressionTest):
+class Cp2kBuildTestUENV(rfm.CompileOnlyRegressionTest):
     '''
     Test CP2K build from source.
     '''
@@ -131,7 +131,7 @@ class Cp2kBuildTest(rfm.CompileOnlyRegressionTest):
         return os.path.isfile(self.cp2k_executable)
 
 
-class Cp2kCheck(rfm.RunOnlyRegressionTest):
+class Cp2kCheckUENV(rfm.RunOnlyRegressionTest):
     executable = './mps-wrapper.sh cp2k.psmp'
     maintainers = ['SSA']
     valid_systems = ['*']
@@ -200,22 +200,22 @@ class Cp2kCheck(rfm.RunOnlyRegressionTest):
         )
 
 
-class Cp2kCheckMD(Cp2kCheck):
+class Cp2kCheckMDUENV(Cp2kCheckUENV):
     test_name = 'md'
     executable_opts = ['-i', 'H2O-128.inp']
     energy_reference = -2202.179145784019511
 
 
 @rfm.simple_test
-class Cp2kCheckMDUenvExec(Cp2kCheckMD):
+class Cp2kCheckMDUENVExec(Cp2kCheckMDUENV):
     valid_prog_environs = ['+cp2k']
     tags = {'uenv', 'production'}
 
 
 @rfm.simple_test
-class Cp2kCheckMDCustomExec(Cp2kCheckMD):
+class Cp2kCheckMDUENVCustomExec(Cp2kCheckMDUENV):
     '''
-    Same test as above, but using executables built by Cp2kBuildTest.
+    Same test as above, but using executables built by Cp2kBuildTestUENV.
     '''
 
     valid_prog_environs = ['+cp2k-dev']
@@ -223,15 +223,15 @@ class Cp2kCheckMDCustomExec(Cp2kCheckMD):
 
     @run_after('init')
     def setup_dependency(self):
-        self.depends_on('Cp2kBuildTest', udeps.fully)
+        self.depends_on('Cp2kBuildTestUENV', udeps.fully)
 
     @run_after('setup')
     def setup_executable(self):
-        parent = self.getdep('Cp2kBuildTest')
+        parent = self.getdep('Cp2kBuildTestUENV')
         self.executable = f'./mps-wrapper.sh {parent.cp2k_executable}'
 
 
-class Cp2kCheckPBE(Cp2kCheck):
+class Cp2kCheckPBEUENV(Cp2kCheckUENV):
     test_name = 'pbe'
     executable_opts = ['-i', 'H2O-128-PBE-TZ.inp']
     energy_reference = -2206.2426491358
@@ -242,15 +242,15 @@ class Cp2kCheckPBE(Cp2kCheck):
 
 
 @rfm.simple_test
-class Cp2kCheckPBEUenvExec(Cp2kCheckPBE):
+class Cp2kCheckPBEUENVExec(Cp2kCheckPBEUENV):
     valid_prog_environs = ['+cp2k']
     tags = {'uenv', 'production'}
 
 
 @rfm.simple_test
-class Cp2kCheckPBECustomExec(Cp2kCheckPBE):
+class Cp2kCheckPBEUENVCustomExec(Cp2kCheckPBEUENV):
     '''
-    Same test as above, but using executables built by Cp2kBuildTest.
+    Same test as above, but using executables built by Cp2kBuildTestUENV.
     '''
 
     valid_prog_environs = ['+cp2k-dev']
@@ -258,16 +258,16 @@ class Cp2kCheckPBECustomExec(Cp2kCheckPBE):
 
     @run_after('init')
     def setup_dependency(self):
-        self.depends_on('Cp2kBuildTest', udeps.fully)
+        self.depends_on('Cp2kBuildTestUENV', udeps.fully)
 
     @run_after('setup')
     def setup_executable(self):
-        parent = self.getdep('Cp2kBuildTest')
+        parent = self.getdep('Cp2kBuildTestUENV')
         self.executable = f'./mps-wrapper.sh {parent.cp2k_executable}'
 
 
 @rfm.simple_test
-class Cp2kCheckRPA(Cp2kCheck):
+class Cp2kCheckRPA(Cp2kCheckUENV):
     test_name = 'rpa'
     valid_prog_environs = ['+cp2k']
     executable_opts = ['-i', 'H2O-128-RI-dRPA-TZ.inp']
@@ -280,11 +280,11 @@ class Cp2kCheckRPA(Cp2kCheck):
     @run_after('init')
     def setup_dependency(self):
         # Depend on PBE ouput
-        self.depends_on('Cp2kCheckPBEUenvExec', udeps.fully)
+        self.depends_on('Cp2kCheckPBEUENVExec', udeps.fully)
 
     @run_after('setup')
     def copy_wnf(self):
-        parent = self.getdep('Cp2kCheckPBEUenvExec')
+        parent = self.getdep('Cp2kCheckPBEUENVExec')
         src = os.path.join(parent.stagedir, parent.wfn_file)
         dest = os.path.join(self.stagedir, parent.wfn_file)
         shutil.copyfile(src, dest)

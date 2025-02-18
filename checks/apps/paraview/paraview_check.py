@@ -22,7 +22,7 @@ class ParaViewCheck(rfm.RunOnlyRegressionTest):
     @run_after('init')
     def set_prgenv_alps(self):
         if self.current_system.name in {'eiger', 'pilatus'}:
-            self.valid_prog_environs = ['cpeCray']
+            self.valid_prog_environs = ['cpeGNU']
 
     @sanity_function
     def assert_vendor_renderer(self):
