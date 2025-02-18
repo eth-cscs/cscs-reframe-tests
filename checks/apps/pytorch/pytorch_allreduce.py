@@ -56,7 +56,7 @@ class PyTorchNCCLAllReduce(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
 
     @run_after('setup')
     def set_executable_opts(self):
-        self.prerun_cmds = ['wget https://raw.githubusercontent.com/stas00/ml-engineering/179e37865157c526b7f80b258b448caab4953247/network/benchmarks/all_reduce_bench.py'] # noqa: E501
+        self.prerun_cmds = ['wget https://jfrog.svc.cscs.ch/artifactory/cscs-reframe-tests/PyTorch/all_reduce_bench.py'] # noqa: E501
         headnode_cmd = (
             '$(scontrol show hostnames $SLURM_JOB_NODELIST | head -n 1)'
         )
