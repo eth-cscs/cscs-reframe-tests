@@ -48,7 +48,7 @@ class PyTorchNCCLAllReduce(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
         self.num_gpus_per_node = curr_part.select_devices('gpu')[0].num_devices
         self.num_tasks_per_node = 1
         self.num_tasks = self.num_nodes
-        self.job.options = ['--gpus-per-task={self.num_gpus_per_node}']
+        self.job.options = [f'--gpus-per-task={self.num_gpus_per_node}']
         self.num_cpus_per_task = curr_part.processor.num_cpus
         self.env_vars['OMP_NUM_THREADS'] = (self.num_cpus_per_task // 
                                             self.num_gpus_per_node)
