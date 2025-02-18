@@ -121,10 +121,9 @@ class dlaf_base(rfm.RunOnlyRegressionTest):
 
 
 @rfm.simple_test
-class dlaf_check_eigensolver_uenv(dlaf_base):
+class dlaf_check_uenv(dlaf_base):
     tags = {"uenv", "production"}
-    test_name = "gen_eigensolver"
-    executable = "miniapp_gen_eigensolver"
+    test_name = parameter(["gen_eigensolver", "eigensolver"])
     executable_opts = [
         "--type=d",
         "--matrix-size=40960",
@@ -134,17 +133,9 @@ class dlaf_check_eigensolver_uenv(dlaf_base):
         "--nruns=1",
     ]
 
-
-@rfm.simple_test
-class dlaf_check_geneigensolver_uenv(dlaf_base):
-    tags = {"uenv", "production"}
-    test_name = "eigensolver"
-    executable = "miniapp_eigensolver"
-    executable_opts = [
-        "--type=d",
-        "--matrix-size=40960",
-        "--block-size=1024",
-        "--check=last",
-        "--nwarmups=1",
-        "--nruns=1",
-    ]
+    @run_before("run")
+    def set_executable(self):
+        self.executable = (
+            "miniapp_gen_eigensolver" if self.test_name == "gen_eigensolver"
+            else "miniapp_eigensolver"
+        )
