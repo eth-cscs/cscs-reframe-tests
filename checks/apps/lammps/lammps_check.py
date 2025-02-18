@@ -1,119 +1,146 @@
-# Copyright 2016-2022 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
-
 import os
 
 import reframe as rfm
 import reframe.utility.sanity as sn
+from uenv import uarch
+
+lammps_references = {
+    'lj': {'gh200': {'time_run': (345, None, 0.05, 's')}},
+}
+
+slurm_config = {
+    "lj": {
+        "gh200": {
+            "nodes": 2,
+            "ntasks-per-node": 32,
+            "walltime": "10m",
+            "gpu": True,
+        },
+    },
+}
 
 
-class LAMMPSCheck(rfm.RunOnlyRegressionTest):
-    scale = parameter(['small', 'large'])
-    modules = ['cray-python', 'LAMMPS']
-    tags = {'external-resources', 'maintenance', 'production'}
-    maintainers = ['LM']
-    strict_check = False
-    extra_resources = {
-        'switches': {
-            'num_switches': 1
-        }
-    }
+class lammps_download(rfm.RunOnlyRegressionTest):
+    descr = 'Download LAMMPS source code'
+    version = variable(str, value='20230802.3')
+    sourcesdir = None
+    executable = 'wget'
+    executable_opts = [
+        '--quiet',
+        'https://jfrog.svc.cscs.ch/artifactory/cscs-reframe-tests/lammps/'
+        'LAMMPS_20230802.3_Source.tar.gz',
+        # 'https://download.lammps.org/tars/lammps-2Aug2023.tar.gz',
+    ]
+    local = True
 
-    @run_after('init')
-    def setup_by_system(self):
-        # Reset sources dir relative to the SCS apps prefix
-        self.sourcesdir = os.path.join(self.current_system.resourcesdir,
-                                       'LAMMPS')
-        if self.current_system.name in ['eiger', 'pilatus']:
-            self.valid_prog_environs = ['cpeGNU']
-        else:
-            self.valid_prog_environs = ['builtin']
+    @sanity_function
+    def validate_download(self):
+        return sn.assert_eq(self.job.exitcode, 0)
 
-    @performance_function('timesteps/s')
-    def perf(self):
-        return sn.extractsingle(r'\s+(?P<perf>\S+) timesteps/s',
-                                self.stdout, 'perf', float)
+
+@rfm.simple_test
+class lammps_build_test(rfm.CompileOnlyRegressionTest):
+    '''
+    Test LAMMPS build from source using the develop-kokkos view
+    '''
+    descr = 'LAMMPS Build Test'
+    valid_prog_environs = ['+lammps-kokkos-dev']
+    valid_systems = ['*']
+    maintainers = ['SSA']
+    sourcesdir = None
+    lammps_sources = fixture(lammps_download, scope='session')
+    build_system = 'CMake'
+    tags = {'uenv'}
+    build_locally = False
+
+    @run_before('compile')
+    def prepare_build(self):
+        self.build_system.builddir = 'build'
+        self.build_system.config_opts = [
+            f'-C ../lammps-2Aug2023/cmake/presets/kokkos-cuda.cmake',
+            '-DKokkos_ENABLE_IMPL_CUDA_MALLOC_ASYNC=OFF',
+            '-DKokkos_ARCH_NATIVE=ON',
+            '-DKokkos_ARCH_PASCAL60=OFF',
+            '-DKokkos_ARCH_HOPPER90=ON',
+            '../lammps-2Aug2023/cmake/',
+        ]
+        self.build_system.max_concurrency = 64
+        tarsource = os.path.join(
+            self.lammps_sources.stagedir,
+            f'LAMMPS_{self.lammps_sources.version}_Source.tar.gz',
+        )
+        # Extract source code
+        self.prebuild_cmds = [f'tar zxf {tarsource}']
+
+    @sanity_function
+    def validate_test(self):
+        self.lammps_executable = os.path.join(self.stagedir, "build", "lmp")
+        return os.path.isfile(self.lammps_executable)
+
+
+@rfm.simple_test
+class lammps_gpu_test(rfm.RunOnlyRegressionTest):
+    """
+    Test LAMMPS run using the run-gpu:gpu view
+    Untested views:
+        build-gpu: develop-gpu
+        build-kokkos: develop-kokkos
+        run-kokkos: kokkos
+    """
+    executable = './mps-wrapper.sh lmp'
+    valid_prog_environs = ['+lammps-gpu-prod']
+    valid_systems = ["*"]
+    maintainers = ["SSA"]
+    test_name = variable(str, value='lj')
+    energy_reference = -4.620456
+
+    @run_before("run")
+    def prepare_run(self):
+        self.uarch = uarch(self.current_partition)
+        config = slurm_config[self.test_name][self.uarch]
+        self.extra_resources = {"gres": {"gpu": 4}}
+        self.job.options = [f'--nodes={config["nodes"]}']
+        self.num_tasks_per_node = config["ntasks-per-node"]
+        self.num_tasks = config["nodes"] * self.num_tasks_per_node
+        self.ntasks_per_core = 1
+        self.time_limit = config["walltime"]
+        self.executable_opts = [f'-i {self.test_name}.in']
+
+        if self.uarch == "gh200":
+            self.env_vars["MPICH_GPU_SUPPORT_ENABLED"] = "1"
+
+    @run_before("run")
+    def prepare_reference(self):
+        self.uarch = uarch(self.current_partition)
+        if self.uarch is not None and \
+           self.uarch in lammps_references[self.test_name]:
+            self.reference = {
+                self.current_partition.fullname:
+                    lammps_references[self.test_name][self.uarch]
+            }
 
     @sanity_function
     def assert_energy_diff(self):
-        energy_reference = -4.6195
+        successful_termination = \
+            sn.assert_found(r"Total wall time", self.stdout)
+
         energy = sn.extractsingle(
-            r'\s+500000(\s+\S+){3}\s+(?P<energy>\S+)\s+\S+\s\n',
-            self.stdout, 'energy', float)
-        energy_diff = sn.abs(energy - energy_reference)
-        return sn.all([
-            sn.assert_found(r'Total wall time:', self.stdout),
-            sn.assert_lt(energy_diff, 6e-4)
-        ])
+            r'^\s*1000(\s+\S+){5}\s+(?P<energy>-?\d+\.\d+)\s+',
+            self.stdout, "energy", float)
+        energy_diff = sn.abs(energy - self.energy_reference)
+        correct_energy = sn.assert_lt(energy_diff, 1e-4)
 
+        return sn.all([successful_termination, correct_energy])
 
-@rfm.simple_test
-class LAMMPSGPUCheck(LAMMPSCheck):
-    valid_systems = []
-    executable = 'lmp_mpi'
-    executable_opts = ['-sf gpu', '-pk gpu 1', '-in in.lj.gpu']
-    env_vars = {'CRAY_CUDA_MPS': 1}
-    num_gpus_per_node = 1
-    refs_by_scale = {
-        'small': {
-            'dom:gpu': {'perf': (3456.792, -0.10, None, 'timesteps/s')},
-            'daint:gpu': {'perf': (1566.979, -0.10, None, 'timesteps/s')}
-        },
-        'large': {
-            'daint:gpu': {'perf': (2108.561, -0.10, None, 'timesteps/s')}
-        }
-    }
-
-    @run_after('init')
-    def setup_by_scale(self):
-        self.descr = f'LAMMPS GPU check (version: {self.scale})'
-        if self.scale == 'small':
-            self.valid_systems += []
-            self.num_tasks = 12
-            self.num_tasks_per_node = 2
-        else:
-            self.num_tasks = 32
-            self.num_tasks_per_node = 2
-
-        self.reference = self.refs_by_scale[self.scale]
-
-
-@rfm.simple_test
-class LAMMPSCPUCheck(LAMMPSCheck):
-    valid_systems = ['eiger:mc', 'pilatus:mc']
-    refs_by_scale = {
-        'small': {
-            'eiger:mc': {'perf': (3807.095, -0.10, None, 'timesteps/s')},
-            'pilatus:mc': {'perf': (4828.986, -0.10, None, 'timesteps/s')}
-        },
-        'large': {
-            'eiger:mc': {'perf': (4922.81, -0.10, None, 'timesteps/s')},
-            'pilatus:mc': {'perf': (7247.484, -0.10, None, 'timesteps/s')}
-        }
-    }
-
-    @run_after('init')
-    def setup_by_scale(self):
-        self.descr = f'LAMMPS CPU check (version: {self.scale})'
-        if self.current_system.name in ['eiger', 'pilatus']:
-            self.executable = 'lmp_mpi'
-            self.executable_opts = ['-in in.lj.cpu']
-        else:
-            self.executable = 'lmp_omp'
-            self.executable_opts = ['-sf omp', '-pk omp 1', '-in in.lj.cpu']
-
-        if self.scale == 'small':
-            self.valid_systems += []
-            self.num_tasks = 216
-            self.num_tasks_per_node = 36
-        else:
-            self.num_tasks_per_node = 36
-            self.num_tasks = 576
-
-        if self.current_system.name == 'eiger':
-            self.num_tasks_per_node = 128
-            self.num_tasks = 256 if self.scale == 'small' else 512
-
-        self.reference = self.refs_by_scale[self.scale]
+    # INFO: The name of this function needs to match with the reference dict!
+    @performance_function('s')
+    def time_run(self):
+        regex = r'Total wall time: (?P<hh>\S+):(?P<mm>\S+):(?P<ss>\S+)'
+        hh = sn.extractsingle(regex, self.stdout, 'hh', int)
+        mm = sn.extractsingle(regex, self.stdout, 'mm', int)
+        ss = sn.extractsingle(regex, self.stdout, 'ss', int)
+        return (hh*3600 + mm*60 + ss)
