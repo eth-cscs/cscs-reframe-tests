@@ -1,21 +1,26 @@
-# Copyright 2016-2025 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
-
 import os
 import shutil
-
 import reframe as rfm
 import reframe.utility.sanity as sn
-import reframe.utility.udeps as udeps
-import uenv
+
+from uenv import uarch
 
 dlaf_references = {
-    "eigensolver": {"gh200": {"time_run": (30.5, -1.0, 0.1, "s")}},
-    "gen_eigensolver": {"gh200": {"time_run": (33.5, -1.0, 0.1, "s")}},
+    "eigensolver": {
+        "gh200": {
+            "time_run": (30.5, -1.0, 0.1, "s"),
+        }
+    },
+    "gen_eigensolver": {
+        "gh200": {
+            "time_run": (33.5, -1.0, 0.1, "s")
+        }
+    },
 }
-
 
 slurm_config = {
     "eigensolver": {
@@ -39,14 +44,16 @@ slurm_config = {
 }
 
 
-class DlafCheck(rfm.RunOnlyRegressionTest):
+class dlaf_base(rfm.RunOnlyRegressionTest):
+    valid_systems = ['+uenv']
+    valid_prog_environs = ['+dlaf']
     maintainers = ["SSA"]
-    valid_systems = ["*"]
 
-    # Finds two factors of `n` that are as close to each other as possible.
-    #
-    # Note: the second factor is larger or equal to the first factor
     def _sq_factor(self, n):
+        """
+        Finds two factors of `n` that are as close to each other as possible.
+        Note: the second factor is larger or equal to the first factor
+        """
         for i in range(1, int(n**0.5) + 1):
             if n % i == 0:
                 f = (i, n // i)
@@ -54,19 +61,14 @@ class DlafCheck(rfm.RunOnlyRegressionTest):
 
     @run_before("run")
     def prepare_run(self):
-        self.uarch = uenv.uarch(self.current_partition)
+        self.uarch = uarch(self.current_partition)
         config = slurm_config[self.test_name][self.uarch]
-        # sbatch options
-        self.job.options = [
-            f'--nodes={config["nodes"]}',
-        ]
+        self.job.options = [f'--nodes={config["nodes"]}']
         self.num_tasks_per_node = config["ntasks-per-node"]
         self.num_tasks = config["nodes"] * self.num_tasks_per_node
         self.num_cpus_per_task = config["cpus-per-task"]
         self.ntasks_per_core = 1
         self.time_limit = config["walltime"]
-
-        # srun options
         self.job.launcher.options = ["--cpu-bind=cores"]
         if self.uarch == "gh200":
             self.job.launcher.options += ["--gpus-per-task=1"]
@@ -76,34 +78,53 @@ class DlafCheck(rfm.RunOnlyRegressionTest):
         self.env_vars["MIMALLOC_ALLOW_LARGE_OS_PAGES"] = "1"
         self.env_vars["MIMALLOC_EAGER_COMMIT_DELAY"] = "0"
         self.env_vars["FI_MR_CACHE_MONITOR"] = "disabled"
-
         if self.uarch == "gh200":
             self.env_vars["MPICH_GPU_SUPPORT_ENABLED"] = "1"
-            self.env_vars["DLAF_BT_BAND_TO_TRIDIAG_HH_APPLY_GROUP_SIZE"] = "128"
-            self.env_vars["DLAF_UMPIRE_DEVICE_MEMORY_POOL_ALIGNMENT_BYTES"] = str(2**21)
+            self.env_vars["DLAF_BT_BAND_TO_TRIDIAG_HH_APPLY_GROUP_SIZE"] = \
+                "128"
+            self.env_vars["DLAF_UMPIRE_DEVICE_MEMORY_POOL_ALIGNMENT_BYTES"] = \
+                str(2**21)
 
         grid_cols, grid_rows = self._sq_factor(self.num_tasks)
-        self.executable_opts += [f"--grid-cols={grid_cols}", f"--grid-rows={grid_rows}"]
+        self.executable_opts += [
+            f"--grid-cols={grid_cols}",
+            f"--grid-rows={grid_rows}"
+        ]
 
-        # set reference
-        if self.uarch is not None and self.uarch in dlaf_references[self.test_name]:
+        # set performance reference
+        if self.uarch is not None and \
+           self.uarch in dlaf_references[self.test_name]:
             self.reference = {
-                self.current_partition.fullname: dlaf_references[self.test_name][
-                    self.uarch
-                ]
+                self.current_partition.fullname:
+                    dlaf_references[self.test_name][self.uarch]
             }
 
-    # TODO
     @sanity_function
-    def assert_accuracy(self):
-        return True
+    def assert_job(self):
+        """
+       [0] 29.7415s dL (40960, 40960) (0, 40960) (1024, 1024) 128 (4, 2) 71 GPU
+       Max Diff / Max A: 1.19349e-13
+        """
+        regex1 = r'^\[0\]\s+(?P<perf>\S+)s\s+'
+        regex2 = r'^Max Diff / Max A.*: \S+'
+        self.sanity_patterns = sn.all([
+            sn.assert_found(regex1, self.stdout, msg='regex1 failed'),
+            sn.assert_found(regex2, self.stdout, msg='regex2 failed')
+        ])
+
+        return self.sanity_patterns
 
     @performance_function("s")
     def time_run(self):
-        return sn.extractsingle(r"^\[0\]\s+(?P<perf>\S+)s\s+.*", self.stdout, "perf", float)
+        regex = r"^\[0\]\s+(?P<perf>\S+)s\s+"
+        return sn.extractsingle(regex, self.stdout, "perf", float)
 
 
-class DlafCheckEigensolverBase(DlafCheck):
+@rfm.simple_test
+class dlaf_check_eigensolver_uenv(dlaf_base):
+    tags = {"uenv", "production"}
+    test_name = "gen_eigensolver"
+    executable = "miniapp_gen_eigensolver"
     executable_opts = [
         "--type=d",
         "--matrix-size=40960",
@@ -114,23 +135,16 @@ class DlafCheckEigensolverBase(DlafCheck):
     ]
 
 
-class DlafCheckEigensolver(DlafCheckEigensolverBase):
+@rfm.simple_test
+class dlaf_check_geneigensolver_uenv(dlaf_base):
+    tags = {"uenv", "production"}
     test_name = "eigensolver"
     executable = "miniapp_eigensolver"
-
-
-class DlafCheckGenEigensolver(DlafCheckEigensolverBase):
-    test_name = "gen_eigensolver"
-    executable = "miniapp_gen_eigensolver"
-
-
-@rfm.simple_test
-class DlafCheckEigensolverUenvExec(DlafCheckEigensolver):
-    valid_prog_environs = ["+dlaf"]
-    tags = {"uenv", "production"}
-
-
-@rfm.simple_test
-class DlafCheckGenEigensolverUenvExec(DlafCheckGenEigensolver):
-    valid_prog_environs = ["+dlaf"]
-    tags = {"uenv", "production"}
+    executable_opts = [
+        "--type=d",
+        "--matrix-size=40960",
+        "--block-size=1024",
+        "--check=last",
+        "--nwarmups=1",
+        "--nruns=1",
+    ]
