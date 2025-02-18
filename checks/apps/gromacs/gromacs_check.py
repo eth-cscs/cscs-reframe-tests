@@ -13,9 +13,13 @@ from uenv import uarch
 # import uenv
 
 gromacs_references = {
-    'STMV'          : {'gh200': {'time_run': (117, None, None, 'ns/day')}},
-    'hEGFRDimerPair': {'gh200': {'time_run': (56, None, None, 'ns/day')}},
-}
+    'STMV': {
+        'gh200': {
+            'perf1': (117, 2, None, 'ns/day'),
+            'perf2': (164780, 1, None, 'ns/day'),
+        }
+    },
+ }
 
 slurm_config = {
     'STMV': {
@@ -162,12 +166,13 @@ class gromacs_run_test(rfm.RunOnlyRegressionTest):
         
     @sanity_function
     def validate_job(self):
-        regex1 = r'^Bond\s+(?P<bond_energy>\S+)\s+'
-        regex2 = r'^Performance:\s+(?P<ns_day>\S+)\s+'
+        regex1 = r'^Bond\s+\S+\s+'
+        regex2 = r'^Performance:\s+\S+\s+'
         self.sanity_patterns = sn.all([
-            sn.assert_found(regex1, self.stdout),
-            sn.assert_found(regex2, self.stderr)
+            sn.assert_found(regex1, self.stdout, msg='regex1 failed'),
+            sn.assert_found(regex2, self.stderr, msg='regex2 failed'),
         ])
+        return self.sanity_patterns
     
     # TODO find fix for the sanity check for Bond Energy
     # @performance_function('bond_energy')
@@ -182,11 +187,11 @@ class gromacs_run_test(rfm.RunOnlyRegressionTest):
     #     sn.assert_lt(energy_diff, 8000, msg=f'tolerance limit exceeded {energy_diff} ') #~5% tolerance
 
     @performance_function('ns/day')
-    def time_run(self):
-        # RegEx to extract from slurm-XXX.out
-        return sn.extractsingle(
-                r'^Performance:\s+(?P<ns_day>\S+)\s+',
-                self.stderr,
-                'ns_day',
-                float,
-            )
+    def perf1(self):
+        regex = r'^Performance:\s+(?P<ns_day>\S+)\s+'
+        return sn.extractsingle(regex, self.stderr, 'ns_day', float)
+
+    @performance_function('ns/day')
+    def perf2(self):
+        regex = r'^Bond\s+(?P<bond_energy>\S+)\s+'
+        return sn.extractsingle(regex, self.stdout, 'bond_energy', int)
