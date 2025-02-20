@@ -163,9 +163,9 @@ class IorCheck(rfm.RunOnlyRegressionTest):
         # executable options depends on the file system
         block_size = self.fs[self.base_dir]['ior_block_size']
         access_type = self.fs[self.base_dir]['ior_access_type']
-        self.executable_opts = ['-F', '-C ', '-Q 1', '-t 4m', '-D 30',
-                                '-b', block_size, '-a', access_type,
-                                '-o', test_file, '--posix.odirect']
+        self.executable_opts += ['-F', '-C ', '-Q 1', '-t 4m', '-D 30',
+                                 '-b', block_size, '-a', access_type,
+                                 '-o', test_file, '--posix.odirect']
 
     @sanity_function
     def assert_finished(self):
@@ -174,7 +174,7 @@ class IorCheck(rfm.RunOnlyRegressionTest):
 
 @rfm.simple_test
 class IorWriteCheck(IorCheck):
-    executable_opts += ['-w', '-k']
+    executable_opts = ['-w', '-k']
     tags |= {'write'}
 
     @run_after('init')
@@ -188,7 +188,7 @@ class IorWriteCheck(IorCheck):
 
 @rfm.simple_test
 class IorReadCheck(IorCheck):
-    executable_opts += ['-r']
+    executable_opts = ['-r']
     tags |= {'read'}
 
     @run_after('init')
