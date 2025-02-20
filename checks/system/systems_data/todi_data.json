@@ -1,0 +1,8 @@
+{
+    "filesystems": [
+        {
+            "mount_point": "/capstor/scratch/cscs"
+        }
+    ],
+    "pkgs": []
+}

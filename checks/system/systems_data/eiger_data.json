@@ -1,0 +1,58 @@
+{
+    "filesystems": [
+        {
+            "mount_point": "/capstor/scratch/cscs",
+            "fstype": "lustre",
+            "state": "mounted"
+        },
+        {
+            "mount_point": "/capstor/apps/cscs",
+            "fstype": "lustre",
+            "state": "mounted"
+        },
+        {
+            "mount_point": "/users",
+            "fstype": "lustre",
+            "state": "mounted"
+        },
+        {
+            "mount_point": "/store",
+            "fstype": "lustre",
+            "state": "mounted"
+        },
+        {
+            "mount_point": "/mnt",
+            "fstype": "lustre",
+            "state": "mounted"
+        }
+    ],
+    "cscs_cluster_extra_pkgs": [
+        "ltrace",
+        "bubblewrap",
+        "netcat",
+        "gcc12",
+        "nnn",
+        "gcc12-c++",
+        "gcc12-fortran",
+        "lua-lmod",
+        "pycxi-utils",
+        "datacenter-gpu-manager",
+        "ansible"
+    ],
+    "cscs_extra_vars": [
+        {
+            "env_var": "APPS",
+            "env_value": "/capstor/apps/cscs/daint"
+        }
+    ],
+    "proxy_server": "http://proxy.cscs.ch",
+    "proxy_port": 8080,
+    "no_proxy": [
+        ".local",
+        ".cscs.ch",
+        "localhost",
+        "148.187.0.0/16",
+        "10.0.0.0/8",
+        "172.16.0.0/12"
+    ]
+}
