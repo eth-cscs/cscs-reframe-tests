@@ -112,6 +112,7 @@ class gromacs_run_test(rfm.RunOnlyRegressionTest):
     valid_systems = ['*']
     test_name = variable(str, value='STMV')
     valid_prog_environs = ['+gromacs']
+    tags = {'uenv', 'production'}
 
     @run_before('run')
     def prepare_run(self):
