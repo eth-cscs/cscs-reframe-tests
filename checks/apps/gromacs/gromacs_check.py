@@ -72,7 +72,7 @@ class gromacs_build_test(rfm.CompileOnlyRegressionTest):
     sourcesdir = None
     gromacs_sources = fixture(gromacs_download, scope='session')
     build_locally = False
-    tags = {'uenv'}
+    tags = {'uenv', 'production'}
 
     @run_before('compile')
     def prepare_build(self):
