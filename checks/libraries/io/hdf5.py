@@ -4,7 +4,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import reframe as rfm
-import reframe.utility.osext as osext
 import reframe.utility.sanity as sn
 
 
@@ -48,7 +47,7 @@ class CPE_HDF5Test(HDF5TestBase):
 
 @rfm.simple_test
 class Uenv_HDF5Test(HDF5TestBase):
-    valid_prog_environs = ['+mpi +uenv']
+    valid_prog_environs = ['+mpi +hdf5 +uenv']
     valid_systems = ['+remote']
     tags = {'production', 'health', 'uenv'}
 
