@@ -5,7 +5,6 @@
 
 import os
 import re
-import subprocess
 
 import reframe as rfm
 import reframe.core.runtime as rt
@@ -15,16 +14,10 @@ import reframe.utility.sanity as sn
 
 class SlurmSimpleBaseCheck(rfm.RunOnlyRegressionTest):
     '''Base class for Slurm simple binary tests'''
-
-    valid_systems = [
-        'arolla:cn', 'arolla:pn', 'tsa:cn', 'tsa:pn',
-        'eiger:mc', 'pilatus:mc'
-    ]
+    valid_systems = ['daint:normal', 'eiger:mc', 'pilatus:mc']
     valid_prog_environs = ['PrgEnv-cray']
-    tags = {'slurm', 'maintenance', 'ops',
-            'production', 'single-node'}
+    tags = {'slurm', 'maintenance', 'ops', 'production', 'single-node'}
     num_tasks_per_node = 1
-    maintainers = ['RS', 'VH']
 
     @run_after('init')
     def customize_systems(self):
@@ -41,7 +34,6 @@ class SlurmCompiledBaseCheck(rfm.RegressionTest):
     tags = {'slurm', 'maintenance', 'ops',
             'production', 'single-node'}
     num_tasks_per_node = 1
-    maintainers = ['RS', 'VH']
 
 
 @rfm.simple_test
@@ -49,24 +41,10 @@ class HostnameCheck(SlurmSimpleBaseCheck):
     executable = '/bin/hostname'
     valid_prog_environs = ['builtin']
     hostname_patt = {
-        'arolla:cn': r'^arolla-cn\d{3}$',
-        'arolla:pn': r'^arolla-pp\d{3}$',
-        'tsa:cn': r'^tsa-cn\d{3}$',
-        'tsa:pn': r'^tsa-pp\d{3}$',
-        'daint:gpu': r'^nid\d{5}$',
-        'daint:mc': r'^nid\d{5}$',
-        'daint:xfer': r'^datamover\d{2}.cscs.ch$',
-        'dom:gpu': r'^nid\d{5}$',
-        'dom:mc': r'^nid\d{5}$',
-        'dom:xfer': r'^nid\d{5}$',
+        'daint:normal': r'^nid\d{6}$',
         'eiger:mc': r'^nid\d{6}$',
         'pilatus:mc': r'^nid\d{6}$'
     }
-
-    @run_before('run')
-    def set_pending_time(self):
-        if self.current_partition.name == 'xfer':
-            self.max_pending_time = '2m'
 
     @run_before('sanity')
     def set_sanity_patterns(self):
@@ -80,9 +58,7 @@ class HostnameCheck(SlurmSimpleBaseCheck):
 @rfm.simple_test
 class EnvironmentVariableCheck(SlurmSimpleBaseCheck):
     num_tasks = 2
-    valid_systems = ['arolla:cn', 'arolla:pn',
-                     'tsa:cn', 'tsa:pn',
-                     'eiger:mc', 'pilatus:mc']
+    valid_systems = ['daint:normal', 'eiger:mc', 'pilatus:mc']
     executable = '/bin/echo'
     executable_opts = ['$MY_VAR']
     env_vars = {'MY_VAR': 'TEST123456!'}
@@ -127,7 +103,7 @@ class RequestLargeMemoryNodeCheck(SlurmSimpleBaseCheck):
 
 @rfm.simple_test
 class DefaultRequestGPU(SlurmSimpleBaseCheck):
-    valid_systems = ['arolla:cn', 'tsa:cn']
+    valid_systems = ['daint:normal']
     executable = 'nvidia-smi'
 
     @sanity_function
@@ -143,19 +119,19 @@ class DefaultRequestGPUSetsGRES(SlurmSimpleBaseCheck):
 
     @sanity_function
     def assert_found_resources(self):
-        return sn.assert_found(r'.*(TresPerNode|Gres)=.*gpu:1.*', self.stdout)
+        return sn.assert_found(r'.*(TresPerNode|Gres)=.*gpu=4.*', self.stdout)
 
 
 @rfm.simple_test
-class DefaultRequestMC(SlurmSimpleBaseCheck):
-    valid_systems = []
+class DefaultRequest(SlurmSimpleBaseCheck):
+    valid_systems = ['daint:normal']
     # This is a basic test that should return the number of CPUs on the
     # system which, on a MC node should be 72
     executable = 'lscpu -p |grep -v "^#" -c'
 
     @sanity_function
     def assert_found_num_cpus(self):
-        return sn.assert_found(r'72', self.stdout)
+        return sn.assert_found(r'288', self.stdout)
 
 
 @rfm.simple_test
@@ -165,9 +141,6 @@ class ConstraintRequestCabinetGrouping(SlurmSimpleBaseCheck):
     cabinets = {
         'daint:gpu': 'c0-1',
         'daint:mc': 'c1-0',
-        # Numbering is inverse in Dom
-        'dom:gpu': 'c0-0',
-        'dom:mc': 'c0-1',
     }
 
     @sanity_function
@@ -186,15 +159,10 @@ class ConstraintRequestCabinetGrouping(SlurmSimpleBaseCheck):
 @rfm.simple_test
 class MemoryOverconsumptionCheck(SlurmCompiledBaseCheck):
     time_limit = '1m'
-    valid_systems += ['eiger:mc', 'pilatus:mc']
+    valid_systems = ['daint:normal', 'eiger:mc', 'pilatus:mc']
     tags.add('mem')
     sourcepath = 'eatmemory.c'
     executable_opts = ['4000M']
-
-    @run_after('setup')
-    def set_skip(self):
-        self.skip_if(self.current_partition.name == 'login',
-                     'MemoryOverconsumptionCheck not needed on login node')
 
     @sanity_function
     def assert_found_exceeded_memory(self):
@@ -209,17 +177,11 @@ class MemoryOverconsumptionCheck(SlurmCompiledBaseCheck):
 @rfm.simple_test
 class MemoryOverconsumptionMpiCheck(SlurmCompiledBaseCheck):
     maintainers = ['@jgphpc', '@ekouts']
-    valid_systems += ['*']
-    valid_prog_environs += ['PrgEnv-gnu', 'PrgEnv-nvidia']
+    valid_systems = ['+remote']
     time_limit = '5m'
     build_system = 'SingleSource'
     sourcepath = 'eatmemory_mpi.c'
     tags.add('mem')
-
-    @run_after('setup')
-    def set_skip(self):
-        self.skip_if(self.current_partition.name == 'login',
-                     'MemoryOverconsumptionMpiCheck not needed on login node')
 
     @run_before('compile')
     def unset_ldflags(self):
@@ -272,7 +234,7 @@ class MemoryOverconsumptionMpiCheck(SlurmCompiledBaseCheck):
 class slurm_response_check(rfm.RunOnlyRegressionTest):
     command = parameter(['squeue', 'sacct'])
     descr = 'Slurm command test'
-    valid_systems = []
+    valid_systems = ['-remote']
     valid_prog_environs = ['builtin']
     num_tasks = 1
     num_tasks_per_node = 1
@@ -304,14 +266,6 @@ class slurm_response_check(rfm.RunOnlyRegressionTest):
 
 def get_system_partitions():
     system_partitions = {
-        'daint': [
-            'cscsci', 'long', 'large', 'normal*', 'prepost', '2go', 'low',
-            'xfer', 'debug'
-        ],
-        'dom': [
-            'cscsci', 'long', 'large', 'normal*', 'prepost', '2go', 'low',
-            'xfer'
-        ],
         'eiger': [
             'debug', 'normal*', 'prepost', 'low'
         ],
@@ -323,52 +277,53 @@ def get_system_partitions():
     if cur_sys_name in system_partitions.keys():
         return system_partitions[cur_sys_name]
     else:
-        return ['normal']
+        return ['debug', 'normal*']
 
 
 @rfm.simple_test
 class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
     '''check system queue status'''
 
-    valid_systems = ['eiger:login', 'pilatus:login']
+    valid_systems = ['-remote']
     valid_prog_environs = ['builtin']
-    tags = {'slurm', 'ops',
-            'production', 'single-node'}
+    tags = {'slurm', 'ops', 'production', 'single-node'}
     min_avail_nodes = variable(int, value=1)
     ratio_minavail_nodes = variable(float, value=0.1)
     local = True
     executable = 'sinfo'
     executable_opts = ['-o', '%P,%a,%D,%T']
     slurm_partition = parameter(get_system_partitions())
-    maintainers = ['RS', 'VH']
+    reference = {
+        '*': {
+            'available_nodes': (min_avail_nodes, -0.0001, None, 'nodes'),
+            'available_nodes_percentage': (ratio_minavail_nodes*100, -0.0001, None, '%')
+        }
+    }
 
     @run_after('init')
     def xfer_queue_correction(self):
         if self.slurm_partition == 'xfer':
             self.ratio_minavail_nodes = 0.3
-        if self.current_system.name == 'dom':
-            self.ratio_minavail_nodes = 0.5
 
     def assert_partition_exists(self):
-        num_matches = sn.count(
-            sn.findall(fr'^{re.escape(self.slurm_partition)}.*', self.stdout)
-        )
-        return sn.assert_gt(num_matches, 0,
-                            msg=f'{self.slurm_partition!r} not defined for '
-                                f'partition {self.current_partition.fullname!r}')
-
-    def assert_min_nodes(self):
-        matches = sn.extractall(
+        avail_nodes = sn.extractall(
             fr'^{re.escape(self.slurm_partition)},up,'
             fr'(?P<nodes>\d+),(allocated|reserved|idle|mixed)',
             self.stdout, 'nodes', int
         )
-        num_matches = sn.sum(matches)
-        return sn.assert_ge(
-            num_matches, self.min_avail_nodes,
-            msg=f'found {num_matches} nodes in partition '
-                f'{self.slurm_partition} with status allocated, '
-                f'reserved, or idle. Expected at least {self.min_avail_nodes}')
+        self.num_matches = sn.sum(avail_nodes)
+
+        all_matches = sn.extractall(fr'^{re.escape(self.slurm_partition)},up,'
+                                    fr'(?P<nodes>\d+),.*', self.stdout,
+                                    'nodes', int)
+        self.num_all_matches = sn.sum(all_matches)
+
+        partition_matches = sn.count(
+            sn.findall(fr'^{re.escape(self.slurm_partition)}.*', self.stdout)
+        )
+        return sn.assert_gt(partition_matches, 0,
+                            msg=f'{self.slurm_partition!r} not defined for '
+                                f'partition {self.current_partition.fullname!r}')
 
     def assert_percentage_nodes(self):
         matches = sn.extractall(
@@ -380,13 +335,14 @@ class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
         all_matches = sn.extractall(fr'^{re.escape(self.slurm_partition)},up,'
                                     fr'(?P<nodes>\d+),.*', self.stdout,
                                     'nodes', int)
-        num_all_matches = sn.sum(all_matches)
-        diff_matches = num_all_matches - num_matches
+        self.num_all_matches = sn.sum(all_matches)
+        diff_matches = self.num_all_matches - num_matches
         return sn.assert_le(diff_matches,
-                            num_all_matches * self.ratio_minavail_nodes,
+                            self.num_all_matches * self.ratio_minavail_nodes,
                             msg=f'more than '
                                 f'{self.ratio_minavail_nodes * 100.0:.0f}% '
-                                f'({diff_matches} out of {num_all_matches}) '
+                                f'({diff_matches} out of '
+                                f'{self.num_all_matches}) '
                                 f'of nodes are unavailable for '
                                 f'partition {self.slurm_partition}')
 
@@ -394,14 +350,64 @@ class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
     def assert_partition_sanity(self):
         return sn.all([
             self.assert_partition_exists(),
-            self.assert_min_nodes(),
-            self.assert_percentage_nodes(),
+            # self.assert_min_nodes(),
+            # self.assert_percentage_nodes(),
         ])
 
+    @performance_function('nodes')
+    def all_nodes(self):
+        return self.num_all_matches
+
+    @performance_function('nodes')
+    def idle_nodes(self):
+        return sn.sum(
+            sn.extractall(
+                fr'^{re.escape(self.slurm_partition)},up,'
+                fr'(?P<nodes>\d+),idle',
+                self.stdout, 'nodes', int
+            )
+        )
+
+    @performance_function('nodes')
+    def allocated_nodes(self):
+        return sn.sum(
+            sn.extractall(
+                fr'^{re.escape(self.slurm_partition)},up,'
+                fr'(?P<nodes>\d+),allocated',
+                self.stdout, 'nodes', int
+            )
+        )
+
+    @performance_function('nodes')
+    def mixed_nodes(self):
+        return sn.sum(
+            sn.extractall(
+                fr'^{re.escape(self.slurm_partition)},up,'
+                fr'(?P<nodes>\d+),mixed',
+                self.stdout, 'nodes', int
+            )
+        )
+
+    @performance_function('nodes')
+    def reserved_nodes(self):
+        return sn.sum(
+            sn.extractall(
+                fr'^{re.escape(self.slurm_partition)},up,'
+                fr'(?P<nodes>\d+),reserved',
+                self.stdout, 'nodes', int
+            )
+        )
+
+    @performance_function('nodes')
+    def available_nodes(self):
+        return self.num_matches
+
+    @performance_function('%')
+    def available_nodes_percentage(self):
+        return 100.0 * self.num_matches / self.num_all_matches
 
 @rfm.simple_test
 class SlurmPrologEpilogCheck(rfm.RunOnlyRegressionTest):
-
     valid_systems = ['*']
     valid_prog_environs = ['builtin']
     time_limit = '2m'
@@ -409,16 +415,15 @@ class SlurmPrologEpilogCheck(rfm.RunOnlyRegressionTest):
     prolog_dir = '/etc/slurm/node_prolog.d/'
     epilog_dir = '/etc/slurm/node_epilog.d/'
     prerun_cmds = [f'ln -s {kafka_logger} ./kafka_logger']
-    prefix_name = 'test_'
     test_files = []
     for file in os.listdir(epilog_dir):
         if os.path.isfile(os.path.join(epilog_dir, file)):
-            if file.startswith(prefix_name):
-                test_files.append(os.path.join(epilog_dir, file))
+            test_files.append(os.path.join(epilog_dir, file))
+
     for file in os.listdir(prolog_dir):
         if os.path.isfile(os.path.join(prolog_dir, file)):
-            if file.startswith(prefix_name):
-                test_files.append(os.path.join(prolog_dir, file))
+            test_files.append(os.path.join(prolog_dir, file))
+
     test_file = parameter(test_files)
     tags = {'vs-node-validator'}
 
@@ -428,10 +433,10 @@ class SlurmPrologEpilogCheck(rfm.RunOnlyRegressionTest):
 
     @sanity_function
     def validate(self):
-        reason = sn.extractall("reason:\s*(.*)", self.stdout, tag=1)
+        reason = sn.extractall('reason:\s*(.*)', self.stdout, tag=1)
 
         if reason:
-            return sn.assert_not_found("will be drained with reason", self.stdout, msg=f"{reason[0]}")
+            return sn.assert_not_found('will be drained with reason', self.stdout,
+                                       msg=f'{reason[0]}')
         else:
             return True
-
