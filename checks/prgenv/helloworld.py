@@ -4,7 +4,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import pathlib
-import re
 import sys
 import reframe as rfm
 import reframe.utility.sanity as sn
