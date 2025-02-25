@@ -7,6 +7,7 @@
 #
 
 
+
 base_config = {
     'modules_system': 'lmod',
     # 'resourcesdir': '/apps/common/UES/reframe/resources',
@@ -36,6 +37,7 @@ base_config = {
                 'builtin',
                 'PrgEnv-cray',
                 'PrgEnv-gnu',
+                'PrgEnv-gnu-ce',
                 # FIXME: Problem loading the following environments
                 # 'PrgEnv-nvidia',
                 # 'PrgEnv-nvhpc'
@@ -58,6 +60,19 @@ base_config = {
                     'name': 'memory',
                     'options': ['--mem={mem_per_node}']
                 },
+                {
+                    'name': 'cpe_ce_image',
+                    'options': [
+                        '--container-image={image}',
+                     ]
+                },
+                {
+                    'name': 'cpe_ce_mount',
+                    'options': [
+                        '--container-mounts={stagedir}:/rfm_workdir',
+                        '--container-workdir=/rfm_workdir'
+                     ]
+                }
             ],
             'devices': [
                 {
@@ -65,7 +80,7 @@ base_config = {
                     'arch': 'sm_90',
                     'num_devices': 4
                 }
-                ],
+            ],
             'launcher': 'srun',
         },
     ]
@@ -85,7 +100,17 @@ site_configuration = {
             'features': ['serial', 'openmp', 'mpi', 'cuda', 'openacc', 'hdf5',
                          'netcdf-hdf5parallel', 'pnetcdf'],
             'target_systems': ['daint'],
-            'modules': ['cray', 'PrgEnv-cray', 'craype-arm-grace']
+            'modules': ['cray', 'PrgEnv-cray', 'craype-arm-grace'],
+        },
+        {
+            'name': 'PrgEnv-gnu-ce',
+            'features': ['serial', 'openmp', 'mpi', 'cuda', 'openacc', 'hdf5',
+                         'netcdf-hdf5parallel', 'pnetcdf'],
+            'resources': {
+                'cpe_ce_image': {
+                    'image': '/capstor/scratch/cscs/jenkssl/cpe/cpe-gnu.sqsh',
+                }
+             }
         },
         {
             'name': 'PrgEnv-gnu',
