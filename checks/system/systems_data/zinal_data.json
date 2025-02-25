@@ -1,0 +1,19 @@
+{
+    "filesystems": [
+        {
+            "mount_point": "/scratch/shared/scratch"
+        }
+    ],
+    "pkgs": [
+        "htop",
+        "wget",
+        "netcat",
+        "libtool"
+    ],
+    "cscs_extra_vars": [
+        {
+            "env_var": "SCRATCH",
+            "env_value": "/scratch/shared/scratch/"
+        }
+    ]
+}
