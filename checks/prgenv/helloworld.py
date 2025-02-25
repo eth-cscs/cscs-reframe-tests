@@ -33,8 +33,10 @@ class HelloWorldBaseTest(rfm.RegressionTest, ExtraLauncherOptionsMixin):
     }
     exclusive_access = True
 
-    # This is valid only for non-cray MPICH
     env_vars = {
+        'MPICH_GPU_SUPPORT_ENABLED': 0,
+
+         # This is valid only for non-cray MPICH
         'MPIR_CVAR_ENABLE_GPU': 0,
     }
     tags = {'production', 'craype', 'uenv'}
