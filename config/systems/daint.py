@@ -7,7 +7,8 @@
 #
 
 import reframe.utility.osext as osext
-import copy
+import reframe.utility.sanity as sn
+import os
 
 
 base_config = {
@@ -34,22 +35,14 @@ base_config = {
             'descr': 'GH200',
             'scheduler': 'slurm',
             'time_limit': '10m',
-            'container_platforms': [
-#                 {
-#                     'type': 'Sarus',
-#                     #'modules': ['sarus']
-#                 },
-#                 {
-#                     'type': 'Singularity',
-#                     #'modules': ['singularity/3.6.4-todi']
-#                 }
-            ],
             'environs': [
                 'builtin',
                 'PrgEnv-cray',
                 'PrgEnv-gnu',
+                'PrgEnv-gnu-ce',
                 'PrgEnv-nvidia',
-                'PrgEnv-nvhpc'
+                'PrgEnv-nvhpc',
+                'PrgEnv-gnu-ce',
             ],
             'max_jobs': 100,
             'extras': {
@@ -69,6 +62,19 @@ base_config = {
                     'name': 'memory',
                     'options': ['--mem={mem_per_node}']
                 },
+                {
+                    'name': 'cpe_ce_image',
+                    'options': [
+                        '--container-image={image}',
+                     ]
+                },
+                {
+                    'name': 'cpe_ce_mount',
+                    'options': [
+                        '--container-mounts={stagedir}:/rfm_workdir',
+                        '--container-workdir=/rfm_workdir'
+                     ]
+                }
             ],
             'devices': [
                 {
@@ -76,7 +82,7 @@ base_config = {
                     'arch': 'sm_90',
                     'num_devices': 4
                 }
-                ],
+            ],
             'launcher': 'srun',
         },
     ]
@@ -96,7 +102,17 @@ site_configuration = {
             'features': ['serial', 'openmp', 'mpi', 'cuda', 'openacc', 'hdf5',
                          'netcdf-hdf5parallel', 'pnetcdf'],
             'target_systems': ['daint'],
-            'modules': ['cray', 'PrgEnv-cray', 'craype-arm-grace']
+            'modules': ['cray', 'PrgEnv-cray', 'craype-arm-grace'],
+        },
+        {
+            'name': 'PrgEnv-gnu-ce',
+            'features': ['serial', 'openmp', 'mpi', 'cuda', 'openacc', 'hdf5',
+                         'netcdf-hdf5parallel', 'pnetcdf'],
+            'resources': {
+                'cpe_ce_image': {
+                    'image': '/capstor/scratch/cscs/jenkssl/cpe/cpe-gnu.sqsh',
+                }
+             }
         },
         {
             'name': 'PrgEnv-gnu',

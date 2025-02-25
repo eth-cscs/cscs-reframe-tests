@@ -67,3 +67,16 @@ class ContainerEngineMixin(rfm.RegressionMixin):
     @run_before('run')
     def set_container_engine_env_launcher_options(self):
         self.job.launcher.options += [f'--environment={self.env_file}']
+
+
+class ContainerEngineCPEMixin(rfm.RegressionMixin):
+    @run_after('setup')
+    def set_container_mounts(self):
+       current_environ = self.current_environ
+       self.build_locally = False
+       if 'cpe_ce_image' in current_environ.resources:
+           self.extra_resources = {
+               'cpe_ce_mount': {
+                   'stagedir': self.stagedir
+               }
+           }
