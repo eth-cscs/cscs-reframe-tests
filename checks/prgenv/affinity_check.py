@@ -19,7 +19,8 @@ class CompileAffinityTool(rfm.CompileOnlyRegressionTest):
     valid_prog_environs = ['+mpi']
     build_system = 'Make'
     build_locally = False
-
+    env_vars = {'MPICH_GPU_SUPPORT_ENABLED': 0} 
+    
     sourcesdir = 'https://github.com/vkarak/affinity'
     tags = {'production', 'scs', 'maintenance', 'craype'}
 

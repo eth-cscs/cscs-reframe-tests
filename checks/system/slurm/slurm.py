@@ -181,6 +181,7 @@ class MemoryOverconsumptionMpiCheck(SlurmCompiledBaseCheck):
     time_limit = '5m'
     build_system = 'SingleSource'
     sourcepath = 'eatmemory_mpi.c'
+    env_vars = {'MPICH_GPU_SUPPORT_ENABLED': 0}
     tags.add('mem')
 
     @run_before('compile')

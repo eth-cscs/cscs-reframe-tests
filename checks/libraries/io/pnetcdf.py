@@ -29,6 +29,7 @@ class PnetCDFTest(rfm.RegressionTest, ExtraLauncherOptionsMixin):
     num_tasks = 4
     postrun_cmds = ['ncvalidator testfile.nc']
     sourcesdir = 'src/pnetcdf'
+    env_vars = {'MPICH_GPU_SUPPORT_ENABLED': 0}
     tags = {'production', 'craype', 'health'}
 
     @run_before('compile')
@@ -71,9 +72,7 @@ class PnetCDFTest(rfm.RegressionTest, ExtraLauncherOptionsMixin):
     def fix_cpe(self):
         # fix for "GLIBCXX_3.4.29 not found" error:
         if self.lang == 'cpp' and self.current_environ.name == 'PrgEnv-gnu':
-            self.env_vars = {
-                'LD_PRELOAD': '$GCC_PREFIX/snos/lib64/libstdc++.so'
-            }
+            self.env_vars['LD_PRELOAD'] = '$GCC_PREFIX/snos/lib64/libstdc++.so'
 
     @run_before('sanity')
     def set_sanity(self):

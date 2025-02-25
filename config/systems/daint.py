@@ -6,9 +6,6 @@
 # ReFrame CSCS settings
 #
 
-import reframe.utility.osext as osext
-import copy
-
 
 base_config = {
     'modules_system': 'lmod',
@@ -22,8 +19,9 @@ base_config = {
                 'builtin',
                 'PrgEnv-cray',
                 'PrgEnv-gnu',
-                'PrgEnv-nvidia',
-                'PrgEnv-nvhpc'
+                # FIXME: Problem loading the following environments
+                # 'PrgEnv-nvidia',
+                # 'PrgEnv-nvhpc'
             ],
             'descr': 'Login nodes',
             'max_jobs': 4,
@@ -34,22 +32,13 @@ base_config = {
             'descr': 'GH200',
             'scheduler': 'slurm',
             'time_limit': '10m',
-            'container_platforms': [
-#                 {
-#                     'type': 'Sarus',
-#                     #'modules': ['sarus']
-#                 },
-#                 {
-#                     'type': 'Singularity',
-#                     #'modules': ['singularity/3.6.4-todi']
-#                 }
-            ],
             'environs': [
                 'builtin',
                 'PrgEnv-cray',
                 'PrgEnv-gnu',
-                'PrgEnv-nvidia',
-                'PrgEnv-nvhpc'
+                # FIXME: Problem loading the following environments
+                # 'PrgEnv-nvidia',
+                # 'PrgEnv-nvhpc'
             ],
             'max_jobs': 100,
             'extras': {
@@ -110,14 +99,14 @@ site_configuration = {
             'target_systems': ['daint'],
             'features': ['serial', 'openmp', 'mpi', 'cuda', 'alloc_speed',
                          'hdf5', 'netcdf-hdf5parallel', 'pnetcdf'],
-            'modules': ['cray', 'PrgEnv-gnu', 'craype-arm-grace']
+            'modules': ['cray', 'PrgEnv-nvidia', 'craype-arm-grace']
         },
         {
             'name': 'PrgEnv-nvhpc',
             'target_systems': ['daint'],
             'features': ['serial', 'openmp', 'mpi', 'cuda', 'alloc_speed',
                          'hdf5', 'netcdf-hdf5parallel', 'pnetcdf'],
-            'modules': ['cray', 'PrgEnv-gnu', 'craype-arm-grace']
+            'modules': ['cray', 'PrgEnv-nvhpc', 'craype-arm-grace']
         },
     ],
     'modes': [
