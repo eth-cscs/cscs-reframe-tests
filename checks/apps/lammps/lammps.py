@@ -54,7 +54,7 @@ class lammps_build_test(rfm.CompileOnlyRegressionTest):
     sourcesdir = None
     lammps_sources = fixture(lammps_download, scope='session')
     build_system = 'CMake'
-    tags = {'uenv'}
+    tags = {'uenv', 'production'}
     build_locally = False
 
     @run_before('compile')
@@ -97,6 +97,7 @@ class lammps_gpu_test(rfm.RunOnlyRegressionTest):
     maintainers = ["SSA"]
     test_name = variable(str, value='lj')
     energy_reference = -4.620456
+    tags = {'uenv', 'production'}
 
     @run_before("run")
     def prepare_run(self):

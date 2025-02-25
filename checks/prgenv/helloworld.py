@@ -4,7 +4,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import pathlib
-import re
 import sys
 import reframe as rfm
 import reframe.utility.sanity as sn
@@ -35,8 +34,10 @@ class HelloWorldBaseTest(rfm.RegressionTest, ExtraLauncherOptionsMixin,
     }
     exclusive_access = True
 
-    # This is valid only for non-cray MPICH
     env_vars = {
+        'MPICH_GPU_SUPPORT_ENABLED': 0,
+
+         # This is valid only for non-cray MPICH
         'MPIR_CVAR_ENABLE_GPU': 0,
     }
     tags = {'production', 'craype', 'uenv'}

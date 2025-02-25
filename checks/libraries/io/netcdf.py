@@ -4,7 +4,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import reframe as rfm
-import reframe.utility.osext as osext
 import reframe.utility.sanity as sn
 
 
@@ -59,6 +58,7 @@ class netCDFBase(rfm.RegressionTest):
 class CPE_NetcdfTest(netCDFBase):
     valid_systems = ['+remote']
     valid_prog_environs = ['+mpi +netcdf-hdf5parallel -uenv']
+    env_vars = {'MPICH_GPU_SUPPORT_ENABLED': 0}
     tags = {'production', 'health', 'craype'}
 
     @run_before('run')

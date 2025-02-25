@@ -22,6 +22,7 @@ class MpiInitTest(rfm.RegressionTest):
     executable = 'mpi_init_thread_single.exe'
     time_limit = '2m'
     build_locally = False
+    env_vars = {'MPICH_GPU_SUPPORT_ENABLED': 0}
     tags = {'production', 'craype', 'uenv'}
 
     @run_before('run')

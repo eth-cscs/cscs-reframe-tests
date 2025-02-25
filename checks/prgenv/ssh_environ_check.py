@@ -9,32 +9,32 @@ import reframe.utility.sanity as sn
 
 @rfm.simple_test
 class SSHLoginEnvCheck(rfm.RunOnlyRegressionTest):
-    def __init__(self):
-        self.descr = ('Check the values of a set of environment variables '
-                      'when accessing remotely over SSH')
-        self.valid_systems = []
-        self.sourcesdir = None
-        self.valid_prog_environs = ['PrgEnv-cray']
-        reference = {
-            'CRAY_CPU_TARGET': ('haswell'),
-            'CRAYPE_NETWORK_TARGET': 'aries',
-            'MODULEPATH': r'[\S+]',
-            'MODULESHOME': r'/opt/cray/pe/modules/[\d+\.+]',
-            'PE_PRODUCT_LIST': ('CRAYPE_HASWELL:CRAY_RCA:CRAY_ALPS:DVS:'
-                                'CRAY_XPMEM:CRAY_DMAPP:CRAY_PMI:CRAY_UGNI:'
-                                'CRAY_UDREG:CRAY_LIBSCI:CRAYPE:CRAY:'
-                                'PERFTOOLS:CRAYPAT'),
-            'SCRATCH': r'/scratch/[\S+]',
-            'XDG_RUNTIME_DIR': r'/run/user/[\d+]'
-        }
-        self.executable = 'ssh'
-        echo_args = ' '.join('{0}=${0}'.format(i) for i in reference.keys())
-        self.executable_opts = [self.current_system.name,
-                                'echo', "'%s'" % echo_args]
-        self.sanity_patterns = sn.all(
-            sn.map(self.assert_envvar, list(reference.items())))
-        self.maintainers = ['RS', 'LM']
-        self.tags = {'maintenance', 'production', 'craype'}
+    descr = ('Check the values of a set of environment variables '
+             'when accessing remotely over SSH')
+    valid_systems = []
+    sourcesdir = None
+    valid_prog_environs = ['PrgEnv-cray']
+    var_ref = {
+        'CRAY_CPU_TARGET': ('arm-grace'),
+        'CRAYPE_NETWORK_TARGET': 'ofi',
+        'MODULEPATH': r'[\S+]',
+        'MODULESHOME': r'/opt/cray/pe/lmod/\S+',
+        'PE_PRODUCT_LIST': 'CRAYPE_ARM_GRACE:CRAYPE:PERFTOOLS:CRAYPAT',
+        'SCRATCH': r'/(capstor|iopstor)/\S+',
+        'XDG_RUNTIME_DIR': r'/run/user/[\d+]'
+    }
+    executable = 'ssh'
+    tags = {'maintenance', 'production', 'craype'}
 
-    def assert_envvar(self, v):
-        return sn.assert_found('='.join(v), self.stdout)
+    @run_before('run')
+    def set_exec_opts(self):
+        echo_args = ' '.join(f'{i}=${i}' for i in self.var_ref.keys())
+        self.executable_opts = [self.current_system.name, 'echo',
+                                f"'{echo_args}'"]
+
+    @sanity_function
+    def assert_found_all(self):
+        return sn.all(
+            sn.map(lambda x: sn.assert_found('='.join(x), self.stdout),
+                   list(self.var_ref.items()))
+        )

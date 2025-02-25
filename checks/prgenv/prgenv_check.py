@@ -17,7 +17,7 @@ def my_join(s, iterable):
 @rfm.simple_test
 class LoginEnvCheck(rfm.RunOnlyRegressionTest):
     variant = parameter(['rpm', 'modules', 'env'])
-    valid_systems = ['daint:login', 'dom:login']
+    valid_systems = []
     valid_prog_environs = ['builtin']
     ref_file = variable(str)
     diff_file = variable(str)
