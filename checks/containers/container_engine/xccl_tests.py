@@ -23,7 +23,6 @@ class XCCLTestBase(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     max_bytes = variable(str, value='1024M')
     container_env_table = {
         'annotations.com.hooks': {
-            'cxi.enabled': 'true',
             'aws_ofi_nccl.enabled': 'true'
         }
     }
@@ -108,7 +107,7 @@ class NCCLTestsCE(XCCLTestBase):
 @rfm.simple_test
 class RCCLTestCE(XCCLTestBase):
     valid_systems = ['+ce +amdgpu']
-    image_tag = parameter(['rocm57', 'rocm60'])
+    image_tag = parameter(['rocm63'])
     reference_per_test = {
         'sendrecv': {
             '*': {
