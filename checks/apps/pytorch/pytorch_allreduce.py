@@ -53,7 +53,7 @@ class PyTorchNCCLAllReduce(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     reference = {
         '*': {'bandwidth': (91.04, -0.05, None, 'GB/s')}
     }
-    tags = {'ml'}
+    tags = {'production', 'ml'}
 
     @run_after('init')
     def set_image(self):
@@ -156,6 +156,14 @@ class PyTorchRCCLAllReduce(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
             f'--rdzv_backend c10d',
             f'all_reduce_bench.py',
         ]
+
+    @run_after('setup')
+    def set_nccl_min_nchannels(self):
+        gpu_devices = self.current_partition.select_devices('gpu')[0]
+        
+        # https://rocm.docs.amd.com/projects/rccl/en/latest/how-to/rccl-usage-tips.html#improving-performance-on-the-mi300x-accelerator-when-using-fewer-than-8-gpus noqa: E501
+        if gpu_devices.num_devices < 8 and gpu_devices.arch == 'gfx942':
+            self.env_vars['NCCL_MIN_NCHANNELS'] = 32
 
     @sanity_function
     def assert_sanity(self):
