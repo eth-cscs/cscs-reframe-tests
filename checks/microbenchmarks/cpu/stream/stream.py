@@ -3,12 +3,17 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
+import pathlib
+import sys
 import reframe as rfm
 import reframe.utility.sanity as sn
 
+sys.path.append(str(pathlib.Path(__file__).parent.parent / 'mixins'))
+from container_engine import ContainerEngineCPEMixin
+
 
 @rfm.simple_test
-class StreamTest(rfm.RegressionTest):
+class StreamTest(rfm.RegressionTest, ContainerEngineCPEMixin):
     '''This test checks the stream test:
        Function    Best Rate MB/s  Avg time     Min time     Max time
        Triad:          13991.7     0.017174     0.017153     0.017192

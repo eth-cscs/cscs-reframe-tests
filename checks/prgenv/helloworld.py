@@ -10,7 +10,7 @@ import reframe.utility.sanity as sn
 
 sys.path.append(str(pathlib.Path(__file__).parent.parent / 'mixins'))
 from extra_launcher_options import ExtraLauncherOptionsMixin
-from container_engine import ContainerEngineCPEMixin 
+from container_engine import ContainerEngineCPEMixin
 
 
 class HelloWorldBaseTest(rfm.RegressionTest, ExtraLauncherOptionsMixin,

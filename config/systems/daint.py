@@ -104,8 +104,7 @@ site_configuration = {
         },
         {
             'name': 'PrgEnv-gnu-ce',
-            'features': ['serial', 'openmp', 'mpi', 'cuda', 'openacc', 'hdf5',
-                         'netcdf-hdf5parallel', 'pnetcdf'],
+            'features': ['serial', 'openmp', 'mpi'],
             'resources': {
                 'cpe_ce_image': {
                     'image': '/capstor/scratch/cscs/jenkssl/cpe/cpe-gnu.sqsh',
