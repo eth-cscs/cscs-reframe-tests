@@ -54,7 +54,7 @@ class PyTorchDdpCeNv(PyTorchTestBase, ContainerEngineMixin):
 
         if versions:
             latest_version = max(versions)
-            latest_tags += [f'{latest_version}+{flavor}']
+            latest_tags += [f'{latest_version}{flavor}']
 
     latest_images = [f'nvcr.io#nvidia/pytorch:{tag}' for tag in latest_tags]
     image = parameter(curated_images + latest_images)
