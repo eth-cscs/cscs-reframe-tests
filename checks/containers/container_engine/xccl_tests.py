@@ -23,7 +23,6 @@ class XCCLTestBase(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     max_bytes = variable(str, value='1024M')
     container_env_table = {
         'annotations.com.hooks': {
-            'cxi.enabled': 'true',
             'aws_ofi_nccl.enabled': 'true'
         }
     }
@@ -108,16 +107,18 @@ class NCCLTestsCE(XCCLTestBase):
 @rfm.simple_test
 class RCCLTestCE(XCCLTestBase):
     valid_systems = ['+ce +amdgpu']
-    image_tag = parameter(['rocm57', 'rocm60'])
+    image_tag = parameter(['rocm63'])
+    min_bytes = '4096M'
+    max_bytes = '4096M'
     reference_per_test = {
         'sendrecv': {
             '*': {
-                'GB/s': (7.4, -0.05, None, 'GB/s')
+                'GB/s': (24.0, -0.05, None, 'GB/s')
             }
          },
         'all_reduce': {
             '*': {
-                'GB/s': (105.0, -0.05, None, 'GB/s')
+                'GB/s': (90.0, -0.05, None, 'GB/s')
             }
         }
     }
@@ -130,3 +131,11 @@ class RCCLTestCE(XCCLTestBase):
         self.container_env_table['annotations.com.hooks'].update({
             'aws_ofi_nccl.variant': rocm_major
         })
+
+    @run_after('setup')
+    def set_nccl_min_nchannels(self):
+        gpu_devices = self.current_partition.select_devices('gpu')[0]
+        
+        # https://rocm.docs.amd.com/projects/rccl/en/latest/how-to/rccl-usage-tips.html#improving-performance-on-the-mi300x-accelerator-when-using-fewer-than-8-gpus noqa: E501
+        if gpu_devices.num_devices < 8 and gpu_devices.arch == 'gfx942':
+            self.env_vars['NCCL_MIN_NCHANNELS'] = 32
