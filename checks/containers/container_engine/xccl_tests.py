@@ -108,15 +108,17 @@ class NCCLTestsCE(XCCLTestBase):
 class RCCLTestCE(XCCLTestBase):
     valid_systems = ['+ce +amdgpu']
     image_tag = parameter(['rocm63'])
+    min_bytes = '4096M'
+    max_bytes = '4096M'
     reference_per_test = {
         'sendrecv': {
             '*': {
-                'GB/s': (7.4, -0.05, None, 'GB/s')
+                'GB/s': (24.0, -0.05, None, 'GB/s')
             }
          },
         'all_reduce': {
             '*': {
-                'GB/s': (105.0, -0.05, None, 'GB/s')
+                'GB/s': (90.0, -0.05, None, 'GB/s')
             }
         }
     }
