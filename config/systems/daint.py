@@ -82,16 +82,24 @@ site_configuration = {
     'environments': [
         {
             'name': 'PrgEnv-cray',
-            'features': ['serial', 'openmp', 'mpi', 'cuda', 'openacc', 'hdf5',
-                         'netcdf-hdf5parallel', 'pnetcdf'],
+            'features': [
+                'serial', 'openmp', 'mpi', 'cuda', 'openacc', 'hdf5',
+                'netcdf-hdf5parallel',
+                # FIXME MPI Error when using pnetcdf
+                # 'pnetcdf'
+            ],
             'target_systems': ['daint'],
             'modules': ['cray', 'PrgEnv-cray', 'craype-arm-grace']
         },
         {
             'name': 'PrgEnv-gnu',
             'target_systems': ['daint'],
-            'features': ['serial', 'openmp', 'mpi', 'cuda', 'alloc_speed',
-                         'hdf5', 'netcdf-hdf5parallel', 'pnetcdf', 'openmp'],
+            'features': [
+                'serial', 'openmp', 'mpi', 'cuda', 'alloc_speed',
+                'hdf5', 'netcdf-hdf5parallel',
+                # FIXME MPI Error when using pnetcdf
+                # 'pnetcdf'
+            ],
             'modules': ['cray', 'PrgEnv-gnu', 'craype-arm-grace']
         },
         {
@@ -131,5 +139,5 @@ site_configuration = {
            ],
            'target_systems': ['daint'],
        }
-   ]
+    ]
 }
