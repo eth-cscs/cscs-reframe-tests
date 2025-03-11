@@ -4,7 +4,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import reframe as rfm
-import reframe.utility.osext as osext
 import reframe.utility.sanity as sn
 
 
@@ -59,15 +58,8 @@ class netCDFBase(rfm.RegressionTest):
 class CPE_NetcdfTest(netCDFBase):
     valid_systems = ['+remote']
     valid_prog_environs = ['+mpi +netcdf-hdf5parallel -uenv']
+    env_vars = {'MPICH_GPU_SUPPORT_ENABLED': 0}
     tags = {'production', 'health', 'craype'}
-
-    @run_before('run')
-    def fix_cpe(self):
-        # fix for "GLIBCXX_3.4.29 not found" error:
-        if self.lang == 'cpp' and self.current_environ.name == 'PrgEnv-gnu':
-            self.env_vars = {
-                'LD_PRELOAD': '$GCC_PREFIX/snos/lib64/libstdc++.so'
-            }
 
 
 @rfm.simple_test

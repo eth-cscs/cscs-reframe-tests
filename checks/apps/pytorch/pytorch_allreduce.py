@@ -51,7 +51,7 @@ class PyTorchNCCLAllReduce(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
         'NCCL_DEBUG': 'Info',
     }
     reference = {
-        '*': {'GB/s': (91.04, -0.05, None, 'GB/s')}
+        '*': {'bandwidth': (91.04, -0.05, None, 'GB/s')}
     }
     tags = {'ml'}
 

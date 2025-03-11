@@ -6,7 +6,6 @@ import os
 
 import reframe as rfm
 import reframe.utility.sanity as sn
-import reframe.utility.udeps as udeps
 from uenv import uarch
 
 gromacs_references = {
@@ -72,7 +71,7 @@ class gromacs_build_test(rfm.CompileOnlyRegressionTest):
     sourcesdir = None
     gromacs_sources = fixture(gromacs_download, scope='session')
     build_locally = False
-    tags = {'uenv'}
+    tags = {'uenv', 'production'}
 
     @run_before('compile')
     def prepare_build(self):
@@ -113,6 +112,7 @@ class gromacs_run_test(rfm.RunOnlyRegressionTest):
     valid_systems = ['*']
     test_name = variable(str, value='STMV')
     valid_prog_environs = ['+gromacs']
+    tags = {'uenv', 'production'}
 
     @run_before('run')
     def prepare_run(self):
