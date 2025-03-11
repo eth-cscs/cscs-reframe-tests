@@ -15,7 +15,7 @@ run rfm_test:
     - cd reframe
     - ./bootstrap.sh
     - export RFM_AUTODETECT_XTHOSTNAME=1
-    - ./bin/reframe -C ../config/cscs.py -c ../checks/ --report-junit=../report.xml -r
+    - ./bin/reframe -C -t production ../config/cscs.py -c ../checks/ --report-junit=../report.xml -r
   artifacts:
     when: always
     paths:
