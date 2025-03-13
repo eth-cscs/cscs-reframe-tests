@@ -222,7 +222,7 @@ check = Check()
 if __name__ == '__main__':
     check.DEBUG = True
 else:
-    import reframe as rfm
+    import reframe as rfm  # noqa
     check.MODULE_NAME = __name__
 
 create_checks(check)
