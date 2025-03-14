@@ -3,10 +3,16 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
+import pathlib
+import sys
+
 import reframe as rfm
 import reframe.utility.sanity as sn
 
-
+sys.path.append(str(pathlib.Path(__file__).parent.parent / 'mixins'))
+from container_engine import ContainerEngineCPEMixin
+    
+    
 class NvmlBase(rfm.RegressionTest):
     descr = 'Checks that nvml can report GPU informations'
     build_locally = False
@@ -39,7 +45,7 @@ class NvmlBase(rfm.RegressionTest):
 
 
 @rfm.simple_test
-class CPE_NVMLCheck(NvmlBase):
+class CPE_NVMLCheck(NvmlBase, ContainerEngineCPEMixin):
     valid_systems = ['+nvgpu']
     valid_prog_environs = ['+cuda -uenv']
     tags = {'production', 'external-resources', 'health', 'craype'}
