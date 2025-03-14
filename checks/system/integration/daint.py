@@ -174,22 +174,22 @@ def create_checks(check):
     check.CLASS = 'MOUNTS'
 
     check('grep -q "/capstor/scratch/cscs /capstor/scratch/cscs lustre"     /proc/mounts || echo FAILED', not_expected=r'FAILED')
-    check('grep -q "/capstor/apps/cscs /capstor/apps/cscs lustre"           /proc/mounts || echo FAILED', not_expected=r'FAILED')
-    check('grep -q "/capstor/users/cscs /users lustre"                      /proc/mounts || echo FAILED', not_expected=r'FAILED')
+    check('grep -q "/capstor/store/cscs /capstor/store/cscs lustre"         /proc/mounts || echo FAILED', not_expected=r'FAILED')
+    check('grep -q "/capstor/users/cscs /users.OLD lustre"                  /proc/mounts || echo FAILED', not_expected=r'FAILED')
     check('grep -q "/capstor/store/cscs /store lustre"                      /proc/mounts || echo FAILED', not_expected=r'FAILED')
 
     check('grep -q "pe_opt_cray_pe /opt/cray/pe"  /proc/mounts || echo FAILED', not_expected=r'FAILED')
 
     check('printenv SCRATCH || echo FAILED', not_expected=r'FAILED')
     check('printenv PROJECT || echo FAILED', not_expected=r'FAILED')
-    #check('printenv STORE   || echo FAILED', not_expected=r'FAILED')
-    check('printenv APPS    || echo FAILED', not_expected=r'FAILED')
+    check('printenv STORE   || echo FAILED', not_expected=r'FAILED')
+    # check('printenv APPS    || echo FAILED', not_expected=r'FAILED')
     check('printenv HOME    || echo FAILED', not_expected=r'FAILED')
 
     check('bash -c "[[ $SCRATCH == /capstor/scratch/cscs/*  ]] || echo FAILED"', not_expected=r'FAILED')
-    check('bash -c "[[ $PROJECT == /project/*               ]] || echo FAILED"', not_expected=r'FAILED')
-    #check('bash -c "[[ $STORE   == /store/*                 ]] || echo FAILED"', not_expected=r'FAILED')
-    check('bash -c "[[ $APPS    == /capstor/apps/cscs/daint ]] || echo FAILED"', not_expected=r'FAILED')
+    check('bash -c "[[ $PROJECT == /capstor/store/cscs/*    ]] || echo FAILED"', not_expected=r'FAILED')
+    check('bash -c "[[ $STORE   == /capstor/store/cscs/*    ]] || echo FAILED"', not_expected=r'FAILED')
+    # check('bash -c "[[ $APPS    == /capstor/apps/cscs/daint ]] || echo FAILED"', not_expected=r'FAILED')
     check('bash -c "[[ $HOME    == /users/*                 ]] || echo FAILED"', not_expected=r'FAILED')
 
     check('printenv TMP || echo FAILED', expected=r'FAILED')
@@ -210,7 +210,8 @@ def create_checks(check):
     check('scontrol ping', expected=r'Slurmctld\(primary\) at .* is UP')
     # no need of a backup on daint thanks to kubernetes
     # check('scontrol ping', expected=r'Slurmctld\(backup\) at .* is UP')
-    check('grep "JobComp" /etc/slurm/slurm.conf | grep -v "#"', expected=r'kafka', not_expected=r'elasticsearch')
+    # check('grep "JobComp" /etc/slurm/slurm.conf | grep -v "#"', expected=r'kafka', not_expected=r'elasticsearch', where='-remote')
+    check('grep "JobComp" /run/slurm/conf/slurm.conf | grep -v "#"', expected=r'kafka', not_expected=r'elasticsearch', where='+remote')
 
     # ----------------------------------------------------------------------- #
     #
@@ -232,7 +233,7 @@ def create_checks(check):
 
     check('bash -c "uenv --version" || echo FAILED', not_expected=r'FAILED')
     # https://confluence.cscs.ch/display/KB/Scientific+Applications:
-    # CP2K, GROMACS, LAMMPS, NAMD, QuantumESPRESSO, VASP, Forge    
+    # CP2K, GROMACS, LAMMPS, NAMD, QuantumESPRESSO, VASP, Forge
     check('bash -c "uenv image find"', expected=           r'cp2k/.*gh200')
     check('bash -c "uenv image find"', expected=        r'gromacs/.*gh200')
     check('bash -c "uenv image find"', expected=         r'lammps/.*gh200')
@@ -240,11 +241,11 @@ def create_checks(check):
     check('bash -c "uenv image find"', expected=r'quantumespresso/.*gh200')
     check('bash -c "uenv image find"', expected=           r'vasp/.*gh200')
     check('bash -c "uenv image find"', expected=   r'linaro-forge/.*gh200')
-    
+
     check('bash -c "uenv image find"', not_expected=    r'pytorch/.*gh200')
     check('bash -c "uenv image find"', not_expected=   r'icon-wcp/.*gh200')
     check('bash -c "uenv image find"', not_expected=  r'prgenv-nvidia/.*gh200')
-    
+
     check('bash -c "uenv image find"', expected=     r'prgenv-gnu/.*gh200')
     check('bash -c "uenv image find"', expected=   r'netcdf-tools/.*gh200')
     check('bash -c "uenv image find"', expected=        r'editors/.*gh200')
