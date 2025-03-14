@@ -56,12 +56,18 @@ class cp2k_download(rfm.RunOnlyRegressionTest):
 
     version = variable(str, value='2024.3')
     descr = 'Fetch CP2K source code'
-    sourcedir = None
+    sourcesdir = None
     executable = 'wget'
-    executable_opts = [
-        f'https://github.com/cp2k/cp2k/archive/refs/tags/v{version}.tar.gz',
-    ]
     local = True
+
+    @run_before('run')
+    def set_version(self):
+        url = 'https://jfrog.svc.cscs.ch/artifactory/cscs-reframe-tests'
+        self.executable_opts = [
+            '--quiet',
+            f'{url}/cp2k/v{self.version}.tar.gz'
+            # https://github.com/cp2k/cp2k/archive/refs/tags/v2024.3.tar.gz
+        ]
 
     @sanity_function
     def validate_download(self):
@@ -131,7 +137,7 @@ class Cp2kBuildTestUENV(rfm.CompileOnlyRegressionTest):
         return os.path.isfile(self.cp2k_executable)
 
 
-class Cp2kCheckUENV(rfm.RunOnlyRegressionTest):
+class Cp2kCheck_UENV(rfm.RunOnlyRegressionTest):
     executable = './mps-wrapper.sh cp2k.psmp'
     maintainers = ['SSA']
     valid_systems = ['*']
@@ -174,14 +180,11 @@ class Cp2kCheckUENV(rfm.RunOnlyRegressionTest):
 
     @sanity_function
     def assert_energy_diff(self):
-        energy = sn.extractsingle(
-            r'\s+ENERGY\| Total FORCE_EVAL \( QS \) '
-            r'energy [\[\(]a\.u\.[\]\)]:\s+(?P<energy>\S+)',
-            self.stdout,
-            'energy',
-            float,
-            item=-1,
+        regex = (
+            r'\s+ENERGY\| Total FORCE_EVAL \( QS \) energy \S+\s+'
+            r'(?P<energy>\S+)$'
         )
+        energy = sn.extractsingle(regex, self.stdout, 'energy', float, item=-1)
         energy_diff = sn.abs(energy - self.energy_reference)
         successful_termination = sn.assert_found(r'PROGRAM STOPPED IN',
                                                  self.stdout)
@@ -200,20 +203,21 @@ class Cp2kCheckUENV(rfm.RunOnlyRegressionTest):
         )
 
 
-class Cp2kCheckMDUENV(Cp2kCheckUENV):
+# {{{ MD
+class Cp2kCheckMD_UENV(Cp2kCheck_UENV):
     test_name = 'md'
     executable_opts = ['-i', 'H2O-128.inp']
     energy_reference = -2202.179145784019511
 
 
 @rfm.simple_test
-class Cp2kCheckMDUENVExec(Cp2kCheckMDUENV):
+class Cp2kCheckMD_UENVExec(Cp2kCheckMD_UENV):
     valid_prog_environs = ['+cp2k']
     tags = {'uenv', 'production'}
 
 
 @rfm.simple_test
-class Cp2kCheckMDUENVCustomExec(Cp2kCheckMDUENV):
+class Cp2kCheckMD_UENVCustomExec(Cp2kCheckMD_UENV):
     '''
     Same test as above, but using executables built by Cp2kBuildTestUENV.
     '''
@@ -231,8 +235,12 @@ class Cp2kCheckMDUENVCustomExec(Cp2kCheckMDUENV):
         self.executable = f'./mps-wrapper.sh {parent.cp2k_executable}'
 
 
-class Cp2kCheckPBEUENV(Cp2kCheckUENV):
+# }}}
+# {{{ PBE
+class Cp2kCheckPBE_UENV(Cp2kCheck_UENV):
     test_name = 'pbe'
+    valid_prog_environs = ['+cp2k']
+    tags = {'uenv', 'production'}
     executable_opts = ['-i', 'H2O-128-PBE-TZ.inp']
     energy_reference = -2206.2426491358
 
@@ -242,13 +250,13 @@ class Cp2kCheckPBEUENV(Cp2kCheckUENV):
 
 
 @rfm.simple_test
-class Cp2kCheckPBEUENVExec(Cp2kCheckPBEUENV):
+class Cp2kCheckPBE_UENVExec(Cp2kCheckPBE_UENV):
     valid_prog_environs = ['+cp2k']
     tags = {'uenv', 'production'}
 
 
 @rfm.simple_test
-class Cp2kCheckPBEUENVCustomExec(Cp2kCheckPBEUENV):
+class Cp2kCheckPBE_UENVCustomExec(Cp2kCheckPBE_UENV):
     '''
     Same test as above, but using executables built by Cp2kBuildTestUENV.
     '''
@@ -266,8 +274,10 @@ class Cp2kCheckPBEUENVCustomExec(Cp2kCheckPBEUENV):
         self.executable = f'./mps-wrapper.sh {parent.cp2k_executable}'
 
 
+# }}}
+# {{{ RPA
 @rfm.simple_test
-class Cp2kCheckRPA(Cp2kCheckUENV):
+class Cp2kCheckRPA_UENVExec(Cp2kCheck_UENV):
     test_name = 'rpa'
     valid_prog_environs = ['+cp2k']
     executable_opts = ['-i', 'H2O-128-RI-dRPA-TZ.inp']
@@ -280,11 +290,12 @@ class Cp2kCheckRPA(Cp2kCheckUENV):
     @run_after('init')
     def setup_dependency(self):
         # Depend on PBE ouput
-        self.depends_on('Cp2kCheckPBEUENVExec', udeps.fully)
+        self.depends_on('Cp2kCheckPBE_UENVExec', udeps.fully)
 
     @run_after('setup')
     def copy_wnf(self):
-        parent = self.getdep('Cp2kCheckPBEUENVExec')
+        parent = self.getdep('Cp2kCheckPBE_UENVExec')
         src = os.path.join(parent.stagedir, parent.wfn_file)
         dest = os.path.join(self.stagedir, parent.wfn_file)
         shutil.copyfile(src, dest)
+# }}}
