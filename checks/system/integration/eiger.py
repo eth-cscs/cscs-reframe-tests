@@ -142,9 +142,8 @@ def create_checks(check):
 
     check.CLASS = 'MOUNTS'
 
-    check('grep -q "/users /users dvs"            /proc/mounts || echo FAILED', not_expected=r'FAILED')
-    check('grep -q "/store /store dvs"            /proc/mounts || echo FAILED', not_expected=r'FAILED')
-    check('grep -q "/project /project dvs"        /proc/mounts || echo FAILED', not_expected=r'FAILED')
+    check('grep -q "/users /users dvs"                 /proc/mounts || echo FAILED', not_expected=r'FAILED')
+    check('grep -q "/capstor/store /capstor/store dvs" /proc/mounts || echo FAILED', not_expected=r'FAILED')
 
     check('grep -q "pe_opt_cray_pe /opt/cray/pe"  /proc/mounts || echo FAILED', not_expected=r'FAILED')
     check('grep -q "pe_opt_AMD /opt/AMD"          /proc/mounts || echo FAILED', not_expected=r'FAILED')
@@ -157,8 +156,8 @@ def create_checks(check):
     check('printenv HOME    || echo FAILED', not_expected=r'FAILED')
 
     check('bash -c "[[ $SCRATCH == /capstor/scratch/cscs/*  ]] || echo FAILED"', not_expected=r'FAILED')
-    check('bash -c "[[ $PROJECT == /project/*               ]] || echo FAILED"', not_expected=r'FAILED')
-    check('bash -c "[[ $STORE   == /store/*                 ]] || echo FAILED"', not_expected=r'FAILED')
+    check('bash -c "[[ $PROJECT == /capstor/store/*         ]] || echo FAILED"', not_expected=r'FAILED')
+    check('bash -c "[[ $STORE   == /capstor/store/*         ]] || echo FAILED"', not_expected=r'FAILED')
     check('bash -c "[[ $APPS    == /capstor/apps/cscs/eiger ]] || echo FAILED"', not_expected=r'FAILED')
     check('bash -c "[[ $HOME    == /users/*                 ]] || echo FAILED"', not_expected=r'FAILED')
 
@@ -223,7 +222,7 @@ check = Check()
 if __name__ == '__main__':
     check.DEBUG = True
 else:
-    import reframe as rfm
+    import reframe as rfm  # noqa
     check.MODULE_NAME = __name__
 
 create_checks(check)
