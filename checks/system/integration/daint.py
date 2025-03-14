@@ -265,7 +265,7 @@ check = Check()
 if __name__ == '__main__':
     check.DEBUG = True
 else:
-    import reframe as rfm
+    import reframe as rfm  # noqa: F401
 
     check.MODULE_NAME = __name__
 
