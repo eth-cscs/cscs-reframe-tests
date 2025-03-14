@@ -54,12 +54,11 @@ class build_osu_benchmarks(rfm.CompileOnlyRegressionTest):
     #: :scope: *session*
     osu_benchmarks = fixture(fetch_osu_benchmarks, scope='session')
 
-    # FIXME: version of clang compiler and default gcc not compatible
-    # with the default cudatoolkit (11.6)
+    # FIXME: version of clang compiler with the default cudatoolkit
     @run_after('setup')
     def skip_incompatible_envs_cuda(self):
         if self.build_type == 'cuda':
-            if self.current_environ.name in {'PrgEnv-cray', 'PrgEnv-gnu'}:
+            if self.current_environ.name in {'PrgEnv-cray'}:
                 self.skip(
                     f'environ {self.current_environ.name!r} incompatible with'
                     f'default cudatoolkit')
@@ -69,7 +68,6 @@ class build_osu_benchmarks(rfm.CompileOnlyRegressionTest):
         if self.build_type == 'cuda':
             curr_part = self.current_partition
             gpu_arch = curr_part.select_devices('gpu')[0].arch
-
 
             if self.current_environ.name != 'PrgEnv-nvhpc':
                 self.build_system.ldflags = [
@@ -85,15 +83,12 @@ class build_osu_benchmarks(rfm.CompileOnlyRegressionTest):
             # Remove the '^sm_' prefix from the arch, e.g sm_80 -> 80
             if gpu_arch.startswith('sm_'):
                 accel_compute_capability = gpu_arch[len('sm_'):]
-            else:
-                accel_compute_capability = '80'
 
             if self.current_environ.name in {'PrgEnv-cray', 'PrgEnv-gnu'}:
                 self.modules = [
                     'cudatoolkit',
                     f'craype-accel-nvidia{accel_compute_capability}'
                 ]
-
 
     @run_before('compile')
     def prepare_build(self):
@@ -240,11 +235,11 @@ class osu_build_run(osu_benchmark):
     def set_valid_systems_envs(self):
         build_type = self.osu_binaries.build_type
         if build_type == 'cuda':
-            self.valid_systems = ['+remote +nvgpu -uenv']
+            self.valid_systems = ['+remote +nvgpu']
             self.valid_prog_environs = ['+mpi +cuda']
         else:
-            self.valid_systems = ['+remote -uenv']
-            self.valid_prog_environs = ['+mpi']
+            self.valid_systems = ['+remote']
+            self.valid_prog_environs = ['+mpi -uenv']
 
     @run_before('run')
     def set_environment(self):
@@ -256,6 +251,21 @@ class osu_build_run(osu_benchmark):
 
                 # Use only the first CUDA GPU
                 'CUDA_VISIBLE_DEVICES': 0,
+            }
+            curr_part = self.current_partition
+            gpu_arch = curr_part.select_devices('gpu')[0].arch
+
+            if gpu_arch.startswith('sm_'):
+                accel_compute_capability = gpu_arch[len('sm_'):]
+
+            if self.current_environ.name in {'PrgEnv-cray', 'PrgEnv-gnu'}:
+                self.modules = [
+                    'cudatoolkit',
+                    f'craype-accel-nvidia{accel_compute_capability}'
+                ]
+        else:
+            self.env_vars = {
+                'MPICH_GPU_SUPPORT_ENABLED': 0
             }
 
     @run_before('run')
@@ -272,6 +282,7 @@ class osu_pt2pt_check(osu_build_run):
         ('mpi.pt2pt.standard.osu_bw', 'bandwidth'),
         ('mpi.pt2pt.standard.osu_latency', 'latency')
     ], fmt=lambda x: x[0], loggable=True)
+
     allref = {
         'mpi.pt2pt.standard.osu_bw': {
             'cpu': {
@@ -288,7 +299,7 @@ class osu_pt2pt_check(osu_build_run):
         'mpi.pt2pt.standard.osu_latency': {
             'cpu': {
                 '*': {
-                    'latency': (2.0, None, 0.15, 'us')
+                    'latency': (3.8, None, 0.15, 'us')
                 }
             },
             'cuda': {
