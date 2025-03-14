@@ -47,6 +47,7 @@ class build_osu_benchmarks(rfm.CompileOnlyRegressionTest):
 
     build_system = 'Autotools'
     build_prefix = variable(str)
+    build_locally = False
 
     #: The fixture object that retrieves the benchmarks
     #:
@@ -68,16 +69,25 @@ class build_osu_benchmarks(rfm.CompileOnlyRegressionTest):
         if self.build_type == 'cuda':
             curr_part = self.current_partition
             gpu_arch = curr_part.select_devices('gpu')[0].arch
+            environ_name = self.current_environ.name
 
-            if self.current_environ.name != 'PrgEnv-nvhpc':
-                self.build_system.ldflags = [
-                    '${CRAY_CUDATOOLKIT_POST_LINK_OPTS}',
-                    '-L${CRAY_MPICH_ROOTDIR}/gtl/lib -lmpi_gtl_cuda'
-                ]
+            if environ_name.startswith('PrgEnv-'):
+                if environ_name != 'PrgEnv-nvhpc':
+                    self.build_system.ldflags = [
+                        '${CRAY_CUDATOOLKIT_POST_LINK_OPTS}',
+                        '-L${CRAY_MPICH_ROOTDIR}/gtl/lib -lmpi_gtl_cuda'
+                    ]
+                else:
+                    self.build_system.ldflags = [
+                        '-L${CRAY_NVIDIA_PREFIX}/cuda/lib64',
+                        '-L${CRAY_MPICH_ROOTDIR}/gtl/lib -lmpi_gtl_cuda'
+                    ]
             else:
                 self.build_system.ldflags = [
-                    '-L${CRAY_NVIDIA_PREFIX}/cuda/lib64',
-                    '-L${CRAY_MPICH_ROOTDIR}/gtl/lib -lmpi_gtl_cuda'
+                    '-L${CUDA_HOME}/lib64',
+                ]
+                self.build_system.cppflags = [
+                    '-I${CUDA_HOME}/include',
                 ]
 
             # Remove the '^sm_' prefix from the arch, e.g sm_80 -> 80
@@ -239,7 +249,7 @@ class osu_build_run(osu_benchmark):
             self.valid_prog_environs = ['+mpi +cuda']
         else:
             self.valid_systems = ['+remote']
-            self.valid_prog_environs = ['+mpi -uenv']
+            self.valid_prog_environs = ['+mpi']
 
     @run_before('run')
     def set_environment(self):
