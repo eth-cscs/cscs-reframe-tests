@@ -5,11 +5,11 @@
 
 import os
 import shutil
-
 import reframe as rfm
 import reframe.utility.sanity as sn
 import reframe.utility.udeps as udeps
-import uenv
+
+from uenv import uarch
 
 cp2k_references = {
     'md': {'gh200': {'time_run': (68, None, 0.05, 's')}},
@@ -92,7 +92,7 @@ class Cp2kBuildTestUENV(rfm.CompileOnlyRegressionTest):
 
     @run_before('compile')
     def prepare_build(self):
-        self.uarch = uenv.uarch(self.current_partition)
+        self.uarch = uarch(self.current_partition)
         self.build_system.builddir = os.path.join(self.stagedir, 'build')
         self.skip_if_no_procinfo()
         cpu = self.current_partition.processor
@@ -144,7 +144,7 @@ class Cp2kCheck_UENV(rfm.RunOnlyRegressionTest):
 
     @run_before('run')
     def prepare_run(self):
-        self.uarch = uenv.uarch(self.current_partition)
+        self.uarch = uarch(self.current_partition)
         config = slurm_config[self.test_name][self.uarch]
         # sbatch options
         self.job.options = [
@@ -181,8 +181,8 @@ class Cp2kCheck_UENV(rfm.RunOnlyRegressionTest):
     @sanity_function
     def assert_energy_diff(self):
         regex = (
-            r'\s+ENERGY\| Total FORCE_EVAL \( QS \) energy \S+\s+'
-            r'(?P<energy>\S+)$'
+            r'\s+ENERGY\| Total FORCE_EVAL \( QS \) energy \[(a.u.|hartree)\]'
+            r':?\s+(?P<energy>\S+)$'
         )
         energy = sn.extractsingle(regex, self.stdout, 'energy', float, item=-1)
         energy_diff = sn.abs(energy - self.energy_reference)
