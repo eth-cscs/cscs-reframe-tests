@@ -74,7 +74,15 @@ class build_osu_benchmarks(rfm.CompileOnlyRegressionTest,
             environ_name = self.current_environ.name
 
             if environ_name.startswith('PrgEnv-'):
-                if environ_name != 'PrgEnv-nvhpc':
+                if environ_name.endswith('-ce'):
+                    self.build_system.ldflags = [
+                        '-L${CUDA_HOME}/lib64',
+                        '-L${CRAY_MPICH_ROOTDIR}/gtl/lib -lmpi_gtl_cuda'
+                    ]
+                    self.build_system.cppflags = [
+                        '-I${CUDA_HOME}/include',
+                    ]
+                elif environ_name != 'PrgEnv-nvhpc':
                     self.build_system.ldflags = [
                         '${CRAY_CUDATOOLKIT_POST_LINK_OPTS}',
                         '-L${CRAY_MPICH_ROOTDIR}/gtl/lib -lmpi_gtl_cuda'
@@ -84,6 +92,7 @@ class build_osu_benchmarks(rfm.CompileOnlyRegressionTest,
                         '-L${CRAY_NVIDIA_PREFIX}/cuda/lib64',
                         '-L${CRAY_MPICH_ROOTDIR}/gtl/lib -lmpi_gtl_cuda'
                     ]
+
             else:
                 self.build_system.ldflags = [
                     '-L${CUDA_HOME}/lib64',

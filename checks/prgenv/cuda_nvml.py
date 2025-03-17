@@ -53,14 +53,24 @@ class CPE_NVMLCheck(NvmlBase, ContainerEngineCPEMixin):
     @run_after('setup')
     def setup_modules(self):
         sm = self.current_partition.select_devices('gpu')[0].arch[-2:]
-        self.modules = ['cudatoolkit', f'craype-accel-nvidia{sm}']
-        self.sourcepath = '$CUDATOOLKIT_HOME/nvml/example/example.c'
+
+        if not self.current_environ.name.endswith('-ce'):
+            self.modules = ['cudatoolkit', f'craype-accel-nvidia{sm}']
+
+        self.sourcepath = (
+            '${CUDATOOLKIT_HOME:-$CUDA_HOME}/nvml/example/example.c'
+        )
 
     @run_before('compile')
     def set_build_flags(self):
-        self.prebuild_cmds = ['echo CUDATOOLKIT_HOME=$CUDATOOLKIT_HOME']
-        self.build_system.cflags = ['-I $CUDATOOLKIT_HOME/include']
-        self.build_system.ldflags = ['-L $CUDATOOLKIT_HOME/lib64 -lnvidia-ml']
+        self.prebuild_cmds = [
+            'echo CUDATOOLKIT_HOME=${CUDATOOLKIT_HOME:-$CUDA_HOME}'
+        ]
+        self.build_system.cflags = [
+            '-I ${CUDATOOLKIT_HOME:-$CUDA_HOME}/include']
+        self.build_system.ldflags = [
+            '-L ${CUDATOOLKIT_HOME:-$CUDA_HOME} -lnvidia-ml'
+        ]
 
         # Address the __gxx_personality_v0 symbol issue in libmpi_gtl_cuda
         if 'PrgEnv-gnu' == self.current_environ.name:

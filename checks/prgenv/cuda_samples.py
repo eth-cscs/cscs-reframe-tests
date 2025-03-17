@@ -3,11 +3,21 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
+import os
+import pathlib
+import sys
+
 import reframe as rfm
 import reframe.utility.sanity as sn
 
+sys.path.append(
+    str(pathlib.Path(__file__).parent.parent / 'mixins')
+)
 
-class CudaSamplesBase(rfm.RegressionTest):
+from container_engine import ContainerEngineCPEMixin
+
+
+class CudaSamplesBase(rfm.RegressionTest, ContainerEngineCPEMixin):
     sourcesdir = 'https://github.com/NVIDIA/cuda-samples.git'
     build_system = 'Make'
     build_locally = False
@@ -22,6 +32,7 @@ class CudaSamplesBase(rfm.RegressionTest):
         'simpleCUBLAS': '4_CUDA_Libraries',
         'conjugateGradientCudaGraphs': '4_CUDA_Libraries'
     }
+    tags = {'production'}
 
     @run_after('init')
     def set_descr(self):
@@ -34,6 +45,9 @@ class CudaSamplesBase(rfm.RegressionTest):
             rf"export CUDA_VER=v$(nvcc -V | "
             rf"sed -n 's/^.*release \([[:digit:]]*\.[[[:digit:]]\).*$/\1/p')",
             #
+            # The tags v12.[6-7] do not exist, fall back to v12.5
+            rf"[[ $CUDA_VER = 'v12.6' || $CUDA_VER = 'v12.7' ]] && " 
+            rf"export CUDA_VER='v12.5'",
             rf"git checkout ${{CUDA_VER}}",
             rf"cd Samples/{self.sample_dir[self.sample]}/{self.sample}"
         ]
@@ -76,22 +90,30 @@ class CPE_CudaSamples(CudaSamplesBase):
     def set_modules(self):
         #if 'PrgEnv-nvhpc' != self.current_environ.name:
         sm = self.current_partition.select_devices('gpu')[0].arch[-2:]
-        self.modules = ['cudatoolkit', f'craype-accel-nvidia{sm}',
-                        'cpe-cuda']
+
+        if not self.current_environ.name.endswith('-ce'):
+            self.modules = ['cudatoolkit', f'craype-accel-nvidia{sm}',
+                            'cpe-cuda']
 
     @run_before('compile')
     def set_build_flags(self):
         self.prebuild_cmds += [
-            'echo CUDATOOLKIT_HOME=$CUDATOOLKIT_HOME',
+            'echo CUDATOOLKIT_HOME=${CUDATOOLKIT_HOME:-$CUDA_HOME}',
             'module list'
         ]
-        self.build_system.cflags = ['-I $CUDATOOLKIT_HOME/include']
-        self.build_system.ldflags = ['-L $CUDATOOLKIT_HOME/lib64 -lnvidia-ml']
-        # for simpleCUBLAS and conjugateGradientCudaGraphs:
-        self.build_system.options += [
-            'EXTRA_NVCCFLAGS="-I $CUDATOOLKIT_HOME/../../math_libs/include"',
-            'EXTRA_LDFLAGS="-L $CUDATOOLKIT_HOME/../../math_libs/lib64"'
+        self.build_system.cflags = [
+            '-I ${CUDATOOLKIT_HOME:-$CUDA_HOME}/include'
         ]
+        self.build_system.ldflags = [
+            '-L ${CUDATOOLKIT_HOME:-$CUDA_HOME}/lib64 -lnvidia-ml'
+        ]
+
+        # for simpleCUBLAS and conjugateGradientCudaGraphs:
+        if not self.current_environ.name.endswith('-ce'):
+            self.build_system.options += [
+                'EXTRA_NVCCFLAGS="-I $CUDATOOLKIT_HOME/../../math_libs/include"',
+                'EXTRA_LDFLAGS="-L $CUDATOOLKIT_HOME/../../math_libs/lib64"'
+            ]
 
 
 @rfm.simple_test

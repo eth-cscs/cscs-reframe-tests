@@ -118,7 +118,7 @@ site_configuration = {
         },
         {
             'name': 'PrgEnv-ce',
-            'features': ['serial', 'openmp', 'mpi'],
+            'features': ['serial', 'openmp', 'mpi', 'cuda'],
             'resources': {
                 'cpe_ce_image': {
                     'image':
