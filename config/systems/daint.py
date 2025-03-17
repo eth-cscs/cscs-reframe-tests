@@ -98,7 +98,7 @@ base_config = {
 
 base_config['name'] = 'daint'
 base_config['descr'] = 'Piz Daint vcluster'
-base_config['hostnames'] = ['daint']
+base_config['hostnames'] = ['daint', 'alps-daint']
 
 site_configuration = {
     'systems': [
