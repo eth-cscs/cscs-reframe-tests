@@ -12,12 +12,12 @@ from uenv import uarch
 dlaf_references = {
     "eigensolver": {
         "gh200": {
-            "time_run": (30.5, -1.0, 0.1, "s"),
+            "time_run": (24.0, -1.0, 0.1, "s"),
         }
     },
     "gen_eigensolver": {
         "gh200": {
-            "time_run": (33.5, -1.0, 0.1, "s")
+            "time_run": (26.0, -1.0, 0.1, "s")
         }
     },
 }
