@@ -37,7 +37,7 @@ base_config = {
                 'builtin',
                 'PrgEnv-cray',
                 'PrgEnv-gnu',
-                'PrgEnv-gnu-ce',
+                'PrgEnv-ce',
                 # FIXME: Problem loading the following environments
                 # 'PrgEnv-nvidia',
                 # 'PrgEnv-nvhpc'
@@ -69,8 +69,17 @@ base_config = {
                 {
                     'name': 'cpe_ce_mount',
                     'options': [
-                        '--container-mounts={stagedir}:/rfm_workdir',
+                        # Mount both the stagedir and the directory related
+                        # used 3 levels above (the one related to the system)
+                        # to be able to find fixtures
+                        '--container-mounts={stagedir}/../../../,{stagedir}:/rfm_workdir',
                         '--container-workdir=/rfm_workdir'
+                     ]
+                },
+                {
+                    'name': 'cpe_ce_extra_mounts',
+                    'options': [
+                        '--container-mounts={mount}:{mount}',
                      ]
                 }
             ],
@@ -107,7 +116,7 @@ site_configuration = {
             'modules': ['cray', 'PrgEnv-cray', 'craype-arm-grace'],
         },
         {
-            'name': 'PrgEnv-gnu-ce',
+            'name': 'PrgEnv-ce',
             'features': ['serial', 'openmp', 'mpi'],
             'resources': {
                 'cpe_ce_image': {

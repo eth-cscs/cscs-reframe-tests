@@ -16,6 +16,7 @@ sys.path.append(
 )
 
 from extra_launcher_options import ExtraLauncherOptionsMixin
+from container_engine import ContainerEngineCPEMixin
 
 
 class fetch_osu_benchmarks(rfm.RunOnlyRegressionTest):
@@ -36,7 +37,8 @@ class fetch_osu_benchmarks(rfm.RunOnlyRegressionTest):
         return sn.assert_eq(self.job.exitcode, 0)
 
 
-class build_osu_benchmarks(rfm.CompileOnlyRegressionTest):
+class build_osu_benchmarks(rfm.CompileOnlyRegressionTest,
+                           ContainerEngineCPEMixin):
     '''Fixture for building the OSU benchmarks'''
 
     #: Build variant parameter.
@@ -105,6 +107,7 @@ class build_osu_benchmarks(rfm.CompileOnlyRegressionTest):
         tarball = f'osu-micro-benchmarks-{self.osu_benchmarks.version}.tar.gz'
         self.build_prefix = tarball[:-7]  # remove .tar.gz extension
         fullpath = os.path.join(self.osu_benchmarks.stagedir, tarball)
+ 
         self.prebuild_cmds += [
             f'cp {fullpath} {self.stagedir}',
             f'tar xzf {tarball}',
@@ -124,7 +127,8 @@ class build_osu_benchmarks(rfm.CompileOnlyRegressionTest):
         return True
 
 
-class osu_benchmark(rfm.RunOnlyRegressionTest, ExtraLauncherOptionsMixin):
+class osu_benchmark(rfm.RunOnlyRegressionTest, ExtraLauncherOptionsMixin,
+                    ContainerEngineCPEMixin):
     '''OSU benchmark test base class.'''
 
     #: Number of warmup iterations.
