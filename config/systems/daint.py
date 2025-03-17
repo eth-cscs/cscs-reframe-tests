@@ -84,7 +84,7 @@ site_configuration = {
             'name': 'PrgEnv-cray',
             'features': [
                 'serial', 'openmp', 'mpi', 'cuda', 'openacc', 'hdf5',
-                'netcdf-hdf5parallel',
+                # 'netcdf-hdf5parallel',
                 # FIXME MPI Error when using pnetcdf
                 # 'pnetcdf'
             ],
@@ -96,7 +96,8 @@ site_configuration = {
             'target_systems': ['daint'],
             'features': [
                 'serial', 'openmp', 'mpi', 'cuda', 'alloc_speed',
-                'hdf5', 'netcdf-hdf5parallel',
+                'hdf5'
+                # 'netcdf-hdf5parallel',
                 # FIXME MPI Error when using pnetcdf
                 # 'pnetcdf'
             ],
