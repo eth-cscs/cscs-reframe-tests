@@ -125,7 +125,7 @@ site_configuration = {
                         os.environ.get(
                             'CPE_CE',
                             '/capstor/scratch/cscs/jenkssl/cpe/cpe-gnu.sqsh',
-                        )
+                        ).replace(r'#', r'\#')
                 }
              }
         },
