@@ -68,12 +68,6 @@ class PnetCDFTest(rfm.RegressionTest, ExtraLauncherOptionsMixin):
                 'x86_64-unknown-linux-gnu -lunwind',
             ]
 
-    @run_before('run')
-    def fix_cpe(self):
-        # fix for "GLIBCXX_3.4.29 not found" error:
-        if self.lang == 'cpp' and self.current_environ.name == 'PrgEnv-gnu':
-            self.env_vars['LD_PRELOAD'] = '$GCC_PREFIX/snos/lib64/libstdc++.so'
-
     @run_before('sanity')
     def set_sanity(self):
         regex = {
