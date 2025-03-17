@@ -7,6 +7,7 @@
 #
 
 
+import os
 
 base_config = {
     'modules_system': 'lmod',
@@ -120,7 +121,11 @@ site_configuration = {
             'features': ['serial', 'openmp', 'mpi'],
             'resources': {
                 'cpe_ce_image': {
-                    'image': '/capstor/scratch/cscs/jenkssl/cpe/cpe-gnu.sqsh',
+                    'image':
+                        os.environ.get(
+                            'CPE_CE',
+                            '/capstor/scratch/cscs/jenkssl/cpe/cpe-gnu.sqsh',
+                        )
                 }
              }
         },
