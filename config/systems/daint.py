@@ -164,7 +164,19 @@ site_configuration = {
                '--max-retries=1',
                '--report-file=$PWD/latest.json',
                '-c checks',
-               '--tag=production'
+               '--tag=production',
+               '-p \'(?!PrgEnv-ce)\''
+           ],
+           'target_systems': ['daint'],
+       },
+       {
+           'name': 'cpe_ce_production',
+           'options': [
+               '--max-retries=1',
+               '--report-file=$PWD/latest.json',
+               '-c checks',
+               '--tag=production',
+               '-p PrgEnv-ce'
            ],
            'target_systems': ['daint'],
        },
