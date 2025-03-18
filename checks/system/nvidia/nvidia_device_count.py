@@ -92,6 +92,7 @@ class CPE_BuildDeviceCount(BuildDeviceCountBase, ContainerEngineCPEMixin):
     def setup_modules(self):
         sm = self.current_partition.select_devices('gpu')[0].arch[-2:]
         
+        # FIXME Temporary workaround for cudatoolkit absence in ce image
         if not self.current_environ.name.endswith('-ce'):
             self.modules = ['cudatoolkit', f'craype-accel-nvidia{sm}']
 

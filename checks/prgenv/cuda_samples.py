@@ -3,7 +3,6 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-import os
 import pathlib
 import sys
 
@@ -13,7 +12,6 @@ import reframe.utility.sanity as sn
 sys.path.append(
     str(pathlib.Path(__file__).parent.parent / 'mixins')
 )
-
 from container_engine import ContainerEngineCPEMixin
 
 
@@ -88,9 +86,9 @@ class CPE_CudaSamples(CudaSamplesBase):
 
     @run_after('setup')
     def set_modules(self):
-        #if 'PrgEnv-nvhpc' != self.current_environ.name:
         sm = self.current_partition.select_devices('gpu')[0].arch[-2:]
 
+        # FIXME Temporary workaround for cudatoolkit absence in ce image
         if not self.current_environ.name.endswith('-ce'):
             self.modules = ['cudatoolkit', f'craype-accel-nvidia{sm}',
                             'cpe-cuda']
