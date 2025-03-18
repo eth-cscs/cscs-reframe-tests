@@ -122,6 +122,7 @@ site_configuration = {
             'resources': {
                 'cpe_ce_image': {
                     'image':
+                        # Avoid interpretting '#' as a start of a comment
                         os.environ.get(
                             'CPE_CE',
                             '/capstor/scratch/cscs/jenkssl/cpe/cpe-gnu.sqsh',
