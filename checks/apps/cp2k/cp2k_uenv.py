@@ -138,7 +138,7 @@ class Cp2kBuildTestUENV(rfm.CompileOnlyRegressionTest):
 
 
 class Cp2kCheck_UENV(rfm.RunOnlyRegressionTest):
-    executable = './mps-wrapper.sh cp2k.psmp'
+    executable = './mps-wrapper.sh ./pika-bind.sh cp2k.psmp'
     maintainers = ['SSA']
     valid_systems = ['*']
 
@@ -232,7 +232,7 @@ class Cp2kCheckMD_UENVCustomExec(Cp2kCheckMD_UENV):
     @run_after('setup')
     def setup_executable(self):
         parent = self.getdep('Cp2kBuildTestUENV')
-        self.executable = f'./mps-wrapper.sh {parent.cp2k_executable}'
+        self.executable = f'./mps-wrapper.sh ./pika-bind.sh {parent.cp2k_executable}'
 
 
 # }}}
@@ -271,7 +271,7 @@ class Cp2kCheckPBE_UENVCustomExec(Cp2kCheckPBE_UENV):
     @run_after('setup')
     def setup_executable(self):
         parent = self.getdep('Cp2kBuildTestUENV')
-        self.executable = f'./mps-wrapper.sh {parent.cp2k_executable}'
+        self.executable = f'./mps-wrapper.sh ./pika-bind.sh {parent.cp2k_executable}'
 
 
 # }}}
