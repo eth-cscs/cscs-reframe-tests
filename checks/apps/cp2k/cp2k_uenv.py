@@ -166,9 +166,22 @@ class Cp2kCheck_UENV(rfm.RunOnlyRegressionTest):
         self.env_vars['OMP_PLACES'] = 'cores'
         self.env_vars['OMP_PROC_BIND'] = 'close'
 
+        self.env_vars["MIMALLOC_ALLOW_LARGE_OS_PAGES"] = "1"
+        self.env_vars["MIMALLOC_EAGER_COMMIT_DELAY"] = "0"
+
+        if self.uarch == "zen2":
+            self.env_vars["PIKA_THREADS"] = str((self.num_cpus_per_task // 2) - 1)
+        else:
+            self.env_vars["PIKA_THREADS"] = str(self.num_cpus_per_task - 1)
+
         if self.uarch == 'gh200':
+            self.env_vars["FI_MR_CACHE_MONITOR"] = "disabled"
             self.env_vars['MPICH_GPU_SUPPORT_ENABLED'] = '1'
             self.env_vars['CUDA_CACHE_DISABLE'] = '1'
+            self.env_vars["DLAF_BT_BAND_TO_TRIDIAG_HH_APPLY_GROUP_SIZE"] = \
+                "128"
+            self.env_vars["DLAF_UMPIRE_DEVICE_MEMORY_POOL_ALIGNMENT_BYTES"] = \
+                str(2**21)
 
         # set reference
         if self.uarch is not None and \
