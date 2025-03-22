@@ -12,12 +12,18 @@ from uenv import uarch
 dlaf_references = {
     "eigensolver": {
         "gh200": {
-            "time_run": (30.5, -1.0, 0.1, "s"),
+            "time_run": (24.0, -1.0, 0.1, "s"),
+        },
+        "zen2": {
+            "time_run": (165.0, -1.0, 0.1, "s"),
         }
     },
     "gen_eigensolver": {
         "gh200": {
-            "time_run": (33.5, -1.0, 0.1, "s")
+            "time_run": (26.0, -1.0, 0.1, "s")
+        },
+        "zen2": {
+            "time_run": (200.0, -1.0, 0.1, "s"),
         }
     },
 }
@@ -30,6 +36,13 @@ slurm_config = {
             "cpus-per-task": 72,
             "walltime": "0d0h5m0s",
             "gpu": True,
+        },
+        "zen2": {
+            "nodes": 2,
+            "ntasks-per-node": 16,
+            "cpus-per-task": 16,
+            "walltime": "0d0h10m0s",
+            "gpu": True,
         }
     },
     "gen_eigensolver": {
@@ -38,6 +51,13 @@ slurm_config = {
             "ntasks-per-node": 4,
             "cpus-per-task": 72,
             "walltime": "0d0h5m0s",
+            "gpu": True,
+        },
+        "zen2": {
+            "nodes": 2,
+            "ntasks-per-node": 16,
+            "cpus-per-task": 16,
+            "walltime": "0d0h10m0s",
             "gpu": True,
         }
     },
@@ -62,6 +82,8 @@ class dlaf_base(rfm.RunOnlyRegressionTest):
     @run_before("run")
     def prepare_run(self):
         self.uarch = uarch(self.current_partition)
+
+        # slurm configuration
         config = slurm_config[self.test_name][self.uarch]
         self.job.options = [f'--nodes={config["nodes"]}']
         self.num_tasks_per_node = config["ntasks-per-node"]
@@ -74,22 +96,30 @@ class dlaf_base(rfm.RunOnlyRegressionTest):
             self.job.launcher.options += ["--gpus-per-task=1"]
 
         # environment variables
-        self.env_vars["PIKA_THREADS"] = str(self.num_cpus_per_task - 1)
+        if self.uarch == "zen2":
+            self.env_vars["PIKA_THREADS"] = str((self.num_cpus_per_task // 2) - 1)
+        else:
+            self.env_vars["PIKA_THREADS"] = str(self.num_cpus_per_task - 1)
         self.env_vars["MIMALLOC_ALLOW_LARGE_OS_PAGES"] = "1"
         self.env_vars["MIMALLOC_EAGER_COMMIT_DELAY"] = "0"
-        self.env_vars["FI_MR_CACHE_MONITOR"] = "disabled"
         if self.uarch == "gh200":
+            self.env_vars["FI_MR_CACHE_MONITOR"] = "disabled"
             self.env_vars["MPICH_GPU_SUPPORT_ENABLED"] = "1"
             self.env_vars["DLAF_BT_BAND_TO_TRIDIAG_HH_APPLY_GROUP_SIZE"] = \
                 "128"
             self.env_vars["DLAF_UMPIRE_DEVICE_MEMORY_POOL_ALIGNMENT_BYTES"] = \
                 str(2**21)
 
+        # executable options
         grid_cols, grid_rows = self._sq_factor(self.num_tasks)
         self.executable_opts += [
             f"--grid-cols={grid_cols}",
             f"--grid-rows={grid_rows}"
         ]
+        if self.uarch == "gh200":
+            self.executable_opts.append("--block-size=1024")
+        else:
+            self.executable_opts.append("--block-size=512")
 
         # set performance reference
         if self.uarch is not None and \
@@ -127,7 +157,6 @@ class dlaf_check_uenv(dlaf_base):
     executable_opts = [
         "--type=d",
         "--matrix-size=40960",
-        "--block-size=1024",
         "--check=last",
         "--nwarmups=1",
         "--nruns=1",
