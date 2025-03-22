@@ -138,7 +138,7 @@ class Cp2kBuildTestUENV(rfm.CompileOnlyRegressionTest):
 
 
 class Cp2kCheck_UENV(rfm.RunOnlyRegressionTest):
-    executable = './mps-wrapper.sh cp2k.psmp'
+    executable = './mps-wrapper.sh ./pika-bind.sh cp2k.psmp'
     maintainers = ['SSA']
     valid_systems = ['*']
 
@@ -166,9 +166,22 @@ class Cp2kCheck_UENV(rfm.RunOnlyRegressionTest):
         self.env_vars['OMP_PLACES'] = 'cores'
         self.env_vars['OMP_PROC_BIND'] = 'close'
 
+        self.env_vars["MIMALLOC_ALLOW_LARGE_OS_PAGES"] = "1"
+        self.env_vars["MIMALLOC_EAGER_COMMIT_DELAY"] = "0"
+
+        if self.uarch == "zen2":
+            self.env_vars["PIKA_THREADS"] = str((self.num_cpus_per_task // 2) - 1)
+        else:
+            self.env_vars["PIKA_THREADS"] = str(self.num_cpus_per_task - 1)
+
         if self.uarch == 'gh200':
+            self.env_vars["FI_MR_CACHE_MONITOR"] = "disabled"
             self.env_vars['MPICH_GPU_SUPPORT_ENABLED'] = '1'
             self.env_vars['CUDA_CACHE_DISABLE'] = '1'
+            self.env_vars["DLAF_BT_BAND_TO_TRIDIAG_HH_APPLY_GROUP_SIZE"] = \
+                "128"
+            self.env_vars["DLAF_UMPIRE_DEVICE_MEMORY_POOL_ALIGNMENT_BYTES"] = \
+                str(2**21)
 
         # set reference
         if self.uarch is not None and \
@@ -232,7 +245,7 @@ class Cp2kCheckMD_UENVCustomExec(Cp2kCheckMD_UENV):
     @run_after('setup')
     def setup_executable(self):
         parent = self.getdep('Cp2kBuildTestUENV')
-        self.executable = f'./mps-wrapper.sh {parent.cp2k_executable}'
+        self.executable = f'./mps-wrapper.sh ./pika-bind.sh {parent.cp2k_executable}'
 
 
 # }}}
@@ -271,7 +284,7 @@ class Cp2kCheckPBE_UENVCustomExec(Cp2kCheckPBE_UENV):
     @run_after('setup')
     def setup_executable(self):
         parent = self.getdep('Cp2kBuildTestUENV')
-        self.executable = f'./mps-wrapper.sh {parent.cp2k_executable}'
+        self.executable = f'./mps-wrapper.sh ./pika-bind.sh {parent.cp2k_executable}'
 
 
 # }}}
