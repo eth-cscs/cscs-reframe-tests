@@ -51,6 +51,9 @@ site_configuration = {
                         }
                     ],
                     'launcher': 'srun'
+                    'access' [
+                        '--reservation=reshuffle'
+                    ]
                 },
             ]
         },
