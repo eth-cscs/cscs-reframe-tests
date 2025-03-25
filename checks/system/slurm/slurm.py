@@ -434,7 +434,7 @@ class SlurmPrologEpilogCheck(rfm.RunOnlyRegressionTest):
 
     @sanity_function
     def validate(self):
-        reason = sn.extractall('reason:\s*(.*)', self.stdout, tag=1)
+        reason = sn.extractall(r'reason:\s*(.*)', self.stdout, tag=1)
 
         if reason:
             return sn.assert_not_found('will be drained with reason', self.stdout,
