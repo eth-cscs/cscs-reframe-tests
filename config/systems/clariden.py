@@ -7,7 +7,6 @@
 #
 
 import reframe.utility.osext as osext
-import copy
 
 
 base_config = {
