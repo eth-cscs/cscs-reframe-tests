@@ -39,6 +39,7 @@ base_config = {
                 'cn_memory': 825,
             },
             'features': ['ce', 'gpu', 'nvgpu', 'remote', 'scontrol', 'uenv'],
+            'access': [f'--account=a-{osext.osgroup()}'],
             'resources': [
                 {
                     'name': 'switches',
