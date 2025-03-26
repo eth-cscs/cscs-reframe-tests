@@ -77,11 +77,22 @@ site_configuration = {
     ],
     'modes': [
        {
+           'name': 'cpe_production',
+           'options': [
+               '--max-retries=1',
+               '--report-file=$PWD/latest.json',
+               '-c checks',
+               '--tag=production'
+           ],
+           'target_systems': ['clariden'],
+       },
+       {
            'name': 'uenv_production',
            'options': [
                '--max-retries=1',
                '--report-file=$PWD/latest.json',
                '-c checks/apps',
+               '-c checks/libraries',
                '--tag=production'
            ],
            'target_systems': ['clariden'],
