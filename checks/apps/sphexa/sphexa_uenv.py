@@ -12,8 +12,8 @@ import reframe.utility.udeps as udeps
 class sphexa_build(rfm.RunOnlyRegressionTest):
     descr = 'Clone and Build SPHEXA'
     maintainers = ['SSA']
-    valid_systems = ['+uenv']
-    valid_prog_environs = ['+cuda']
+    valid_systems = ['+remote']
+    valid_prog_environs = ['+uenv +cuda']
     sourcesdir = None
     branch = variable(str, value='develop')
     build_system = 'CustomBuild'
@@ -64,8 +64,8 @@ class sphexa_build(rfm.RunOnlyRegressionTest):
 class sphexa_strong_scaling(rfm.RunOnlyRegressionTest):
     descr = 'Run SPHEXA'
     maintainers = ['SSA']
-    valid_systems = ['+uenv']
-    valid_prog_environs = ['+cuda']
+    valid_systems = ['+remote']
+    valid_prog_environs = ['+uenv +cuda']
 
     @run_after('init')
     def setup_dependency(self):
@@ -139,7 +139,6 @@ class sphexa_strong_scaling(rfm.RunOnlyRegressionTest):
 
 @rfm.simple_test
 class sphexa_evrard_strong_scaling(sphexa_strong_scaling):
-    valid_systems = ['+uenv']
     # run a simple setup in the CI:
     num_gpus = parameter([4, 8])
     sph_testcase = parameter(['evrard'])
