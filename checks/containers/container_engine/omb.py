@@ -95,7 +95,7 @@ class OMB_MPICH_CE(OMB_Base_CE):
 
     @run_after('init')
     def setup_ce(self):
-        self.container_image = (f'/capstor/scratch/cscs/amadonna/ethcscs+osu-mb+7.5-mpich4.3.0-ofi1.15-cuda12.8-arm64.sqsh')
+        self.container_image = (f'jfrog.svc.cscs.ch#reframe-oci/osu-mb:7.5-mpich4.3.0-ofi1.15-cuda12.8')
 
 
 @rfm.simple_test
@@ -120,5 +120,5 @@ class OMB_OMPI_CE(OMB_Base_CE):
 
     @run_after('init')
     def setup_ce(self):
-        self.container_image = (f'/capstor/scratch/cscs/amadonna/ethcscs+osu-mb+7.5-ompi5.0.7-ofi1.15-cuda12.8-arm64.sqsh')
+        self.container_image = (f'jfrog.svc.cscs.ch#reframe-oci/osu-mb:7.5-ompi5.0.7-ofi1.15-cuda12.8')
 
