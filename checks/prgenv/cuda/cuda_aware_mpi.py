@@ -172,17 +172,15 @@ class cuda_aware_mpi_check_xc(rfm.RegressionTest):
     build_system = 'Make'
     maintainers = ['@ekouts', '@jgphpc']
     tags = {'production', 'scs', 'craype'}
-    t = find_cdts('daint:gpu', 'PrgEnv-gnu', 'cdt/')
-    if t:
-        cdt_info = parameter(t)
-
-    t = find_cdts('daint:gpu', 'PrgEnv-gnu', 'nvhpc-nompi/')
-    if t:
-        nvhpc_info = parameter(t)
-
-    t = find_cdts('daint:gpu', 'PrgEnv-gnu', 'gcc/')
-    if t:
-        gcc_info = parameter(t)
+    test_data = [
+        find_cdts('daint:gpu', 'PrgEnv-gnu', 'cdt/'),
+        find_cdts('daint:gpu', 'PrgEnv-gnu', 'nvhpc-nompi/'),
+        find_cdts('daint:gpu', 'PrgEnv-gnu', 'gcc/')
+    ]
+    if [] not in test_data:
+        cdt_info = parameter(test_data[0])
+        nvhpc_info = parameter(test_data[1])
+        gcc_info = parameter(test_data[2])
 
     gpu_arch = variable(str, type(None))
 
@@ -199,6 +197,9 @@ class cuda_aware_mpi_check_xc(rfm.RegressionTest):
             '22.3': {'cuda': '11.6', 'gcc': '11'},
             # TODO: newer nvhpc
         }
+        if None in self.test_data:
+            self.skip('No data found')
+
         gcc_major_version = self.gcc_info.split('/')[1].split('.')[0]
         nvhpc_version = self.nvhpc_info.split('/')[1]
         gcc_max_version = nvhpc2gcc[nvhpc_version]['gcc']
