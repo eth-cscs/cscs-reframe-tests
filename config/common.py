@@ -86,7 +86,6 @@ site_configuration = {
                 '--perflogdir=$SCRATCH/regression/maintenance/logs',
                 '--stage=$SCRATCH/regression/maintenance/stage',
                 '--report-file=$SCRATCH/regression/maintenance/reports/maint_report_{sessionid}.json',
-                '-Jreservation=maintenance',
                 '--save-log-files',
                 '--tag=maintenance',
                 '--timestamp=%F_%H-%M-%S'
