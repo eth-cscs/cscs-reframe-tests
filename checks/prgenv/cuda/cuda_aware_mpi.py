@@ -172,10 +172,18 @@ class cuda_aware_mpi_check_xc(rfm.RegressionTest):
     build_system = 'Make'
     maintainers = ['@ekouts', '@jgphpc']
     tags = {'production', 'scs', 'craype'}
-    cdt_info = parameter(find_cdts('daint:gpu', 'PrgEnv-gnu', 'cdt/'))
-    nvhpc_info = parameter(find_cdts('daint:gpu', 'PrgEnv-gnu',
-                                     'nvhpc-nompi/'))
-    gcc_info = parameter(find_cdts('daint:gpu', 'PrgEnv-gnu', 'gcc/'))
+    t = find_cdts('daint:gpu', 'PrgEnv-gnu', 'cdt/')
+    if t:
+        cdt_info = parameter(t)
+
+    t = find_cdts('daint:gpu', 'PrgEnv-gnu', 'nvhpc-nompi/')
+    if t:
+        nvhpc_info = parameter(t)
+
+    t = find_cdts('daint:gpu', 'PrgEnv-gnu', 'gcc/')
+    if t:
+        gcc_info = parameter(t)
+
     gpu_arch = variable(str, type(None))
 
     @run_after('init')
