@@ -48,7 +48,7 @@ class RunJobCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     enroot_image = fixture(enroot_import_image_dockerhub, scope='session')
     executable = 'cat'
     executable_opts = ['/etc/os-release']
-    tags = {'production', 'ce'}
+    tags = {'production', 'ce', 'maintenance'}
 
     @run_after('setup')
     def set_image_path(self):
@@ -73,7 +73,7 @@ class RunNVGPUJobCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
             'MB/s': (3705000., -0.05, None, 'MB/s')
         }
     }
-    tags = {'production', 'ce'}
+    tags = {'production', 'ce', 'maintenance'}
 
     @run_before('run')
     def set_num_gpus(self):
