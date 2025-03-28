@@ -98,10 +98,10 @@ site_configuration = {
                 '--unload-module=reframe',
                 '--exec-policy=async',
                 '-Sstrict_check=1',
-                '--output=$SCRATCH/regression/$USER/production',
-                '--perflogdir=$SCRATCH/regression/$USER/production/logs',
+                '--output=$SCRATCH/regression/production',
+                '--perflogdir=$SCRATCH/regression/production/logs',
                 '--stage=$SCRATCH/regression/production/stage',
-                '--report-file=$SCRATCH/regression/$USER/production/reports/prod_report_{sessionid}.json',
+                '--report-file=$SCRATCH/regression/production/reports/prod_report_{sessionid}.json',
                 '--save-log-files',
                 '--tag=production',
                 '--timestamp=%F_%H-%M-%S'
