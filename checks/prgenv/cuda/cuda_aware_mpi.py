@@ -197,7 +197,7 @@ class cuda_aware_mpi_check_xc(rfm.RegressionTest):
             '22.3': {'cuda': '11.6', 'gcc': '11'},
             # TODO: newer nvhpc
         }
-        if None in self.test_data:
+        if [] in self.test_data:
             self.skip('No data found')
 
         gcc_major_version = self.gcc_info.split('/')[1].split('.')[0]
