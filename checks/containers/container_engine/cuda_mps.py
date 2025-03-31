@@ -30,7 +30,8 @@ class CUDA_MPS_CE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     tags = {'production', 'ce'}
 
     executable = 'pgrep'
-    executable_opts = ['--list-full', '--uid', f'{os.getuid()}', '--full', '"^nvidia-cuda-mps-control -d$"']
+    executable_opts = ['--list-full', '--uid', f'{os.getuid()}', '--full',
+                       '"^nvidia-cuda-mps-control -d$"']
 
     @sanity_function
     def assert_sanity(self):

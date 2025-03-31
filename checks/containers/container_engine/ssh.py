@@ -30,7 +30,8 @@ class SSH_CE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     tags = {'production', 'ce'}
 
     executable = 'pgrep'
-    executable_opts = ['--list-full', '--uid', f'{os.getuid()}', '--full', '"^/opt/oci-hooks/ssh/dropbear/bin/dropbear.*-p 15263.*$"']
+    executable_opts = ['--list-full', '--uid', f'{os.getuid()}', '--full',
+                       '"^/opt/oci-hooks/ssh/dropbear/bin/dropbear.*-p 15263.*$"']
 
     @sanity_function
     def assert_sanity(self):

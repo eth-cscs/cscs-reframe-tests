@@ -75,6 +75,7 @@ class OMB_Base_CE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
 
 @rfm.simple_test
 class OMB_MPICH_CE(OMB_Base_CE):
+    container_image = (f'jfrog.svc.cscs.ch#reframe-oci/osu-mb:7.5-mpich4.3.0-ofi1.15-cuda12.8')
     valid_systems = ['+ce +nvgpu']
     reference_per_test = {
         'pt2pt/osu_bw': {
@@ -93,13 +94,10 @@ class OMB_MPICH_CE(OMB_Base_CE):
     def set_pmi2(self):
         self.job.launcher.options += ['--mpi=pmi2']
 
-    @run_after('init')
-    def setup_ce(self):
-        self.container_image = (f'jfrog.svc.cscs.ch#reframe-oci/osu-mb:7.5-mpich4.3.0-ofi1.15-cuda12.8')
-
 
 @rfm.simple_test
 class OMB_OMPI_CE(OMB_Base_CE):
+    container_image = (f'jfrog.svc.cscs.ch#reframe-oci/osu-mb:7.5-ompi5.0.7-ofi1.15-cuda12.8')
     valid_systems = ['+ce +nvgpu']
     reference_per_test = {
         'pt2pt/osu_bw': {
@@ -117,8 +115,3 @@ class OMB_OMPI_CE(OMB_Base_CE):
     @run_before('run')
     def set_pmix(self):
         self.job.launcher.options += ['--mpi=pmix']
-
-    @run_after('init')
-    def setup_ce(self):
-        self.container_image = (f'jfrog.svc.cscs.ch#reframe-oci/osu-mb:7.5-ompi5.0.7-ofi1.15-cuda12.8')
-
