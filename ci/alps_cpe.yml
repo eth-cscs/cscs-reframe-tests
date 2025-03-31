@@ -9,6 +9,9 @@ stages:
 reframe:
   stage: run
   extends: .f7t-baremetal-runner
+  timeout: 8 hours
+  variables:
+    SLURM_TIMELIMIT: '00:60:00'
   before_script:
     - echo "FIRECREST_SYSTEM=$FIRECREST_SYSTEM / F7T_URL=$F7T_URL / CLUSTER_NAME=$CLUSTER_NAME"
     - uname -a

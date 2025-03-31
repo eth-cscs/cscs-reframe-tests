@@ -10,7 +10,9 @@ stages:
 setup and pull:
   stage: pull
   extends: .f7t-baremetal-runner
-  # variables:
+  timeout: 8 hours
+  variables:
+    SLURM_TIMELIMIT: '00:10:00'
     # Valid MODE=('container-runner', 'baremetal', 'f7t-controller')
   before_script:
     - echo "FIRECREST_SYSTEM=$FIRECREST_SYSTEM / F7T_URL=$F7T_URL / CLUSTER_NAME=$CLUSTER_NAME"
@@ -51,6 +53,9 @@ setup and pull:
 reframe:
   stage: run
   extends: .f7t-baremetal-runner
+  timeout: 8 hours
+  variables:
+    SLURM_TIMELIMIT: '00:60:00'
   needs: ['setup and pull']
   before_script:
     - echo "FIRECREST_SYSTEM=$FIRECREST_SYSTEM / F7T_URL=$F7T_URL / CLUSTER_NAME=$CLUSTER_NAME"
