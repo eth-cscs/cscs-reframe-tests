@@ -75,6 +75,8 @@ class gpu_kernel_latency_check(GpuKernelLatency):
             self.valid_prog_environs = ['PrgEnv-pgi']
         elif cs in {'ault'}:
             self.valid_prog_environs = ['PrgEnv-gnu']
+        else:
+            self.valid_prog_environs = []
 
     # Inject external hooks
     @run_after('setup')
