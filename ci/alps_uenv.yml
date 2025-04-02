@@ -4,7 +4,7 @@ include:
 stages:
   - pull
   - run
-  - notify_slack
+  - notify
   # - status
 
 setup and pull:
@@ -91,7 +91,7 @@ reframe:
 #   when: always
 
 notify_slack:
-  stage: notify_slack
+  stage: notify
   needs: ['reframe']
   extends: .container-runner-lightweight-zen2
   image: python:3.9
