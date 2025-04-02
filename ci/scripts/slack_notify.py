@@ -34,29 +34,35 @@ def main():
         print("❌ Missing SLACK_WEBHOOK_URL environment variable")
         sys.exit(1)
 
-    # Compose Slack message
+    # Determine color and emoji
     if session.get("num_failures", 0) > 0 or session.get("num_aborted", 0) > 0:
         result_emoji = "❌"
+        color = "danger"
     else:
         result_emoji = "✅"
+        color = "good"
 
-    message = (
-        f"*Test Report Notification*\n"
-        f"> 🤖 *System:* {system} [{dataset}]\n"
-        f"> 🧱 *Pipeline:* <{pipeline_url}|{pipeline_name}>\n"
-        f"> 📄 *Test Report:* <{test_report_url}|View Report>\n"
-        f"> {result_emoji} *Tests:* {session.get('num_cases', 0)} total | "
-        f"{session.get('num_failures', 0)} failed | "
-        f"{session.get('num_aborted', 0)} aborted | "
-        f"{session.get('num_skipped', 0)} skipped\n"
-        f"> ⏱️ *Elapsed Time:* {round(session.get('time_elapsed', 0), 2)}s"
-    )
+    # Build Slack attachment message
+    attachment = {
+        "color": color,
+        "text": (
+            f"*Test Report Notification*\n"
+            f"> 🤖 *System:* {system} [{dataset}]\n"
+            f"> 🧱 *Pipeline:* <{pipeline_url}|{pipeline_name}>\n"
+            f"> 📄 *Test Report:* <{test_report_url}|View Report>\n"
+            f"> {result_emoji} *Tests:* {session.get('num_cases', 0)} total | "
+            f"{session.get('num_failures', 0)} failed | "
+            f"{session.get('num_aborted', 0)} aborted | "
+            f"{session.get('num_skipped', 0)} skipped\n"
+            f"> ⏱️ *Elapsed Time:* {round(session.get('time_elapsed', 0), 2)}s"
+        )
+    }
 
-    # Send message to Slack
+    # Send to Slack
     try:
         response = requests.post(
             slack_url,
-            json={"text": message},
+            json={"attachments": [attachment]},
             headers={"Content-Type": "application/json"}
         )
         if response.status_code != 200:
