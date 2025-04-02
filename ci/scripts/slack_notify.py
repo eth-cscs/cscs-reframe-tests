@@ -47,14 +47,14 @@ def main():
         "color": color,
         "text": (
             f"*Test Report Notification*\n"
-            f"> 🤖 *System:* {system} [{dataset}]\n"
-            f"> 🧱 *Pipeline:* <{pipeline_url}|{pipeline_name}>\n"
-            f"> 📄 *Test Report:* <{test_report_url}|View Report>\n"
-            f"> {result_emoji} *Tests:* {session.get('num_cases', 0)} total | "
+            f"  🤖 *System:* {system} [{dataset}]\n"
+            f"  🧱 *Pipeline:* <{pipeline_url}|{pipeline_name}>\n"
+            f"  📄 *Test Report:* <{test_report_url}|View Report>\n"
+            f"  {result_emoji} *Tests:* {session.get('num_cases', 0)} total | "
             f"{session.get('num_failures', 0)} failed | "
             f"{session.get('num_aborted', 0)} aborted | "
             f"{session.get('num_skipped', 0)} skipped\n"
-            f"> ⏱️ *Elapsed Time:* {round(session.get('time_elapsed', 0), 2)}s"
+            f"  ⏱️ *Elapsed Time:* {round(session.get('time_elapsed', 0), 2)}s"
         )
     }
 
