@@ -91,7 +91,7 @@ reframe:
 #   when: always
 
 notify_slack:
-  stage: notify
+  stage: notify_slack
   needs: ['reframe']
   extends: .container-runner-lightweight-zen2
   image: python:3.9
