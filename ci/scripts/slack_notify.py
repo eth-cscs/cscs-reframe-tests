@@ -50,7 +50,6 @@ def main():
         f"> ⏱️ *Elapsed Time:* {round(session.get('time_elapsed', 0), 2)}s"
     )
 
-
     # Send message to Slack
     try:
         response = requests.post(
