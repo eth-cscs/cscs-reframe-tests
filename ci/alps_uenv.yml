@@ -99,6 +99,6 @@ notify_slack:
     - pwd
     - ls -a
     - pip install requests
-    - python ./ci/scripts/slack_notify.py latest.json
+    - python ./ci/scripts/slack_notify.py latest.json uenv
   when: always
 

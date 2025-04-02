@@ -5,11 +5,13 @@ import requests
 
 
 def main():
-    if len(sys.argv) != 2:
-        print("Usage: python notify_slack.py <session.json>")
+    if len(sys.argv) != 3:
+        print("Usage: python notify_slack.py <session.json> <dataset")
         sys.exit(1)
 
     json_path = sys.argv[1]
+    # Dataset is `uenv` or `cpe`
+    dataset = sys.argv[2]
 
     # Load session info from the JSON file
     try:
@@ -40,7 +42,7 @@ def main():
 
     message = (
         f"*Test Report Notification*\n"
-        f"> 🤖 *System:* {system}\n"
+        f"> 🤖 *System:* {system} [{dataset}]\n"
         f"> 🧱 *Pipeline:* <{pipeline_url}|{pipeline_name}>\n"
         f"> 📄 *Test Report:* <{test_report_url}|View Report>\n"
         f"> {result_emoji} *Tests:* {session.get('num_cases', 0)} total | "
