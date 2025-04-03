@@ -26,6 +26,7 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     global_batch_size = variable(int, value=1024)
     sequence_length = variable(int, value=8192) 
     checkpoint_steps = variable(int, value=250)
+    training_steps = variable(int, value=1)
     
     sourcesdir = None 
     curated_images = ['nvcr.io#nvidia/pytorch:24.12-py3']
@@ -64,11 +65,10 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     @run_after('init')
     def set_image(self):
         self.container_image = self.image
-        self.environment_in_launcher = False
         self.container_env_table = {
             'annotations.com.hooks': {
-                    'aws_ofi_nccl.enabled': 'true',
-                    'aws_ofi_nccl.variant': 'cuda12',
+                'aws_ofi_nccl.enabled': 'true',
+                'aws_ofi_nccl.variant': 'cuda12',
             },
        }
 
@@ -82,9 +82,12 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
 
     @run_after('setup')
     def set_executable_opts(self):
+        # Ensure that the various dirs related to PROJECT_DIR are accessible
+        # from within the container
+        self.container_mounts = [f'{self.stagedir}:{self.stagedir}']
+
         self.prerun_cmds = [
             'git clone https://github.com/swiss-ai/Megatron-LM.git',
-            'env',
             'cd $MEGATRON_LM_DIR',
             'echo "START TIME: $(date)"',
             'ulimit -c 0',
@@ -101,7 +104,7 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
 
         transformer_engine_args = [
 	    '--transformer-impl transformer_engine',
-	    '--use-precision-aware-optimizer'
+	    '--use-precision-aware-optimizer',
 	    '--main-grads-dtype bf16'
         ]
 
@@ -144,7 +147,7 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
 	    f'--micro-batch-size {self.micro_batch_size}', 
 	    f'--global-batch-size {self.global_batch_size}',
 	    f'--no-check-for-nan-in-loss-and-grad',
-	    f'--train-iters $TRAINING_STEPS',
+	    f'--train-iters {self.training_steps}',
 	    f'--log-interval 1',
 	    f'--eval-iters 0',
 	    f'--cross-entropy-loss-fusion',
@@ -170,11 +173,11 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
         ] 
 
         checkpoint_args = [ 
-	    '--save $CKPT_DIR',
-	    '--save-interval $CHECKPOINT_STEPS',
-	    '--ckpt-format torch_dist',
-	    '--load $CKPT_DIR',
-	    '--async-save'
+	    f'--save $CKPT_DIR',
+	    f'--save-interval {self.checkpoint_steps}',
+	    f'--ckpt-format torch_dist',
+	    f'--load $CKPT_DIR',
+	    f'--async-save'
         ]
 
         mixed_precision_args = [
@@ -208,7 +211,9 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
 	    f'--eod-mask-loss',
 	    f'--num-workers 1',
 	    f'--num-dataset-builder-threads 1',
-            f'--mock-data', # Try initially with mock data
+
+            # Run with mock data
+            f'--mock-data',
         ]
 
         all_args = [ 
@@ -230,19 +235,24 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
             f'python $MEGATRON_LM_DIR/pretrain_gpt.py {" ".join(all_args)}'
         )
      
-        # Transformer Engine 
         self.executable_opts = [
-            f"-c ", 
-            f"'RANK=\$SLURM_PROCID LOCAL_RANK=\$SLURM_LOCALID {cmd_prefix} "
-            f"{training_cmd}'"
+            rf"-c ", 
+            # Open with sinble quote
+            rf"'RANK=$SLURM_PROCID LOCAL_RANK=$SLURM_LOCALID "
+            rf"PYTHONPATH=$MEGATRON_LM_DIR:$PYTHONPATH "
+            rf"{cmd_prefix} "
+
+            # Close with single quote
+            rf"{training_cmd}'"
         ]
 
     @sanity_function
     def assert_sanity(self):
         return True 
 
-    @performance_function('GB/s')
-    def bandwidth(self):
-        return sn.extractsingle(r'\|\s*16GiB\s*\|\s*(?P<busbw>\S+)GBps\s*\|',
-                                self.stdout, tag='busbw', conv=float
-        )
+    #TODO Add performance function 
+    #@performance_function('GB/s')
+    #def bandwidth(self):
+    #    return sn.extractsingle(r'\|\s*16GiB\s*\|\s*(?P<busbw>\S+)GBps\s*\|',
+    #                            self.stdout, tag='busbw', conv=float
+    #    )
