@@ -15,28 +15,20 @@ sys.path.append(str(pathlib.Path(__file__).parent.parent.parent / 'mixins'))
 from container_engine import ContainerEngineMixin  # noqa: E402
 
 
-@rfm.simple_test
-class PyTorchMegatronLM(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
-    valid_systems = ['+nvgpu']
-    valid_prog_environs = ['builtin']
-    num_nodes = variable(int, value=32)
+class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
+    num_nodes = variable(int, value=16)
     num_tasks_per_node = 4
 
     micro_batch_size = variable(int, value=1)
-    global_batch_size = variable(int, value=1024)
+    global_batch_size = variable(int, value=128)
     sequence_length = variable(int, value=8192) 
-    checkpoint_steps = variable(int, value=250)
-    training_steps = variable(int, value=1)
+    checkpoint_steps = variable(int, value=500)
+    training_steps = variable(int, value=50)
     
     sourcesdir = None 
-    curated_images = ['nvcr.io#nvidia/pytorch:24.12-py3']
-
-    image = parameter(curated_images)
-
     executable = 'bash'
 
     env_vars = {
-        'NCCL_DEBUG': 'Info',
         'TORCH_NCCL_AVOID_RECORD_STREAMS': 1,
         'TORCH_NCCL_ASYNC_ERROR_HANDLING': 1,
         'CUDA_DEVICE_MAX_CONNECTIONS': 1,
@@ -49,6 +41,7 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
         'PROJECT_NAME': 'Megatron-Clariden',
         'EXP_NAME': 'llama3-70b-$SLURM_NNODES-nodes',
         'PROJECT_DIR': '$MEGATRON_LM_DIR/logs/Meg-Runs/$PROJECT_NAME',
+        'TRITON_CACHE_DIR': '$MEGATRON_LM_DIR/.triton_cache',
         'EXP_DIR': '$PROJECT_DIR/$EXP_NAME',
         'CKPT_DIR': '$EXP_DIR/checkpoints',
         'TRIGGER_DIR': '$EXP_DIR/triggers',
@@ -62,30 +55,16 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
 
     tags = {'production', 'ml'}
 
-    @run_after('init')
-    def set_image(self):
-        self.container_image = self.image
-        self.container_env_table = {
-            'annotations.com.hooks': {
-                'aws_ofi_nccl.enabled': 'true',
-                'aws_ofi_nccl.variant': 'cuda12',
-            },
-       }
-
     @run_after('setup')
     def setup_test(self):
         curr_part = self.current_partition
         self.num_gpus_per_node = curr_part.select_devices('gpu')[0].num_devices
         self.num_tasks = self.num_nodes * self.num_gpus_per_node
-        self.num_cpus_per_task = (curr_part.processor.num_cpus // 
-                                  self.num_tasks_per_node)
+        #self.num_cpus_per_task = (curr_part.processor.num_cpus // 
+        #                          self.num_tasks_per_node)
 
     @run_after('setup')
     def set_executable_opts(self):
-        # Ensure that the various dirs related to PROJECT_DIR are accessible
-        # from within the container
-        self.container_mounts = [f'{self.stagedir}:{self.stagedir}']
-
         self.prerun_cmds = [
             'git clone https://github.com/swiss-ai/Megatron-LM.git',
             'cd $MEGATRON_LM_DIR',
@@ -109,10 +88,10 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
         ]
 
         network_size_args = [
-	    f'--num-layers 80',
-	    f'--hidden-size 8192',
-	    f'--ffn-hidden-size 28672',
-	    f'--num-attention-heads 64',
+	    f'--num-layers 32',
+	    f'--hidden-size 4096',
+	    f'--ffn-hidden-size 14336',
+	    f'--num-attention-heads 32',
 	    f'--group-query-attention',
 	    f'--num-query-groups 8',
 	    f'--max-position-embeddings {self.sequence_length}',
@@ -155,7 +134,7 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
 	    f'--optimizer adam',
 	    f'--dataloader-type single',
 	    f'--manual-gc',
-	    f'--manual-gc-interval 50',
+	    f'--manual-gc-interval 500',
 	    f'--exit-signal-handler',
 	    f'--trigger-path $TRIGGER_DIR',
         ]
@@ -166,10 +145,10 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
         ]
 
         learning_rate_args = [ 
-	    '--lr 0.00015',
-	    '--min-lr 0.000015',
+	    '--lr 0.00022',
+	    '--min-lr 0.000022',
 	    '--lr-decay-style cosine',
-	    '--lr-warmup-iters 200',
+	    '--lr-warmup-iters 1',
         ] 
 
         checkpoint_args = [ 
@@ -185,17 +164,17 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
         ]
 
         distributed_args = [ 
-            f'--tensor-model-parallel-size {self.num_gpus_per_node}',
+            f'--tensor-model-parallel-size 1',
             f'--sequence-parallel',
-            f'--pipeline-model-parallel-size 8',
-            f'--num-layers-per-virtual-pipeline-stage 5',
-            f'--context-parallel-size 1',
+            f'--pipeline-model-parallel-size 1',
+            #f'--num-layers-per-virtual-pipeline-stage 5',
+            #f'--context-parallel-size 1',
             f'--use-distributed-optimizer',
             f'--overlap-grad-reduce',
             f'--overlap-param-gather',
-            f'--defer-embedding-wgrad-compute',
-            f'--wgrad-deferral-limit 22',
-            f'--overlap-p2p-communication-warmup-flush'
+            #f'--defer-embedding-wgrad-compute',
+            #f'--wgrad-deferral-limit 22',
+            #f'--overlap-p2p-communication-warmup-flush'
         ]
 
         tokenizer_args = [
@@ -248,11 +227,69 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
 
     @sanity_function
     def assert_sanity(self):
-        return True 
+        return sn.assert_found(r'Training finished after \d+ iterations',
+                               self.stdout)
 
-    #TODO Add performance function 
-    #@performance_function('GB/s')
-    #def bandwidth(self):
-    #    return sn.extractsingle(r'\|\s*16GiB\s*\|\s*(?P<busbw>\S+)GBps\s*\|',
-    #                            self.stdout, tag='busbw', conv=float
-    #    )
+    @performance_function('tokens/sec/gpu')
+    def tokens_per_sec_per_gpu(self):
+        return sn.avg(
+            sn.extractall(r'tokens/sec/gpu:\s*(?P<tokens>\S+)',
+                          self.stdout, tag='tokens', conv=float
+            )
+        )
+
+    @performance_function('TFLOP/s/GPU')
+    def throughput_per_gpu(self):
+        return sn.avg(sn.extractall(
+            r'throughput per GPU \(TFLOP/s/GPU\):\s*(?P<throughput>\S+)',
+            self.stdout, tag='throughput', conv=float
+        ))
+
+
+@rfm.simple_test
+class PyTorchMegatronLM_CE(PyTorchMegatronLM, ContainerEngineMixin):
+    valid_systems = ['+nvgpu +ce']
+    valid_prog_environs = ['builtin']
+    image = '/capstor/scratch/cscs/manitart/ce_images/ngc_pt_jan.sqsh'
+
+    @run_after('init')
+    def set_container_config(self):
+        self.container_image = self.image
+        self.container_env_table = {
+            'annotations.com.hooks': {
+                'aws_ofi_nccl.enabled': 'true',
+                'aws_ofi_nccl.variant': 'cuda12',
+            },
+       }
+
+    @run_after('setup')
+    def set_container_mounts(self):
+        # Ensure that the various dirs related to PROJECT_DIR are accessible
+        # from within the container
+        self.container_mounts = [f'{self.stagedir}:{self.stagedir}']
+
+
+@rfm.simple_test
+class PyTorchMegatronLM_UENV(PyTorchMegatronLM):
+    valid_systems = ['+nvgpu +uenv']
+    valid_prog_environs = ['+pytorch']
+
+    @run_after('setup')
+    def patch_numpy(self):
+        self.prerun_cmds += [
+            r"grep -r -l 'np\.product' ${MEGATRON_LM_DIR} | "
+            r"xargs sed -i 's/np.product/np.prod/g'"
+        ]
+
+    @run_after('setup')
+    def set_env_vars(self):
+        self.env_vars.update({
+            'NCCL_CROSS_NIC': 1,
+            'NCCL_NET_GDR_LEVEL': 'PHB',
+            'NCCL_NET': '"AWS Libfabric"',
+            'FI_CXI_DISABLE_HOST_REGISTER': 1,
+            'FI_MR_CACHE_MONITOR': 'userfaultfd',
+            'FI_CXI_DEFAULT_CQ_SIZE': 131072,
+            'FI_CXI_DEFAULT_TX_SIZE': 32768,
+            'FI_CXI_RX_MATCH_MODE': 'software',
+        })
