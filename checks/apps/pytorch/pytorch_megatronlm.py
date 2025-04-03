@@ -4,7 +4,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import pathlib
-import re
 import sys
 
 import reframe as rfm
@@ -41,7 +40,6 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
         'PROJECT_NAME': 'Megatron-Clariden',
         'EXP_NAME': 'llama3-70b-$SLURM_NNODES-nodes',
         'PROJECT_DIR': '$MEGATRON_LM_DIR/logs/Meg-Runs/$PROJECT_NAME',
-        'TRITON_CACHE_DIR': '$MEGATRON_LM_DIR/.triton_cache',
         'EXP_DIR': '$PROJECT_DIR/$EXP_NAME',
         'CKPT_DIR': '$EXP_DIR/checkpoints',
         'TRIGGER_DIR': '$EXP_DIR/triggers',
@@ -284,6 +282,7 @@ class PyTorchMegatronLM_UENV(PyTorchMegatronLM):
     @run_after('setup')
     def set_env_vars(self):
         self.env_vars.update({
+            'TRITON_CACHE_DIR': '$MEGATRON_LM_DIR/.triton_cache',
             'NCCL_CROSS_NIC': 1,
             'NCCL_NET_GDR_LEVEL': 'PHB',
             'NCCL_NET': '"AWS Libfabric"',
