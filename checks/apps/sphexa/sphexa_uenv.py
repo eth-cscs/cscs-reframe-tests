@@ -22,7 +22,7 @@ class sphexa_build(rfm.RunOnlyRegressionTest):
     sph_testing = parameter(['OFF'])
     sph_analytical = parameter(['OFF'])
     sph_build_type = parameter(['Debug'])
-    tags = {'uenv', 'production'}
+    tags = {'uenv', 'production', 'maintenance'}
 
     @run_before('run')
     def prepare_build(self):
