@@ -8,10 +8,11 @@ class cpi_build_test(rfm.RegressionTest):
     build_system = 'SingleSource'
     sourcepath = 'mpi_cpi/cpi.c'
     executable = './cpi.x'
-    num_tasks = 3
+    num_tasks = -2
     num_tasks_per_node = 1
     build_locally = False
     env_vars = {'MPICH_GPU_SUPPORT_ENABLED': 0} 
+    tags = {'appscheckout', 'uenv'}
 
     @sanity_function
     def validate(self):
