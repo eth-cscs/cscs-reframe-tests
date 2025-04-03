@@ -6,7 +6,7 @@ import requests
 
 def main():
     if len(sys.argv) != 3:
-        print("Usage: python notify_slack.py <session.json> <dataset")
+        print("Usage: python notify_slack.py <session.json> <dataset>")
         sys.exit(1)
 
     json_path = sys.argv[1]
