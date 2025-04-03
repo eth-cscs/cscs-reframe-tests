@@ -1,4 +1,8 @@
 /*
+ * Example from the MPICH repository:
+ * https://github.com/pmodels/mpich
+ * https://github.com/pmodels/mpich/blob/main/examples/cpi.c
+ * 
  * Copyright (C) by Argonne National Laboratory
  *     See COPYRIGHT in top-level directory
  */
