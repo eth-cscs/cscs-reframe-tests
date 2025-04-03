@@ -13,7 +13,7 @@ class sphexa_build(rfm.RunOnlyRegressionTest):
     descr = 'Clone and Build SPHEXA'
     maintainers = ['SSA']
     valid_systems = ['+remote']
-    valid_prog_environs = ['+uenv +cuda']
+    valid_prog_environs = ['+sphexa']
     sourcesdir = None
     branch = variable(str, value='develop')
     build_system = 'CustomBuild'
@@ -54,7 +54,7 @@ class sphexa_build(rfm.RunOnlyRegressionTest):
         ]
 
     @sanity_function
-    def validate_build(self):        
+    def validate_build(self):
         self._executable = os.path.join(self.stagedir, 'build',
                                         'main', 'src', 'sphexa', 'sphexa-cuda')
         return os.path.isfile(self._executable)
@@ -64,7 +64,7 @@ class sphexa_strong_scaling(rfm.RunOnlyRegressionTest):
     descr = 'Run SPHEXA'
     maintainers = ['SSA']
     valid_systems = ['+remote']
-    valid_prog_environs = ['+uenv +cuda']
+    valid_prog_environs = ['+sphexa']
 
     @run_after('init')
     def setup_dependency(self):
