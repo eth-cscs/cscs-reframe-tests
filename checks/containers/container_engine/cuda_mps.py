@@ -27,7 +27,7 @@ class CUDA_MPS_CE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
             'nvidia_cuda_mps.enabled': 'true',
         }
     }
-    tags = {'production', 'ce'}
+    tags = {'production', 'ce', 'maintenance'}
 
     executable = 'pgrep'
     executable_opts = ['--list-full', '--uid', f'{os.getuid()}', '--full',
