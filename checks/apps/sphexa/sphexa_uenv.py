@@ -54,8 +54,7 @@ class sphexa_build(rfm.RunOnlyRegressionTest):
         ]
 
     @sanity_function
-    def validate_build(self):
-        # print(f'self.stagedir={self.stagedir}')
+    def validate_build(self):        
         self._executable = os.path.join(self.stagedir, 'build',
                                         'main', 'src', 'sphexa', 'sphexa-cuda')
         return os.path.isfile(self._executable)
@@ -139,6 +138,7 @@ class sphexa_strong_scaling(rfm.RunOnlyRegressionTest):
 
 @rfm.simple_test
 class sphexa_evrard_strong_scaling(sphexa_strong_scaling):
+    tags = {'uenv', 'production', 'maintenance'}
     # run a simple setup in the CI:
     num_gpus = parameter([4, 8])
     sph_testcase = parameter(['evrard'])
