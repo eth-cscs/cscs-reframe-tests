@@ -13,6 +13,7 @@ class cpi_build_test(rfm.RegressionTest):
     build_locally = False
     env_vars = {'MPICH_GPU_SUPPORT_ENABLED': 0} 
     tags = {'appscheckout', 'uenv'}
+    maintainers = ['VCUE', 'PA']
 
     @sanity_function
     def validate(self):
