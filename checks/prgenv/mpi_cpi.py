@@ -11,6 +11,7 @@ class cpi_build_test(rfm.RegressionTest):
     num_tasks = 3
     num_tasks_per_node = 1
     build_locally = False
+    env_vars = {'MPICH_GPU_SUPPORT_ENABLED': 0} 
 
     @sanity_function
     def validate(self):
