@@ -18,14 +18,14 @@ class OMB_Base_CE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     valid_prog_environs = ['builtin']
     valid_systems = ['+ce']
     sourcesdir = None
-    test_name = parameter(['pt2pt/osu_bw','collective/osu_alltoall'])
+    test_name = parameter(['pt2pt/osu_bw', 'collective/osu_alltoall'])
     num_nodes = variable(int, value=2)
     container_env_table = {
         'annotations.com.hooks': {
             'cxi.enabled': 'true',
         }
     }
-    tags = {'production', 'ce'}
+    tags = {'production', 'ce', 'maintenance'}
 
     mpi_tests_dir = '/usr/local/libexec/osu-micro-benchmarks/mpi'
 
@@ -75,7 +75,9 @@ class OMB_Base_CE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
 
 @rfm.simple_test
 class OMB_MPICH_CE(OMB_Base_CE):
-    container_image = (f'jfrog.svc.cscs.ch#reframe-oci/osu-mb:7.5-mpich4.3.0-ofi1.15-cuda12.8')
+    container_image = (
+        'jfrog.svc.cscs.ch#reframe-oci/osu-mb:7.5-mpich4.3.0-ofi1.15-cuda12.8'
+    )
     valid_systems = ['+ce +nvgpu']
     reference_per_test = {
         'pt2pt/osu_bw': {
