@@ -72,5 +72,6 @@ def main():
     except Exception as e:
         print(f"❌ Error sending message to Slack: {e}")
 
+
 if __name__ == "__main__":
     main()
