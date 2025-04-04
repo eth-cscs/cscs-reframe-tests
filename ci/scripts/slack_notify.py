@@ -13,16 +13,6 @@ def main():
     # Dataset is `uenv` or `cpe`
     dataset = sys.argv[2]
 
-    # Load session info from the JSON file
-    try:
-        with open(json_path, "r") as f:
-            data = json.load(f)
-    except Exception as e:
-        print(f"❌ Failed to read JSON file: {e}")
-        sys.exit(1)
-
-    session = data.get("session_info", {})
-
     # Get environment variables
     system = os.getenv("FIRECREST_SYSTEM", "Unknown System")
     slack_url = os.getenv("SLACK_WEBHOOK_URL")
@@ -34,29 +24,48 @@ def main():
         print("❌ Missing SLACK_WEBHOOK_URL environment variable")
         sys.exit(1)
 
-    # Determine color and emoji
-    if session.get("num_failures", 0) > 0 or session.get("num_aborted", 0) > 0:
-        result_emoji = "❌"
-        color = "danger"
-    else:
-        result_emoji = "✅"
-        color = "good"
+    # Load session info from the JSON file
+    try:
+        with open(json_path, "r") as f:
+            data = json.load(f)
+    except Exception as e:
+        print(f"❌ Failed to read JSON file: {e}")
 
-    # Build Slack attachment message
-    attachment = {
-        "color": color,
-        "text": (
-            f"*Test Report Notification*\n"
-            f"  🤖 *System:* {system} [{dataset}]\n"
-            f"  🧱 *Pipeline:* <{pipeline_url}|{pipeline_name}>\n"
-            f"  📄 *Test Report:* <{test_report_url}|View Report>\n"
-            f"  {result_emoji} *Tests:* {session.get('num_cases', 0)} total | "
-            f"{session.get('num_failures', 0)} failed | "
-            f"{session.get('num_aborted', 0)} aborted | "
-            f"{session.get('num_skipped', 0)} skipped\n"
-            f"  ⏱️ *Elapsed Time:* {round(session.get('time_elapsed', 0), 2)}s"
-        )
-    }
+        attachment = {
+            "color": "danger",
+            "text": (
+                f"*Pipeline Failure Notification*\n"
+                f"  🤖 *System:* {system} [{dataset}]\n"
+                f"  🧱 *Pipeline:* <{pipeline_url}|{pipeline_name}>\n"
+                f"  ❌ *Message:* Pipeline failed without results (possibly because of timeout)"
+            )
+        }
+    else:
+        session = data.get("session_info", {})
+
+        # Determine color and emoji
+        if session.get("num_failures", 0) > 0 or session.get("num_aborted", 0) > 0:
+            result_emoji = "❌"
+            color = "danger"
+        else:
+            result_emoji = "✅"
+            color = "good"
+
+        # Build Slack attachment message
+        attachment = {
+            "color": color,
+            "text": (
+                f"*Test Report Notification*\n"
+                f"  🤖 *System:* {system} [{dataset}]\n"
+                f"  🧱 *Pipeline:* <{pipeline_url}|{pipeline_name}>\n"
+                f"  📄 *Test Report:* <{test_report_url}|View Report>\n"
+                f"  {result_emoji} *Tests:* {session.get('num_cases', 0)} total | "
+                f"{session.get('num_failures', 0)} failed | "
+                f"{session.get('num_aborted', 0)} aborted | "
+                f"{session.get('num_skipped', 0)} skipped\n"
+                f"  ⏱️ *Elapsed Time:* {round(session.get('time_elapsed', 0), 2)}s"
+            )
+        }
 
     # Send to Slack
     try:
