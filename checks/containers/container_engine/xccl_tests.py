@@ -57,7 +57,7 @@ class XCCLTestBase(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
         return sn.all([
             sn.assert_found(r'Out of bounds values\s*:\s*0\s*OK', self.stdout),
             sn.assert_found(
-                r'NCCL INFO NET/OFI Selected Provider is cxi', self.stdout
+                r'NCCL INFO NET/OFI Selected [pP]rovider is cxi', self.stdout
             )
          ])
 
