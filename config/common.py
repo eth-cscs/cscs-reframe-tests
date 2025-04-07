@@ -111,7 +111,8 @@ site_configuration = {
         {
             'check_search_path': ['checks/'],
             'check_search_recursive': True,
-            'remote_detect': True
+            'remote_detect': True,
+            'resolve_module_conflicts': False
         }
     ],
 #     'autodetect_methods': [
