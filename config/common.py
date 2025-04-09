@@ -80,8 +80,6 @@ site_configuration = {
             'name': 'maintenance',
             'options': [
                 '--unload-module=reframe',
-                '--exec-policy=async',
-                '-Sstrict_check=1',
                 '--output=$SCRATCH/regression/maintenance',
                 '--perflogdir=$SCRATCH/regression/maintenance/logs',
                 '--stage=$SCRATCH/regression/maintenance/stage',
@@ -95,8 +93,6 @@ site_configuration = {
             'name': 'production',
             'options': [
                 '--unload-module=reframe',
-                '--exec-policy=async',
-                '-Sstrict_check=1',
                 '--output=$SCRATCH/regression/production',
                 '--perflogdir=$SCRATCH/regression/production/logs',
                 '--stage=$SCRATCH/regression/production/stage',
@@ -124,7 +120,37 @@ site_configuration = {
                '-c checks/libraries',
                '--tag=production'
            ]
-        }
+        },
+        {
+            'name': 'appscheckout_flexible',
+            'options': [
+                '--unload-module=reframe',
+                '--output=$SCRATCH/regression/production',
+                '--perflogdir=$SCRATCH/regression/production/logs',
+                '--stage=$SCRATCH/regression/production/stage',
+                '--report-file=$SCRATCH/regression/production/reports/prod_report_{sessionid}.json',
+                '--save-log-files',
+                '--tag=appscheckout',
+                '--tag=flexible',
+                '--flex-alloc-policy=all'
+                '--timestamp=%F_%H-%M-%S'
+            ]
+        },
+        {
+            'name': 'appscheckout_distributed',
+            'options': [
+                '--unload-module=reframe',
+                '--output=$SCRATCH/regression/production',
+                '--perflogdir=$SCRATCH/regression/production/logs',
+                '--stage=$SCRATCH/regression/production/stage',
+                '--report-file=$SCRATCH/regression/production/reports/prod_report_{sessionid}.json',
+                '--save-log-files',
+                '--tag=appscheckout',
+                '--exclude-tag=flexible',
+                '--distribute=all',
+                '--timestamp=%F_%H-%M-%S'
+            ]
+        },
     ],
     'general': [
         {
