@@ -10,52 +10,19 @@ import reframe as rfm
 import reframe.utility.sanity as sn
 import uenv
 
-sys.path.append(str(pathlib.Path(__file__).parent.parent.parent.parent / 
+sys.path.append(str(pathlib.Path(__file__).parent.parent.parent.parent /
                     'mixins'))
 
 from container_engine import ContainerEngineMixin  # noqa: E402
 
 
-@rfm.simple_test
-class CudaNodeBurnCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
-    ref_nb_gflops = {
-        'a100': {'nb_gflops': (9746*2*0.85, -0.1, None, 'GFlops')},
-        'gh200': {'nb_gflops': (42700, -0.1, None, 'GFlops')},
-    }
-    valid_systems = ['+ce +nvgpu']
+class NodeBurnCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     valid_prog_environs = ['builtin']
     nb_duration = variable(int, value=20)
     nb_matrix_size = variable(int, value=30000)
     executable = 'burn-f64'
     container_image = 'jfrog.svc.cscs.ch#reframe-oci/node-burn:cuda-12.4'
-
-    @run_before('run')
-    def setup_job(self):
-        self.skip_if_no_procinfo()
-        self.job.options = [f'--gpus-per-task=1']
-        self.num_gpus = self.current_partition.devices[0].num_devices
-        self.num_tasks = self.num_gpus 
-        self.extra_resources = {
-            'gres': {'gres': f'gpu:{self.num_tasks}'}
-        }
-        self.executable_opts = [
-            f'-ggemm,{self.nb_matrix_size}',
-            f'-d{self.nb_duration}', '--batch'
-        ]
-
-    @sanity_function
-    def validate_test(self):
-        """
-        nid002..:gpu 4 iterations, 16147.33 GFlops, 13.4 seconds, 21.600 Gbytes
-        """
-        regex = r'nid\d+:gpu.*\s+(\d+\.\d+)\s+GFlops,'
-        num_gpus_res = sn.count(sn.extractall(regex, self.stdout, 1, float))
-        return sn.assert_eq(self.num_gpus, num_gpus_res)
-
-    @performance_function('GFlops')
-    def nb_gflops(self):
-        regex = r'nid\d+:gpu.*\s+(\d+\.\d+)\s+GFlops,'
-        return sn.min(sn.extractall(regex, self.stdout, 1, float))
+    tags = {'production', 'maintenance', 'appscheckout'}
 
     @run_before('performance')
     def validate_perf(self):
@@ -67,3 +34,62 @@ class CudaNodeBurnCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
             self.reference = {
                 self.current_partition.fullname: self.ref_nb_gflops[self.uarch]
             }
+
+    @sanity_function
+    def validate_test(self):
+        regex = rf'nid\d+:{self.test_hw}.*\s+(\d+\.\d+)\s+GFlops,'
+        num_res = sn.count(sn.extractall(regex, self.stdout, 1, float))
+        return sn.assert_eq(self.num_tasks, num_res)
+
+    @performance_function('GFlops')
+    def nb_gflops(self):
+        regex = rf'nid\d+:{self.test_hw}.*\s+(\d+\.\d+)\s+GFlops,'
+        return sn.min(sn.extractall(regex, self.stdout, 1, float))
+
+
+@rfm.simple_test
+class CudaNodeBurnCE(NodeBurnCE):
+    ref_nb_gflops = {
+        'a100': {'nb_gflops': (9746*2*0.85, -0.1, None, 'GFlops')},
+        'gh200': {'nb_gflops': (42700, -0.1, None, 'GFlops')},
+    }
+    valid_systems = ['+ce +nvgpu']
+    test_hw = 'gpu'
+
+    @run_before('run')
+    def setup_job(self):
+        self.skip_if_no_procinfo()
+        self.job.options = [f'--gpus-per-task=1']
+        self.num_gpus = self.current_partition.devices[0].num_devices
+        self.num_tasks = self.num_gpus
+        self.extra_resources = {
+            'gres': {'gres': f'gpu:{self.num_tasks}'}
+        }
+        self.executable_opts = [
+            f'-ggemm,{self.nb_matrix_size}',
+            f'-d{self.nb_duration}', '--batch'
+        ]
+
+
+@rfm.simple_test
+class CPUNodeBurnCE(NodeBurnCE):
+    ref_nb_gflops = {
+        'gh200': {'nb_gflops': (2300, -0.1, None, 'GFlops')},
+    }
+    test_hw = 'cpu'
+    valid_systems = ['+ce']
+
+    @run_before('run')
+    def setup_job(self):
+        self.skip_if_no_procinfo()
+        self.num_sockets = int(self.current_partition.processor.num_sockets)
+        
+        # Use 1 core less since to leave one for OS tasks
+        self.num_cpus_per_task = (
+            int(self.current_partition.processor.num_cpus_per_socket) - 1
+        )
+        self.num_tasks = self.num_sockets
+        self.executable_opts = [
+            f'-cgemm,{self.nb_matrix_size}',
+            f'-d{self.nb_duration}', '--batch'
+        ]
