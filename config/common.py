@@ -132,7 +132,7 @@ site_configuration = {
                 '--save-log-files',
                 '--tag=appscheckout',
                 '--tag=flexible',
-                '--flex-alloc-policy=all',
+                '--flex-alloc-nodes=all',
                 '--timestamp=%F_%H-%M-%S'
             ]
         },
