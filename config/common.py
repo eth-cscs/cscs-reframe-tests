@@ -80,6 +80,7 @@ site_configuration = {
             'name': 'maintenance',
             'options': [
                 '--unload-module=reframe',
+                '-Sstrict_check=1',
                 '--output=$SCRATCH/regression/maintenance',
                 '--perflogdir=$SCRATCH/regression/maintenance/logs',
                 '--stage=$SCRATCH/regression/maintenance/stage',
@@ -93,6 +94,7 @@ site_configuration = {
             'name': 'production',
             'options': [
                 '--unload-module=reframe',
+                '-Sstrict_check=1',
                 '--output=$SCRATCH/regression/production',
                 '--perflogdir=$SCRATCH/regression/production/logs',
                 '--stage=$SCRATCH/regression/production/stage',
@@ -105,6 +107,7 @@ site_configuration = {
         {
            'name': 'cpe_production',
            'options': [
+               '-Sstrict_check=1',
                '--max-retries=1',
                '--report-file=$PWD/latest.json',
                '-c checks',
@@ -114,6 +117,7 @@ site_configuration = {
         {
            'name': 'uenv_production',
            'options': [
+               '-Sstrict_check=1',
                '--max-retries=1',
                '--report-file=$PWD/latest.json',
                '-c checks/apps',
@@ -125,6 +129,7 @@ site_configuration = {
             'name': 'appscheckout_flexible',
             'options': [
                 '--unload-module=reframe',
+                '-Sstrict_check=1',
                 '--output=$SCRATCH/regression/production',
                 '--perflogdir=$SCRATCH/regression/production/logs',
                 '--stage=$SCRATCH/regression/production/stage',
@@ -140,6 +145,7 @@ site_configuration = {
             'name': 'appscheckout_distributed',
             'options': [
                 '--unload-module=reframe',
+                '-Sstrict_check=1',
                 '--output=$SCRATCH/regression/production',
                 '--perflogdir=$SCRATCH/regression/production/logs',
                 '--stage=$SCRATCH/regression/production/stage',
