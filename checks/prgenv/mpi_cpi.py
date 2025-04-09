@@ -11,8 +11,8 @@ class cpi_build_test(rfm.RegressionTest):
     num_tasks = -2
     num_tasks_per_node = 1
     build_locally = False
-    env_vars = {'MPICH_GPU_SUPPORT_ENABLED': 0} 
-    tags = {'appscheckout', 'uenv'}
+    env_vars = {'MPICH_GPU_SUPPORT_ENABLED': 0}
+    tags = {'appscheckout', 'uenv', 'flexible'}
     maintainers = ['VCUE', 'PA']
 
     @sanity_function
