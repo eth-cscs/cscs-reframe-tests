@@ -105,6 +105,25 @@ site_configuration = {
                 '--tag=production',
                 '--timestamp=%F_%H-%M-%S'
             ]
+        },
+        {
+           'name': 'cpe_production',
+           'options': [
+               '--max-retries=1',
+               '--report-file=$PWD/latest.json',
+               '-c checks',
+               '--tag=production'
+           ]
+        },
+        {
+           'name': 'uenv_production',
+           'options': [
+               '--max-retries=1',
+               '--report-file=$PWD/latest.json',
+               '-c checks/apps',
+               '-c checks/libraries',
+               '--tag=production'
+           ]
         }
     ],
     'general': [

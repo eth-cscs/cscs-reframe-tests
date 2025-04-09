@@ -147,21 +147,4 @@ site_configuration = {
             'modules': ['cray', 'cpeIntel']
         },
     ],
-    'modes': [
-       {
-           'name': 'cpe_production',
-           'options': [
-               '--report-file=$PWD/latest.json',
-               '-c checks/system/integration/eiger.py',
-               '-c checks/prgenv/mpi.py',
-               '-c checks/microbenchmarks/mpi/osu/osu_run.py',
-               '-c checks/microbenchmarks/mpi/osu/osu_tests.py',
-               '-c checks/microbenchmarks/cpu/alloc_speed/alloc_speed.py',
-               '-c checks/microbenchmarks/cpu/stream/stream.py',
-               '-c checks/prgenv/affinity_check.py',
-           ],
-           'target_systems': ['pilatus'],
-       }
-   ]
-
 }
