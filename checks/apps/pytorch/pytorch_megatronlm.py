@@ -17,19 +17,53 @@ from container_engine import ContainerEngineMixin  # noqa: E402
 class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
     num_nodes = variable(int, value=16)
     num_tasks_per_node = 4
-
-    micro_batch_size = variable(int, value=1)
-    global_batch_size = variable(int, value=128)
-    sequence_length = variable(int, value=8192) 
+    num_nodes = 16
+    model = variable(str, value='llama3-8b')
     checkpoint_steps = variable(int, value=500)
     training_steps = variable(int, value=50)
-    
+
+    configurations = {
+        'llama3-70b': {
+            'micro_batch_size': 1,
+            'global_batch_size': 1024,
+            'sequence_length': 8192,
+            'num_layers': 80,
+            'hidden_size': 8192,
+            'ffn_hidden_size': 28672,
+            'num_attention_heads': 64,
+            'tensor_model_parallel_size': None,
+            'pipeline_model_parallel_size': 8,
+            'num_layers_per_virtual_pipeline_stage': 5,
+            'context_parallel_size': 1,
+            'lr': '0.00015',
+            'min_lr': '0.000015',
+            'manual_gc_interval': '50'
+        },
+        'llama3-8b': {
+            'micro_batch_size': 1,
+            'global_batch_size': 128,
+            'sequence_length': 8192,
+            'num_layers': 32,
+            'hidden_size': 4096,
+            'ffn_hidden_size': 14336,
+            'num_attention_heads': 32,
+            'tensor_model_parallel_size': 1,
+            'pipeline_model_parallel_size': 1,
+            'num_layers_per_virtual_pipeline_stage': None,
+            'context_parallel_size': None,
+            'lr': '0.00022',
+            'min_lr': '0.000022',
+            'manual_gc_interval': '500'
+        }
+    }
+
     sourcesdir = None 
     executable = 'bash'
 
     env_vars = {
         'TORCH_NCCL_AVOID_RECORD_STREAMS': 1,
         'TORCH_NCCL_ASYNC_ERROR_HANDLING': 1,
+        'NCCL_DEBUG': 'Info',
         'CUDA_DEVICE_MAX_CONNECTIONS': 1,
         'MASTER_ADDR':
             '$(scontrol show hostnames $SLURM_JOB_NODELIST | head -n 1)',
@@ -74,10 +108,9 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
             'mkdir -p $DEBUG_DIR',
             'mkdir -p $LOGGING_DIR',
         ]
-
         self.postrun_cmds = ['echo "END TIME: $(date)"']
-
         cmd_prefix = 'numactl --membind=0-3'
+        model_config = self.configurations[self.model]
 
         transformer_engine_args = [
 	    '--transformer-impl transformer_engine',
@@ -86,13 +119,13 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
         ]
 
         network_size_args = [
-	    f'--num-layers 32',
-	    f'--hidden-size 4096',
-	    f'--ffn-hidden-size 14336',
-	    f'--num-attention-heads 32',
+	    f'--num-layers {model_config["num_layers"]}',
+	    f'--hidden-size {model_config["hidden_size"]}',
+	    f'--ffn-hidden-size {model_config["ffn_hidden_size"]}',
+	    f'--num-attention-heads {model_config["num_attention_heads"]}',
 	    f'--group-query-attention',
 	    f'--num-query-groups 8',
-	    f'--max-position-embeddings {self.sequence_length}',
+	    f'--max-position-embeddings {model_config["sequence_length"]}',
 	    f'--position-embedding-type rope',
 	    f'--rotary-base 500000',
 	    f'--use-rope-scaling',
@@ -132,7 +165,7 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
 	    f'--optimizer adam',
 	    f'--dataloader-type single',
 	    f'--manual-gc',
-	    f'--manual-gc-interval 500',
+	    f'--manual-gc-interval {model_config["manual_gc_interval"]}',
 	    f'--exit-signal-handler',
 	    f'--trigger-path $TRIGGER_DIR',
         ]
@@ -143,10 +176,10 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
         ]
 
         learning_rate_args = [ 
-	    '--lr 0.00022',
-	    '--min-lr 0.000022',
-	    '--lr-decay-style cosine',
-	    '--lr-warmup-iters 1',
+	    f'--lr {model_config["lr"]}',
+	    f'--min-lr {model_config["min_lr"]}',
+	    f'--lr-decay-style cosine',
+	    f'--lr-warmup-iters 1',
         ] 
 
         checkpoint_args = [ 
@@ -162,9 +195,13 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
         ]
 
         distributed_args = [ 
-            f'--tensor-model-parallel-size 1',
+            f'--tensor-model-parallel-size '
+            f'{model_config["tensor_model_parallel_size"]}',
             f'--sequence-parallel',
-            f'--pipeline-model-parallel-size 1',
+            f'--pipeline-model-parallel-size '
+            f'{model_config["pipeline_model_parallel_size"]}',
+
+            #TODO: handle the commented options based on the model
             #f'--num-layers-per-virtual-pipeline-stage 5',
             #f'--context-parallel-size 1',
             f'--use-distributed-optimizer',
@@ -174,7 +211,7 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
             #f'--wgrad-deferral-limit 22',
             #f'--overlap-p2p-communication-warmup-flush'
         ]
-
+        
         tokenizer_args = [
 	    '--tokenizer-type HuggingFaceTokenizer',
 	    '--tokenizer-model alehc/swissai-tokenizer'
@@ -182,7 +219,7 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
 
         data_args = [
 	    f'--split 100,0,0',
-	    f'--seq-length {self.sequence_length}',
+	    f'--seq-length {model_config["sequence_length"]}',
 	    f'--reset-position-ids',
 	    f'--reset-attention-mask',
 	    f'--eod-mask-loss',
@@ -213,8 +250,8 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
         )
      
         self.executable_opts = [
-            rf"-c ", 
-            # Open with sinble quote
+            rf"-c", 
+            # Open with single quote
             rf"'RANK=$SLURM_PROCID LOCAL_RANK=$SLURM_LOCALID "
             rf"PYTHONPATH=$MEGATRON_LM_DIR:$PYTHONPATH "
             rf"{cmd_prefix} "
@@ -274,6 +311,7 @@ class PyTorchMegatronLM_UENV(PyTorchMegatronLM):
 
     @run_after('setup')
     def patch_numpy(self):
+        # np.product -> np.prod in latest NumPy versions
         self.prerun_cmds += [
             r"grep -r -l 'np\.product' ${MEGATRON_LM_DIR} | "
             r"xargs sed -i 's/np.product/np.prod/g'"
