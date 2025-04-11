@@ -213,6 +213,8 @@ site_configuration = {
                 '--max-retries=1',
                 '--report-file=$PWD/latest.json',
                 '-c checks/apps',
+                '-c checks/libraries',
+                '--tag=production'
             ],
             'target_systems': ['eiger'],
         }

@@ -27,7 +27,7 @@ class SSH_CE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
             'ssh.enabled': 'true',
         }
     }
-    tags = {'production', 'ce'}
+    tags = {'production', 'ce', 'maintenance'}
 
     executable = 'pgrep'
     executable_opts = ['--list-full', '--uid', f'{os.getuid()}', '--full',
