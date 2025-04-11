@@ -3,6 +3,7 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
+import os
 import pathlib
 import sys
 
@@ -18,6 +19,9 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
     num_tasks_per_node = 4
     num_nodes = variable(int, value=16)
 
+    # The Megatron commit id
+    commit_id = variable(str, value='de14c22')
+
     # The LLM model to run
     model = variable(str, value='llama3-8b')
 
@@ -26,6 +30,9 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
 
     # The number of training steps
     training_steps = variable(int, value=50)
+
+    # Use WANDB logging 
+    wandb_logging = variable(bool, value=False)
 
     # The dataset paths to use.
     # Multiple paths can be passed using ',' as path separator.
@@ -114,15 +121,16 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
     @run_after('setup')
     def set_executable_opts(self):
         self.prerun_cmds = [
-            'git clone https://github.com/swiss-ai/Megatron-LM.git',
-            'cd $MEGATRON_LM_DIR',
-            'echo "START TIME: $(date)"',
-            'ulimit -c 0',
-            'mkdir -p $CKPT_DIR',
-            'mkdir -p $PROJECT_DIR',
-            'mkdir -p $TRIGGER_DIR',
-            'mkdir -p $DEBUG_DIR',
-            'mkdir -p $LOGGING_DIR',
+            f'git clone -b {self.commit_id} '
+            f'https://github.com/swiss-ai/Megatron-LM.git',
+            f'cd $MEGATRON_LM_DIR',
+            f'echo "START TIME: $(date)"',
+            f'ulimit -c 0',
+            f'mkdir -p $CKPT_DIR',
+            f'mkdir -p $PROJECT_DIR',
+            f'mkdir -p $TRIGGER_DIR',
+            f'mkdir -p $DEBUG_DIR',
+            f'mkdir -p $LOGGING_DIR',
         ]
         self.postrun_cmds = ['echo "END TIME: $(date)"']
         cmd_prefix = 'numactl --membind=0-3'
@@ -159,6 +167,20 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
 	    '--no-log-loss-scale-to-tensorboard',
 	    '--log-memory-to-tensorboard'
         ]
+
+        if self.wandb_logging:
+            if 'WANDB_API_KEY' in os.environ:
+                logging_args += [
+                    '--wandb-save-dir $LOGGING_DIR'
+                    '--wandb-project $PROJECT_NAME',
+                    '--wandb-exp-name $EXP_NAME-$SLURM_JOB_ID'
+                ]
+            else:
+                self.skip_if(
+                    True, 'WANDB logging requested but WANDB_API_KEY not set'
+                )
+        else:
+            self.env_vars['WANDB_MODE'] = 'disabled'
 
         regularization_args = [
 	    '--attention-dropout 0.0',
