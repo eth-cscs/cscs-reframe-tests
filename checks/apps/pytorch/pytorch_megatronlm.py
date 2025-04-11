@@ -121,9 +121,9 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
     @run_after('setup')
     def set_executable_opts(self):
         self.prerun_cmds = [
-            f'git clone -b {self.commit_id} '
-            f'https://github.com/swiss-ai/Megatron-LM.git',
+            f'git clone https://github.com/swiss-ai/Megatron-LM.git',
             f'cd $MEGATRON_LM_DIR',
+            f'git checkout {self.commit_id}',
             f'echo "START TIME: $(date)"',
             f'ulimit -c 0',
             f'mkdir -p $CKPT_DIR',
