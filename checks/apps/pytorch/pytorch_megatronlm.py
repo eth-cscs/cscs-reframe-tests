@@ -15,12 +15,22 @@ from container_engine import ContainerEngineMixin  # noqa: E402
 
 
 class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
-    num_nodes = variable(int, value=16)
     num_tasks_per_node = 4
-    num_nodes = 16
+    num_nodes = variable(int, value=16)
+
+    # The LLM model to run
     model = variable(str, value='llama3-8b')
+
+    # The number of checkpoint steps
     checkpoint_steps = variable(int, value=500)
+
+    # The number of training steps
     training_steps = variable(int, value=50)
+
+    # The dataset paths to use.
+    # Multiple paths can be passed using ',' as path separator.
+    # Mock data is going to be used if the value is `None`.
+    datasets = variable(str, type(None), value=None)
 
     configurations = {
         'llama3-70b': {
@@ -37,7 +47,11 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
             'context_parallel_size': 1,
             'lr': '0.00015',
             'min_lr': '0.000015',
-            'manual_gc_interval': '50'
+            'manual_gc_interval': '50',
+            'wgrad_deferral_limit': 22,
+            'sequence_parallel': True,
+            'defer_embedding_wgrad_compute': True,
+            'overlap_p2p_communication_warmup_flush': True
         },
         'llama3-8b': {
             'micro_batch_size': 1,
@@ -49,11 +63,12 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
             'num_attention_heads': 32,
             'tensor_model_parallel_size': 1,
             'pipeline_model_parallel_size': 1,
-            'num_layers_per_virtual_pipeline_stage': None,
-            'context_parallel_size': None,
             'lr': '0.00022',
             'min_lr': '0.000022',
-            'manual_gc_interval': '500'
+            'manual_gc_interval': '500',
+            'sequence_parallel': False,
+            'defer_embedding_wgrad_compute': False,
+            'overlap_p2p_communication_warmup_flush': False 
         }
     }
 
@@ -82,7 +97,8 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
         'GPU_MEM_LOGGING': '$DEBUG_DIR/memory_logging.txt',
         'LOGGING_DIR': '$EXP_DIR/logging',
         'TENSORBOARD_DIR': '$LOGGING_DIR/tensorboard',
-        'BACKUP_CODEBASE_DIR': '$EXP_DIR/Megatron-LM'
+        'BACKUP_CODEBASE_DIR': '$EXP_DIR/Megatron-LM',
+        'DATASET_CACHE_DIR': '$PWD/datasets/cache',
     }
 
     tags = {'production', 'ml'}
@@ -154,8 +170,8 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
         ]
 
         training_args = [
-	    f'--micro-batch-size {self.micro_batch_size}', 
-	    f'--global-batch-size {self.global_batch_size}',
+	    f'--micro-batch-size {model_config["micro_batch_size"]}',
+	    f'--global-batch-size {model_config["global_batch_size"]}',
 	    f'--no-check-for-nan-in-loss-and-grad',
 	    f'--train-iters {self.training_steps}',
 	    f'--log-interval 1',
@@ -195,23 +211,38 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
         ]
 
         distributed_args = [ 
-            f'--tensor-model-parallel-size '
-            f'{model_config["tensor_model_parallel_size"]}',
-            f'--sequence-parallel',
+            f'--tensor-model-parallel-size ' 
+            f'{model_config["tensor_model_parallel_size"] or self.num_gpus_per_node}',
             f'--pipeline-model-parallel-size '
             f'{model_config["pipeline_model_parallel_size"]}',
-
-            #TODO: handle the commented options based on the model
-            #f'--num-layers-per-virtual-pipeline-stage 5',
-            #f'--context-parallel-size 1',
             f'--use-distributed-optimizer',
             f'--overlap-grad-reduce',
             f'--overlap-param-gather',
-            #f'--defer-embedding-wgrad-compute',
-            #f'--wgrad-deferral-limit 22',
-            #f'--overlap-p2p-communication-warmup-flush'
         ]
-        
+
+        extra_distributed_args = [
+            'num_layers_per_virtual_pipeline_stage',
+            'context_parallel_size',
+            'wgrad_deferral_limit',
+        ] 
+
+        for ar in extra_distributed_args:
+            if ar in model_config:
+                distributed_args += [
+                    f'--{ar.replace("_", "-")} {model_config[ar]}'
+                ]
+ 
+        extra_distributed_args_boolean = [
+            'sequence_parallel',
+            'defer_embedding_wgrad_compute',
+            'overlap_p2p_communication_warmup_flush'
+        ]
+
+        for ar in extra_distributed_args_boolean:
+            if model_config[ar]:
+                distributed_args += [f'--{ar.replace("_", "-")}']
+
+
         tokenizer_args = [
 	    '--tokenizer-type HuggingFaceTokenizer',
 	    '--tokenizer-model alehc/swissai-tokenizer'
@@ -226,9 +257,16 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
 	    f'--num-workers 1',
 	    f'--num-dataset-builder-threads 1',
 
-            # Run with mock data
-            f'--mock-data',
         ]
+
+        if self.datasets is None:
+            data_args += ['--mock-data']
+        else:
+            data_args += [
+                f'--data-path $(python3 $MEGATRON_LM_DIR/scripts/tools/'
+                f'create_data_config.py -p {self.datasets})',
+                f'--data-cache-path $DATASET_CACHE_DIR'
+            ]
 
         all_args = [ 
             *transformer_engine_args,
