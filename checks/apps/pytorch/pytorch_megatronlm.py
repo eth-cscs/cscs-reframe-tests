@@ -171,7 +171,7 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
         if self.wandb_logging:
             if 'WANDB_API_KEY' in os.environ:
                 logging_args += [
-                    '--wandb-save-dir $LOGGING_DIR'
+                    '--wandb-save-dir $LOGGING_DIR',
                     '--wandb-project $PROJECT_NAME',
                     '--wandb-exp-name $EXP_NAME-$SLURM_JOB_ID'
                 ]
