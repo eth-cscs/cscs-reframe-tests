@@ -87,7 +87,8 @@ class CPUNodeBurnCE(NodeBurnCE):
     def setup_job(self):
         self.skip_if_no_procinfo()
         proc = self.current_partition.processor
-        self.num_sockets = int(proc.num_sockets)
+        self.num_tasks = self.num_sockets = int(proc.num_sockets)
+        self.num_tasks_per_node = self.num_tasks
         self.cpus_per_socket = int(proc.num_cpus_per_socket)
 
         # On GH200 use 1 core less
@@ -96,6 +97,7 @@ class CPUNodeBurnCE(NodeBurnCE):
         else:
             self.num_cpus_per_task = self.cpus_per_socket
 
+        self.env_vars['OMP_NUM_THREADS'] = self.num_cpus_per_task
         self.executable_opts = [
             f'-cgemm,{self.nb_matrix_size}',
             f'-d{self.nb_duration}', '--batch'
