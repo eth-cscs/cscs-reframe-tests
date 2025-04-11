@@ -78,17 +78,24 @@ class CPUNodeBurnCE(NodeBurnCE):
     }
     test_hw = 'cpu'
     valid_systems = ['+ce']
+    env_vars.update({
+        'NVIDIA_VISIBLE_DEVICES': '"void"',
+        'NVIDIA_DISABLE_REQUIRE': 1
+    })
 
     @run_before('run')
     def setup_job(self):
         self.skip_if_no_procinfo()
-        self.num_sockets = int(self.current_partition.processor.num_sockets)
-        
-        # Use 1 core less since to leave one for OS tasks
-        self.num_cpus_per_task = (
-            int(self.current_partition.processor.num_cpus_per_socket) - 1
-        )
-        self.num_tasks = self.num_sockets
+        proc = self.current_partition.processor
+        self.num_sockets = int(proc.num_sockets)
+        self.cpus_per_socket = int(proc.num_cpus_per_socket)
+
+        # On GH200 use 1 core less
+        if proc.arch == 'neoverse_v2':
+            self.num_cpus_per_task = self.cpus_per_socket - 1
+        else:
+            self.num_cpus_per_task = self.cpus_per_socket
+
         self.executable_opts = [
             f'-cgemm,{self.nb_matrix_size}',
             f'-d{self.nb_duration}', '--batch'
