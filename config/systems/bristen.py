@@ -75,27 +75,4 @@ site_configuration = {
     ],
     'environments': [
     ],
-    'modes': [
-       {
-           'name': 'cpe_production',
-           'options': [
-               '--max-retries=1',
-               '--report-file=$PWD/latest.json',
-               '-c checks',
-               '--tag=production'
-           ],
-           'target_systems': ['bristen'],
-       },
-       {
-           'name': 'uenv_production',
-           'options': [
-               '--max-retries=1',
-               '--report-file=$PWD/latest.json',
-               '-c checks/apps',
-               '-c checks/libraries',
-               '--tag=production'
-           ],
-           'target_systems': ['bristen'],
-       }
-   ]
 }

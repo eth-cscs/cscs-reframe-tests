@@ -87,9 +87,9 @@ base_config = {
                 {
                     'type': 'gpu',
                     'arch': 'gfx90a',
-                    'num_devices': 8 
+                    'num_devices': 8
                 }
-                ],
+            ],
             'launcher': 'srun',
         },
 
@@ -106,16 +106,4 @@ site_configuration = {
     ],
     'environments': [
     ],
-    'modes': [
-       {
-           'name': 'uenv_production',
-           'options': [
-               '--max-retries=1',
-               '--report-file=$PWD/latest.json',
-               '-c checks/apps',
-               '--tag=production'
-           ],
-           'target_systems': ['beverin'],
-       }
-   ]
 }
