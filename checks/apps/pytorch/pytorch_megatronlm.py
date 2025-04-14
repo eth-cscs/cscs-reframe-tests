@@ -18,6 +18,7 @@ from container_engine import ContainerEngineMixin  # noqa: E402
 class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
     num_tasks_per_node = 4
     num_nodes = variable(int, value=16)
+    time_limit = '2h'
 
     # The Megatron commit id
     commit_id = variable(str, value='de14c22')
@@ -82,32 +83,6 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
     sourcesdir = None 
     executable = 'bash'
 
-    env_vars = {
-        'TORCH_NCCL_AVOID_RECORD_STREAMS': 1,
-        'TORCH_NCCL_ASYNC_ERROR_HANDLING': 1,
-        'NCCL_DEBUG': 'Info',
-        'CUDA_DEVICE_MAX_CONNECTIONS': 1,
-        'MASTER_ADDR':
-            '$(scontrol show hostnames $SLURM_JOB_NODELIST | head -n 1)',
-        'MASTER_PORT': '6000', 
-        'WORLD_SIZE': '$SLURM_NPROCS',
-        'MEGATRON_LM_DIR': '$PWD/Megatron-LM',
-        'PYTHONPATH': '$MEGATRON_LM_DIR:$PYTHONPATH',
-        'PROJECT_NAME': 'Megatron-Clariden',
-        'EXP_NAME': 'llama3-70b-$SLURM_NNODES-nodes',
-        'PROJECT_DIR': '$MEGATRON_LM_DIR/logs/Meg-Runs/$PROJECT_NAME',
-        'EXP_DIR': '$PROJECT_DIR/$EXP_NAME',
-        'CKPT_DIR': '$EXP_DIR/checkpoints',
-        'TRIGGER_DIR': '$EXP_DIR/triggers',
-        'DEBUG_DIR': '$EXP_DIR/debug/$SLURM_JOB_ID',
-        'COMPUTE_ENVIRONMENT_DIR': '$DEBUG_DIR/compute_environment.txt',
-        'GPU_MEM_LOGGING': '$DEBUG_DIR/memory_logging.txt',
-        'LOGGING_DIR': '$EXP_DIR/logging',
-        'TENSORBOARD_DIR': '$LOGGING_DIR/tensorboard',
-        'BACKUP_CODEBASE_DIR': '$EXP_DIR/Megatron-LM',
-        'DATASET_CACHE_DIR': '$PWD/datasets/cache',
-    }
-
     tags = {'production', 'ml'}
 
     @run_after('setup')
@@ -120,6 +95,32 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
 
     @run_after('setup')
     def set_executable_opts(self):
+        model_config = self.configurations[self.model]
+        self.env_vars = {
+            'TORCH_NCCL_AVOID_RECORD_STREAMS': 1,
+            'TORCH_NCCL_ASYNC_ERROR_HANDLING': 1,
+            'NCCL_DEBUG': 'Info',
+            'CUDA_DEVICE_MAX_CONNECTIONS': 1,
+            'MASTER_ADDR':
+                '$(scontrol show hostnames $SLURM_JOB_NODELIST | head -n 1)',
+            'MASTER_PORT': '6000',
+            'WORLD_SIZE': '$SLURM_NPROCS',
+            'MEGATRON_LM_DIR': '$PWD/Megatron-LM',
+            'PYTHONPATH': '$MEGATRON_LM_DIR:$PYTHONPATH',
+            'PROJECT_NAME': 'Megatron-Clariden',
+            'EXP_NAME': f'{self.model}-$SLURM_NNODES-nodes',
+            'PROJECT_DIR': '$MEGATRON_LM_DIR/logs/Meg-Runs/$PROJECT_NAME',
+            'EXP_DIR': '$PROJECT_DIR/$EXP_NAME',
+            'CKPT_DIR': '$EXP_DIR/checkpoints',
+            'TRIGGER_DIR': '$EXP_DIR/triggers',
+            'DEBUG_DIR': '$EXP_DIR/debug/$SLURM_JOB_ID',
+            'COMPUTE_ENVIRONMENT_DIR': '$DEBUG_DIR/compute_environment.txt',
+            'GPU_MEM_LOGGING': '$DEBUG_DIR/memory_logging.txt',
+            'LOGGING_DIR': '$EXP_DIR/logging',
+            'TENSORBOARD_DIR': '$LOGGING_DIR/tensorboard',
+            'BACKUP_CODEBASE_DIR': '$EXP_DIR/Megatron-LM',
+            'DATASET_CACHE_DIR': '$PWD/datasets/cache',
+        }
         self.prerun_cmds = [
             f'git clone https://github.com/swiss-ai/Megatron-LM.git',
             f'cd $MEGATRON_LM_DIR',
@@ -132,9 +133,15 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
             f'mkdir -p $DEBUG_DIR',
             f'mkdir -p $LOGGING_DIR',
         ]
+
+        if self.datasets is not None:
+            self.prerun_cmds += [
+                f'export DATAPATH_CONFIGURED=$(python3 $MEGATRON_LM_DIR'
+                f'/scripts/tools/create_data_config.py -p {self.datasets})'
+            ]
+
         self.postrun_cmds = ['echo "END TIME: $(date)"']
         cmd_prefix = 'numactl --membind=0-3'
-        model_config = self.configurations[self.model]
 
         transformer_engine_args = [
 	    '--transformer-impl transformer_engine',
@@ -285,9 +292,8 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
             data_args += ['--mock-data']
         else:
             data_args += [
-                f'--data-path $(python3 $MEGATRON_LM_DIR/scripts/tools/'
-                f'create_data_config.py -p {self.datasets})',
-                f'--data-cache-path $DATASET_CACHE_DIR'
+                '--data-path $DATAPATH_CONFIGURED',
+                '--data-cache-path $DATASET_CACHE_DIR'
             ]
 
         all_args = [ 
@@ -345,7 +351,7 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
 class PyTorchMegatronLM_CE(PyTorchMegatronLM, ContainerEngineMixin):
     valid_systems = ['+nvgpu +ce']
     valid_prog_environs = ['builtin']
-    image = '/capstor/scratch/cscs/manitart/ce_images/ngc_pt_jan.sqsh'
+    image = '/iopsstor/scratch/cscs/manitart/swissai_container_image/torch_25.03.sqsh'
 
     @run_after('init')
     def set_container_config(self):
@@ -362,6 +368,9 @@ class PyTorchMegatronLM_CE(PyTorchMegatronLM, ContainerEngineMixin):
         # Ensure that the various dirs related to PROJECT_DIR are accessible
         # from within the container
         self.container_mounts = [f'{self.stagedir}:{self.stagedir}']
+        if self.datasets is not None:
+            for dataset in self.datasets.split(','):
+                self.container_mounts += [f'{dataset}:{dataset}']
 
 
 @rfm.simple_test
