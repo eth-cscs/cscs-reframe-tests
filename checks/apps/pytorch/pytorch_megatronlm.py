@@ -242,8 +242,7 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
             'TENSORBOARD_DIR': '$LOGGING_DIR/tensorboard',
             'BACKUP_CODEBASE_DIR': '$EXP_DIR/Megatron-LM',
             'DATASET_CACHE_DIR': '$PWD/datasets/cache',
-            'OMP_NUM_THREADS' = (self.num_cpus_per_task //
-                                 self.num_gpus_per_node)
+            'OMP_NUM_THREADS': self.num_cpus_per_task // self.num_gpus_per_node
         }
         self.prerun_cmds = [
             f'git clone https://github.com/swiss-ai/Megatron-LM.git',
