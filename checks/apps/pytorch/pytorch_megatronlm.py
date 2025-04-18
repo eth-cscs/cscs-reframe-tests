@@ -228,7 +228,8 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
             'WORLD_SIZE': '$SLURM_NPROCS',
             'MEGATRON_LM_DIR': '$PWD/Megatron-LM',
             'PYTHONPATH': '$MEGATRON_LM_DIR:$PYTHONPATH',
-            'PROJECT_NAME': 'Megatron-Clariden',
+            'PROJECT_NAME': 
+                f'Megatron-{self.current_system.name.capitalize()}',
             'EXP_NAME': f'{self.model}-$SLURM_NNODES-nodes',
             'PROJECT_DIR': '$MEGATRON_LM_DIR/logs/Meg-Runs/$PROJECT_NAME',
             'EXP_DIR': '$PROJECT_DIR/$EXP_NAME',
