@@ -66,9 +66,9 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
             'overlap_p2p_communication_warmup_flush': True,
 
             'activation': 'xielu',
-            'optimizer': 'adeamix',
+            'optimizer': 'ademamix',
             'transformer_engine_args': [
-	        '--main-grads-dtype bf32'
+	        '--main-grads-dtype fp32'
             ],
             'extra_network_size_args': [
                 '--qk-layernorm',
@@ -91,9 +91,8 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
 	        '--min-lr 0.000001',
 	        '--lr-decay-style WSD',
 	        '--lr-warmup-iters 2000',
-	        '--lr-warmup-iters 2000',
-                '--lr-wsd-decay-style 1-sqrt'
-	        '--lr-wsd-decay-iters 0'
+                '--lr-wsd-decay-style 1-sqrt',
+	        '--lr-wsd-decay-iters 0',
             ],
             'extra_data_args': [
                  '--num-workers 32',
@@ -454,29 +453,16 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
 class PyTorchMegatronLM_CE(PyTorchMegatronLM, ContainerEngineMixin):
     valid_systems = ['+nvgpu +ce']
     valid_prog_environs = ['builtin']
-    #image = '/iopsstor/scratch/cscs/manitart/swissai_container_image/torch_25.03.sqsh'
-    image = '/iopsstor/scratch/cscs/manitart/swissai_container_image/torch_cxi_25.03.sqsh'
+    image = '/iopsstor/scratch/cscs/manitart/swissai_container_image/torch_25.03.sqsh'
 
     @run_after('init')
     def set_container_config(self):
         self.container_image = self.image
         self.container_env_table = {
             'annotations.com.hooks': {
-                #$j'aws_ofi_nccl.enabled': 'true',
-                #'aws_ofi_nccl.variant': 'cuda12',
-                'cxi.enabled': 'false',
+                'aws_ofi_nccl.enabled': 'true',
+                'aws_ofi_nccl.variant': 'cuda12',
             },
-        }
-
-        self.container_env_table['env'] = {
-            'NCCL_CROSS_NIC' : 1,
-            'NCCL_NET_GDR_LEVEL' : "PHB",
-            'NCCL_SOCKET_IFNAME' : "hsn",
-            'FI_MR_CACHE_MONITOR' : "userfaultfd",
-            'FI_CXI_RX_MATCH_MODE' : "software",
-            'FI_CXI_DEFAULT_CQ_SIZE' : 131072,
-            'FI_CXI_DEFAULT_TX_SIZE' : 32768,
-            'FI_CXI_DISABLE_HOST_REGISTER' : 1,
         }
 
     @run_after('setup')
