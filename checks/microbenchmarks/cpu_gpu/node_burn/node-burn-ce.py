@@ -48,7 +48,7 @@ class NodeBurnCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
 
 
 @rfm.simple_test
-class CudaNodeBurnCE(NodeBurnCE):
+class CudaNodeBurnGemmCE(NodeBurnCE):
     ref_nb_gflops = {
         'a100': {'nb_gflops': (9746*2*0.85, -0.1, None, 'GFlops')},
         'gh200': {'nb_gflops': (42700, -0.1, None, 'GFlops')},
@@ -72,14 +72,18 @@ class CudaNodeBurnCE(NodeBurnCE):
 
 
 @rfm.simple_test
-class CPUNodeBurnCE(NodeBurnCE):
+class CPUNodeBurnGemmCE(NodeBurnCE):
     ref_nb_gflops = {
         'gh200': {'nb_gflops': (2300, -0.1, None, 'GFlops')},
     }
     test_hw = 'cpu'
     valid_systems = ['+ce']
     env_vars.update({
+
+        # Disable the nvidia-container-cli to run on systems without
+        # Nvidia Gpus
         'NVIDIA_VISIBLE_DEVICES': '"void"',
+
         'NVIDIA_DISABLE_REQUIRE': 1
     })
 
@@ -87,17 +91,17 @@ class CPUNodeBurnCE(NodeBurnCE):
     def setup_job(self):
         self.skip_if_no_procinfo()
         proc = self.current_partition.processor
-        self.num_tasks = self.num_sockets = int(proc.num_sockets)
-        self.num_tasks_per_node = self.num_tasks
+        self.num_sockets = int(proc.num_sockets)
         self.cpus_per_socket = int(proc.num_cpus_per_socket)
 
         # On GH200 use 1 core less
         if proc.arch == 'neoverse_v2':
+            self.num_tasks = self.num_sockets
             self.num_cpus_per_task = self.cpus_per_socket - 1
         else:
-            self.num_cpus_per_task = self.cpus_per_socket
+            self.num_tasks = 1
+            self.num_cpus_per_task = self.cpus_per_socket * self.num_sockets
 
-        self.env_vars['OMP_NUM_THREADS'] = self.num_cpus_per_task
         self.executable_opts = [
             f'-cgemm,{self.nb_matrix_size}',
             f'-d{self.nb_duration}', '--batch'
