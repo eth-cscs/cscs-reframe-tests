@@ -175,7 +175,6 @@ class Cp2kCheck_UENV(rfm.RunOnlyRegressionTest):
             self.env_vars["PIKA_THREADS"] = str(self.num_cpus_per_task - 1)
 
         if self.uarch == 'gh200':
-            self.env_vars["FI_MR_CACHE_MONITOR"] = "disabled"
             self.env_vars['MPICH_GPU_SUPPORT_ENABLED'] = '1'
             self.env_vars['CUDA_CACHE_DISABLE'] = '1'
             self.env_vars["DLAF_BT_BAND_TO_TRIDIAG_HH_APPLY_GROUP_SIZE"] = \
