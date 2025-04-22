@@ -164,24 +164,38 @@ site_configuration = {
         },
     ],
     'modes': [
-       {
-           'name': 'cpe_production',
-           'options': [
-               '--max-retries=1',
-               '--report-file=$PWD/latest.json',
-               '-c checks',
-               '--tag=production'
-           ],
-           'target_systems': ['eiger'],
-       },
-       {
-           'name': 'uenv_production',
-           'options': [
-               '--max-retries=1',
-               '--report-file=$PWD/latest.json',
-               '-c checks/apps',
-           ],
-           'target_systems': ['eiger'],
-       }
-   ]
+        {
+            'name': 'maintenance',
+            'options': [
+                '--unload-module=reframe',
+                '--exec-policy=async',
+                '-Sstrict_check=1',
+                '--output=$APPS/regression/$USER/maintenance',
+                '--perflogdir=$APPS/regression/$USER/maintenance/logs',
+                '--stage=$SCRATCH/regression/maintenance/stage',
+                '--report-file=$APPS/regression/$USER/maintenance/reports/maint_report_{sessionid}.json',
+                '-Jreservation=maintenance',
+                '--save-log-files',
+                '--tag=maintenance',
+                '--timestamp=%F_%H-%M-%S'
+            ],
+            'target_systems': ['eiger']
+        },
+        {
+            'name': 'production',
+            'options': [
+                '--unload-module=reframe',
+                '--exec-policy=async',
+                '-Sstrict_check=1',
+                '--output=$APPS/regression/$USER/production',
+                '--perflogdir=$APPS/regression/$USER/production/logs',
+                '--stage=$SCRATCH/regression/production/stage',
+                '--report-file=$APPS/regression/$USER/production/reports/prod_report_{sessionid}.json',
+                '--save-log-files',
+                '--tag=production',
+                '--timestamp=%F_%H-%M-%S'
+            ],
+            'target_systems': ['eiger']
+        },
+    ]
 }

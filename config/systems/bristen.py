@@ -25,7 +25,7 @@ base_config = {
         },
         {
             'name': 'normal',
-            'descr': 'GH200',
+            'descr': 'A100',
             'scheduler': 'slurm',
             'time_limit': '10m',
             'container_platforms': [
@@ -35,7 +35,7 @@ base_config = {
             ],
             'max_jobs': 100,
             'extras': {
-                'cn_memory': 825,
+                'cn_memory': 500,
             },
             'features': ['ce', 'gpu', 'nvgpu', 'remote', 'scontrol', 'uenv'],
             'access': [f'--account=a-{osext.osgroup()}'],
@@ -56,7 +56,7 @@ base_config = {
             'devices': [
                 {
                     'type': 'gpu',
-                    'arch': 'sm_90',
+                    'arch': 'sm_80',
                     'num_devices': 4
                 }
                 ],
@@ -65,9 +65,9 @@ base_config = {
     ]
 }
 
-base_config['name'] = 'clariden'
-base_config['descr'] = 'Clariden vcluster'
-base_config['hostnames'] = ['clariden']
+base_config['name'] = 'bristen'
+base_config['descr'] = 'Bristen vcluster'
+base_config['hostnames'] = ['bristen']
 
 site_configuration = {
     'systems': [
