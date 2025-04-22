@@ -174,7 +174,7 @@ site_configuration = {
            'options': [
                '--max-retries=1',
                '--report-file=$PWD/latest.json',
-               '-c checks',
+               '-c ../cscs-reframe-tests/checks/',
                '--tag=production',
                '-p PrgEnv-ce'
            ],
