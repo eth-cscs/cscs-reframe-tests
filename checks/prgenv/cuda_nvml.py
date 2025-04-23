@@ -11,8 +11,8 @@ import reframe.utility.sanity as sn
 
 sys.path.append(str(pathlib.Path(__file__).parent.parent / 'mixins'))
 from container_engine import ContainerEngineCPEMixin
-    
-    
+
+
 class NvmlBase(rfm.RegressionTest):
     descr = 'Checks that nvml can report GPU informations'
     build_locally = False
@@ -55,7 +55,7 @@ class CPE_NVMLCheck(NvmlBase, ContainerEngineCPEMixin):
         sm = self.current_partition.select_devices('gpu')[0].arch[-2:]
 
         # FIXME Temporary workaround for cudatoolkit absence in ce image
-        if not self.current_environ.name.endswith('-ce'):
+        if 'containerized_cpe' not in self.current_environ.features:
             self.modules = ['cudatoolkit', f'craype-accel-nvidia{sm}']
 
         self.sourcepath = (

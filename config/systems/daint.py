@@ -118,14 +118,14 @@ site_configuration = {
         },
         {
             'name': 'PrgEnv-ce',
-            'features': ['serial', 'openmp', 'mpi', 'cuda'],
+            'features': ['serial', 'openmp', 'mpi', 'cuda',
+                         'containerized_cpe'],
             'resources': {
                 'cpe_ce_image': {
                     'image':
                         # Avoid interpretting '#' as a start of a comment
                         os.environ.get(
                             'CPE_CE',
-                            '/capstor/scratch/cscs/jenkssl/cpe/cpe-gnu.sqsh',
                         ).replace(r'#', r'\#')
                 }
              }

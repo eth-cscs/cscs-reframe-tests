@@ -74,7 +74,7 @@ class build_osu_benchmarks(rfm.CompileOnlyRegressionTest,
             environ_name = self.current_environ.name
 
             if environ_name.startswith('PrgEnv-'):
-                if environ_name.endswith('-ce'):
+                if 'containerized_cpe' in self.current_environ.features:
                     self.build_system.ldflags = [
                         '-L${CUDA_HOME}/lib64',
                         '-L${CRAY_MPICH_ROOTDIR}/gtl/lib -lmpi_gtl_cuda'
@@ -116,7 +116,7 @@ class build_osu_benchmarks(rfm.CompileOnlyRegressionTest,
         tarball = f'osu-micro-benchmarks-{self.osu_benchmarks.version}.tar.gz'
         self.build_prefix = tarball[:-7]  # remove .tar.gz extension
         fullpath = os.path.join(self.osu_benchmarks.stagedir, tarball)
- 
+
         self.prebuild_cmds += [
             f'cp {fullpath} {self.stagedir}',
             f'tar xzf {tarball}',

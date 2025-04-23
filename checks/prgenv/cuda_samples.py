@@ -44,7 +44,7 @@ class CudaSamplesBase(rfm.RegressionTest, ContainerEngineCPEMixin):
             rf"sed -n 's/^.*release \([[:digit:]]*\.[[[:digit:]]\).*$/\1/p')",
             #
             # The tags v12.[6-7] do not exist, fall back to v12.5
-            rf"[[ $CUDA_VER = 'v12.6' || $CUDA_VER = 'v12.7' ]] && " 
+            rf"[[ $CUDA_VER = 'v12.6' || $CUDA_VER = 'v12.7' ]] && "
             rf"export CUDA_VER='v12.5'",
             rf"git checkout ${{CUDA_VER}}",
             rf"cd Samples/{self.sample_dir[self.sample]}/{self.sample}"
@@ -89,7 +89,7 @@ class CPE_CudaSamples(CudaSamplesBase):
         sm = self.current_partition.select_devices('gpu')[0].arch[-2:]
 
         # FIXME Temporary workaround for cudatoolkit absence in ce image
-        if not self.current_environ.name.endswith('-ce'):
+        if 'containerized_cpe' not in self.current_environ.features:
             self.modules = ['cudatoolkit', f'craype-accel-nvidia{sm}',
                             'cpe-cuda']
 
@@ -107,7 +107,7 @@ class CPE_CudaSamples(CudaSamplesBase):
         ]
 
         # for simpleCUBLAS and conjugateGradientCudaGraphs:
-        if not self.current_environ.name.endswith('-ce'):
+        if 'containerized_cpe' not in self.current_environ.features:
             self.build_system.options += [
                 'EXTRA_NVCCFLAGS="-I $CUDATOOLKIT_HOME/../../math_libs/include"',
                 'EXTRA_LDFLAGS="-L $CUDATOOLKIT_HOME/../../math_libs/lib64"'
