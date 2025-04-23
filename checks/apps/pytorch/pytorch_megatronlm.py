@@ -31,6 +31,10 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
     # The number of checkpoint steps
     checkpoint_steps = variable(int, value=500)
 
+    hf_home = variable(
+        str, value=str(pathlib.Path.home() / '.cache' / 'huggingface')
+    )
+
     # The number of training steps
     training_steps = variable(int, value=50)
 
@@ -242,6 +246,7 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
             'TENSORBOARD_DIR': '$LOGGING_DIR/tensorboard',
             'BACKUP_CODEBASE_DIR': '$EXP_DIR/Megatron-LM',
             'DATASET_CACHE_DIR': '$PWD/datasets/cache',
+            'HF_HOME': f'{self.hf_home}',
             'OMP_NUM_THREADS': self.num_cpus_per_task // self.num_gpus_per_node
         }
         self.prerun_cmds = [
@@ -474,6 +479,8 @@ class PyTorchMegatronLM_CE(PyTorchMegatronLM, ContainerEngineMixin):
         if self.datasets is not None:
             for dataset in self.datasets.split(','):
                 self.container_mounts += [f'{dataset}:{dataset}']
+
+        self.container_mounts += [f'{self.hf_home}:{self.hf_home}']
 
 
 @rfm.simple_test
