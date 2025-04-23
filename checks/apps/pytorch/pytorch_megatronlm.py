@@ -28,8 +28,14 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
     # The LLM model to run
     model = variable(str, value='llama3-8b')
 
+    # The checkpoint directory
+    checkpoint_dir = variable(str, type(None), value=None)
+
+    # The dataset_cache directory
+    dataset_cache_dir = variable(str, type(None), value=None)
+
     # The number of checkpoint steps
-    checkpoint_steps = variable(int, value=500)
+    checkpoint_steps = variable(int, value=100)
 
     hf_home = variable(
         str, value=str(pathlib.Path.home() / '.cache' / 'huggingface')
@@ -237,7 +243,7 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
             'EXP_NAME': f'{self.model}-$SLURM_NNODES-nodes',
             'PROJECT_DIR': '$MEGATRON_LM_DIR/logs/Meg-Runs/$PROJECT_NAME',
             'EXP_DIR': '$PROJECT_DIR/$EXP_NAME',
-            'CKPT_DIR': '$EXP_DIR/checkpoints',
+            'CKPT_DIR': self.checkpoint_dir or '$EXP_DIR/checkpoints',
             'TRIGGER_DIR': '$EXP_DIR/triggers',
             'DEBUG_DIR': '$EXP_DIR/debug/$SLURM_JOB_ID',
             'COMPUTE_ENVIRONMENT_DIR': '$DEBUG_DIR/compute_environment.txt',
@@ -245,7 +251,7 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
             'LOGGING_DIR': '$EXP_DIR/logging',
             'TENSORBOARD_DIR': '$LOGGING_DIR/tensorboard',
             'BACKUP_CODEBASE_DIR': '$EXP_DIR/Megatron-LM',
-            'DATASET_CACHE_DIR': '$PWD/datasets/cache',
+            'DATASET_CACHE_DIR': self.dataset_cache_dir or '$PWD/datasets/cache',
             'HF_HOME': f'{self.hf_home}',
             'OMP_NUM_THREADS': self.num_cpus_per_task // self.num_gpus_per_node
         }
@@ -269,7 +275,7 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
             ]
 
         self.postrun_cmds = ['echo "END TIME: $(date)"']
-        cmd_prefix = 'numactl --membind=0-3'
+        cmd_prefix = '' #'numactl --membind=0-3'
 
         network_size_args = [
 	    f'--num-layers {model_config["num_layers"]}',
@@ -459,7 +465,8 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
 class PyTorchMegatronLM_CE(PyTorchMegatronLM, ContainerEngineMixin):
     valid_systems = ['+nvgpu +ce']
     valid_prog_environs = ['builtin']
-    image = '/iopsstor/scratch/cscs/manitart/swissai_container_image/torch_25.03.sqsh'
+    #image = '/iopsstor/scratch/cscs/manitart/swissai_container_image/torch_25.03.sqsh'
+    image = '/capstor/store/cscs/swissai/a06/containers/NGC-PyTorch/ngc_pt_jan.sqsh'
 
     @run_after('init')
     def set_container_config(self):
@@ -481,6 +488,17 @@ class PyTorchMegatronLM_CE(PyTorchMegatronLM, ContainerEngineMixin):
                 self.container_mounts += [f'{dataset}:{dataset}']
 
         self.container_mounts += [f'{self.hf_home}:{self.hf_home}']
+
+        if self.dataset_cache_dir:
+            self.container_mounts += [
+                f'{self.dataset_cache_dir}:{self.dataset_cache_dir}'
+            ]
+
+
+        if self.checkpoint_dir:
+            self.container_mounts += [
+                f'{self.checkpoint_dir}:{self.checkpoint_dir}'
+            ]
 
 
 @rfm.simple_test
