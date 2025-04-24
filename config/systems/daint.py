@@ -140,8 +140,7 @@ all_envs = [
     },
 ]
 
-env_val = os.environ.get('CPE_CE')
-if env_val:
+if os.environ.get('CPE_CE'):
     all_envs.append(
         {
             'name': 'PrgEnv-ce',
