@@ -86,8 +86,9 @@ site_configuration = {
                 '--stage=$SCRATCH/regression/maintenance/stage',
                 '--report-file=$SCRATCH/regression/maintenance/reports/maint_report_{sessionid}.json',
                 '--save-log-files',
+                '-p \'(?!PrgEnv-ce)\'',
                 '--tag=maintenance',
-                '--timestamp=%F_%H-%M-%S'
+                '--timestamp=%F_%H-%M-%S',
             ]
         },
         {
@@ -100,6 +101,7 @@ site_configuration = {
                 '--stage=$SCRATCH/regression/production/stage',
                 '--report-file=$SCRATCH/regression/production/reports/prod_report_{sessionid}.json',
                 '--save-log-files',
+                '-p \'(?!PrgEnv-ce)\'',
                 '--tag=production',
                 '--timestamp=%F_%H-%M-%S'
             ]
@@ -111,8 +113,8 @@ site_configuration = {
                '--max-retries=1',
                '--report-file=$PWD/latest.json',
                '-c checks',
+               '-p \'(?!PrgEnv-ce)\'',
                '--tag=production',
-               '-p \'(?!PrgEnv-ce)\''
            ]
         },
         {
@@ -133,6 +135,7 @@ site_configuration = {
                '--report-file=$PWD/latest.json',
                '-c checks/apps',
                '-c checks/libraries',
+               '-p \'(?!PrgEnv-ce)\'',
                '--tag=production'
            ]
         },
@@ -149,6 +152,7 @@ site_configuration = {
                 '--tag=appscheckout',
                 '--tag=flexible',
                 '--flex-alloc-nodes=all',
+               '-p \'(?!PrgEnv-ce)\'',
                 '--timestamp=%F_%H-%M-%S'
             ]
         },
@@ -165,6 +169,7 @@ site_configuration = {
                 '--tag=appscheckout',
                 '--exclude-tag=flexible',
                 '--distribute=all',
+                '-p \'(?!PrgEnv-ce)\'',
                 '--timestamp=%F_%H-%M-%S'
             ]
         },
