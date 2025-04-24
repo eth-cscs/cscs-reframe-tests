@@ -100,26 +100,53 @@ base_config['name'] = 'daint'
 base_config['descr'] = 'Piz Daint vcluster'
 base_config['hostnames'] = ['daint', 'alps-daint']
 
-site_configuration = {
-    'systems': [
-        base_config,
-    ],
-    'environments': [
-        {
-            'name': 'PrgEnv-cray',
-            'features': [
-                'serial', 'openmp', 'mpi', 'cuda', 'openacc', 'hdf5',
-                # 'netcdf-hdf5parallel',
-                # FIXME MPI Error when using pnetcdf
-                # 'pnetcdf'
-            ],
-            'target_systems': ['daint'],
-            'modules': ['cray', 'PrgEnv-cray', 'craype-arm-grace'],
-        },
+all_envs = [
+    {
+        'name': 'PrgEnv-cray',
+        'features': [
+            'serial', 'openmp', 'mpi', 'cuda', 'openacc', 'hdf5',
+            # 'netcdf-hdf5parallel',
+            # FIXME MPI Error when using pnetcdf
+            # 'pnetcdf'
+        ],
+        'target_systems': ['daint'],
+        'modules': ['cray', 'PrgEnv-cray', 'craype-arm-grace'],
+    },
+    {
+        'name': 'PrgEnv-gnu',
+        'target_systems': ['daint'],
+        'features': [
+            'serial', 'openmp', 'mpi', 'cuda', 'alloc_speed',
+            'hdf5'
+            # 'netcdf-hdf5parallel',
+            # FIXME MPI Error when using pnetcdf
+            # 'pnetcdf'
+        ],
+        'modules': ['cray', 'PrgEnv-gnu', 'craype-arm-grace']
+    },
+    {
+        'name': 'PrgEnv-nvidia',
+        'target_systems': ['daint'],
+        'features': ['serial', 'openmp', 'mpi', 'cuda', 'alloc_speed',
+                        'hdf5', 'netcdf-hdf5parallel', 'pnetcdf'],
+        'modules': ['cray', 'PrgEnv-nvidia', 'craype-arm-grace']
+    },
+    {
+        'name': 'PrgEnv-nvhpc',
+        'target_systems': ['daint'],
+        'features': ['serial', 'openmp', 'mpi', 'cuda', 'alloc_speed',
+                        'hdf5', 'netcdf-hdf5parallel', 'pnetcdf'],
+        'modules': ['cray', 'PrgEnv-nvhpc', 'craype-arm-grace']
+    },
+]
+
+env_val = os.environ.get('CPE_CE')
+if env_val:
+    all_envs.append(
         {
             'name': 'PrgEnv-ce',
             'features': ['serial', 'openmp', 'mpi', 'cuda',
-                         'containerized_cpe'],
+                            'containerized_cpe'],
             'resources': {
                 'cpe_ce_image': {
                     'image':
@@ -127,34 +154,14 @@ site_configuration = {
                         os.environ.get(
                             'CPE_CE',
                         ).replace(r'#', r'\#')
+                    }
                 }
-             }
         },
-        {
-            'name': 'PrgEnv-gnu',
-            'target_systems': ['daint'],
-            'features': [
-                'serial', 'openmp', 'mpi', 'cuda', 'alloc_speed',
-                'hdf5'
-                # 'netcdf-hdf5parallel',
-                # FIXME MPI Error when using pnetcdf
-                # 'pnetcdf'
-            ],
-            'modules': ['cray', 'PrgEnv-gnu', 'craype-arm-grace']
-        },
-        {
-            'name': 'PrgEnv-nvidia',
-            'target_systems': ['daint'],
-            'features': ['serial', 'openmp', 'mpi', 'cuda', 'alloc_speed',
-                         'hdf5', 'netcdf-hdf5parallel', 'pnetcdf'],
-            'modules': ['cray', 'PrgEnv-nvidia', 'craype-arm-grace']
-        },
-        {
-            'name': 'PrgEnv-nvhpc',
-            'target_systems': ['daint'],
-            'features': ['serial', 'openmp', 'mpi', 'cuda', 'alloc_speed',
-                         'hdf5', 'netcdf-hdf5parallel', 'pnetcdf'],
-            'modules': ['cray', 'PrgEnv-nvhpc', 'craype-arm-grace']
-        },
+    )
+
+site_configuration = {
+    'systems': [
+        base_config,
     ],
+    'environments': all_envs,
 }
