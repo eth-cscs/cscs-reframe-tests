@@ -128,14 +128,14 @@ all_envs = [
         'name': 'PrgEnv-nvidia',
         'target_systems': ['daint'],
         'features': ['serial', 'openmp', 'mpi', 'cuda', 'alloc_speed',
-                        'hdf5', 'netcdf-hdf5parallel', 'pnetcdf'],
+                     'hdf5', 'netcdf-hdf5parallel', 'pnetcdf'],
         'modules': ['cray', 'PrgEnv-nvidia', 'craype-arm-grace']
     },
     {
         'name': 'PrgEnv-nvhpc',
         'target_systems': ['daint'],
         'features': ['serial', 'openmp', 'mpi', 'cuda', 'alloc_speed',
-                        'hdf5', 'netcdf-hdf5parallel', 'pnetcdf'],
+                     'hdf5', 'netcdf-hdf5parallel', 'pnetcdf'],
         'modules': ['cray', 'PrgEnv-nvhpc', 'craype-arm-grace']
     },
 ]
@@ -146,7 +146,7 @@ if env_val:
         {
             'name': 'PrgEnv-ce',
             'features': ['serial', 'openmp', 'mpi', 'cuda',
-                            'containerized_cpe'],
+                         'containerized_cpe'],
             'resources': {
                 'cpe_ce_image': {
                     'image':
