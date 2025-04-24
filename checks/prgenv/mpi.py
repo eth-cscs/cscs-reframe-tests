@@ -4,13 +4,17 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import os
-
+import pathlib
+import sys
 import reframe as rfm
 import reframe.utility.sanity as sn
 
+sys.path.append(str(pathlib.Path(__file__).parent.parent / 'mixins'))
+from container_engine import ContainerEngineCPEMixin
+
 
 @rfm.simple_test
-class MpiInitTest(rfm.RegressionTest):
+class MpiInitTest(rfm.RegressionTest, ContainerEngineCPEMixin):
     '''
     This test checks the value returned by calling MPI_Init_thread.
     '''

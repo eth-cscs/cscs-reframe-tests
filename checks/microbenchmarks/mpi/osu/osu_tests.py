@@ -16,6 +16,7 @@ sys.path.append(
 )
 
 from extra_launcher_options import ExtraLauncherOptionsMixin
+from container_engine import ContainerEngineCPEMixin
 
 
 class fetch_osu_benchmarks(rfm.RunOnlyRegressionTest):
@@ -36,7 +37,8 @@ class fetch_osu_benchmarks(rfm.RunOnlyRegressionTest):
         return sn.assert_eq(self.job.exitcode, 0)
 
 
-class build_osu_benchmarks(rfm.CompileOnlyRegressionTest):
+class build_osu_benchmarks(rfm.CompileOnlyRegressionTest,
+                           ContainerEngineCPEMixin):
     '''Fixture for building the OSU benchmarks'''
 
     #: Build variant parameter.
@@ -72,7 +74,15 @@ class build_osu_benchmarks(rfm.CompileOnlyRegressionTest):
             environ_name = self.current_environ.name
 
             if environ_name.startswith('PrgEnv-'):
-                if environ_name != 'PrgEnv-nvhpc':
+                if 'containerized_cpe' in self.current_environ.features:
+                    self.build_system.ldflags = [
+                        '-L${CUDA_HOME}/lib64',
+                        '-L${CRAY_MPICH_ROOTDIR}/gtl/lib -lmpi_gtl_cuda'
+                    ]
+                    self.build_system.cppflags = [
+                        '-I${CUDA_HOME}/include',
+                    ]
+                elif environ_name != 'PrgEnv-nvhpc':
                     self.build_system.ldflags = [
                         '${CRAY_CUDATOOLKIT_POST_LINK_OPTS}',
                         '-L${CRAY_MPICH_ROOTDIR}/gtl/lib -lmpi_gtl_cuda'
@@ -82,6 +92,7 @@ class build_osu_benchmarks(rfm.CompileOnlyRegressionTest):
                         '-L${CRAY_NVIDIA_PREFIX}/cuda/lib64',
                         '-L${CRAY_MPICH_ROOTDIR}/gtl/lib -lmpi_gtl_cuda'
                     ]
+
             else:
                 self.build_system.ldflags = [
                     '-L${CUDA_HOME}/lib64',
@@ -105,6 +116,7 @@ class build_osu_benchmarks(rfm.CompileOnlyRegressionTest):
         tarball = f'osu-micro-benchmarks-{self.osu_benchmarks.version}.tar.gz'
         self.build_prefix = tarball[:-7]  # remove .tar.gz extension
         fullpath = os.path.join(self.osu_benchmarks.stagedir, tarball)
+
         self.prebuild_cmds += [
             f'cp {fullpath} {self.stagedir}',
             f'tar xzf {tarball}',
@@ -124,7 +136,8 @@ class build_osu_benchmarks(rfm.CompileOnlyRegressionTest):
         return True
 
 
-class osu_benchmark(rfm.RunOnlyRegressionTest, ExtraLauncherOptionsMixin):
+class osu_benchmark(rfm.RunOnlyRegressionTest, ExtraLauncherOptionsMixin,
+                    ContainerEngineCPEMixin):
     '''OSU benchmark test base class.'''
 
     #: Number of warmup iterations.

@@ -7,6 +7,8 @@
 #
 
 
+import os
+
 base_config = {
     'modules_system': 'lmod',
     # 'resourcesdir': '/apps/common/UES/reframe/resources',
@@ -36,6 +38,7 @@ base_config = {
                 'builtin',
                 'PrgEnv-cray',
                 'PrgEnv-gnu',
+                'PrgEnv-ce',
                 # FIXME: Problem loading the following environments
                 # 'PrgEnv-nvidia',
                 # 'PrgEnv-nvhpc'
@@ -58,6 +61,28 @@ base_config = {
                     'name': 'memory',
                     'options': ['--mem={mem_per_node}']
                 },
+                {
+                    'name': 'cpe_ce_image',
+                    'options': [
+                        '--container-image={image}',
+                     ]
+                },
+                {
+                    'name': 'cpe_ce_mount',
+                    'options': [
+                        # Mount both the stagedir and the directory related
+                        # used 3 levels above (the one related to the system)
+                        # to be able to find fixtures
+                        '--container-mounts={stagedir}/../../../,{stagedir}:/rfm_workdir',
+                        '--container-workdir=/rfm_workdir'
+                     ]
+                },
+                {
+                    'name': 'cpe_ce_extra_mounts',
+                    'options': [
+                        '--container-mounts={mount}:{mount}',
+                     ]
+                }
             ],
             'devices': [
                 {
@@ -65,7 +90,7 @@ base_config = {
                     'arch': 'sm_90',
                     'num_devices': 4
                 }
-                ],
+            ],
             'launcher': 'srun',
         },
     ]
@@ -73,7 +98,7 @@ base_config = {
 
 base_config['name'] = 'daint'
 base_config['descr'] = 'Piz Daint vcluster'
-base_config['hostnames'] = ['daint']
+base_config['hostnames'] = ['daint', 'alps-daint']
 
 site_configuration = {
     'systems': [
@@ -89,7 +114,21 @@ site_configuration = {
                 # 'pnetcdf'
             ],
             'target_systems': ['daint'],
-            'modules': ['cray', 'PrgEnv-cray', 'craype-arm-grace']
+            'modules': ['cray', 'PrgEnv-cray', 'craype-arm-grace'],
+        },
+        {
+            'name': 'PrgEnv-ce',
+            'features': ['serial', 'openmp', 'mpi', 'cuda',
+                         'containerized_cpe'],
+            'resources': {
+                'cpe_ce_image': {
+                    'image':
+                        # Avoid interpretting '#' as a start of a comment
+                        os.environ.get(
+                            'CPE_CE',
+                        ).replace(r'#', r'\#')
+                }
+             }
         },
         {
             'name': 'PrgEnv-gnu',
