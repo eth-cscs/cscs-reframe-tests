@@ -71,11 +71,14 @@ class MLperfStorageCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
                        'v1.0-mpi_4.2.1')
     valid_systems = ['+nvgpu +ce']
     valid_prog_environs = ['builtin']
+    tags = {'production', 'ce'}
     time_limit = '30m'
     mlperf_data = fixture(mlperf_storage_datagen_ce, scope='environment')
 
     # Add here to supress the warning, set by the fixture
     num_nodes = variable(int)
+
+    reference = {'*': {'mb_per_sec_total': (93000, -0.1, None, 'MB/second')}}
 
     @run_after('setup')
     def setup_test(self):
@@ -103,12 +106,6 @@ class MLperfStorageCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
         self.container_mounts += [
             f'{os.path.join(self.mlperf_data.stagedir, "dataset")}:/dataset'
         ]
-
-        self.reference = {
-            '*': {
-                'mb_per_sec_total': (8000, -0.1, None, 'MB/second'),
-            }
-        }
 
     @run_before('run')
     def set_pmi2(self):
