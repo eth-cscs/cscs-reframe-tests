@@ -97,7 +97,7 @@ class MpiInitTest(rfm.RegressionTest, ContainerEngineCPEMixin):
         mpich_anl_version = sn.evaluate(mpich_version)
         if mpich_anl_version not in self.mpithread_version:
             mpich_anl_version = 'other'
-         
+
         self.sanity_patterns = sn.all([
             sn.assert_found(r'tid=0 out of 1 from rank 0 out of 1',
                             stdout, msg='sanity: not found'),
