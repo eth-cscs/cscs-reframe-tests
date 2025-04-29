@@ -120,7 +120,11 @@ class MLperfStorageCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
         self.postrun_cmds = [f'rm -rf {self.mlperf_data.storage}']
 
         ref_value = self.mlperf_data.ref_values[self.mlperf_data.base_dir]
-        self.reference = {'*': {'mb_per_sec_total': (ref_value, -0.1, None, 'MB/second')}}
+        self.reference = {
+            '*': {
+                'mb_per_sec_total': (ref_value, -0.1, None, 'MB/second'),
+            }
+        }
 
     @run_before('run')
     def set_pmi2(self):
