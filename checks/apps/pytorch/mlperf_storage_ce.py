@@ -84,7 +84,7 @@ class MLperfStorageCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
                        'v1.0-mpi_4.2.1')
     valid_systems = ['+nvgpu +ce']
     valid_prog_environs = ['builtin']
-    tags = {'production', 'ce'}
+    tags = {'production', 'ce', 'maintenance'}
     time_limit = '30m'
     mlperf_data = fixture(mlperf_storage_datagen_ce, scope='environment')
 
