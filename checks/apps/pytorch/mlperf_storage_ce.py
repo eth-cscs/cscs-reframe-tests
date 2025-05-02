@@ -3,10 +3,10 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-import os
-import sys
-import pathlib
 import getpass
+import pathlib
+import sys
+import tempfile
 
 import reframe as rfm
 import reframe.utility.sanity as sn
@@ -42,21 +42,19 @@ class mlperf_storage_datagen_ce(rfm.RunOnlyRegressionTest,
     def setup_test(self):
         self.num_cpus_per_node = self.current_partition.processor.num_cores
         self.num_cpus_per_task = 6
-        self.num_tasks_per_node = self.num_cpus_per_node // self.num_cpus_per_task
+        self.num_tasks_per_node = (self.num_cpus_per_node //
+                                   self.num_cpus_per_task)
         self.num_tasks = self.num_nodes * self.num_tasks_per_node
         self.num_files = 64 * self.num_tasks
-        self.storage = os.path.join(
-            self.base_dir, getpass.getuser(), 'tmp', 'rfm_mlperf_storage'
+        self.storage = tempfile.mkdtemp(
+            prefix='rfm_mlperf_storage_',
+            dir=pathlib.Path(self.base_dir) / getpass.getuser()
         )
 
         self.container_mounts = [
             f'{self.stagedir}/unet3d.yaml:'
             '/workspace/storage/storage-conf/workload/unet3d_h100.yaml',
             f'{self.storage}:/mlperf_storage',
-        ]
-        self.prerun_cmds = [
-            'rm -rf dataset checkpoint resultsdir',
-            f'mkdir -p {self.storage}',
         ]
 
         self.executable = rf""" bash -c '
