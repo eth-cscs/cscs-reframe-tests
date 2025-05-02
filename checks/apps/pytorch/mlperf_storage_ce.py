@@ -29,7 +29,6 @@ class mlperf_storage_datagen_ce(rfm.RunOnlyRegressionTest,
     }
     base_dir = parameter(list(ref_values.keys()))
     num_nodes = variable(int, value=32)
-    time_limit = '15m'
     accelerator_type = 'h100'
     workload = variable(str, value='unet3d')
     env_vars = {
@@ -83,7 +82,6 @@ class MLperfStorageCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     valid_systems = ['+nvgpu +ce']
     valid_prog_environs = ['builtin']
     tags = {'production', 'ce', 'maintenance'}
-    time_limit = '30m'
     mlperf_data = fixture(mlperf_storage_datagen_ce, scope='environment')
 
     # Add here to supress the warning, set by the fixture
