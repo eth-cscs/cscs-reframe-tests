@@ -95,10 +95,14 @@ class MLperfStorageCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
         self.num_tasks = self.mlperf_data.num_tasks
         self.env_vars = self.mlperf_data.env_vars
         self.workload = self.mlperf_data.workload
-        self.container_mounts = self.mlperf_data.container_mounts
         self.container_workdir = self.mlperf_data.container_workdir
         num_files = self.mlperf_data.num_files
         accelerator_type = self.mlperf_data.accelerator_type
+        self.container_mounts = [
+            f'{self.stagedir}/unet3d.yaml:'
+            '/workspace/storage/storage-conf/workload/unet3d_h100.yaml',
+            f'{self.mlperf_data.storage}:/mlperf_storage',
+        ]
 
         self.executable = rf""" bash -c '
             ./benchmark.sh run --workload {self.workload} \
@@ -110,11 +114,7 @@ class MLperfStorageCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
                 --param checkpoint.checkpoint_folder=/mlperf_storage/checkpoint
         ' """
 
-        self.container_mounts += [
-            f'{self.mlperf_data.storage}:/mlperf_storage'
-        ]
         self.postrun_cmds = [f'rm -rf {self.mlperf_data.storage}']
-
         ref_value = self.mlperf_data.ref_values[self.mlperf_data.base_dir]
         self.reference = {
             '*': {
