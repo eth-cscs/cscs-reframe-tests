@@ -3,10 +3,10 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-import os
-import sys
-import pathlib
 import getpass
+import pathlib
+import sys
+import tempfile
 
 import reframe as rfm
 import reframe.utility.sanity as sn
@@ -29,7 +29,6 @@ class mlperf_storage_datagen_ce(rfm.RunOnlyRegressionTest,
     }
     base_dir = parameter(list(ref_values.keys()))
     num_nodes = variable(int, value=32)
-    time_limit = '15m'
     accelerator_type = 'h100'
     workload = variable(str, value='unet3d')
     env_vars = {
@@ -42,21 +41,19 @@ class mlperf_storage_datagen_ce(rfm.RunOnlyRegressionTest,
     def setup_test(self):
         self.num_cpus_per_node = self.current_partition.processor.num_cores
         self.num_cpus_per_task = 6
-        self.num_tasks_per_node = self.num_cpus_per_node // self.num_cpus_per_task
+        self.num_tasks_per_node = (self.num_cpus_per_node //
+                                   self.num_cpus_per_task)
         self.num_tasks = self.num_nodes * self.num_tasks_per_node
         self.num_files = 64 * self.num_tasks
-        self.storage = os.path.join(
-            self.base_dir, getpass.getuser(), 'tmp', 'rfm_mlperf_storage'
+        self.storage = tempfile.mkdtemp(
+            prefix='rfm_mlperf_storage_',
+            dir=pathlib.Path(self.base_dir) / getpass.getuser()
         )
 
         self.container_mounts = [
             f'{self.stagedir}/unet3d.yaml:'
             '/workspace/storage/storage-conf/workload/unet3d_h100.yaml',
             f'{self.storage}:/mlperf_storage',
-        ]
-        self.prerun_cmds = [
-            'rm -rf dataset checkpoint resultsdir',
-            f'mkdir -p {self.storage}',
         ]
 
         self.executable = rf""" bash -c '
@@ -85,7 +82,6 @@ class MLperfStorageCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     valid_systems = ['+nvgpu +ce']
     valid_prog_environs = ['builtin']
     tags = {'production', 'ce', 'maintenance'}
-    time_limit = '30m'
     mlperf_data = fixture(mlperf_storage_datagen_ce, scope='environment')
 
     # Add here to supress the warning, set by the fixture
@@ -99,10 +95,14 @@ class MLperfStorageCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
         self.num_tasks = self.mlperf_data.num_tasks
         self.env_vars = self.mlperf_data.env_vars
         self.workload = self.mlperf_data.workload
-        self.container_mounts = self.mlperf_data.container_mounts
         self.container_workdir = self.mlperf_data.container_workdir
         num_files = self.mlperf_data.num_files
         accelerator_type = self.mlperf_data.accelerator_type
+        self.container_mounts = [
+            f'{self.stagedir}/unet3d.yaml:'
+            '/workspace/storage/storage-conf/workload/unet3d_h100.yaml',
+            f'{self.mlperf_data.storage}:/mlperf_storage',
+        ]
 
         self.executable = rf""" bash -c '
             ./benchmark.sh run --workload {self.workload} \
@@ -114,11 +114,7 @@ class MLperfStorageCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
                 --param checkpoint.checkpoint_folder=/mlperf_storage/checkpoint
         ' """
 
-        self.container_mounts += [
-            f'{self.mlperf_data.storage}:/mlperf_storage'
-        ]
         self.postrun_cmds = [f'rm -rf {self.mlperf_data.storage}']
-
         ref_value = self.mlperf_data.ref_values[self.mlperf_data.base_dir]
         self.reference = {
             '*': {
