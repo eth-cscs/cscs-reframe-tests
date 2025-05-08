@@ -1,10 +1,13 @@
-# Copyright 2016-2023 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright 2016 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
 # ReFrame CSCS settings
 #
+
+import os
+
 
 site_configuration = {
     'environments': [
@@ -69,6 +72,8 @@ site_configuration = {
                             'dataset': 'performance_values',
                             'namespace': 'reframe'
                         },
+                        'rfm_ci_pipeline': os.getenv("CI_PIPELINE_URL", "#"),
+                        'rfm_ci_project': os.getenv("CI_PROJECT_PATH", "Unknown CI Project")
                     },
                     'ignore_keys': ['check_perfvalues']
                 }
