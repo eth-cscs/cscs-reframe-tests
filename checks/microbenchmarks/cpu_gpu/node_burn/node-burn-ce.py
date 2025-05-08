@@ -94,10 +94,10 @@ class CPUNodeBurnGemmCE(NodeBurnCE):
         self.num_sockets = int(proc.num_sockets)
         self.cpus_per_socket = int(proc.num_cpus_per_socket)
 
-        # On GH200 use 1 core less
+        # On GH200 use 1 task per GH module
         if proc.arch == 'neoverse_v2':
             self.num_tasks = self.num_sockets
-            self.num_cpus_per_task = self.cpus_per_socket - 1
+            self.num_cpus_per_task = self.cpus_per_socket
         else:
             self.num_tasks = 1
             self.num_cpus_per_task = self.cpus_per_socket * self.num_sockets
