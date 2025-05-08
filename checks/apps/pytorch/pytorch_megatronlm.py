@@ -28,14 +28,20 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
     # The LLM model to run
     model = variable(str, value='llama3-8b')
 
+    # Exit after iteration is divisible by the following number
+    exit_interval = variable(int, value=10)
+
     # The checkpoint directory
     checkpoint_dir = variable(str, type(None), value=None)
 
     # The dataset_cache directory
     dataset_cache_dir = variable(str, type(None), value=None)
 
+    # The dataset_cache directory
+    nccl_debug = variable(bool, value=False)
+
     # The number of checkpoint steps
-    checkpoint_steps = variable(int, value=100)
+    checkpoint_steps = variable(int, value=10)
 
     hf_home = variable(
         str, value=str(pathlib.Path.home() / '.cache' / 'huggingface')
@@ -230,7 +236,6 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
         self.env_vars = {
             'TORCH_NCCL_AVOID_RECORD_STREAMS': 1,
             'TORCH_NCCL_ASYNC_ERROR_HANDLING': 1,
-            'NCCL_DEBUG': 'Info',
             'CUDA_DEVICE_MAX_CONNECTIONS': 1,
             'MASTER_ADDR':
                 '$(scontrol show hostnames $SLURM_JOB_NODELIST | head -n 1)',
@@ -255,9 +260,14 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
             'HF_HOME': f'{self.hf_home}',
             'OMP_NUM_THREADS': self.num_cpus_per_task // self.num_gpus_per_node
         }
+        
+        if self.nccl_debug:
+            self.env_vars['NCCL_DEBUG'] = 'Info'
+
         self.prerun_cmds = [
             f'git clone https://github.com/swiss-ai/Megatron-LM.git',
             f'cd $MEGATRON_LM_DIR',
+            f'git fetch origin',
             f'git checkout {self.commit_id}',
             f'echo "START TIME: $(date)"',
             f'ulimit -c 0',
@@ -275,7 +285,6 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
             ]
 
         self.postrun_cmds = ['echo "END TIME: $(date)"']
-        cmd_prefix = '' #'numactl --membind=0-3'
 
         network_size_args = [
 	    f'--num-layers {model_config["num_layers"]}',
@@ -327,6 +336,7 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
 	    f'--train-iters {self.training_steps}',
 	    f'--log-interval 1',
 	    f'--eval-iters 0',
+            f'--exit-interval={self.exit_interval}',
 	    f'--cross-entropy-loss-fusion',
 	    f'--disable-bias-linear',
 	    f'--optimizer {model_config["optimizer"]}',
@@ -346,6 +356,7 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
 	    f'--save $CKPT_DIR',
 	    f'--save-interval {self.checkpoint_steps}',
 	    f'--ckpt-format torch_dist',
+            f'--ckpt-fully-parallel-load',
 	    f'--load $CKPT_DIR',
 	    f'--async-save'
         ]
@@ -428,7 +439,8 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
         training_cmd = ( 
             f'python $MEGATRON_LM_DIR/pretrain_gpt.py {" ".join(all_args)}'
         )
-     
+        
+        cmd_prefix = '' #'numactl --membind=0-3' 
         self.executable_opts = [
             rf"-c", 
             # Open with single quote
@@ -442,7 +454,7 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
 
     @sanity_function
     def assert_sanity(self):
-        return sn.assert_found(r'Training finished after \d+ iterations',
+        return sn.assert_found(r'\[exiting program at iteration \d+\]',
                                self.stdout)
 
     @performance_function('tokens/sec/gpu')
@@ -465,8 +477,8 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
 class PyTorchMegatronLM_CE(PyTorchMegatronLM, ContainerEngineMixin):
     valid_systems = ['+nvgpu +ce']
     valid_prog_environs = ['builtin']
-    #image = '/iopsstor/scratch/cscs/manitart/swissai_container_image/torch_25.03.sqsh'
-    image = '/capstor/store/cscs/swissai/a06/containers/NGC-PyTorch/ngc_pt_jan.sqsh'
+    image = '/iopsstor/scratch/cscs/manitart/swissai_container_image/torch_25.03.sqsh'
+    #image = '/capstor/store/cscs/swissai/a06/containers/NGC-PyTorch/ngc_pt_jan.sqsh'
 
     @run_after('init')
     def set_container_config(self):
