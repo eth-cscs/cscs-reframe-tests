@@ -4,13 +4,17 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import os
-
+import pathlib
+import sys
 import reframe as rfm
 import reframe.utility.sanity as sn
 
+sys.path.append(str(pathlib.Path(__file__).parent.parent / 'mixins'))
+from container_engine import ContainerEngineCPEMixin
+
 
 @rfm.simple_test
-class MpiInitTest(rfm.RegressionTest):
+class MpiInitTest(rfm.RegressionTest, ContainerEngineCPEMixin):
     '''
     This test checks the value returned by calling MPI_Init_thread.
     '''
@@ -58,13 +62,7 @@ class MpiInitTest(rfm.RegressionTest):
                 'MPI_THREAD_MULTIPLE': 2
                 # req=MPI_THREAD_MULTIPLE -> supported=MPI_THREAD_SERIALIZED
             },
-            '3.3': {
-                'MPI_THREAD_SINGLE': 0,
-                'MPI_THREAD_FUNNELED': 1,
-                'MPI_THREAD_SERIALIZED': 2,
-                'MPI_THREAD_MULTIPLE': 3
-            },
-            '3.4a2': {
+            'other': {
                 'MPI_THREAD_SINGLE': 0,
                 'MPI_THREAD_FUNNELED': 1,
                 'MPI_THREAD_SERIALIZED': 2,
@@ -95,23 +93,28 @@ class MpiInitTest(rfm.RegressionTest):
         runtime_mpithread_m = sn.extractsingle(
             regex, f"{self.stagedir}/multiple.rpt", 2, int)
         # }}}
+
+        mpich_anl_version = sn.evaluate(mpich_version)
+        if mpich_anl_version not in self.mpithread_version:
+            mpich_anl_version = 'other'
+
         self.sanity_patterns = sn.all([
             sn.assert_found(r'tid=0 out of 1 from rank 0 out of 1',
                             stdout, msg='sanity: not found'),
             sn.assert_eq(runtime_mpithread_si,
-                         self.mpithread_version[sn.evaluate(mpich_version)]
+                         self.mpithread_version[mpich_anl_version]
                                                [sn.evaluate(req_thread_si)],
                          msg='sanity_eq: {0} != {1}'),
             sn.assert_eq(runtime_mpithread_f,
-                         self.mpithread_version[sn.evaluate(mpich_version)]
+                         self.mpithread_version[mpich_anl_version]
                                                [sn.evaluate(req_thread_f)],
                          msg='sanity_eq: {0} != {1}'),
             sn.assert_eq(runtime_mpithread_s,
-                         self.mpithread_version[sn.evaluate(mpich_version)]
+                         self.mpithread_version[mpich_anl_version]
                                                [sn.evaluate(req_thread_s)],
                          msg='sanity_eq: {0} != {1}'),
             sn.assert_eq(runtime_mpithread_m,
-                         self.mpithread_version[sn.evaluate(mpich_version)]
+                         self.mpithread_version[mpich_anl_version]
                                                [sn.evaluate(req_thread_m)],
                          msg='sanity_eq: {0} != {1}'),
         ])

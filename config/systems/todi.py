@@ -6,9 +6,6 @@
 # ReFrame CSCS settings
 #
 
-import reframe.utility.osext as osext
-import copy
-
 
 base_config = {
     'modules_system': 'lmod',

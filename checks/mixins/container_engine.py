@@ -3,8 +3,12 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
+import os
+
 import reframe as rfm
 import reframe.utility.typecheck as typ
+
+from reframe.core.exceptions import EnvironError
 
 
 class ContainerEngineMixin(rfm.RegressionMixin):
@@ -73,7 +77,20 @@ class ContainerEngineMixin(rfm.RegressionMixin):
 
     @run_before('run')
     def set_container_engine_env_launcher_options(self):
-         if self.environment_in_launcher:
-             self.job.launcher.options += [f'--environment={self.env_file}']
-         else:
-             self.job.options += [f'--environment={self.env_file}']
+        self.job.launcher.options += [f'--environment={self.env_file}']
+
+
+class ContainerEngineCPEMixin(rfm.RegressionMixin):
+    @run_after('setup')
+    def set_container_mounts(self):
+       current_environ = self.current_environ
+       self.build_locally = False
+       if 'cpe_ce_image' in current_environ.resources:
+           if os.environ.get('CPE_CE', None) is not None:
+               self.extra_resources = {
+                   'cpe_ce_mount': {
+                       'stagedir': self.stagedir
+                   }
+               }
+           else:
+               raise EnvironError("enviroment variable 'CPE_CE' is undefined")
