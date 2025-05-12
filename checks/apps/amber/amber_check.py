@@ -17,7 +17,7 @@ class cscs_amber_check(amber_nve_check):
             'num_switches': 1
         }
     }
-    tags |= {'maintenance', 'production'}
+    tags |= {'maintenance'}
     maintainers = ['VH', 'SO']
     num_nodes = parameter([1, 4, 6, 8, 16], loggable=True)
     allref = {

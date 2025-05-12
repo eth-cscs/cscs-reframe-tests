@@ -6,9 +6,6 @@
 # ReFrame CSCS settings
 #
 
-import reframe.utility.osext as osext
-import copy
-
 
 base_config = {
     'modules_system': 'lmod',
@@ -103,26 +100,4 @@ site_configuration = {
             'modules': ['cray', 'PrgEnv-gnu', 'craype-arm-grace']
         },
     ],
-    'modes': [
-       {
-           'name': 'cpe_production',
-           'options': [
-               '--max-retries=1',
-               '--report-file=$PWD/latest.json',
-               '-c checks',
-               '--tag=production'
-           ],
-           'target_systems': ['todi'],
-       },
-       {
-           'name': 'uenv_production',
-           'options': [
-               '--max-retries=1',
-               '--report-file=$PWD/latest.json',
-               '-c checks/apps',
-               '--tag=production'
-           ],
-           'target_systems': ['todi'],
-       }
-   ]
 }

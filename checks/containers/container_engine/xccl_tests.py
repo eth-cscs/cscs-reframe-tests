@@ -29,7 +29,7 @@ class XCCLTestBase(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     env_vars = {
         'NCCL_DEBUG': 'Info',
     }
-    tags = {'production', 'ce'}
+    tags = {'production', 'ce', 'maintenance'}
 
     @run_after('setup')
     def set_executable(self):
@@ -57,7 +57,7 @@ class XCCLTestBase(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
         return sn.all([
             sn.assert_found(r'Out of bounds values\s*:\s*0\s*OK', self.stdout),
             sn.assert_found(
-                r'NCCL INFO NET/OFI Selected Provider is cxi', self.stdout
+                r'NCCL INFO NET/OFI Selected [pP]rovider is cxi', self.stdout
             )
          ])
 
@@ -135,7 +135,7 @@ class RCCLTestCE(XCCLTestBase):
     @run_after('setup')
     def set_nccl_min_nchannels(self):
         gpu_devices = self.current_partition.select_devices('gpu')[0]
-        
+
         # https://rocm.docs.amd.com/projects/rccl/en/latest/how-to/rccl-usage-tips.html#improving-performance-on-the-mi300x-accelerator-when-using-fewer-than-8-gpus noqa: E501
         if gpu_devices.num_devices < 8 and gpu_devices.arch == 'gfx942':
             self.env_vars['NCCL_MIN_NCHANNELS'] = 32

@@ -307,6 +307,7 @@ launch_reframe_1img() {
     # export RFM_AUTODETECT_XTHOSTNAME=1
     # reframe -V
     reframe -C ./config/cscs.py --report-junit=report.xml -c ./checks/ \
+    --prefix=$SCRATCH/rfm-$CI_JOB_ID \
     -r --system=$system
     # -n HelloWorldTestMPIOpenMP
 }
@@ -322,6 +323,7 @@ launch_reframe() {
         --report-junit=report.xml \
         -c ./checks/ \
         --system=$system \
+        --prefix=$SCRATCH/rfm-$CI_JOB_ID \
         -r
     # -J reservation=all_nodes
     # -n HelloWorldTestMPIOpenMP
@@ -339,6 +341,7 @@ launch_reframe_1arg() {
         --report-junit=report.xml \
         $img \
         --system=$system \
+        --prefix=$SCRATCH/rfm-$CI_JOB_ID \
         -r
 }
 # }}}

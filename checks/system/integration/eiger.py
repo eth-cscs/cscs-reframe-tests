@@ -142,8 +142,8 @@ def create_checks(check):
 
     check.CLASS = 'MOUNTS'
 
-    check('grep -q "/users /users dvs"                 /proc/mounts || echo FAILED', not_expected=r'FAILED')
-    check('grep -q "/capstor/store /capstor/store dvs" /proc/mounts || echo FAILED', not_expected=r'FAILED')
+    check('grep -q "/users/cscs /users nfs"                 /proc/mounts || echo FAILED', not_expected=r'FAILED')
+    check('grep -q "/capstor/store/cscs /capstor/store/cscs lustre" /proc/mounts || echo FAILED', not_expected=r'FAILED')
 
     check('grep -q "pe_opt_cray_pe /opt/cray/pe"  /proc/mounts || echo FAILED', not_expected=r'FAILED')
     check('grep -q "pe_opt_AMD /opt/AMD"          /proc/mounts || echo FAILED', not_expected=r'FAILED')
@@ -178,7 +178,7 @@ def create_checks(check):
     check('scontrol ping', expected=r'Slurmctld\(primary\) at .* is UP')
     check('scontrol ping', expected=r'Slurmctld\(backup\) at .* is UP')
     #TODO uncomment when SitePolicies are enabled
-    #check('grep "SitePolicies" /etc/slurm/slurm.conf | grep -v "#" || echo FAILED', not_expected=r'FAILED')    
+    #check('grep "SitePolicies" /etc/slurm/slurm.conf | grep -v "#" || echo FAILED', not_expected=r'FAILED')
     check('grep "JobComp" /etc/slurm/slurm.conf | grep -v "#"', not_expected=r'kafka', expected=r'elasticsearch')
 
 #-----------------------------------------------------------------------------#
@@ -210,12 +210,12 @@ def create_checks(check):
 
 
 
-# --------------------------------------------------------------------------- # 
+# --------------------------------------------------------------------------- #
 #                          S T A R T   U P   C O D E                          #
 # --------------------------------------------------------------------------- #
 
 
-from utils import Check 
+from utils import Check
 
 check = Check()
 

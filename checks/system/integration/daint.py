@@ -242,7 +242,7 @@ def create_checks(check):
     check('bash -c "uenv image find"', expected=           r'vasp/.*gh200')
     check('bash -c "uenv image find"', expected=   r'linaro-forge/.*gh200')
 
-    check('bash -c "uenv image find"', not_expected=    r'pytorch/.*gh200')
+    check('bash -c "uenv image find"', expected=        r'pytorch/.*gh200')
     check('bash -c "uenv image find"', not_expected=   r'icon-wcp/.*gh200')
     check('bash -c "uenv image find"', not_expected=  r'prgenv-nvidia/.*gh200')
 

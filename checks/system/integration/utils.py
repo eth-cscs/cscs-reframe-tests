@@ -79,7 +79,7 @@ class Check:
             else:
                 if where[0][0] not in ['-', '+']:
                     where[0] = f'+{where[0]}'
-        
+
         #
         # Get our properties ready.
         #
@@ -188,7 +188,7 @@ class Check:
             },
             [
                 builtins.run_after('setup')(set_command_options),
-                builtins.run_after('setup')(check_system),
+                builtins.run_after('init')(check_system),
                 builtins.sanity_function(validate),
             ],
             module=self.MODULE_NAME
