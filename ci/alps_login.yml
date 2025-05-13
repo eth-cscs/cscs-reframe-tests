@@ -11,14 +11,17 @@ run rfm_test:
     GIT_STRATEGY: fetch
     GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_PROJECT_NAME
   script:
-    - rm -rf reframe
-    - git clone https://github.com/reframe-hpc/reframe.git
-    - cd reframe
-    - ./bootstrap.sh
-    - ./bin/reframe -t production -C ../config/cscs.py -c ../checks/ --report-junit=../report.xml -r
+    - hostname
+    - rfm_path=$(./ci/scripts/alps.sh install_reframe)
+    - echo "rfm_path=$rfm_path"
+    - export PATH=$rfm_path:$PATH
+    - reframe -V
+    - ./ci/scripts/alps.sh launch_reframe_1arg "--mode cpe_production"
   artifacts:
     when: always
     paths:
+      - reframe.out
       - report.xml
+      - latest.json
     reports:
       junit: report.xml
