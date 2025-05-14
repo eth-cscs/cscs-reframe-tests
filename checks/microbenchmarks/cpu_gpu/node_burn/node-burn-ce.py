@@ -19,7 +19,7 @@ from container_engine import ContainerEngineMixin  # noqa: E402
 class NodeBurnCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     valid_prog_environs = ['builtin']
     nb_duration = variable(int, value=20)
-    nb_matrix_size = variable(int, value=30000)
+    nb_matrix_size = variable(int, value=40000)
     executable = 'burn-f64'
     container_image = 'jfrog.svc.cscs.ch#reframe-oci/node-burn:cuda-12.4'
     tags = {'production', 'maintenance', 'appscheckout'}
@@ -74,7 +74,7 @@ class CudaNodeBurnGemmCE(NodeBurnCE):
 @rfm.simple_test
 class CPUNodeBurnGemmCE(NodeBurnCE):
     ref_nb_gflops = {
-        'gh200': {'nb_gflops': (2300, -0.1, None, 'GFlops')},
+        'gh200': {'nb_gflops': (2500, -0.1, None, 'GFlops')},
     }
     test_hw = 'cpu'
     valid_systems = ['+ce']
@@ -84,7 +84,8 @@ class CPUNodeBurnGemmCE(NodeBurnCE):
         # Nvidia Gpus
         'NVIDIA_VISIBLE_DEVICES': '"void"',
 
-        'NVIDIA_DISABLE_REQUIRE': 1
+        'NVIDIA_DISABLE_REQUIRE': 1,
+        'OMP_PROC_BIND': 'true',
     })
 
     @run_before('run')
