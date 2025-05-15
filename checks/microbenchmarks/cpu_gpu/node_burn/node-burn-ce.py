@@ -21,8 +21,15 @@ class NodeBurnCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     nb_duration = variable(int, value=20)
     nb_matrix_size = variable(int, value=40000)
     executable = 'burn-f64'
+    flexible = variable(bool, value=False)
     container_image = 'jfrog.svc.cscs.ch#reframe-oci/node-burn:cuda-12.4'
     tags = {'production', 'maintenance', 'appscheckout'}
+
+    def set_num_tasks(self):
+        if self.flexible:
+            self.num_tasks = 0
+        else:
+            self.num_tasks = self.num_tasks_per_node
 
     @run_before('performance')
     def validate_perf(self):
@@ -39,13 +46,17 @@ class NodeBurnCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     def validate_test(self):
         regex = rf'nid\d+:{self.test_hw}.*\s+(\d+\.\d+)\s+GFlops,'
         num_res = sn.count(sn.extractall(regex, self.stdout, 1, float))
-        return sn.assert_eq(self.num_tasks, num_res)
+        return sn.assert_eq(self.num_tasks_assigned, num_res)
 
     @performance_function('GFlops')
     def nb_gflops(self):
         regex = rf'nid\d+:{self.test_hw}.*\s+(\d+\.\d+)\s+GFlops,'
         return sn.min(sn.extractall(regex, self.stdout, 1, float))
 
+    @property
+    @deferrable
+    def num_tasks_assigned(self):
+        return self.job.num_tasks
 
 @rfm.simple_test
 class CudaNodeBurnGemmCE(NodeBurnCE):
@@ -61,7 +72,8 @@ class CudaNodeBurnGemmCE(NodeBurnCE):
         self.skip_if_no_procinfo()
         self.job.options = [f'--gpus-per-task=1']
         self.num_gpus = self.current_partition.devices[0].num_devices
-        self.num_tasks = self.num_gpus
+        self.num_tasks_per_node = self.num_gpus
+        self.set_num_tasks()
         self.extra_resources = {
             'gres': {'gres': f'gpu:{self.num_tasks}'}
         }
@@ -97,12 +109,13 @@ class CPUNodeBurnGemmCE(NodeBurnCE):
 
         # On GH200 use 1 task per GH module
         if proc.arch == 'neoverse_v2':
-            self.num_tasks = self.num_sockets
+            self.num_tasks_per_node = self.num_sockets
             self.num_cpus_per_task = self.cpus_per_socket
         else:
-            self.num_tasks = 1
+            self.num_tasks_per_node = 1
             self.num_cpus_per_task = self.cpus_per_socket * self.num_sockets
 
+        self.set_num_tasks()
         self.executable_opts = [
             f'-cgemm,{self.nb_matrix_size}',
             f'-d{self.nb_duration}', '--batch'
