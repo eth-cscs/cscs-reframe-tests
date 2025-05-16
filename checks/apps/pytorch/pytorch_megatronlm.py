@@ -338,6 +338,8 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
 	    f'--eval-iters 0',
             f'--exit-interval={self.exit_interval}',
 	    f'--cross-entropy-loss-fusion',
+            # Test this for latency
+            f'--ddp-bucket-size 10000000000',
 	    f'--disable-bias-linear',
 	    f'--optimizer {model_config["optimizer"]}',
 	    f'--dataloader-type single',
@@ -477,8 +479,9 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
 class PyTorchMegatronLM_CE(PyTorchMegatronLM, ContainerEngineMixin):
     valid_systems = ['+nvgpu +ce']
     valid_prog_environs = ['builtin']
-    image = '/iopsstor/scratch/cscs/manitart/swissai_container_image/torch_25.03.sqsh'
+    #image = '/iopsstor/scratch/cscs/manitart/swissai_container_image/torch_25.03.sqsh'
     #image = '/capstor/store/cscs/swissai/a06/containers/NGC-PyTorch/ngc_pt_jan.sqsh'
+    image = '/iopsstor/scratch/cscs/vjoost/teststripe/test02/ngc_25.01_nvrtc12.9.41-1.sqsh'
 
     @run_after('init')
     def set_container_config(self):
