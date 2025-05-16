@@ -19,7 +19,7 @@ from container_engine import ContainerEngineMixin  # noqa: E402
 class NodeBurnCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     valid_prog_environs = ['builtin']
     nb_duration = variable(int, value=20)
-    nb_matrix_size = variable(int, value=30000)
+    nb_matrix_size = variable(int, value=40000)
     executable = 'burn-f64'
     container_image = 'jfrog.svc.cscs.ch#reframe-oci/node-burn:cuda-12.4'
     tags = {'production', 'maintenance', 'appscheckout'}
@@ -74,7 +74,7 @@ class CudaNodeBurnGemmCE(NodeBurnCE):
 @rfm.simple_test
 class CPUNodeBurnGemmCE(NodeBurnCE):
     ref_nb_gflops = {
-        'gh200': {'nb_gflops': (2300, -0.1, None, 'GFlops')},
+        'gh200': {'nb_gflops': (2500, -0.1, None, 'GFlops')},
     }
     test_hw = 'cpu'
     valid_systems = ['+ce']
@@ -84,7 +84,8 @@ class CPUNodeBurnGemmCE(NodeBurnCE):
         # Nvidia Gpus
         'NVIDIA_VISIBLE_DEVICES': '"void"',
 
-        'NVIDIA_DISABLE_REQUIRE': 1
+        'NVIDIA_DISABLE_REQUIRE': 1,
+        'OMP_PROC_BIND': 'true',
     })
 
     @run_before('run')
@@ -94,10 +95,10 @@ class CPUNodeBurnGemmCE(NodeBurnCE):
         self.num_sockets = int(proc.num_sockets)
         self.cpus_per_socket = int(proc.num_cpus_per_socket)
 
-        # On GH200 use 1 core less
+        # On GH200 use 1 task per GH module
         if proc.arch == 'neoverse_v2':
             self.num_tasks = self.num_sockets
-            self.num_cpus_per_task = self.cpus_per_socket - 1
+            self.num_cpus_per_task = self.cpus_per_socket
         else:
             self.num_tasks = 1
             self.num_cpus_per_task = self.cpus_per_socket * self.num_sockets
