@@ -142,7 +142,7 @@ def create_checks(check):
 
     check.CLASS = 'MOUNTS'
 
-    check('grep -q "/users /users dvs"                 /proc/mounts || echo FAILED', not_expected=r'FAILED')
+    check('grep -q "/users/cscs /users nfs"                 /proc/mounts || echo FAILED', not_expected=r'FAILED')
     check('grep -q "/capstor/store/cscs /capstor/store/cscs lustre" /proc/mounts || echo FAILED', not_expected=r'FAILED')
 
     check('grep -q "pe_opt_cray_pe /opt/cray/pe"  /proc/mounts || echo FAILED', not_expected=r'FAILED')

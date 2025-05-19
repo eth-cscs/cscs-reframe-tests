@@ -3,9 +3,10 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-import os
-import sys
+import getpass
 import pathlib
+import sys
+import tempfile
 
 import reframe as rfm
 import reframe.utility.sanity as sn
@@ -22,11 +23,14 @@ class mlperf_storage_datagen_ce(rfm.RunOnlyRegressionTest,
     container_workdir = None
     valid_systems = ['+nvgpu +ce']
     valid_prog_environs = ['builtin']
+    ref_values = {
+        '/capstor/scratch/cscs/': 93000,
+        '/iopsstor/scratch/cscs/': 144000,
+    }
+    base_dir = parameter(list(ref_values.keys()))
     num_nodes = variable(int, value=32)
-    time_limit = '15m'
     accelerator_type = 'h100'
     workload = variable(str, value='unet3d')
-    prerun_cmds = ['rm -rf dataset checkpoint resultsdir']
     env_vars = {
         'LC_ALL': 'C',
         'HYDRA_FULL_ERROR': '1',
@@ -37,23 +41,29 @@ class mlperf_storage_datagen_ce(rfm.RunOnlyRegressionTest,
     def setup_test(self):
         self.num_cpus_per_node = self.current_partition.processor.num_cores
         self.num_cpus_per_task = 6
-        self.num_tasks_per_node = self.num_cpus_per_node // self.num_cpus_per_task
+        self.num_tasks_per_node = (self.num_cpus_per_node //
+                                   self.num_cpus_per_task)
         self.num_tasks = self.num_nodes * self.num_tasks_per_node
         self.num_files = 64 * self.num_tasks
+        self.storage = tempfile.mkdtemp(
+            prefix='rfm_mlperf_storage_',
+            dir=pathlib.Path(self.base_dir) / getpass.getuser()
+        )
 
         self.container_mounts = [
             f'{self.stagedir}/unet3d.yaml:'
-            '/workspace/storage/storage-conf/workload/unet3d_h100.yaml'
+            '/workspace/storage/storage-conf/workload/unet3d_h100.yaml',
+            f'{self.storage}:/mlperf_storage',
         ]
 
         self.executable = rf""" bash -c '
             ./benchmark.sh datagen --workload {self.workload} \
                 --accelerator-type {self.accelerator_type} \
                 --num-parallel {self.num_tasks} \
-                --results-dir /rfm_workdir/resultsdir \
+                --results-dir /mlperf_storage/resultsdir \
                 --param dataset.num_files_train={self.num_files} \
-                --param dataset.data_folder=/rfm_workdir/dataset \
-                --param checkpoint.checkpoint_folder=/rfm_workdir/checkpoint
+                --param dataset.data_folder=/mlperf_storage/dataset \
+                --param checkpoint.checkpoint_folder=/mlperf_storage/checkpoint
         ' """
 
     @run_before('run')
@@ -71,7 +81,7 @@ class MLperfStorageCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
                        'v1.0-mpi_4.2.1')
     valid_systems = ['+nvgpu +ce']
     valid_prog_environs = ['builtin']
-    time_limit = '30m'
+    tags = {'production', 'ce', 'maintenance'}
     mlperf_data = fixture(mlperf_storage_datagen_ce, scope='environment')
 
     # Add here to supress the warning, set by the fixture
@@ -85,28 +95,30 @@ class MLperfStorageCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
         self.num_tasks = self.mlperf_data.num_tasks
         self.env_vars = self.mlperf_data.env_vars
         self.workload = self.mlperf_data.workload
-        self.container_mounts = self.mlperf_data.container_mounts
         self.container_workdir = self.mlperf_data.container_workdir
         num_files = self.mlperf_data.num_files
         accelerator_type = self.mlperf_data.accelerator_type
+        self.container_mounts = [
+            f'{self.stagedir}/unet3d.yaml:'
+            '/workspace/storage/storage-conf/workload/unet3d_h100.yaml',
+            f'{self.mlperf_data.storage}:/mlperf_storage',
+        ]
 
         self.executable = rf""" bash -c '
             ./benchmark.sh run --workload {self.workload} \
                 --accelerator-type {accelerator_type} \
                 --num-accelerators {self.num_tasks} \
-                --results-dir /rfm_workdir/resultsdir \
+                --results-dir /mlperf_storage/resultsdir \
                 --param dataset.num_files_train={num_files} \
-                --param dataset.data_folder=/dataset \
-                --param checkpoint.checkpoint_folder=/rfm_workdir/checkpoint
+                --param dataset.data_folder=/mlperf_storage/dataset \
+                --param checkpoint.checkpoint_folder=/mlperf_storage/checkpoint
         ' """
 
-        self.container_mounts += [
-            f'{os.path.join(self.mlperf_data.stagedir, "dataset")}:/dataset'
-        ]
-
+        self.postrun_cmds = [f'rm -rf {self.mlperf_data.storage}']
+        ref_value = self.mlperf_data.ref_values[self.mlperf_data.base_dir]
         self.reference = {
             '*': {
-                'mb_per_sec_total': (8000, -0.1, None, 'MB/second'),
+                'mb_per_sec_total': (ref_value, -0.1, None, 'MB/second'),
             }
         }
 

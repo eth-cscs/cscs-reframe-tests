@@ -3,9 +3,9 @@ include:
 
 stages:
   - run
-  - status
+  - notify
+  # - status
 
-# {{{ reframe
 reframe:
   stage: run
   extends: .f7t-baremetal-runner
@@ -32,11 +32,21 @@ reframe:
       - latest.json
     reports:
       junit: report.xml
-# }}}        
 
-# {{{ status_page
-status_page:
-  stage: status
+# status_page:
+#   stage: status
+#   needs: ['reframe']
+#   extends: .container-runner-lightweight-zen2
+#   image: python:3.9
+#   script:
+#     - pwd
+#     - ls -a
+#     - pip install requests
+#     - ./ci/scripts/alps.sh oneuptime "$FIRECREST_SYSTEM" "cpe"
+#   when: always
+
+notify_slack:
+  stage: notify
   needs: ['reframe']
   extends: .container-runner-lightweight-zen2
   image: python:3.9
@@ -44,6 +54,6 @@ status_page:
     - pwd
     - ls -a
     - pip install requests
-    - ./ci/scripts/alps.sh oneuptime "$FIRECREST_SYSTEM" "cpe"
+    - python ./ci/scripts/slack_notify.py latest.json cpe
   when: always
-# }}}
+

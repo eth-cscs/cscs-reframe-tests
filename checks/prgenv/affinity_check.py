@@ -3,16 +3,21 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-
 import os
+import pathlib
+import sys 
 
 import reframe as rfm
 import reframe.utility.sanity as sn
 import reframe.utility.osext as osext
 from reframe.core.exceptions import SanityError, ReframeError
 
+sys.path.append(str(pathlib.Path(__file__).parent.parent / 'mixins'))
+from container_engine import ContainerEngineCPEMixin
 
-class CompileAffinityTool(rfm.CompileOnlyRegressionTest):
+
+class CompileAffinityTool(rfm.CompileOnlyRegressionTest,
+                          ContainerEngineCPEMixin):
     valid_systems = [
         '*'
     ]
@@ -50,7 +55,8 @@ class CompileAffinityToolNoOmp(CompileAffinityTool):
         self.build_system.options = ['MPI=1', 'OPENMP=0']
 
 
-class AffinityTestBase(rfm.RunOnlyRegressionTest):
+class AffinityTestBase(rfm.RunOnlyRegressionTest,
+                       ContainerEngineCPEMixin):
     '''Base class for the affinity checks.
 
     It sets up the processor's topology, based on the configuration.

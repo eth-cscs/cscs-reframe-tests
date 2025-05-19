@@ -197,24 +197,5 @@ site_configuration = {
             ],
             'target_systems': ['eiger']
         },
-        {
-            'name': 'cpe_production',
-            'options': [
-                '--max-retries=1',
-                '--report-file=$PWD/latest.json',
-                '-c checks',
-                '--tag=production'
-            ],
-            'target_systems': ['eiger'],
-        },
-        {
-            'name': 'uenv_production',
-            'options': [
-                '--max-retries=1',
-                '--report-file=$PWD/latest.json',
-                '-c checks/apps',
-            ],
-            'target_systems': ['eiger'],
-        }
     ]
 }
