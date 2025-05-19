@@ -77,7 +77,7 @@ class XCCLTestBase(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
 @rfm.simple_test
 class NCCLTestsCE(XCCLTestBase):
     valid_systems = ['+ce +nvgpu']
-    image_tag = parameter(['cuda12.3'])
+    image_tag = parameter(['cuda12.8.1'])
 
     # Disable Nvidia Driver requirement
     env_vars['NVIDIA_DISABLE_REQUIRE'] = 1
