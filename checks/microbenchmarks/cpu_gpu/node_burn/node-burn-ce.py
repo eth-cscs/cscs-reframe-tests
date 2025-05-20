@@ -17,6 +17,14 @@ from container_engine import ContainerEngineMixin  # noqa: E402
 
 
 class NodeBurnCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
+    '''The base class os the node burn test using the Container Engine.
+
+       Every clild class of `NodeBurnCE` can be made flexible on demand by
+       using the `-S flexible=True` cli option of ReFrame and further control
+       of the flexible node allocation can be achieved using the
+       `--flex-alloc-nodes` option.
+    '''
+
     valid_prog_environs = ['builtin']
     nb_duration = variable(int, value=20)
     nb_matrix_size = variable(int, value=40000)
@@ -58,6 +66,7 @@ class NodeBurnCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     def num_tasks_assigned(self):
         return self.job.num_tasks
 
+
 @rfm.simple_test
 class CudaNodeBurnGemmCE(NodeBurnCE):
     ref_nb_gflops = {
@@ -91,11 +100,9 @@ class CPUNodeBurnGemmCE(NodeBurnCE):
     test_hw = 'cpu'
     valid_systems = ['+ce']
     env_vars.update({
-
         # Disable the nvidia-container-cli to run on systems without
         # Nvidia Gpus
         'NVIDIA_VISIBLE_DEVICES': '"void"',
-
         'NVIDIA_DISABLE_REQUIRE': 1,
         'OMP_PROC_BIND': 'true',
     })
