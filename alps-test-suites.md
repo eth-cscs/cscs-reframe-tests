@@ -24,9 +24,9 @@ Single and multi-node checks to be performed after node interventions (using a r
 
 | Category          | Description                                 | Multi-node | Duration | Test name               |
 |:---               |:---                                         |   ----     |   ----   |:---                     | 
-| HW check          | Run dgemm on all GPUs and CPUs	            |    N       | 10min	  |  	[node-burn-ce.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/microbenchmarks/cpu_gpu/node_burn/node-burn-ce.py) |     
-|                   | Stream (memory bandwidth test)	            |    N       |  10s     |  	[node-burn-ce.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/microbenchmarks/cpu_gpu/node_burn/node-burn-ce.py) |  
-| Network           | Simple MPI 	                                |    Y       |   5s     | 	[mpi_cpi.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/prgenv/mpi_cpi.py) 
+| HW check          | Run dgemm on all GPUs and CPUs	          |    N       | 10min	  | [node-burn-ce.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/microbenchmarks/cpu_gpu/node_burn/node-burn-ce.py) |     
+|                   | Stream (memory bandwidth test)	          |    N       |  10s     | [node-burn-ce.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/microbenchmarks/cpu_gpu/node_burn/node-burn-ce.py) |  
+| Network           | Simple MPI 	                          |    Y       |   5s     | [mpi_cpi.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/prgenv/mpi_cpi.py) | 
 |                   | OSU all-to-all                              |    Y       |          | 	    | 
 |                   | ....                                        |    Y       |          | 	    | 
 	
