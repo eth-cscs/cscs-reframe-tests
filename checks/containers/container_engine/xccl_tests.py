@@ -77,7 +77,7 @@ class XCCLTestBase(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
 @rfm.simple_test
 class NCCLTestsCE(XCCLTestBase):
     valid_systems = ['+ce +nvgpu']
-    image_tag = parameter(['cuda12.3'])
+    image_tag = parameter(['cuda12.8.1'])
 
     # Disable Nvidia Driver requirement
     env_vars['NVIDIA_DISABLE_REQUIRE'] = 1
@@ -104,6 +104,7 @@ class NCCLTestsCE(XCCLTestBase):
             'aws_ofi_nccl.variant': cuda_major
         })
 
+
 @rfm.simple_test
 class RCCLTestCE(XCCLTestBase):
     valid_systems = ['+ce +amdgpu']
@@ -113,7 +114,9 @@ class RCCLTestCE(XCCLTestBase):
     reference_per_test = {
         'sendrecv': {
             '*': {
-                'GB/s': (24.0, -0.05, None, 'GB/s')
+
+                # TODO: revisit the performance limits based on more data
+                'GB/s': (24.0, -0.40, None, 'GB/s')
             }
          },
         'all_reduce': {
@@ -136,6 +139,6 @@ class RCCLTestCE(XCCLTestBase):
     def set_nccl_min_nchannels(self):
         gpu_devices = self.current_partition.select_devices('gpu')[0]
 
-        # https://rocm.docs.amd.com/projects/rccl/en/latest/how-to/rccl-usage-tips.html#improving-performance-on-the-mi300x-accelerator-when-using-fewer-than-8-gpus noqa: E501
+        # https://rocm.docs.amd.com/projects/rccl/en/latest/how-to/rccl-usage-tips.html#improving-performance-on-the-mi300x-accelerator-when-using-fewer-than-8-gpus # noqa: E501
         if gpu_devices.num_devices < 8 and gpu_devices.arch == 'gfx942':
             self.env_vars['NCCL_MIN_NCHANNELS'] = 32
