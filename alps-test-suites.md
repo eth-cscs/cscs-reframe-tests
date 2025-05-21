@@ -13,6 +13,7 @@
 |                   | Check if mount points (main.tf) are present |          | [MountPointExistsTest](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/system/integration/v-cluster_config.py)    |
 |                   | Check if environment vars are correctly set |          | [EnvVariableConfigTest](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/system/integration/v-cluster_config.py)   |
 |                   | Check if proxy config is correctly set      |          | [ProxyConfigTest](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/system/integration/v-cluster_config.py)  |
+| Slurm             | Selected Epilog and Prolog tests            | 5s       | 002-slowlink, 006-bugs.sh, 020-gpumem.sh    | 
 
 
 	
