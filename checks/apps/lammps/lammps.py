@@ -9,7 +9,10 @@ import reframe.utility.sanity as sn
 from uenv import uarch
 
 lammps_references = {
-    'lj': {'gh200': {'time_run': (345, None, 0.05, 's')}},
+    'lj': {
+        'gh200': {'time_run': (345, None, 0.05, 's')},
+        'zen2': {'time_run': (80, None, 0.05, 's')}
+    },
 }
 
 slurm_config = {
@@ -19,6 +22,12 @@ slurm_config = {
             "ntasks-per-node": 32,
             "walltime": "10m",
             "gpu": True,
+        },
+        "zen2": {
+            "nodes": 4,
+            "ntasks-per-node": 64,
+            "walltime": "10m",
+            "gpu": False,
         },
     },
 }
@@ -83,7 +92,7 @@ class lammps_build_test(rfm.CompileOnlyRegressionTest):
 
 
 @rfm.simple_test
-class lammps_gpu_test(rfm.RunOnlyRegressionTest):
+class lammps_test(rfm.RunOnlyRegressionTest):
     """
     Test LAMMPS run using the run-gpu:gpu view
     Untested views:
@@ -92,7 +101,7 @@ class lammps_gpu_test(rfm.RunOnlyRegressionTest):
         run-kokkos: kokkos
     """
     executable = './mps-wrapper.sh lmp'
-    valid_prog_environs = ['+lammps-gpu-prod']
+    valid_prog_environs = ['+lammps-gpu-prod', '+lammps-kokkos-prod']
     valid_systems = ["*"]
     maintainers = ["SSA"]
     test_name = variable(str, value='lj')
@@ -103,7 +112,6 @@ class lammps_gpu_test(rfm.RunOnlyRegressionTest):
     def prepare_run(self):
         self.uarch = uarch(self.current_partition)
         config = slurm_config[self.test_name][self.uarch]
-        self.extra_resources = {"gres": {"gpu": 4}}
         self.job.options = [f'--nodes={config["nodes"]}']
         self.num_tasks_per_node = config["ntasks-per-node"]
         self.num_tasks = config["nodes"] * self.num_tasks_per_node
@@ -112,6 +120,7 @@ class lammps_gpu_test(rfm.RunOnlyRegressionTest):
         self.executable_opts = [f'-i {self.test_name}.in']
 
         if self.uarch == "gh200":
+            self.extra_resorces = {"gres": {"gpu": 4}}
             self.env_vars["MPICH_GPU_SUPPORT_ENABLED"] = "1"
 
     @run_before("run")
