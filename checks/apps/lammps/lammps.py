@@ -58,10 +58,10 @@ class lammps_build_test(rfm.CompileOnlyRegressionTest):
     '''
     descr = 'LAMMPS Build Test'
     valid_prog_environs = ['+lammps-kokkos-dev']
-    valid_systems = ['*']
+    valid_systems = ['daint']
     maintainers = ['SSA']
     sourcesdir = None
-    lammps_sources = fixture(lammps_download, scope='session')
+    lammps_sources = fixture(lammps_download, scope='environment')
     build_system = 'CMake'
     tags = {'uenv', 'production'}
     build_locally = False
