@@ -114,7 +114,6 @@ class MLperfStorageCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
                 --param checkpoint.checkpoint_folder=/mlperf_storage/checkpoint
         ' """
 
-        self.postrun_cmds = [f'rm -rf {self.mlperf_data.storage}']
         ref_value = self.mlperf_data.ref_values[self.mlperf_data.base_dir]
         self.reference = {
             '*': {
@@ -136,3 +135,22 @@ class MLperfStorageCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
             r'Training I/O Throughput \(MB/second\): (?P<mbs_total>\S+)',
             self.stderr, 'mbs_total', float
         ))
+
+
+@rfm.simple_test
+class MLperfStorageCECleanup(rfm.RunOnlyRegressionTest):
+    valid_systems = ['+nvgpu +ce']
+    valid_prog_environs = ['builtin']
+    num_tasks = 1
+    executable = 'rm'
+    mlperf = fixture(MLperfStorageCE, scope='environment')
+    tags = {'production', 'ce', 'maintenance'}
+
+    @run_after('setup')
+    def setup_exec_opts(self):
+        self.storage = self.mlperf.mlperf_data.storage
+        self.executable_opts = ['-r', '-f', self.storage]
+
+    @sanity_function
+    def assert_successful_cleanup(self):
+        return not sn.path_exists(self.storage)
