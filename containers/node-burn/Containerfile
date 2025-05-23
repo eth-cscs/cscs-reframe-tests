@@ -20,11 +20,17 @@ RUN git clone https://github.com/eth-cscs/node-burn.git && \
         sed -i 's/BLAS::BLAS/nvpl::lapack_lp64_omp/' CMakeLists.txt; \
     fi && \
     cmake -DCMAKE_BUILD_TYPE=Release -DTF32=ON -DDOUBLE=OFF -B build && \
-    cmake -DCMAKE_BUILD_TYPE=Release -B build-f64&& \
+    cmake -DCMAKE_BUILD_TYPE=Release -B build-f64 && \
+    cmake -DNB_GPU=OFF -DCMAKE_BUILD_TYPE=Release -DTF32=ON -DDOUBLE=OFF -B build-cpu && \
+    cmake -DNB_GPU=OFF -DCMAKE_BUILD_TYPE=Release -B build-f64-cpu && \
     cmake --build build && \
     cmake --build build-f64 && \
+    cmake --build build-cpu && \
+    cmake --build build-f64-cpu && \
     cp build/burn /usr/local/bin && \
     cp build-f64/burn /usr/local/bin/burn-f64 && \
+    cp build-cpu/burn /usr/local/bin/burn-cpu && \
+    cp build-f64-cpu/burn /usr/local/bin/burn-f64-cpu && \
     cd .. \
     rm -rf node-burn
 
@@ -43,3 +49,5 @@ RUN  if [ "$(uname -m)" != "x86_64" ]; then \
 
 COPY --from=0 /usr/local/bin/burn /usr/local/bin/burn
 COPY --from=0 /usr/local/bin/burn-f64 /usr/local/bin/burn-f64
+COPY --from=0 /usr/local/bin/burn-cpu /usr/local/bin/burn-cpu
+COPY --from=0 /usr/local/bin/burn-f64-cpu /usr/local/bin/burn-f64-cpu
