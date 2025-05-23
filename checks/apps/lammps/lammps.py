@@ -120,7 +120,7 @@ class lammps_test(rfm.RunOnlyRegressionTest):
         self.executable_opts = [f'-i {self.test_name}.in']
 
         if self.uarch == "gh200":
-            self.extra_resorces = {"gres": {"gpu": 4}}
+            self.extra_resources = {"gres": {"gpu": 4}}
             self.env_vars["MPICH_GPU_SUPPORT_ENABLED"] = "1"
 
     @run_before("run")
