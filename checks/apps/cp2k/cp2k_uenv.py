@@ -122,7 +122,7 @@ class Cp2kBuildTestUENV(rfm.CompileOnlyRegressionTest):
 
         # TODO: Use Ninja generator
         self.build_system.config_opts = [
-            # Puts executables under exe/local_cuda/ or exe/local
+            # Puts executables under exe/local_cuda/
             '-DCP2K_ENABLE_REGTESTS=ON',
             '-DCP2K_USE_LIBXC=ON',
             '-DCP2K_USE_LIBINT2=ON',
