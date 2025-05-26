@@ -75,7 +75,6 @@ class mlperf_storage_datagen_ce(rfm.RunOnlyRegressionTest,
         return sn.assert_found(r'.*Generation done.*', self.stderr)
 
 
-@rfm.simple_test
 class MLperfStorageCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     container_image = ('jfrog.svc.cscs.ch#reframe-oci/mlperf-storage:'
                        'v1.0-mpi_4.2.1')
