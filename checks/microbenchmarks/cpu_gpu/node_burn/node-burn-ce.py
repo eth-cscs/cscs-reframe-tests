@@ -17,9 +17,9 @@ from container_engine import ContainerEngineMixin  # noqa: E402
 
 
 class NodeBurnCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
-    '''The base class os the node burn test using the Container Engine.
+    '''The base class of the node burn test using the Container Engine.
 
-       Every clild class of `NodeBurnCE` can be made flexible on demand by
+       Every child class of `NodeBurnCE` can be made flexible on demand by
        using the `-S flexible=True` cli option of ReFrame and further control
        of the flexible node allocation can be achieved using the
        `--flex-alloc-nodes` option.
