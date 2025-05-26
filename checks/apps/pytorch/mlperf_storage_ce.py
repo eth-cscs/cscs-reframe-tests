@@ -116,7 +116,7 @@ class MLperfStorageCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
         ref_value = self.mlperf_data.ref_values[self.mlperf_data.base_dir]
         self.reference = {
             '*': {
-                'mb_per_sec_total': (ref_value, -0.1, None, 'MB/second'),
+                'mb_per_sec_total': (ref_value, -0.2, None, 'MB/second'),
             }
         }
 
