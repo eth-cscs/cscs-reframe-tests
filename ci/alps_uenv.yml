@@ -29,16 +29,21 @@ setup and pull:
       ./ci/scripts/alps.sh meta_has_reframe_yaml "$img" &> .rc
       cat .rc
       rc=$(grep -q OK .rc ; echo $?)
-      echo "rc=$rc"
+      # echo "rc=$rc"
+      echo
       if [ $rc -eq 0 ] ; then
         UENVA+="$img,"
-        echo "UENVA=$UENVA"
+        # echo "UENVA=$UENVA"
       fi
     done
+    set -x
+    echo 
+    echo "UENVA=$UENVA"
     UENVA=${UENVA%?}
     UENV=`echo ${UENVA} | sed 's-,,-,-g' | sort -u`
     echo "UENV=$UENV" > rfm_uenv.env
     cat rfm_uenv.env | tr , "\n"
+    set +x
   artifacts:
     reports:
       dotenv: rfm_uenv.env
