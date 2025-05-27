@@ -5,16 +5,24 @@
 
 import os
 import shutil
+
 import reframe as rfm
 import reframe.utility.sanity as sn
 import reframe.utility.udeps as udeps
-
 from uenv import uarch
 
 cp2k_references = {
-    'md': {'gh200': {'time_run': (68, None, 0.05, 's')}},
-    'pbe': {'gh200': {'time_run': (65, None, 0.05, 's')}},
-    'rpa': {'gh200': {'time_run': (575, None, 0.05, 's')}},
+    'md': {
+        'gh200': {'time_run': (68, None, 0.05, 's')},
+        'zen2': {'time_run': (90, None, 0.05, 's')}
+    },
+    'pbe': {
+        'gh200': {'time_run': (53, None, 0.05, 's')},
+        'zen2': {'time_run': (51, None, 0.05, 's')}
+    },
+    'rpa': {
+        'gh200': {'time_run': (575, None, 0.05, 's')}
+    },
 }
 
 
@@ -26,16 +34,30 @@ slurm_config = {
             'cpus-per-task': 16,
             'walltime': '0d0h5m0s',
             'gpu': True,
-        }
+        },
+        'zen2': {
+            'nodes': 1,
+            'ntasks-per-node': 32,
+            'cpus-per-task': 4,
+            'walltime': '0d0h5m0s',
+            'gpu': False,
+        },
     },
     'pbe': {
         'gh200': {
-            'nodes': 8,
+            'nodes': 2,
             'ntasks-per-node': 16,
             'cpus-per-task': 16,
             'walltime': '0d0h5m0s',
             'gpu': True,
-        }
+        },
+        'zen2': {
+            'nodes': 2,
+            'ntasks-per-node': 32,
+            'cpus-per-task': 4,
+            'walltime': '0d0h5m0s',
+            'gpu': True,
+        },
     },
     'rpa': {
         'gh200': {
@@ -44,7 +66,7 @@ slurm_config = {
             'cpus-per-task': 16,
             'walltime': '0d0h15m0s',
             'gpu': True,
-        }
+        },
     },
 }
 
@@ -66,7 +88,6 @@ class cp2k_download(rfm.RunOnlyRegressionTest):
         self.executable_opts = [
             '--quiet',
             f'{url}/cp2k/v{self.version}.tar.gz'
-            # https://github.com/cp2k/cp2k/archive/refs/tags/v2024.3.tar.gz
         ]
 
     @sanity_function
@@ -82,7 +103,7 @@ class Cp2kBuildTestUENV(rfm.CompileOnlyRegressionTest):
 
     descr = 'CP2K Build Test'
     valid_prog_environs = ['+cp2k-dev']
-    valid_systems = ['*']
+    valid_systems = ['+uenv']
     build_system = 'CMake'
     sourcesdir = None
     maintainers = ['SSA']
@@ -295,6 +316,7 @@ class Cp2kCheckRPA_UENVExec(Cp2kCheck_UENV):
     executable_opts = ['-i', 'H2O-128-RI-dRPA-TZ.inp']
     energy_reference = -2217.36884935325
     tags = {'maintenance'}
+    valid_systems = ['daint']
 
     def __init__(self):
         super().__init__()
