@@ -17,6 +17,10 @@ vasp_references = {
             1: {'elapsed_time': (71, None, 0.10, 's')},
             2: {'elapsed_time': (90, None, 0.10, 's')}
         }},
+        'CeO2': {'zen2': {
+            1: {'elapsed_time': (168, None, 0.10, 's')},
+            2: {'elapsed_time': (111, None, 0.10, 's')}
+        }},
 }
 
 
@@ -25,6 +29,11 @@ slurm_config = {
         'gh200': {
             'ntasks-per-node': 4,
             'cpus-per-task': 16,
+            'walltime': '0d0h5m0s',
+        },
+        'zen2': {
+            'ntasks-per-node': 16,
+            'cpus-per-task': 8,
             'walltime': '0d0h5m0s',
         }
     },
@@ -54,17 +63,11 @@ class VaspCheckUENV(rfm.RunOnlyRegressionTest):
         self.num_tasks_per_node = config['ntasks-per-node']
         self.num_tasks = self.num_nodes * self.num_tasks_per_node
         self.num_cpus_per_task = config['cpus-per-task']
-        self.num_tasks_per_socket = 1
         self.ntasks_per_core = 1
         self.time_limit = config['walltime']
 
         # srun options
-        self.job.launcher.options = [
-                '--cpu-bind=cores',
-                # For multi-node, VASP gpu selection doesn't work properly.
-                # CUDA_VISIBLE_DEVICES must be set to one GPU.
-                '--gpus-per-task=1'
-                ]
+        self.job.launcher.options = ['--cpu-bind=cores',]
 
         # environment variables
         self.env_vars['OMP_NUM_THREADS'] = self.num_cpus_per_task
@@ -72,6 +75,11 @@ class VaspCheckUENV(rfm.RunOnlyRegressionTest):
         if self.uarch == 'gh200':
             self.env_vars['MPICH_GPU_SUPPORT_ENABLED'] = '1'
             self.env_vars['NCCL_IGNORE_CPU_AFFINITY'] = '1'
+
+            self.num_tasks_per_socket = 1
+            # For multi-node, VASP gpu selection doesn't work properly.
+            # CUDA_VISIBLE_DEVICES must be set to one GPU.
+            self.job.launcher.options.append('--gpus-per-task=1')
 
         # set reference
         if self.uarch is not None and \
