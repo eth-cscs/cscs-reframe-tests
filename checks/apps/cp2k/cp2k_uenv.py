@@ -12,9 +12,17 @@ import reframe.utility.udeps as udeps
 from uenv import uarch
 
 cp2k_references = {
-    'md': {'gh200': {'time_run': (68, None, 0.05, 's')}, 'zen2': {'time_run': (75, None, 0.05, 's')}},
-    'pbe': {'gh200': {'time_run': (65, None, 0.05, 's')}, 'zen2': {'time_run': (35, None, 0.05, 's')}},
-    'rpa': {'gh200': {'time_run': (575, None, 0.05, 's')}},
+    'md': {
+        'gh200': {'time_run': (68, None, 0.05, 's')},
+        'zen2': {'time_run': (83, None, 0.05, 's')}
+    },
+    'pbe': {
+        'gh200': {'time_run': (65, None, 0.05, 's')},
+        'zen2': {'time_run': (35, None, 0.05, 's')}
+    },
+    'rpa': {
+        'gh200': {'time_run': (575, None, 0.05, 's')}
+    },
 }
 
 
@@ -29,7 +37,7 @@ slurm_config = {
         },
         'zen2': {
             'nodes': 1,
-            'ntasks-per-node': 128,
+            'ntasks-per-node': 64,
             'cpus-per-task': 2,
             'walltime': '0d0h5m0s',
             'gpu': False,
