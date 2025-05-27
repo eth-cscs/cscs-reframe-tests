@@ -138,9 +138,9 @@ oras_pull_meta_dir() {
 # {{{ meta_has_reframe_yaml
 meta_has_reframe_yaml() {
     img=$1
-    echo "# --- Checking img=$img for meta/extra/reframe.yaml"
+    echo -e "\n# --- Checking img=$img for meta/extra/reframe.yaml"
     meta_path=`uenv image inspect --format={meta} $img`
-    echo "meta_path=$meta_path"
+    # echo "meta_path=$meta_path"
     rfm_yaml="${meta_path}/extra/reframe.yaml" 
     test -f $rfm_yaml ; rc=$?
     
@@ -157,7 +157,8 @@ meta_has_reframe_yaml() {
         uenv image pull $img
         echo
     else
-        echo "# ---- no $rfm_yaml file found, skipping $img :-("
+        echo "# ---- no $rfm_yaml file found, skipping $img :-(" >> skipped.txt
+        echo "# skipping $img :-( see skipped.txt"
         echo
     fi
 }
