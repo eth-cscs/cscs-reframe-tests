@@ -13,7 +13,11 @@ gromacs_references = {
         'gh200': {
             'perf': (117, -0.02, None, 'ns/day'),
             'bondenergy': (164780, -0.01, None, 'kJ/mol'),
-        }
+        },
+        'zen2': {
+            'perf': (3.6, -0.02, None, 'ns/day'),
+            'bondenergy': (173989, -0.01, None, 'kJ/mol'),
+        },
     },
  }
 
@@ -25,6 +29,13 @@ slurm_config = {
             'cpus-per-task': 32,
             'walltime': '0d0h5m0s',
             'gpu': True,
+        },
+        'zen2': {
+            'nodes': 4,
+            'ntasks-per-node': 16,
+            'cpus-per-task': 8,
+            'walltime': '0d0h5m0s',
+            'gpu': False,
         }
     },
     'hEGFRDimerPair': {
@@ -34,7 +45,7 @@ slurm_config = {
             'cpus-per-task': 32,
             'walltime': '0d0h5m0s',
             'gpu': True,
-        }
+        },
     },
 }
 
@@ -65,13 +76,13 @@ class gromacs_build_test(rfm.CompileOnlyRegressionTest):
     """
     descr = 'GROMACS Build Test'
     valid_prog_environs = ['+gromacs-dev']
-    valid_systems = ['*']
+    valid_systems = ['+uenv']
     build_system = 'CMake'
     maintainers = ['SSA']
     sourcesdir = None
     gromacs_sources = fixture(gromacs_download, scope='session')
     build_locally = False
-    tags = {'uenv', 'production'}
+    tags = {'uenv'}
 
     @run_before('compile')
     def prepare_build(self):
@@ -105,9 +116,7 @@ class gromacs_build_test(rfm.CompileOnlyRegressionTest):
 @rfm.simple_test
 class gromacs_run_test(rfm.RunOnlyRegressionTest):
     executable = './mps-wrapper.sh -- gmx_mpi mdrun -s topol.tpr'
-    executable_opts = ['-dlb no', '-ntomp 32', '-pme gpu', '-npme 1',
-                       '-bonded gpu', '-nb gpu', '-nsteps 10000', '-update gpu',
-                       '-pin off', '-v', '-noconfout', '-nstlist 300']
+    executable_opts = ['-dlb no', '-npme 1', '-pin off', '-v', '-noconfout', '-nstlist 300']
     maintainers = ['SSA']
     valid_systems = ['*']
     test_name = variable(str, value='STMV')
@@ -128,12 +137,20 @@ class gromacs_run_test(rfm.RunOnlyRegressionTest):
         # environment variables
         self.env_vars['OMP_NUM_THREADS'] = str(self.num_cpus_per_task)
         self.env_vars['FI_CXI_RX_MATCH_MODE'] = 'software'
+
+        self.executable_opts.append(f'-ntomp {self.num_cpus_per_task}')
+
+
         if self.uarch == 'gh200':
+            self.executable_opts += ['-pme gpu', '-nb gpu', '-update gpu', '-nsteps 10000']
+
             self.env_vars['MPICH_GPU_SUPPORT_ENABLED'] = '1'
             self.env_vars['GMX_GPU_DD_COMMS'] = 'true'
             self.env_vars['GMX_GPU_PME_PP_COMMS'] = 'true'
             self.env_vars['GMX_ENABLE_DIRECT_GPU_COMM'] = '1'
             self.env_vars['GMX_FORCE_GPU_AWARE_MPI'] = '1'
+        else:
+            self.executable_opts += ['-nsteps 1000']
 
         # set reference
         if self.uarch is not None and \
