@@ -118,8 +118,8 @@ uenv_pull_meta_dir() {
     img=$1
     echo "--- Pulling metadata from $img"
     uenv image pull --only-meta $img &> uenv_pull_meta_dir.log
-}    
-# }}}    
+}
+# }}}
 # {{{ oras_pull_meta_dir
 oras_pull_meta_dir() {
     img=$1
@@ -139,7 +139,7 @@ oras_pull_meta_dir() {
 meta_has_reframe_yaml() {
     img=$1
     echo "# --- Checking img=$img for meta/extra/reframe.yaml"
-    meta_path=`uenv image inspect --format {meta} $img`
+    meta_path=`uenv image inspect --format={meta} $img`
     echo "meta_path=$meta_path"
     rfm_yaml="${meta_path}/extra/reframe.yaml" 
     test -f $rfm_yaml ; rc=$?
@@ -147,34 +147,19 @@ meta_has_reframe_yaml() {
     # --- VASP
     is_vasp=`echo $img |cut -d/ -f1`
     if [ "$is_vasp" == "vasp" ] ;then
-        echo "# ---- no: vasp is a special case: "todi/gh200/vasp/v6.4.2/manifests/v1": response status code 403: Forbidden"
+        vasp_pull_flags="--token=/capstor/scratch/cscs/bcumming/tokens/vasp6 --username=vasp6"
+        # echo "# ---- no: vasp is a special case: "todi/gh200/vasp/v6.4.2/manifests/v1": response status code 403: Forbidden"
     else
+        vasp_pull_flags=""
+    fi
 
     if [ $rc -eq 0 ] ;then
-        rctools=$(grep -q user-tools $rfm_yaml ; echo $?)
-        echo "rc=$rc rctools=$rctools"
-        if [ $rctools -ne 0 ] ;then
-            echo "# ---- reframe.yaml has been found --> pulling $img"
-            uenv image pull $img
-            echo
-            # meta/extra/reframe.yaml
-            # echo "# ---- reframe.yaml has been found --> adding it as store.yaml"
-            # imgpath=`uenv image inspect $img --format {path}`
-            # cp $rfm_yaml $imgpath/store.yaml
-
-            # TODO: https://github.com/eth-cscs/alps-uenv/issues/127 <-------------
-            if [ "$img" == "prgenv-gnu/24.7:v1" ] ;then
-                sed -i 's-default/activate.sh-develop/activate.sh-' \
-                    $imgpath/store.yaml
-            fi
-            # TODO: https://github.com/eth-cscs/alps-uenv/issues/127 <-------------
-
-            echo "# ---- OK $rfm_yaml found in $img :-)"
-            ls $rfm_yaml
-        fi
+        echo "# ---- OK $rfm_yaml found in $img yeah! --> pulling $img"
+        uenv image pull $img
+        echo
     else
         echo "# ---- no $rfm_yaml file found, skipping $img :-("
-    fi
+        echo
     fi
 }
 # }}}
@@ -209,7 +194,7 @@ oras_pull_meta_dir_old() {
         rc2=$?
         # echo "rc2=$rc2"
         if [ $rc2 -eq 0 ] ;then
-            imgpath=`uenv image inspect $img --format {path}`
+            imgpath=`uenv image inspect $img --format={path}`
             cp $rfm_yaml $imgpath/store.yaml
             # echo "ok"
             return 0
@@ -255,7 +240,7 @@ uenv_pull_sqfs() {
     tt=`expr $t1 - $t0`
     echo "t(pull) = $tt seconds"
     #
-    squashfs_path=`uenv image inspect $img --format {path}`
+    squashfs_path=`uenv image inspect $img --format={path}`
     cp $rfm_meta_yaml $squashfs_path/store.yaml
     ls -l $squashfs_path/
 }   
@@ -294,7 +279,7 @@ install_reframe_tests() {
 # {{{ uenv_sqfs_fullpath
 uenv_sqfs_fullpath() {
     img="$1"
-    uenv image inspect $img --format {sqfs}
+    uenv image inspect $img --format={sqfs}
 }   
 # }}}
 # {{{ launch_reframe_1img 
