@@ -14,7 +14,7 @@ from uenv import uarch
 cp2k_references = {
     'md': {
         'gh200': {'time_run': (68, None, 0.05, 's')},
-        'zen2': {'time_run': (83, None, 0.05, 's')}
+        'zen2': {'time_run': (90, None, 0.05, 's')}
     },
     'pbe': {
         'gh200': {'time_run': (53, None, 0.05, 's')},
@@ -37,8 +37,8 @@ slurm_config = {
         },
         'zen2': {
             'nodes': 1,
-            'ntasks-per-node': 64,
-            'cpus-per-task': 2,
+            'ntasks-per-node': 32,
+            'cpus-per-task': 4,
             'walltime': '0d0h5m0s',
             'gpu': False,
         },
