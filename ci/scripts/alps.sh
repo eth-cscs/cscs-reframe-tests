@@ -138,7 +138,7 @@ oras_pull_meta_dir() {
 # {{{ meta_has_reframe_yaml
 meta_has_reframe_yaml() {
     img=$1
-    echo -n "\n# --- Checking img=$img for meta/extra/reframe.yaml "
+    echo -n "# --- Checking img=$img for meta/extra/reframe.yaml "
     meta_path=`uenv image inspect --format={meta} $img`
     # echo "meta_path=$meta_path"
     rfm_yaml="${meta_path}/extra/reframe.yaml" 
@@ -146,19 +146,18 @@ meta_has_reframe_yaml() {
     
     # --- VASP
     is_vasp=`echo $img |cut -d/ -f1`
-    if [ "$is_vasp" == "vasp" ] ;then
+    if [ "$is_vasp" = "vasp" ] ;then
         vasp_pull_flags="--token=/capstor/scratch/cscs/bcumming/tokens/vasp6 --username=vasp6"
     else
         vasp_pull_flags=""
     fi
 
     if [ $rc -eq 0 ] ;then
-        # echo "# ---- OK $rfm_yaml found in $img yeah! --> pulling $img"
-        echo "# ---- OK pulling $img"
+        echo "# ---- OK pulling uenv"
         echo "vasp_pull_flags=${vasp_pull_flags}"
         uenv image pull ${vasp_pull_flags} $img
     else
-        echo "# ---- XX skipping $img :-("
+        echo "# ---- XX skipping uenv :-("
     fi
 }
 # }}}
