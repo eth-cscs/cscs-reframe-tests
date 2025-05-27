@@ -154,13 +154,15 @@ meta_has_reframe_yaml() {
 
     if [ $rc -eq 0 ] ;then
         echo "# ---- OK $rfm_yaml found in $img yeah! --> pulling $img"
-        uenv image pull $img
+        uenv image pull $vasp_pull_flags $img
         echo
     else
         echo "# ---- no $rfm_yaml file found, skipping $img :-(" >> skipped.txt
         echo "# skipping $img :-( see skipped.txt"
         echo
     fi
+    touch skipped.txt
+    cat skipped.txt
 }
 # }}}
 # {{{ remove_last_comma_from_variable
