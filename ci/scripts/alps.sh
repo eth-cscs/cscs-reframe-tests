@@ -110,7 +110,7 @@ jfrog_login() {
 # }}}
 # {{{ uenv_image_find 
 uenv_image_find() {
-    uenv --no-color image find | grep -v "uenv/version:tag" | awk '{print $1}'
+    uenv --no-color image find | grep -v "^uenv" | awk '{print $1}'
 }
 # }}}
 # {{{ uenv_pull_meta_dir
@@ -148,7 +148,6 @@ meta_has_reframe_yaml() {
     is_vasp=`echo $img |cut -d/ -f1`
     if [ "$is_vasp" == "vasp" ] ;then
         vasp_pull_flags="--token=/capstor/scratch/cscs/bcumming/tokens/vasp6 --username=vasp6"
-        # echo "# ---- no: vasp is a special case: "todi/gh200/vasp/v6.4.2/manifests/v1": response status code 403: Forbidden"
     else
         vasp_pull_flags=""
     fi
