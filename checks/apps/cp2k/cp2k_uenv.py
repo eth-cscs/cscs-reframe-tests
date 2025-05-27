@@ -18,7 +18,7 @@ cp2k_references = {
     },
     'pbe': {
         'gh200': {'time_run': (65, None, 0.05, 's')},
-        'zen2': {'time_run': (35, None, 0.05, 's')}
+        'zen2': {'time_run': (51, None, 0.05, 's')}
     },
     'rpa': {
         'gh200': {'time_run': (575, None, 0.05, 's')}
@@ -45,16 +45,16 @@ slurm_config = {
     },
     'pbe': {
         'gh200': {
-            'nodes': 8,
+            'nodes': 2,
             'ntasks-per-node': 16,
             'cpus-per-task': 16,
             'walltime': '0d0h5m0s',
             'gpu': True,
         },
         'zen2': {
-            'nodes': 8,
-            'ntasks-per-node': 64,
-            'cpus-per-task': 2,
+            'nodes': 2,
+            'ntasks-per-node': 32,
+            'cpus-per-task': 4,
             'walltime': '0d0h5m0s',
             'gpu': True,
         },
