@@ -5,10 +5,10 @@
 
 import os
 import shutil
+
 import reframe as rfm
 import reframe.utility.sanity as sn
 import reframe.utility.udeps as udeps
-
 from uenv import uarch
 
 cp2k_references = {
@@ -17,7 +17,7 @@ cp2k_references = {
         'zen2': {'time_run': (83, None, 0.05, 's')}
     },
     'pbe': {
-        'gh200': {'time_run': (65, None, 0.05, 's')},
+        'gh200': {'time_run': (53, None, 0.05, 's')},
         'zen2': {'time_run': (51, None, 0.05, 's')}
     },
     'rpa': {
