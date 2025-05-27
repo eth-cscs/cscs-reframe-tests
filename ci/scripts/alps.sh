@@ -147,22 +147,19 @@ meta_has_reframe_yaml() {
     # --- VASP
     is_vasp=`echo $img |cut -d/ -f1`
     if [ "$is_vasp" == "vasp" ] ;then
+        id
         vasp_pull_flags="--token=/capstor/scratch/cscs/bcumming/tokens/vasp6 --username=vasp6"
     else
         vasp_pull_flags=""
     fi
 
     if [ $rc -eq 0 ] ;then
-        echo "# ---- OK $rfm_yaml found in $img yeah! --> pulling $img"
-        uenv image pull $vasp_pull_flags $img
-        echo
+        # echo "# ---- OK $rfm_yaml found in $img yeah! --> pulling $img"
+        echo "# ---- OK pulling $img"
+        uenv image pull ${vasp_pull_flags} $img
     else
-        echo "# ---- no $rfm_yaml file found, skipping $img :-(" >> skipped.txt
-        echo "# skipping $img :-( see skipped.txt"
-        echo
+        echo "# ---- XX skipping $img :-("
     fi
-    touch skipped.txt
-    cat skipped.txt
 }
 # }}}
 # {{{ remove_last_comma_from_variable

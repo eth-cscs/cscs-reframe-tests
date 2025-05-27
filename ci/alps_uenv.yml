@@ -30,14 +30,13 @@ setup and pull:
       cat .rc
       rc=$(grep -q OK .rc ; echo $?)
       # echo "rc=$rc"
-      echo
       if [ $rc -eq 0 ] ; then
         UENVA+="$img,"
         # echo "UENVA=$UENVA"
       fi
     done
+    echo "# ---- done"
     set -x
-    echo 
     echo "UENVA=$UENVA"
     UENVA=${UENVA%?}
     UENV=`echo ${UENVA} | sed 's-,,-,-g' | sort -u`
