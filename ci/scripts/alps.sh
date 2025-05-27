@@ -151,10 +151,12 @@ meta_has_reframe_yaml() {
     else
         vasp_pull_flags=""
     fi
+    /usr/bin/groups
+    id
+    echo "vasp_pull_flags=${vasp_pull_flags}"
 
     if [ $rc -eq 0 ] ;then
         echo "# ---- OK pulling uenv"
-        echo "vasp_pull_flags=${vasp_pull_flags}"
         uenv image pull ${vasp_pull_flags} $img
     else
         echo "# ---- XX skipping uenv :-("
