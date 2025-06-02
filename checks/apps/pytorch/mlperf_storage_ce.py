@@ -29,6 +29,7 @@ class mlperf_storage_datagen_ce(rfm.RunOnlyRegressionTest,
     }
     base_dir = parameter(list(ref_values.keys()))
     num_nodes = variable(int, value=32)
+    time_limit = '15m'
     accelerator_type = 'h100'
     workload = variable(str, value='unet3d')
     env_vars = {
