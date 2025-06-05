@@ -25,10 +25,12 @@ class NodeBurnCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
        `--flex-alloc-nodes` option.
     '''
 
+    image_repository = 'jfrog.svc.cscs.ch#reframe-oci/node-burn'
+    image_tag = 'cuda-12.4_nb-be4f759'
     valid_prog_environs = ['builtin']
     nb_duration = variable(int, value=20)
     flexible = variable(bool, value=False)
-    container_image = 'jfrog.svc.cscs.ch#reframe-oci/node-burn:cuda-12.4'
+    container_image = f'{image_repository}:{image_tag}'
     tags = {'production', 'maintenance', 'appscheckout'}
 
     def set_num_tasks(self):
@@ -124,6 +126,7 @@ class CPUNodeBurnGemmCE(NodeBurnGemmCE):
     executable = 'burn-f64-cpu'
     ref_nb_gflops = {
         'gh200': {'nb_gflops': (3150, -0.1, None, 'GFlops')},
+        'zen2': {'nb_gflops': (2200, -0.1, None, 'GFlops')},
     }
     test_hw = 'cpu'
     valid_systems = ['+ce']
@@ -132,7 +135,6 @@ class CPUNodeBurnGemmCE(NodeBurnGemmCE):
         # Nvidia Gpus
         'NVIDIA_VISIBLE_DEVICES': '"void"',
         'NVIDIA_DISABLE_REQUIRE': 1,
-        'OMP_PROC_BIND': 'true',
     })
 
     @run_before('run')
@@ -150,6 +152,12 @@ class CPUNodeBurnGemmCE(NodeBurnGemmCE):
             self.num_tasks_per_node = 1
             self.num_cpus_per_task = self.cpus_per_socket * self.num_sockets
 
+        self.env_vars.update(
+            {
+                'OMP_NUM_THREADS': self.num_cpus_per_task,
+                'OMP_PROC_BIND': 'true',
+            }
+        )
         self.set_num_tasks()
         self.executable_opts = [
             f'-cgemm,{self.nb_matrix_size}',
@@ -191,6 +199,7 @@ class CPUNodeBurnStreamCE(NodeBurnStreamCE):
     executable = 'burn-f64-cpu'
     ref_nb_gbps = {
         'gh200': {'nb_gbps': (450.0, -0.1, None, 'GB/s')},
+        'zen2': {'nb_gbps': (220.0, -0.1, None, 'GB/s')},
     }
     test_hw = 'cpu'
     valid_systems = ['+ce']
@@ -207,28 +216,40 @@ class CPUNodeBurnStreamCE(NodeBurnStreamCE):
         proc = self.current_partition.processor
         self.num_sockets = int(proc.num_sockets)
         self.cpus_per_socket = int(proc.num_cpus_per_socket)
+        self.cpus_per_core = int(proc.num_cpus_per_core)
 
         # Sort the caches by type alphabetically (L1 < L2 < L3 ...) and get
         # the total cache size of the last-level cache, for example:
         # last_level_cache = {'type': 'L3', 'size': 33554432, ...}
         caches = self.current_partition.processor.topology['caches']
         last_level_cache = max(caches, key=lambda c: c['type'])
-        cache_size_bytes = ((int(last_level_cache['size']) *
-                             len(last_level_cache['cpusets'])) //
-                            self.num_sockets)
+        cache_size_bytes_per_socket = ((int(last_level_cache['size']) *
+                                        len(last_level_cache['cpusets'])) //
+                                       self.num_sockets)
 
         # Sizes of each array must be at least 4x the size of the sum of all
         # the last-level caches, (double precision floating points are 8 bytes)
-        array_size = 4 * cache_size_bytes // 8
+        array_size_per_socket = 4 * cache_size_bytes_per_socket // 8
 
         # On GH200 use 1 task per GH module
         if proc.arch == 'neoverse_v2':
             self.num_tasks_per_node = self.num_sockets
+            array_size = array_size_per_socket
             self.num_cpus_per_task = self.cpus_per_socket
         else:
             self.num_tasks_per_node = 1
+            array_size = array_size_per_socket * self.num_sockets
             self.num_cpus_per_task = self.cpus_per_socket * self.num_sockets
 
+        self.env_vars.update(
+            {
+                # Do not use multiple threads per core
+                'OMP_NUM_THREADS':
+                    self.num_cpus_per_task // self.cpus_per_core,
+                'OMP_PROC_BIND': 'spread',
+                'OMP_PLACES': 'cores'
+            }
+        )
         self.set_num_tasks()
         self.executable_opts = [
             f'-cstream,{array_size}',
