@@ -10,8 +10,8 @@ from uenv import uarch
 
 lammps_references = {
     'lj': {
-        'gh200': {'time_run': (345, None, 0.05, 's')},
-        'zen2': {'time_run': (80, None, 0.05, 's')}
+        'gh200': {'time_run': (14, None, 0.05, 's')},
+        'zen2': {'time_run': (87, None, 0.05, 's')}
     },
 }
 
@@ -19,7 +19,9 @@ slurm_config = {
     "lj": {
         "gh200": {
             "nodes": 2,
-            "ntasks-per-node": 32,
+            "ntasks-per-node": 4,
+            "gpus-per-node": 4,
+            "gpus-per-task": 1,
             "walltime": "10m",
             "gpu": True,
         },
@@ -31,7 +33,6 @@ slurm_config = {
         },
     },
 }
-
 
 class lammps_download(rfm.RunOnlyRegressionTest):
     descr = 'Download LAMMPS source code'
@@ -100,30 +101,33 @@ class lammps_test(rfm.RunOnlyRegressionTest):
         build-kokkos: develop-kokkos
         run-kokkos: kokkos
     """
-    executable = './mps-wrapper.sh lmp'
+    executable = 'lmp'
     valid_prog_environs = ['+lammps-gpu-prod', '+lammps-kokkos-prod']
-    valid_systems = ["*"]
+    valid_systems = ['+uenv']
     maintainers = ["SSA"]
     test_name = variable(str, value='lj')
     energy_reference = -4.620456
     tags = {'uenv', 'production'}
 
-    @run_before("run")
+    @run_before('run')
     def prepare_run(self):
         self.uarch = uarch(self.current_partition)
         config = slurm_config[self.test_name][self.uarch]
         self.job.options = [f'--nodes={config["nodes"]}']
-        self.num_tasks_per_node = config["ntasks-per-node"]
-        self.num_tasks = config["nodes"] * self.num_tasks_per_node
+        self.num_tasks_per_node = config['ntasks-per-node']
+        self.num_tasks = config['nodes'] * self.num_tasks_per_node
         self.ntasks_per_core = 1
-        self.time_limit = config["walltime"]
+        self.time_limit = config['walltime']
         self.executable_opts = [f'-i {self.test_name}.in']
 
-        if self.uarch == "gh200":
-            self.extra_resources = {"gres": {"gpu": 4}}
-            self.env_vars["MPICH_GPU_SUPPORT_ENABLED"] = "1"
+        if self.uarch == 'gh200':
+            self.env_vars['MPICH_GPU_SUPPORT_ENABLED'] = '1'
+            self.extra_resources = {
+                'gpus-per-task': config['gpus-per-task'], 
+                'gpus-per-node': config['gpus-per-node'],
+            }
 
-    @run_before("run")
+    @run_before('run')
     def prepare_reference(self):
         self.uarch = uarch(self.current_partition)
         if self.uarch is not None and \
@@ -136,11 +140,11 @@ class lammps_test(rfm.RunOnlyRegressionTest):
     @sanity_function
     def assert_energy_diff(self):
         successful_termination = \
-            sn.assert_found(r"Total wall time", self.stdout)
+            sn.assert_found(r'Total wall time', self.stdout)
 
         energy = sn.extractsingle(
             r'^\s*1000(\s+\S+){5}\s+(?P<energy>-?\d+\.\d+)\s+',
-            self.stdout, "energy", float)
+            self.stdout, 'energy', float)
         energy_diff = sn.abs(energy - self.energy_reference)
         correct_energy = sn.assert_lt(energy_diff, 1e-4)
 
