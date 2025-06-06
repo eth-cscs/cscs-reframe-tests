@@ -76,7 +76,7 @@ class cp2k_download(rfm.RunOnlyRegressionTest):
     Download CP2K source code.
     '''
 
-    version = variable(str, value='2024.3')
+    version = variable(str, value='')
     descr = 'Fetch CP2K source code'
     sourcesdir = None
     executable = 'wget'
@@ -84,10 +84,15 @@ class cp2k_download(rfm.RunOnlyRegressionTest):
 
     @run_before('run')
     def set_version(self):
+        uenv_version = os.environ['UENV'].split('/')[1].split('.')[0]
+        uenv_src_d = {'2024': 'v2024.3', '2025': 'v2025.1'}
+        self.version = uenv_src_d[uenv_version] if self.version == '' else self.version
+
         url = 'https://jfrog.svc.cscs.ch/artifactory/cscs-reframe-tests'
+
         self.executable_opts = [
             '--quiet',
-            f'{url}/cp2k/v{self.version}.tar.gz'
+            f'{url}/cp2k/{self.version}.tar.gz'
         ]
 
     @sanity_function
@@ -159,9 +164,9 @@ class Cp2kBuildTestUENV(rfm.CompileOnlyRegressionTest):
 
 
 class Cp2kCheck_UENV(rfm.RunOnlyRegressionTest):
-    executable = './mps-wrapper.sh ./pika-bind.sh cp2k.psmp'
+    executable = './pika-bind.sh cp2k.psmp'
     maintainers = ['SSA']
-    valid_systems = ['*']
+    valid_systems = ['+uenv']
 
     @run_before('run')
     def prepare_run(self):
@@ -176,6 +181,9 @@ class Cp2kCheck_UENV(rfm.RunOnlyRegressionTest):
         self.num_cpus_per_task = config['cpus-per-task']
         self.ntasks_per_core = 1
         self.time_limit = config['walltime']
+
+        # wrapper script
+        self.wrapper = './mps-wrapper.sh' if self.uarch == 'gh200' else ''
 
         # srun options
         self.job.launcher.options = ['--cpu-bind=cores']
@@ -265,7 +273,7 @@ class Cp2kCheckMD_UENVCustomExec(Cp2kCheckMD_UENV):
     @run_after('setup')
     def setup_executable(self):
         parent = self.getdep('Cp2kBuildTestUENV')
-        self.executable = f'./mps-wrapper.sh ./pika-bind.sh {parent.cp2k_executable}'
+        self.executable = self.wrapper + f'./pika-bind.sh {parent.cp2k_executable}'
 
 
 # }}}
@@ -304,7 +312,7 @@ class Cp2kCheckPBE_UENVCustomExec(Cp2kCheckPBE_UENV):
     @run_after('setup')
     def setup_executable(self):
         parent = self.getdep('Cp2kBuildTestUENV')
-        self.executable = f'./mps-wrapper.sh ./pika-bind.sh {parent.cp2k_executable}'
+        self.executable = self.wrapper + f'./pika-bind.sh {parent.cp2k_executable}'
 
 
 # }}}
