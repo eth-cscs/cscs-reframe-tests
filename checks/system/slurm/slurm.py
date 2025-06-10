@@ -441,3 +441,34 @@ class SlurmPrologEpilogCheck(rfm.RunOnlyRegressionTest):
                                        msg=f'{reason[0]}')
         else:
             return True
+
+@rfm.simple_test
+class SlurmTransparentHugepagesCheck(rfm.RunOnlyRegressionTest):
+    '''Check Slurm transparent hugepages configuration'''
+
+    hugepages_options = parameter(['default', 'always', 'madvise', 'never'])
+    valid_systems = ['+remote']
+    valid_prog_environs = ['builtin']
+    descr = 'Check Slurm transparent hugepages configuration'
+    time_limit = '2m'
+    num_tasks_per_node = 1
+    executable = 'cat /sys/kernel/mm/transparent_hugepage/enabled'
+
+    tags = {'production', 'maintenance', 'slurm'}
+    maintainers = ['VCUE']
+
+    @run_after('setup')
+    def set_executable(self):
+        if self.hugepages_options != 'default':
+            slurm_opt = f'thp_{self.hugepages_options}'
+            self.job.launcher.options += [slurm_opt]
+
+    @sanity_function
+    def validate(self):
+        if self.hugepages_options != 'default':
+            opt = f'{self.hugepages_options}'
+        else:
+            # Default option should be 'always'
+            opt = 'always'
+
+        return sn.assert_found(rf'\[{opt}\]', self.stdout)
