@@ -454,6 +454,7 @@ class SlurmTransparentHugepagesCheck(rfm.RunOnlyRegressionTest):
     descr = 'Check Slurm transparent hugepages configuration'
     time_limit = '2m'
     num_tasks_per_node = 1
+    sourcesdir = None
     executable = 'cat /sys/kernel/mm/transparent_hugepage/enabled'
 
     tags = {'production', 'maintenance', 'slurm'}
