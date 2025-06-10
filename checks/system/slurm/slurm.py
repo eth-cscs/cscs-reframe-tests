@@ -447,7 +447,7 @@ class SlurmTransparentHugepagesCheck(rfm.RunOnlyRegressionTest):
     '''Check Slurm transparent hugepages configuration'''
 
     hugepages_options = parameter(['default', 'always', 'madvise', 'never'])
-    valid_systems = ['+remote']
+    valid_systems = ['+hugepages_slurm']
     valid_prog_environs = ['builtin']
     descr = 'Check Slurm transparent hugepages configuration'
     time_limit = '2m'
