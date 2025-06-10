@@ -35,7 +35,8 @@ class LoginNodesTest(rfm.RegressionTest):
 | sarus | Sarus is available in this partition | | |
 | singularity | Singularity is available in this partition | | |
 | uenv | Supports mounting and using user environments | |
-| ce | The partition supports a Container Engine(CE)
+| ce | The partition supports a Container Engine(CE) | |
+| hugepages_slurm | Slurm features `thp_always`, `thp_madvise`, `thp_never` for Hugepages | |
 
 
 ### Features for environments
