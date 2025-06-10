@@ -407,6 +407,7 @@ class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
     def available_nodes_percentage(self):
         return 100.0 * self.num_matches / self.num_all_matches
 
+
 @rfm.simple_test
 class SlurmPrologEpilogCheck(rfm.RunOnlyRegressionTest):
     valid_systems = ['*']
@@ -441,6 +442,7 @@ class SlurmPrologEpilogCheck(rfm.RunOnlyRegressionTest):
                                        msg=f'{reason[0]}')
         else:
             return True
+
 
 @rfm.simple_test
 class SlurmTransparentHugepagesCheck(rfm.RunOnlyRegressionTest):
