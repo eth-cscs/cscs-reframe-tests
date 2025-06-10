@@ -461,7 +461,7 @@ class SlurmTransparentHugepagesCheck(rfm.RunOnlyRegressionTest):
     def set_executable(self):
         if self.hugepages_options != 'default':
             slurm_opt = f'thp_{self.hugepages_options}'
-            self.job.launcher.options += [slurm_opt]
+            self.job.options += [f'-C {slurm_opt}']
 
     @sanity_function
     def validate(self):
