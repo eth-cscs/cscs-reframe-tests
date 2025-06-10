@@ -1,6 +1,6 @@
 FROM nvidia/cuda:12.4.1-devel-ubuntu22.04
 
-ARG NODEBURN_COMMIT_ID=5fd16ce
+ARG NODEBURN_COMMIT_ID=be4f759
 
 RUN apt-get update && \
     apt-get install -y wget git cmake
