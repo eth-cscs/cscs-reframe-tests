@@ -3,6 +3,7 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
+import collections
 import pathlib
 import sys
 
@@ -39,6 +40,33 @@ class NodeBurnCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
         else:
             self.num_tasks = self.num_tasks_per_node
 
+    @property
+    @deferrable
+    def num_tasks_assigned(self):
+        return self.job.num_tasks
+
+    @sanity_function
+    def validate_test(self):
+        regex = rf'(nid\d+):{self.test_hw}.*\s+(\d+\.\d+)\s+\S+'
+
+        # Count the number of output perforamnce values per node
+        nodes = sn.extractall(regex, self.stdout, 1, str)
+        node_counter = collections.Counter(nodes)
+        num_res = sn.count(nodes)
+
+        # Filter the nodes with not enough output occurences
+        problematic_nodes = [
+            n for n,c in node_counter.items() if c != self.num_tasks_per_node
+        ]
+
+        # Add the nodes that might have not printed any output
+        nodeset = set(self.job.nodelist)
+        problematic_nodes += nodeset.difference(node_counter.keys())
+
+        msg = (f'nodes with fewer than expected results: '
+               f'{",".join(problematic_nodes)!r}')
+        return sn.assert_eq(self.num_tasks_assigned, num_res, msg=msg)
+
 
 class NodeBurnGemmCE(NodeBurnCE):
     nb_matrix_size = variable(int, value=40000)
@@ -54,21 +82,10 @@ class NodeBurnGemmCE(NodeBurnCE):
                 self.current_partition.fullname: self.ref_nb_gflops[self.uarch]
             }
 
-    @sanity_function
-    def validate_test(self):
-        regex = rf'nid\d+:{self.test_hw}.*\s+(\d+\.\d+)\s+GFlops,'
-        num_res = sn.count(sn.extractall(regex, self.stdout, 1, float))
-        return sn.assert_eq(self.num_tasks_assigned, num_res)
-
     @performance_function('GFlops')
     def nb_gflops(self):
         regex = rf'nid\d+:{self.test_hw}.*\s+(\d+\.\d+)\s+GFlops,'
         return sn.min(sn.extractall(regex, self.stdout, 1, float))
-
-    @property
-    @deferrable
-    def num_tasks_assigned(self):
-        return self.job.num_tasks
 
 
 class NodeBurnStreamCE(NodeBurnCE):
@@ -82,12 +99,6 @@ class NodeBurnStreamCE(NodeBurnCE):
             self.reference = {
                 self.current_partition.fullname: self.ref_nb_gbps[self.uarch]
             }
-
-    @sanity_function
-    def validate_test(self):
-        regex = rf'nid\d+:{self.test_hw}.*\s+(\d+\.\d+)\s+GB/s,'
-        num_res = sn.count(sn.extractall(regex, self.stdout, 1, float))
-        return sn.assert_eq(self.num_tasks, num_res)
 
     @performance_function('GB/s')
     def nb_gbps(self):
