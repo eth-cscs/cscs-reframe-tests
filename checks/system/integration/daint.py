@@ -52,8 +52,8 @@ def create_checks(check):
     check.CLASS = 'PING'
 
     check('ping -n -q -c 5  127.0.0.1',      expected=r'5 packets transmitted, 5 received, 0% packet loss')
-    check('ping -n -q -c 5  8.8.8.8',        expected=r'5 packets transmitted, 0 received, 100% packet loss', where='+remote')
-    check('ping -n -q -c 5  www.google.com', expected=r'5 packets transmitted, 0 received, 100% packet loss', where='+remote')
+    check('ping -n -q -c 5  8.8.8.8',        expected=r'5 packets transmitted, 5 received, 0% packet loss', where='+remote')
+    check('ping -n -q -c 5  www.google.com', expected=r'5 packets transmitted, 5 received, 0% packet loss', where='+remote')
 
     # check('ping -n -q -c 5  8.8.8.8',        expected=r'5 packets transmitted, 5 received, 0% packet loss', where='-remote')
     # check('ping -n -q -c 5  www.google.com', expected=r'5 packets transmitted, 5 received, 0% packet loss', where='-remote')
@@ -175,7 +175,7 @@ def create_checks(check):
 
     check('grep -q "/capstor/scratch/cscs /capstor/scratch/cscs lustre"     /proc/mounts || echo FAILED', not_expected=r'FAILED')
     check('grep -q "/capstor/store/cscs /capstor/store/cscs lustre"         /proc/mounts || echo FAILED', not_expected=r'FAILED')
-    check('grep -q "/capstor/users/cscs /users.OLD lustre"                  /proc/mounts || echo FAILED', not_expected=r'FAILED')
+    check('grep -q "/capstor/users/cscs /users.OLD lustre"                  /proc/mounts || echo FAILED', expected=r'FAILED')
     check('grep -q "/capstor/store/cscs /capstor/store/cscs lustre"         /proc/mounts || echo FAILED', not_expected=r'FAILED')
 
     check('grep -q "pe_opt_cray_pe /opt/cray/pe"  /proc/mounts || echo FAILED', not_expected=r'FAILED')
