@@ -37,7 +37,7 @@ base_config = {
             'extras': {
                 'cn_memory': 825,
             },
-            'features': ['ce', 'gpu', 'nvgpu', 'remote', 'scontrol', 'uenv'],
+            'features': ['ce', 'gpu', 'nvgpu', 'remote', 'scontrol', 'uenv', 'hugepages_slurm'],
             'access': [f'--account=a-{osext.osgroup()}'],
             'resources': [
                 {
