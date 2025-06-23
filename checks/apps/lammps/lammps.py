@@ -34,6 +34,7 @@ slurm_config = {
     },
 }
 
+
 class lammps_download(rfm.RunOnlyRegressionTest):
     descr = 'Download LAMMPS source code'
     version = variable(str, value='20230802.3')
@@ -123,7 +124,7 @@ class lammps_test(rfm.RunOnlyRegressionTest):
         if self.uarch == 'gh200':
             self.env_vars['MPICH_GPU_SUPPORT_ENABLED'] = '1'
             self.extra_resources = {
-                'gpus-per-task': config['gpus-per-task'], 
+                'gpus-per-task': config['gpus-per-task'],
                 'gpus-per-node': config['gpus-per-node'],
             }
 
