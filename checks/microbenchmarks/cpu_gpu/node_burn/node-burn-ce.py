@@ -124,7 +124,7 @@ class CudaNodeBurnGemmCE(NodeBurnGemmCE):
         self.num_tasks_per_node = self.num_gpus
         self.set_num_tasks()
         self.extra_resources = {
-            'gres': {'gres': f'gpu:{self.num_tasks}'}
+            'gres': {'gres': f'gpu:{self.num_tasks_per_node}'}
         }
         self.executable_opts = [
             f'-ggemm,{self.nb_matrix_size}',
@@ -197,7 +197,7 @@ class CudaNodeBurnStreamCE(NodeBurnStreamCE):
         self.num_tasks_per_node = self.num_gpus
         self.set_num_tasks()
         self.extra_resources = {
-            'gres': {'gres': f'gpu:{self.num_tasks}'}
+            'gres': {'gres': f'gpu:{self.num_tasks_per_node}'}
         }
         self.executable_opts = [
             f'-gstream,{self.array_size}',
