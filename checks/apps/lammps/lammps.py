@@ -60,7 +60,7 @@ class lammps_build_test(rfm.CompileOnlyRegressionTest):
     '''
     descr = 'LAMMPS Build Test'
     valid_prog_environs = ['+lammps-kokkos-dev']
-    valid_systems = ['daint']
+    valid_systems = ['+gpu']
     maintainers = ['SSA']
     sourcesdir = None
     lammps_sources = fixture(lammps_download, scope='environment')
@@ -105,7 +105,7 @@ class lammps_test(rfm.RunOnlyRegressionTest):
     executable = 'lmp'
     valid_prog_environs = ['+lammps-gpu-prod', '+lammps-kokkos-prod']
     valid_systems = ['+uenv']
-    maintainers = ["SSA"]
+    maintainers = ['SSA']
     test_name = variable(str, value='lj')
     energy_reference = -4.620456
     tags = {'uenv', 'production'}
@@ -123,10 +123,11 @@ class lammps_test(rfm.RunOnlyRegressionTest):
 
         if self.uarch == 'gh200':
             self.env_vars['MPICH_GPU_SUPPORT_ENABLED'] = '1'
-            self.extra_resources = {
-                'gpus-per-task': config['gpus-per-task'],
-                'gpus-per-node': config['gpus-per-node'],
-            }
+            self.job.launcher.options += [
+                f'--gpus-per-task={config["gpus-per-task"]}',
+                f'--gpus-per-node={config["gpus-per-node"]}'
+            ]
+            # or update extra_resources in the system config file
 
     @run_before('run')
     def prepare_reference(self):
