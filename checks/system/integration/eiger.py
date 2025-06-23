@@ -48,8 +48,8 @@ def create_checks(check):
     check.CLASS = 'PING'
 
     check('ping -n -q -c 5  127.0.0.1',      expected=r'5 packets transmitted, 5 received, 0% packet loss')
-    check('ping -n -q -c 5  8.8.8.8',        expected=r'5 packets transmitted, 0 received, 100% packet loss', where='+remote')
-    check('ping -n -q -c 5  www.google.com', expected=r'5 packets transmitted, 0 received, 100% packet loss', where='+remote')
+    check('ping -n -q -c 5  8.8.8.8',        expected=r'5 packets transmitted, 5 received, 0% packet loss', where='+remote')
+    check('ping -n -q -c 5  www.google.com', expected=r'5 packets transmitted, 5 received, 0% packet loss', where='+remote')
 
     # check('ping -n -q -c 5  8.8.8.8',        expected=r'5 packets transmitted, 5 received, 0% packet loss', where='-remote')
     # check('ping -n -q -c 5  www.google.com', expected=r'5 packets transmitted, 5 received, 0% packet loss', where='-remote')
