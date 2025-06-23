@@ -324,7 +324,7 @@ class Cp2kCheckRPA_UENVExec(Cp2kCheck_UENV):
     executable_opts = ['-i', 'H2O-128-RI-dRPA-TZ.inp']
     energy_reference = -2217.36884935325
     tags = {'maintenance'}
-    valid_systems = ['daint']
+    valid_systems = ['+nvgpu']
 
     def __init__(self):
         super().__init__()
