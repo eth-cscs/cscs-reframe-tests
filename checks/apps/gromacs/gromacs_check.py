@@ -116,7 +116,9 @@ class gromacs_build_test(rfm.CompileOnlyRegressionTest):
 @rfm.simple_test
 class gromacs_run_test(rfm.RunOnlyRegressionTest):
     executable = './mps-wrapper.sh -- gmx_mpi mdrun -s topol.tpr'
-    executable_opts = ['-dlb no', '-npme 1', '-pin off', '-v', '-noconfout', '-nstlist 300']
+    executable_opts = [
+        '-dlb no', '-npme 1', '-pin off', '-v', '-noconfout', '-nstlist 300'
+    ]    
     maintainers = ['SSA']
     valid_systems = ['*']
     test_name = variable(str, value='STMV')
@@ -140,9 +142,10 @@ class gromacs_run_test(rfm.RunOnlyRegressionTest):
 
         self.executable_opts.append(f'-ntomp {self.num_cpus_per_task}')
 
-
         if self.uarch == 'gh200':
-            self.executable_opts += ['-pme gpu', '-nb gpu', '-update gpu', '-nsteps 10000']
+            self.executable_opts += [
+                '-pme gpu', '-nb gpu', '-update gpu', '-nsteps 10000'
+            ]            
 
             self.env_vars['MPICH_GPU_SUPPORT_ENABLED'] = '1'
             self.env_vars['GMX_GPU_DD_COMMS'] = 'true'
