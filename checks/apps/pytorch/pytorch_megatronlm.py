@@ -20,13 +20,14 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
 
     default_num_nodes = variable(int, type(None), value=None)
 
-    time_limit = '2h'
+    time_limit = '30m'
 
-    # The Megatron commit id
-    commit_id = variable(str, value='de14c22')
+    # The Megatron repository and release/commit to use.
+    megatron_repo = variable(str, value='https://github.com/swiss-ai/Megatron-LM.git')
+    megatron_release = variable(str, value='de14c22')
 
     # The LLM model to run
-    model = variable(str, value='llama3-8b')
+    model = parameter(['llama3-8b', 'llama3-70b'])
 
     # Exit after iteration is divisible by the following number
     exit_interval = variable(int, value=10)
@@ -84,38 +85,38 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
             'activation': 'xielu',
             'optimizer': 'ademamix',
             'transformer_engine_args': [
-	        '--main-grads-dtype fp32'
+                '--main-grads-dtype fp32'
             ],
             'extra_network_size_args': [
                 '--qk-layernorm',
-	        '--qknorm-impl apex',
+                '--qknorm-impl apex',
             ],
             'regularization_args': [
-	        '--attention-dropout 0.0',
-	        '--hidden-dropout 0.0',
-	        '--weight-decay 0.1',
-	        '--clip-grad 0.1',
-	        '--adam-beta1 0.9',
-	        '--adam-beta2 0.999',
+                '--attention-dropout 0.0',
+                '--hidden-dropout 0.0',
+                '--weight-decay 0.1',
+                '--clip-grad 0.1',
+                '--adam-beta1 0.9',
+                '--adam-beta2 0.999',
                 '--ademamix-alpha 8',
-	        '--ademamix-beta3 0.9999',
-	        '--ademamix-beta3-warmup 100000',
-	        '--ademamix-alpha-warmup 100000',
+                '--ademamix-beta3 0.9999',
+                '--ademamix-beta3-warmup 100000',
+                '--ademamix-alpha-warmup 100000',
             ],
             'learning_rate_args': [ 
-	        '--lr 0.00001',
-	        '--min-lr 0.000001',
-	        '--lr-decay-style WSD',
-	        '--lr-warmup-iters 2000',
+                '--lr 0.00001',
+                '--min-lr 0.000001',
+                '--lr-decay-style WSD',
+                '--lr-warmup-iters 2000',
                 '--lr-wsd-decay-style 1-sqrt',
-	        '--lr-wsd-decay-iters 0',
+                '--lr-wsd-decay-iters 0',
             ],
             'extra_data_args': [
-                 '--num-workers 32',
-	         '--num-dataset-builder-threads 4',
-	         '--goldfish-loss',
-	         '--goldfish-k 50',
-	         '--goldfish-h 50',
+                '--num-workers 16',
+                '--num-dataset-builder-threads 8',
+                '--goldfish-loss',
+                '--goldfish-k 50',
+                '--goldfish-h 50',
             ]
         },
         'llama3-70b': {
@@ -142,27 +143,27 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
             'activation': 'swiglu',
             'optimizer': 'adam',
             'transformer_engine_args': [
-	        '--transformer-impl transformer_engine',
-	        '--use-precision-aware-optimizer',
-	        '--main-grads-dtype bf16'
+                '--transformer-impl transformer_engine',
+                '--use-precision-aware-optimizer',
+                '--main-grads-dtype bf16'
             ],
             'regularization_args': [
-	        '--attention-dropout 0.0',
-	        '--hidden-dropout 0.0',
-	        '--weight-decay 0.1',
-	        '--clip-grad 1.0',
-	        '--adam-beta1 0.9',
-	        '--adam-beta2 0.95',
+                '--attention-dropout 0.0',
+                '--hidden-dropout 0.0',
+                '--weight-decay 0.1',
+                '--clip-grad 1.0',
+                '--adam-beta1 0.9',
+                '--adam-beta2 0.95',
             ],
             'learning_rate_args': [ 
-	        f'--lr 0.000015',
-	        f'--min-lr 0.000015',
-	        f'--lr-decay-style cosine',
-	        f'--lr-warmup-iters 1',
+                f'--lr 0.000015',
+                f'--min-lr 0.000015',
+                f'--lr-decay-style cosine',
+                f'--lr-warmup-iters 1',
             ],
             'extra_data_args': [
-                 '--num-workers 1',
-	         '--num-dataset-builder-threads 1',
+                '--num-workers 16',
+                '--num-dataset-builder-threads 8',
             ]
         },
         'llama3-8b': {
@@ -184,35 +185,35 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
             'activation': 'swiglu',
             'optimizer': 'adam',
             'transformer_engine_args': [
-	        '--transformer-impl transformer_engine',
-	        '--use-precision-aware-optimizer',
-	        '--main-grads-dtype bf16'
+                '--transformer-impl transformer_engine',
+                '--use-precision-aware-optimizer',
+                '--main-grads-dtype bf16'
             ],
             'regularization_args': [
-	        '--attention-dropout 0.0',
-	        '--hidden-dropout 0.0',
-	        '--weight-decay 0.1',
-	        '--clip-grad 1.0',
-	        '--adam-beta1 0.9',
-	        '--adam-beta2 0.95',
+                '--attention-dropout 0.0',
+                '--hidden-dropout 0.0',
+                '--weight-decay 0.1',
+                '--clip-grad 1.0',
+                '--adam-beta1 0.9',
+                '--adam-beta2 0.95',
             ],
             'learning_rate_args': [ 
-	        f'--lr 0.00022',
-	        f'--min-lr 0.000022',
-	        f'--lr-decay-style cosine',
-	        f'--lr-warmup-iters 1',
+                f'--lr 0.00022',
+                f'--min-lr 0.000022',
+                f'--lr-decay-style cosine',
+                f'--lr-warmup-iters 1',
             ],
             'extra_data_args': [
-                 '--num-workers 1',
-	         '--num-dataset-builder-threads 1',
+                '--num-workers 16',
+                '--num-dataset-builder-threads 8',
             ]
         }
     }
 
-    sourcesdir = None 
+    sourcesdir = None
     executable = 'bash'
 
-    tags = {'production', 'ml'}
+    tags = {'maintenance', 'production', 'ml'}
 
     @run_after('setup')
     def setup_test(self):
@@ -237,9 +238,8 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
             'TORCH_NCCL_AVOID_RECORD_STREAMS': 1,
             'TORCH_NCCL_ASYNC_ERROR_HANDLING': 1,
             'CUDA_DEVICE_MAX_CONNECTIONS': 1,
-            'MASTER_ADDR':
-                '$(scontrol show hostnames $SLURM_JOB_NODELIST | head -n 1)',
-            'MASTER_PORT': '6000',
+            'MASTER_ADDR': '$(hostname)',
+            'MASTER_PORT': '29400',
             'WORLD_SIZE': '$SLURM_NPROCS',
             'MEGATRON_LM_DIR': '$PWD/Megatron-LM',
             'PYTHONPATH': '$MEGATRON_LM_DIR:$PYTHONPATH',
@@ -265,10 +265,12 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
             self.env_vars['NCCL_DEBUG'] = 'Info'
 
         self.prerun_cmds = [
-            f'git clone https://github.com/swiss-ai/Megatron-LM.git',
+            f'set -x',
+            f'git clone {self.megatron_repo} $MEGATRON_LM_DIR',
             f'cd $MEGATRON_LM_DIR',
             f'git fetch origin',
-            f'git checkout {self.commit_id}',
+            f'git checkout {self.megatron_release}',
+            f'cd -',
             f'echo "START TIME: $(date)"',
             f'ulimit -c 0',
             f'mkdir -p $CKPT_DIR',
@@ -287,31 +289,31 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
         self.postrun_cmds = ['echo "END TIME: $(date)"']
 
         network_size_args = [
-	    f'--num-layers {model_config["num_layers"]}',
-	    f'--hidden-size {model_config["hidden_size"]}',
-	    f'--ffn-hidden-size {model_config["ffn_hidden_size"]}',
-	    f'--num-attention-heads {model_config["num_attention_heads"]}',
-	    f'--group-query-attention',
-	    f'--num-query-groups 8',
-	    f'--max-position-embeddings {model_config["sequence_length"]}',
-	    f'--position-embedding-type rope',
-	    f'--rotary-base 500000',
-	    f'--use-rope-scaling',
-	    f'--rope-scaling-factor 8',
-	    f'--make-vocab-size-divisible-by 128',
-	    f'--normalization RMSNorm',
-	    f'--{model_config["activation"]}',
-	    f'--untie-embeddings-and-output-weights',
+            f'--num-layers {model_config["num_layers"]}',
+            f'--hidden-size {model_config["hidden_size"]}',
+            f'--ffn-hidden-size {model_config["ffn_hidden_size"]}',
+            f'--num-attention-heads {model_config["num_attention_heads"]}',
+            f'--group-query-attention',
+            f'--num-query-groups 8',
+            f'--max-position-embeddings {model_config["sequence_length"]}',
+            f'--position-embedding-type rope',
+            f'--rotary-base 500000',
+            f'--use-rope-scaling',
+            f'--rope-scaling-factor 8',
+            f'--make-vocab-size-divisible-by 128',
+            f'--normalization RMSNorm',
+            f'--{model_config["activation"]}',
+            f'--untie-embeddings-and-output-weights',
         ]
  
         network_size_args += model_config.get('extra_network_size_args', [])
 
         logging_args = [
-	    '--log-throughput',
-	    '--log-progress',
-	    '--tensorboard-dir $TENSORBOARD_DIR',
-	    '--no-log-loss-scale-to-tensorboard',
-	    '--log-memory-to-tensorboard'
+            '--log-throughput',
+            '--log-progress',
+            '--tensorboard-dir $TENSORBOARD_DIR',
+            '--no-log-loss-scale-to-tensorboard',
+            '--log-memory-to-tensorboard'
         ]
 
         if self.wandb_logging:
@@ -330,41 +332,41 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
 
 
         training_args = [
-	    f'--micro-batch-size {model_config["micro_batch_size"]}',
-	    f'--global-batch-size {model_config["global_batch_size"]}',
-	    f'--no-check-for-nan-in-loss-and-grad',
-	    f'--train-iters {self.training_steps}',
-	    f'--log-interval 1',
-	    f'--eval-iters 0',
+            f'--micro-batch-size {model_config["micro_batch_size"]}',
+            f'--global-batch-size {model_config["global_batch_size"]}',
+            f'--no-check-for-nan-in-loss-and-grad',
+            f'--train-iters {self.training_steps}',
+            f'--log-interval 1',
+            f'--eval-iters 0',
             f'--exit-interval={self.exit_interval}',
-	    f'--cross-entropy-loss-fusion',
+            f'--cross-entropy-loss-fusion',
             # Test this for latency
             f'--ddp-bucket-size 10000000000',
-	    f'--disable-bias-linear',
-	    f'--optimizer {model_config["optimizer"]}',
-	    f'--dataloader-type single',
-	    f'--manual-gc',
-	    f'--manual-gc-interval {model_config["manual_gc_interval"]}',
-	    f'--exit-signal-handler',
-	    f'--trigger-path $TRIGGER_DIR',
+            f'--disable-bias-linear',
+            f'--optimizer {model_config["optimizer"]}',
+            f'--dataloader-type single',
+            f'--manual-gc',
+            f'--manual-gc-interval {model_config["manual_gc_interval"]}',
+            f'--exit-signal-handler',
+            f'--trigger-path $TRIGGER_DIR',
         ]
 
         initialization_args = [ 
-	    '--seed 28',
-	    '--init-method-std 0.008944'
+        '--seed 28',
+        '--init-method-std 0.008944'
         ]
 
         checkpoint_args = [ 
-	    f'--save $CKPT_DIR',
-	    f'--save-interval {self.checkpoint_steps}',
-	    f'--ckpt-format torch_dist',
+            f'--save $CKPT_DIR',
+            f'--save-interval {self.checkpoint_steps}',
+            f'--ckpt-format torch_dist',
             f'--ckpt-fully-parallel-load',
-	    f'--load $CKPT_DIR',
-	    f'--async-save'
+            f'--load $CKPT_DIR',
+            f'--async-save'
         ]
 
         mixed_precision_args = [
-	    '--bf16'
+        '--bf16'
         ]
 
         distributed_args = [ 
@@ -401,16 +403,16 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
 
 
         tokenizer_args = [
-	    '--tokenizer-type HuggingFaceTokenizer',
-	    '--tokenizer-model alehc/swissai-tokenizer'
+        '--tokenizer-type HuggingFaceTokenizer',
+        '--tokenizer-model alehc/swissai-tokenizer'
         ]
 
         data_args = [
-	    f'--split 100,0,0',
-	    f'--seq-length {model_config["sequence_length"]}',
-	    f'--reset-position-ids',
-	    f'--reset-attention-mask',
-	    f'--eod-mask-loss',
+        f'--split 100,0,0',
+        f'--seq-length {model_config["sequence_length"]}',
+        f'--reset-position-ids',
+        f'--reset-attention-mask',
+        f'--eod-mask-loss',
         ]
 
         data_args += model_config.get('extra_data_args', [])
@@ -479,9 +481,7 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
 class PyTorchMegatronLM_CE(PyTorchMegatronLM, ContainerEngineMixin):
     valid_systems = ['+nvgpu +ce']
     valid_prog_environs = ['builtin']
-    #image = '/iopsstor/scratch/cscs/manitart/swissai_container_image/torch_25.03.sqsh'
-    #image = '/capstor/store/cscs/swissai/a06/containers/NGC-PyTorch/ngc_pt_jan.sqsh'
-    image = '/iopsstor/scratch/cscs/vjoost/teststripe/test02/ngc_25.01_nvrtc12.9.41-1.sqsh'
+    image = variable(str, value='/iopsstor/scratch/cscs/vjoost/teststripe/test02/ngc_25.01_nvrtc12.9.41-1.sqsh')
 
     @run_after('init')
     def set_container_config(self):
