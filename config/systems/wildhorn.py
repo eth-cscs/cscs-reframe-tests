@@ -1,4 +1,4 @@
-# Copyright 2024 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright 2016-2023 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -7,10 +7,12 @@
 #
 
 import reframe.utility.osext as osext
+import copy
 
 
 base_config = {
-    'modules_system': 'nomod',
+    'modules_system': 'lmod',
+    'resourcesdir': '/capstor/apps/cscs/common/regression/resources',
     'partitions': [
         {
             'name': 'login',
@@ -25,54 +27,43 @@ base_config = {
         },
         {
             'name': 'normal',
-            'descr': 'GH200',
+            'descr': 'Multicore nodes (AMD EPYC 7742, 256|512GB/cn)',
             'scheduler': 'slurm',
             'time_limit': '10m',
-            'container_platforms': [
-            ],
             'environs': [
                 'builtin',
             ],
             'max_jobs': 100,
             'extras': {
-                'cn_memory': 825,
+                'cn_memory': 256,
             },
-            'features': ['ce', 'gpu', 'nvgpu', 'remote', 'scontrol', 'uenv', 'hugepages_slurm'],
-            'access': [f'--account=a-{osext.osgroup()}'],
+            'features': ['remote', 'ce'],
+            'access': ['--mem=0', f'--account={osext.osgroup()}'],
             'resources': [
                 {
                     'name': 'switches',
                     'options': ['--switches={num_switches}']
                 },
                 {
-                    'name': 'gres',
-                    'options': ['--gres={gres}']
-                },
-                {
                     'name': 'memory',
                     'options': ['--mem={mem_per_node}']
                 },
             ],
-            'devices': [
-                {
-                    'type': 'gpu',
-                    'arch': 'sm_90',
-                    'num_devices': 4
-                }
-                ],
-            'launcher': 'srun',
+            'launcher': 'srun'
         },
     ]
 }
 
-base_config['name'] = 'clariden'
-base_config['descr'] = 'Clariden vcluster'
-base_config['hostnames'] = ['clariden']
+wildhorn_sys = copy.deepcopy(base_config)
+wildhorn_sys['name'] = 'wildhorn'
+wildhorn_sys['descr'] = 'Alps Cray EX Supercomputer'
+wildhorn_sys['hostnames'] = ['wildhorn']
 
 site_configuration = {
     'systems': [
-        base_config,
+        wildhorn_sys
     ],
     'environments': [
+     
     ],
 }

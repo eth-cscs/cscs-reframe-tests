@@ -77,7 +77,9 @@ class XCCLTestBase(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
 @rfm.simple_test
 class NCCLTestsCE(XCCLTestBase):
     valid_systems = ['+ce +nvgpu']
-    image_tag = parameter(['cuda12.8.1'])
+
+    # FIXME update the image tag once the port issue is fixed
+    image_tag = parameter(['cuda12.3'])
 
     # Disable Nvidia Driver requirement
     env_vars['NVIDIA_DISABLE_REQUIRE'] = 1
