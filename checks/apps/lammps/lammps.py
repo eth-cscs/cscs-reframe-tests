@@ -9,16 +9,27 @@ import reframe.utility.sanity as sn
 from uenv import uarch
 
 lammps_references = {
-    'lj': {'gh200': {'time_run': (345, None, 0.05, 's')}},
+    'lj': {
+        'gh200': {'time_run': (14, None, 0.05, 's')},
+        'zen2': {'time_run': (87, None, 0.05, 's')}
+    },
 }
 
 slurm_config = {
     "lj": {
         "gh200": {
             "nodes": 2,
-            "ntasks-per-node": 32,
+            "ntasks-per-node": 4,
+            "gpus-per-node": 4,
+            "gpus-per-task": 1,
             "walltime": "10m",
             "gpu": True,
+        },
+        "zen2": {
+            "nodes": 4,
+            "ntasks-per-node": 64,
+            "walltime": "10m",
+            "gpu": False,
         },
     },
 }
@@ -49,10 +60,10 @@ class lammps_build_test(rfm.CompileOnlyRegressionTest):
     '''
     descr = 'LAMMPS Build Test'
     valid_prog_environs = ['+lammps-kokkos-dev']
-    valid_systems = ['*']
+    valid_systems = ['+gpu']
     maintainers = ['SSA']
     sourcesdir = None
-    lammps_sources = fixture(lammps_download, scope='session')
+    lammps_sources = fixture(lammps_download, scope='environment')
     build_system = 'CMake'
     tags = {'uenv', 'production'}
     build_locally = False
@@ -83,7 +94,7 @@ class lammps_build_test(rfm.CompileOnlyRegressionTest):
 
 
 @rfm.simple_test
-class lammps_gpu_test(rfm.RunOnlyRegressionTest):
+class lammps_test(rfm.RunOnlyRegressionTest):
     """
     Test LAMMPS run using the run-gpu:gpu view
     Untested views:
@@ -91,30 +102,34 @@ class lammps_gpu_test(rfm.RunOnlyRegressionTest):
         build-kokkos: develop-kokkos
         run-kokkos: kokkos
     """
-    executable = './mps-wrapper.sh lmp'
-    valid_prog_environs = ['+lammps-gpu-prod']
-    valid_systems = ["*"]
-    maintainers = ["SSA"]
+    executable = 'lmp'
+    valid_prog_environs = ['+lammps-gpu-prod', '+lammps-kokkos-prod']
+    valid_systems = ['+uenv']
+    maintainers = ['SSA']
     test_name = variable(str, value='lj')
     energy_reference = -4.620456
     tags = {'uenv', 'production'}
 
-    @run_before("run")
+    @run_before('run')
     def prepare_run(self):
         self.uarch = uarch(self.current_partition)
         config = slurm_config[self.test_name][self.uarch]
-        self.extra_resources = {"gres": {"gpu": 4}}
         self.job.options = [f'--nodes={config["nodes"]}']
-        self.num_tasks_per_node = config["ntasks-per-node"]
-        self.num_tasks = config["nodes"] * self.num_tasks_per_node
+        self.num_tasks_per_node = config['ntasks-per-node']
+        self.num_tasks = config['nodes'] * self.num_tasks_per_node
         self.ntasks_per_core = 1
-        self.time_limit = config["walltime"]
+        self.time_limit = config['walltime']
         self.executable_opts = [f'-i {self.test_name}.in']
 
-        if self.uarch == "gh200":
-            self.env_vars["MPICH_GPU_SUPPORT_ENABLED"] = "1"
+        if self.uarch == 'gh200':
+            self.env_vars['MPICH_GPU_SUPPORT_ENABLED'] = '1'
+            self.job.launcher.options += [
+                f'--gpus-per-task={config["gpus-per-task"]}',
+                f'--gpus-per-node={config["gpus-per-node"]}'
+            ]
+            # or update extra_resources in the system config file
 
-    @run_before("run")
+    @run_before('run')
     def prepare_reference(self):
         self.uarch = uarch(self.current_partition)
         if self.uarch is not None and \
@@ -127,11 +142,11 @@ class lammps_gpu_test(rfm.RunOnlyRegressionTest):
     @sanity_function
     def assert_energy_diff(self):
         successful_termination = \
-            sn.assert_found(r"Total wall time", self.stdout)
+            sn.assert_found(r'Total wall time', self.stdout)
 
         energy = sn.extractsingle(
             r'^\s*1000(\s+\S+){5}\s+(?P<energy>-?\d+\.\d+)\s+',
-            self.stdout, "energy", float)
+            self.stdout, 'energy', float)
         energy_diff = sn.abs(energy - self.energy_reference)
         correct_energy = sn.assert_lt(energy_diff, 1e-4)
 

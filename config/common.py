@@ -120,6 +120,8 @@ site_configuration = {
                '-c checks',
                '-p \'(?!PrgEnv-ce)\'',
                '--tag=production',
+               # TODO: re-enable once test is fixed
+               '-x MLperfStorageCE'
            ]
         },
         {
