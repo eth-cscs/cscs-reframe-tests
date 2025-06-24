@@ -49,14 +49,14 @@ class NodeBurnCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     def validate_test(self):
         regex = rf'(nid\d+):{self.test_hw}.*\s+(\d+\.\d+)\s+\S+'
 
-        # Count the number of output perforamnce values per node
+        # Count the number of output performance values per node
         nodes = sn.extractall(regex, self.stdout, 1, str)
         node_counter = collections.Counter(nodes)
         num_res = sn.count(nodes)
 
-        # Filter the nodes with not enough output occurences
+        # Filter the nodes with not enough output occurrences
         problematic_nodes = [
-            n for n,c in node_counter.items() if c != self.num_tasks_per_node
+            n for n, c in node_counter.items() if c != self.num_tasks_per_node
         ]
 
         # Add the nodes that might have not printed any output
