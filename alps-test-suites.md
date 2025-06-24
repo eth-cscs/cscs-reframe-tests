@@ -29,8 +29,8 @@
 |                   | Stream (memory bandwidth test)	          |    Y       |  1min    | [node-burn-ce.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/microbenchmarks/cpu_gpu/node_burn/node-burn-ce.py) |  
 | Network           | Simple MPI (CPI)	                          |    Y       |   5s     | [mpi_cpi.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/prgenv/mpi_cpi.py) | 
 |                   | OSU all-to-all                              |    Y       |   1min?  |  ?  | 
-|                   | NCCL allreduce (2min)                       |    Y       |   2 min  |  ?  | 
-|                   | Network bandwidth between gpus (per node)   |    Y       |   1min   |  cxi bandwidth | 
+|                   | NCCL allreduce (2min)                       |    Y       |   2 min  |  [pytorch_allreduce.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/apps/pytorch/pytorch_allreduce.py#L24) | 
+|                   | Network bandwidth between gpus (per node)   |    Y       |   1min   |  [cxi_gpu_loopback_bw.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/system/network/cxi_gpu_loopback_bw.py) | 
 	
 
   
@@ -46,23 +46,29 @@ Single and multi-node checks to be performed regularly (nightly) in production u
 | Apps	            | CP2K 	                                    |                         | 
 |                   | Gromacs	                                    |                         | 
 |                   | LAMMPS                                        |                         | 
-|                   | PyTorch	                                    |                         | 
+|                   | PyTorch	                                    | [pytorch_allreduce.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/apps/pytorch/pytorch_allreduce.py), [pytorch_nvidia.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/apps/pytorch/pytorch_nvidia.py) | 
 |                   | QuantumEspresso	                            |                         | 
-| Microbenchmarks   | Memory allocation speed	                    |                         | 
-| Libraries	        | dlaf	                                    |                         | 
-| Programming environment | Build Hello World (C/C++/F)	            |                         | 
-|                         | Affinity	                            |                         | 
-|                         | Test if multi-threaded MPI works	    | MpiInitTest             |
-| System Components | Node availability	                             |                        |
-|                   |  Check if Gres is properly configured on Slurm | SlurmGPUGres           |
-| Config/Integration| Slurm: partitions                             | TODO                    | 
+| Microbenchmarks   | Memory allocation speed	                    | [alloc_speed.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/microbenchmarks/cpu/alloc_speed/alloc_speed.py) | 
+| Libraries	        | dlaf	                                    | [dlaf.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/libraries/dlaf/dlaf.py)| 
+| Programming environment | Build Hello World (C/C++/F)	            | [helloworld.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/prgenv/helloworld.py) | 
+|                         | CUDA Samples (?)                        | [cuda_samples.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/prgenv/cuda_samples.py) |
+|                         | Checks that nvml can report GPU informations | [cuda_nvml.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/prgenv/cuda_nvml.py) |
+|                         | Affinity	                            | [affinity_check.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/prgenv/affinity_check.py) | 
+|                         | Test if multi-threaded MPI works	    | [mpi.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/prgenv/mpi.py)  |
+| Config/Integration| Slurm:  | [slurm.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/system/slurm/slurm.py) | 
+|                   | Slurm: partitions                             | TODO                    | 
 |                   | Slurm: number of nodes available              | TODO                    | 
-|                   | Slurm: Check if Gres is properly configured on Slurm | SlurmGPUGres     |
+|                   | Slurm: Slurm Transparent Hugepages            | [slurm.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/system/slurm/slurm.py#L448) | 
+|                   | Slurm: Queue Status Check            | [SlurmQueueStatusCheck](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/system/slurm/slurm.py#L285) | 
+|                   | Slurm: Check if Gres is properly configured on Slurm | [SlurmGPUGres](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/system/slurm/gres_gpu.py#L11)     |
 |                   | Slurm: new features                           | TODO                    |
-| Containers        |  Test OSU benchmarsk with CE	            | OMB_MPICH_CE, OMB_OMPI_CE |
-|                   |  Stream benchmark with ce	                    | RunNVGPUJobCE           |
-|                   | Verify simple container runs	            |  RunJobCE               |
-|                   | 	Test SSH to a container	                    |  SSH_CE                 |
+| Containers        |  Test OSU benchmarsk with CE	            | [OMB_MPICH_CE](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/containers/container_engine/omb.py#L77), [OMB_OMPI_CE](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/containers/container_engine/omb.py#L101) |
+|                   |  Stream benchmark with ce	                    | RunNVGPUJobCE - [ce_import_run_image.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/system/ce/ce_import_run_image.py#L64)  |
+|                   | Verify simple container runs	            | RunJobCE - [ce_import_run_image.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/system/ce/ce_import_run_image.py#L44)  |
+|                   | 	Test SSH to a container	                    |  [ssh.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/containers/container_engine/ssh.py) |
+|                   | 	CUDA nbody with CE                          |  [check_cuda_nbody.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/containers/container_engine/check_cuda_nbody.py) |
+
+
 
 
 ## Maintenance test suite 
