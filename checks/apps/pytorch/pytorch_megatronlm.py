@@ -51,7 +51,7 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
     # The number of training steps
     training_steps = variable(int, value=50)
 
-    # Use WANDB logging 
+    # Use WANDB logging
     wandb_logging = variable(bool, value=False)
 
     # The dataset paths to use.
@@ -82,6 +82,9 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
             'defer_embedding_wgrad_compute': True,
             'overlap_p2p_communication_warmup_flush': True,
 
+            'ref_tokens_per_sec_per_gpu': 700.0,
+            'ref_throughput_per_gpu': 330.0,
+
             'activation': 'xielu',
             'optimizer': 'ademamix',
             'transformer_engine_args': [
@@ -103,7 +106,7 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
                 '--ademamix-beta3-warmup 100000',
                 '--ademamix-alpha-warmup 100000',
             ],
-            'learning_rate_args': [ 
+            'learning_rate_args': [
                 '--lr 0.00001',
                 '--min-lr 0.000001',
                 '--lr-decay-style WSD',
@@ -112,7 +115,7 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
                 '--lr-wsd-decay-iters 0',
             ],
             'extra_data_args': [
-                '--num-workers 16',
+                '--num-workers 32',
                 '--num-dataset-builder-threads 8',
                 '--goldfish-loss',
                 '--goldfish-k 50',
@@ -140,6 +143,9 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
             'defer_embedding_wgrad_compute': True,
             'overlap_p2p_communication_warmup_flush': True,
 
+            'ref_tokens_per_sec_per_gpu': 850.0,
+            'ref_throughput_per_gpu': 410.0,
+
             'activation': 'swiglu',
             'optimizer': 'adam',
             'transformer_engine_args': [
@@ -155,14 +161,14 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
                 '--adam-beta1 0.9',
                 '--adam-beta2 0.95',
             ],
-            'learning_rate_args': [ 
+            'learning_rate_args': [
                 f'--lr 0.000015',
                 f'--min-lr 0.000015',
                 f'--lr-decay-style cosine',
                 f'--lr-warmup-iters 1',
             ],
             'extra_data_args': [
-                '--num-workers 16',
+                '--num-workers 32',
                 '--num-dataset-builder-threads 8',
             ]
         },
@@ -182,6 +188,9 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
             'defer_embedding_wgrad_compute': False,
             'overlap_p2p_communication_warmup_flush': False,
 
+            'ref_tokens_per_sec_per_gpu': 7000.0,
+            'ref_throughput_per_gpu': 400.0,
+
             'activation': 'swiglu',
             'optimizer': 'adam',
             'transformer_engine_args': [
@@ -197,14 +206,14 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
                 '--adam-beta1 0.9',
                 '--adam-beta2 0.95',
             ],
-            'learning_rate_args': [ 
+            'learning_rate_args': [
                 f'--lr 0.00022',
                 f'--min-lr 0.000022',
                 f'--lr-decay-style cosine',
                 f'--lr-warmup-iters 1',
             ],
             'extra_data_args': [
-                '--num-workers 16',
+                '--num-workers 32',
                 '--num-dataset-builder-threads 8',
             ]
         }
@@ -222,14 +231,22 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
             self.num_nodes = model_config['num_nodes']
         else:
             self.num_nodes = self.default_num_nodes
-         
+
         curr_part = self.current_partition
         self.num_gpus_per_node = curr_part.select_devices('gpu')[0].num_devices
         self.num_tasks = self.num_nodes * self.num_gpus_per_node
         self.num_cpus_per_task = model_config.get(
-            'cpus_per_task', (curr_part.processor.num_cpus // 
+            'cpus_per_task', (curr_part.processor.num_cpus //
                               self.num_tasks_per_node)
         )
+        self.reference = {
+            '*': {
+                'throughput_per_gpu': (model_config['ref_throughput_per_gpu'],
+                                       -0.1, None, 'TFLOP/s/GPU'),
+                'tokens_per_sec_per_gpu': (model_config['ref_tokens_per_sec_per_gpu'],
+                                           -0.1, None, 'tokens/sec/gpu'),
+            }
+        }
 
     @run_after('setup')
     def set_executable_opts(self):
@@ -243,7 +260,7 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
             'WORLD_SIZE': '$SLURM_NPROCS',
             'MEGATRON_LM_DIR': '$PWD/Megatron-LM',
             'PYTHONPATH': '$MEGATRON_LM_DIR:$PYTHONPATH',
-            'PROJECT_NAME': 
+            'PROJECT_NAME':
                 f'Megatron-{self.current_system.name.capitalize()}',
             'EXP_NAME': f'{self.model}-$SLURM_NNODES-nodes',
             'PROJECT_DIR': '$MEGATRON_LM_DIR/logs/Meg-Runs/$PROJECT_NAME',
@@ -260,7 +277,7 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
             'HF_HOME': f'{self.hf_home}',
             'OMP_NUM_THREADS': self.num_cpus_per_task // self.num_gpus_per_node
         }
-        
+
         if self.nccl_debug:
             self.env_vars['NCCL_DEBUG'] = 'Info'
 
@@ -305,7 +322,7 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
             f'--{model_config["activation"]}',
             f'--untie-embeddings-and-output-weights',
         ]
- 
+
         network_size_args += model_config.get('extra_network_size_args', [])
 
         logging_args = [
@@ -351,12 +368,12 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
             f'--trigger-path $TRIGGER_DIR',
         ]
 
-        initialization_args = [ 
+        initialization_args = [
         '--seed 28',
         '--init-method-std 0.008944'
         ]
 
-        checkpoint_args = [ 
+        checkpoint_args = [
             f'--save $CKPT_DIR',
             f'--save-interval {self.checkpoint_steps}',
             f'--ckpt-format torch_dist',
@@ -369,8 +386,8 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
         '--bf16'
         ]
 
-        distributed_args = [ 
-            f'--tensor-model-parallel-size ' 
+        distributed_args = [
+            f'--tensor-model-parallel-size '
             f'{model_config["tensor_model_parallel_size"] or self.num_gpus_per_node}',
             f'--pipeline-model-parallel-size '
             f'{model_config["pipeline_model_parallel_size"]}',
@@ -383,14 +400,14 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
             'num_layers_per_virtual_pipeline_stage',
             'context_parallel_size',
             'wgrad_deferral_limit',
-        ] 
+        ]
 
         for ar in extra_distributed_args:
             if ar in model_config:
                 distributed_args += [
                     f'--{ar.replace("_", "-")} {model_config[ar]}'
                 ]
- 
+
         extra_distributed_args_boolean = [
             'sequence_parallel',
             'defer_embedding_wgrad_compute',
@@ -416,7 +433,7 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
         ]
 
         data_args += model_config.get('extra_data_args', [])
-        
+
         if self.datasets is None:
             data_args += ['--mock-data']
         else:
@@ -425,7 +442,7 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
                 '--data-cache-path $DATASET_CACHE_DIR'
             ]
 
-        all_args = [ 
+        all_args = [
             *model_config['transformer_engine_args'],
             *network_size_args,
             *logging_args,
@@ -440,13 +457,13 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
             *data_args
         ]
 
-        training_cmd = ( 
+        training_cmd = (
             f'python $MEGATRON_LM_DIR/pretrain_gpt.py {" ".join(all_args)}'
         )
-        
-        cmd_prefix = '' #'numactl --membind=0-3' 
+
+        cmd_prefix = '' #'numactl --membind=0-3'
         self.executable_opts = [
-            rf"-c", 
+            rf"-c",
             # Open with single quote
             rf"'RANK=$SLURM_PROCID LOCAL_RANK=$SLURM_LOCALID "
             rf"PYTHONPATH=$MEGATRON_LM_DIR:$PYTHONPATH "
