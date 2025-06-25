@@ -107,7 +107,7 @@ class Cp2kBuildTestUENV(rfm.CompileOnlyRegressionTest):
     '''
 
     descr = 'CP2K Build Test'
-    valid_prog_environs = ['+cp2k-dev']
+    valid_prog_environs = ['+cp2k-dev -dlaf']
     valid_systems = ['+uenv']
     build_system = 'CMake'
     sourcesdir = None
@@ -125,7 +125,7 @@ class Cp2kBuildTestUENV(rfm.CompileOnlyRegressionTest):
         self.build_system.max_concurrency = cpu.info['num_cpus_per_socket']
 
         tarsource = os.path.join(
-            self.cp2k_sources.stagedir, f'v{self.cp2k_sources.version}.tar.gz'
+            self.cp2k_sources.stagedir, f'{self.cp2k_sources.version}.tar.gz'
         )
 
         # Extract source code
@@ -253,7 +253,7 @@ class Cp2kCheckMD_UENV(Cp2kCheck_UENV):
 
 @rfm.simple_test
 class Cp2kCheckMD_UENVExec(Cp2kCheckMD_UENV):
-    valid_prog_environs = ['+cp2k']
+    valid_prog_environs = ['+cp2k -dlaf']
     tags = {'uenv', 'production'}
 
 
@@ -263,7 +263,7 @@ class Cp2kCheckMD_UENVCustomExec(Cp2kCheckMD_UENV):
     Same test as above, but using executables built by Cp2kBuildTestUENV.
     '''
 
-    valid_prog_environs = ['+cp2k-dev']
+    valid_prog_environs = ['+cp2k-dev -dlaf']
     tags = {'uenv'}
 
     @run_after('init')
@@ -280,7 +280,7 @@ class Cp2kCheckMD_UENVCustomExec(Cp2kCheckMD_UENV):
 # {{{ PBE
 class Cp2kCheckPBE_UENV(Cp2kCheck_UENV):
     test_name = 'pbe'
-    valid_prog_environs = ['+cp2k']
+    valid_prog_environs = ['+cp2k -dlaf']
     tags = {'uenv', 'production'}
     executable_opts = ['-i', 'H2O-128-PBE-TZ.inp']
     energy_reference = -2206.2426491358
@@ -292,7 +292,7 @@ class Cp2kCheckPBE_UENV(Cp2kCheck_UENV):
 
 @rfm.simple_test
 class Cp2kCheckPBE_UENVExec(Cp2kCheckPBE_UENV):
-    valid_prog_environs = ['+cp2k']
+    valid_prog_environs = ['+cp2k -dlaf']
     tags = {'uenv', 'production'}
 
 
@@ -302,7 +302,7 @@ class Cp2kCheckPBE_UENVCustomExec(Cp2kCheckPBE_UENV):
     Same test as above, but using executables built by Cp2kBuildTestUENV.
     '''
 
-    valid_prog_environs = ['+cp2k-dev']
+    valid_prog_environs = ['+cp2k-dev -dlaf']
     tags = {'uenv'}
 
     @run_after('init')
@@ -320,7 +320,7 @@ class Cp2kCheckPBE_UENVCustomExec(Cp2kCheckPBE_UENV):
 @rfm.simple_test
 class Cp2kCheckRPA_UENVExec(Cp2kCheck_UENV):
     test_name = 'rpa'
-    valid_prog_environs = ['+cp2k']
+    valid_prog_environs = ['+cp2k -dlaf']
     executable_opts = ['-i', 'H2O-128-RI-dRPA-TZ.inp']
     energy_reference = -2217.36884935325
     tags = {'maintenance'}
