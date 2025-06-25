@@ -60,7 +60,7 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
     datasets = variable(str, type(None), value=None)
 
     configurations = {
-        'apertus3-70b': {
+        'apertus-70b': {
             'num_nodes': 512,
             'cpus_per_task': 36,
             'micro_batch_size': 1,
@@ -559,3 +559,9 @@ class PyTorchMegatronLM_UENV(PyTorchMegatronLM):
             'FI_CXI_DEFAULT_TX_SIZE': 32768,
             'FI_CXI_RX_MATCH_MODE': 'software',
         })
+
+
+@rfm.simple_test
+class PyTorchMegatronLM_CE_apertus70b(PyTorchMegatronLM_CE):
+    tags = {'maintenance', 'ml'}
+    model = parameter(['apertus-70b'])
