@@ -1,4 +1,4 @@
-# Copyright 2024 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright 2025 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -6,12 +6,16 @@
 # ReFrame CSCS settings
 #
 
+
+import reframe.utility.osext as osext
+
+
 site_configuration = {
     'systems': [
         {
-            'name': 'santis',
-            'descr': 'santis vcluster',
-            'hostnames': ['santis'],
+            'name': 'alps-eiger',
+            'descr': 'Alps Eiger vcluster',
+            'hostnames': ['alps-eiger'],
             'modules_system': 'nomod',
             'partitions': [
                 {
@@ -26,7 +30,7 @@ site_configuration = {
                     'launcher': 'local'
                 },
                 {
-                    'name': 'normal',
+                    'name': 'mc',
                     'scheduler': 'slurm',
                     'time_limit': '10m',
                     'environs': [
@@ -34,26 +38,16 @@ site_configuration = {
                     ],
                     'max_jobs': 100,
                     'extras': {
-                        'cn_memory': 500,
+                        'cn_memory': 256,
                     },
                     'resources': [
                         {
                             'name': 'memory',
                             'options': ['--mem={mem_per_node}']
                         },
-                        {
-                            'name': 'gres',
-                            'options': ['--gres={gres}']
-                        },
                     ],
-                    'features': ['ce', 'gpu', 'nvgpu', 'remote', 'scontrol', 'uenv', 'hugepages_slurm'],
-                    'devices': [
-                        {
-                            'type': 'gpu',
-                            'arch': 'sm_90',
-                            'num_devices': 4
-                        }
-                    ],
+                    'access': ['-Cmc', f'--account={osext.osgroup()}'],
+                    'features': ['ce', 'remote', 'scontrol', 'uenv'],
                     'launcher': 'srun'
                 },
             ]
@@ -63,7 +57,6 @@ site_configuration = {
         {
             'name': 'production',
             'options': [
-                '--unload-module=reframe',
                 '--exec-policy=async',
                 '-Sstrict_check=1',
                 '--prefix=$SCRATCH/regression/production',
@@ -72,7 +65,7 @@ site_configuration = {
                 '--tag=production',
                 '--timestamp=%F_%H-%M-%S'
             ],
-            'target_systems': ['santis'],
+            'target_systems': ['alps-eiger'],
         }
     ]
 }
