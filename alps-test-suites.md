@@ -28,7 +28,7 @@
 | HW check          | Run dgemm on all GPUs and CPUs	          |    Y       |  1min    | [node-burn-ce.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/microbenchmarks/cpu_gpu/node_burn/node-burn-ce.py) |     
 |                   | Stream (memory bandwidth test)	          |    Y       |  1min    | [node-burn-ce.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/microbenchmarks/cpu_gpu/node_burn/node-burn-ce.py) |  
 | Network           | Simple MPI (CPI)	                          |    Y       |   5s     | [mpi_cpi.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/prgenv/mpi_cpi.py) | 
-|                   | OSU all-to-all                              |    Y       |   1min?  |  ?  | 
+|                   | OSU all-to-all                              |    Y       |   1min?  |  TODO  | 
 |                   | NCCL allreduce (2min)                       |    Y       |   2 min  |  [pytorch_allreduce.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/apps/pytorch/pytorch_allreduce.py#L24) | 
 |                   | Network bandwidth between gpus (per node)   |    Y       |   1min   |  [cxi_gpu_loopback_bw.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/system/network/cxi_gpu_loopback_bw.py) | 
 	
@@ -43,11 +43,11 @@ Single and multi-node checks to be performed regularly (nightly) in production u
 
 | Category          | Description                                   | Test name               |
 |:---               |:---                                           |:---                     | 
-| Apps	            | CP2K 	                                    |                         | 
-|                   | Gromacs	                                    |                         | 
-|                   | LAMMPS                                        |                         | 
+| Apps	            | CP2K 	                                    | [cp2k_uenv.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/apps/cp2k/cp2k_uenv.py)  | 
+|                   | Gromacs	                                    | [gromacs_check.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/apps/gromacs/gromacs_check.py) | 
+|                   | LAMMPS                                        | [lammps.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/apps/lammps/lammps.py) | 
 |                   | PyTorch	                                    | [pytorch_allreduce.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/apps/pytorch/pytorch_allreduce.py), [pytorch_nvidia.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/apps/pytorch/pytorch_nvidia.py) | 
-|                   | QuantumEspresso	                            |                         | 
+|                   | QuantumEspresso	                            | [quantumespresso_check_uenv.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/apps/quantumespresso/quantumespresso_check_uenv.py) | 
 | Microbenchmarks   | Memory allocation speed	                    | [alloc_speed.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/microbenchmarks/cpu/alloc_speed/alloc_speed.py) | 
 | Libraries	        | dlaf	                                    | [dlaf.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/libraries/dlaf/dlaf.py)| 
 | Programming environment | Build Hello World (C/C++/F)	            | [helloworld.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/prgenv/helloworld.py) | 
@@ -56,10 +56,9 @@ Single and multi-node checks to be performed regularly (nightly) in production u
 |                         | Affinity	                            | [affinity_check.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/prgenv/affinity_check.py) | 
 |                         | Test if multi-threaded MPI works	    | [mpi.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/prgenv/mpi.py)  |
 | Config/Integration| Slurm:  | [slurm.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/system/slurm/slurm.py) | 
-|                   | Slurm: partitions                             | TODO                    | 
-|                   | Slurm: number of nodes available              | TODO                    | 
+|                   | Slurm: partitions correspond to TF definition | TODO                    | 
 |                   | Slurm: Slurm Transparent Hugepages            | [slurm.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/system/slurm/slurm.py#L448) | 
-|                   | Slurm: Queue Status Check            | [SlurmQueueStatusCheck](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/system/slurm/slurm.py#L285) | 
+|                   | Slurm: number of nodes available per partition | [SlurmQueueStatusCheck](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/system/slurm/slurm.py#L285) | 
 |                   | Slurm: Check if Gres is properly configured on Slurm | [SlurmGPUGres](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/system/slurm/gres_gpu.py#L11)     |
 |                   | Slurm: new features                           | TODO                    |
 | Containers        |  Test OSU benchmarsk with CE	            | [OMB_MPICH_CE](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/containers/container_engine/omb.py#L77), [OMB_OMPI_CE](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/containers/container_engine/omb.py#L101) |
