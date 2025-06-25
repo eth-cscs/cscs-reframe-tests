@@ -107,7 +107,7 @@ class Cp2kBuildTestUENV(rfm.CompileOnlyRegressionTest):
     '''
 
     descr = 'CP2K Build Test'
-    valid_prog_environs = ['+cp2k-dev']
+    valid_prog_environs = ['+cp2k-dev -dlaf']
     valid_systems = ['+uenv']
     build_system = 'CMake'
     sourcesdir = None
@@ -125,7 +125,7 @@ class Cp2kBuildTestUENV(rfm.CompileOnlyRegressionTest):
         self.build_system.max_concurrency = cpu.info['num_cpus_per_socket']
 
         tarsource = os.path.join(
-            self.cp2k_sources.stagedir, f'v{self.cp2k_sources.version}.tar.gz'
+            self.cp2k_sources.stagedir, f'{self.cp2k_sources.version}.tar.gz'
         )
 
         # Extract source code
@@ -167,6 +167,7 @@ class Cp2kCheck_UENV(rfm.RunOnlyRegressionTest):
     executable = './pika-bind.sh cp2k.psmp'
     maintainers = ['SSA']
     valid_systems = ['+uenv']
+    valid_prog_environs = ['+cp2k -dlaf']
 
     @run_before('run')
     def prepare_run(self):
@@ -263,7 +264,7 @@ class Cp2kCheckMD_UENVCustomExec(Cp2kCheckMD_UENV):
     Same test as above, but using executables built by Cp2kBuildTestUENV.
     '''
 
-    valid_prog_environs = ['+cp2k-dev']
+    valid_prog_environs = ['+cp2k-dev -dlaf']
     tags = {'uenv'}
 
     @run_after('init')
