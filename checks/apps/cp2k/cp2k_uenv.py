@@ -167,6 +167,7 @@ class Cp2kCheck_UENV(rfm.RunOnlyRegressionTest):
     executable = './pika-bind.sh cp2k.psmp'
     maintainers = ['SSA']
     valid_systems = ['+uenv']
+    valid_prog_environs = ['+cp2k -dlaf']
 
     @run_before('run')
     def prepare_run(self):
