@@ -313,7 +313,7 @@ class Cp2kCheckPBE_UENVCustomExec(Cp2kCheckPBE_UENV):
     @run_after('setup')
     def setup_executable(self):
         parent = self.getdep('Cp2kBuildTestUENV')
-        self.executable = self.wrapper + f'./pika-bind.sh {parent.cp2k_executable}'
+        self.executable = f'{self.wrapper} ./pika-bind.sh {parent.cp2k_executable}'
 
 
 # }}}
