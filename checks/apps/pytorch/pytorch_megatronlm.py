@@ -498,7 +498,9 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
 class PyTorchMegatronLM_CE(PyTorchMegatronLM, ContainerEngineMixin):
     valid_systems = ['+nvgpu +ce']
     valid_prog_environs = ['builtin']
-    image = variable(str, value='/iopsstor/scratch/cscs/vjoost/teststripe/test02/ngc_25.01_nvrtc12.9.41-1.sqsh')
+    image = variable(
+        str, value='jfrog.svc.cscs.ch#reframe-oci/pytorch:25.01-py3_nvrtc-12.9'
+    )
 
     @run_after('init')
     def set_container_config(self):

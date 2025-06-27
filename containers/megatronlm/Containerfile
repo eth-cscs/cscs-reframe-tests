@@ -1,0 +1,25 @@
+ARG BASE_IMAGE=nvcr.io/nvidia/pytorch:25.01-py3
+
+FROM ${BASE_IMAGE}
+
+# APT packages
+RUN apt-get update && \
+  apt-get install -y bc gdb libsox-fmt-all -y && \
+  apt clean
+
+# Remove and install cuda packages
+RUN source /etc/os-release && \
+    ubuntu_short_ver=$ID$(echo $VERSION_ID | tr -d '.') && \
+    nv_arch=sbsa && \
+    wget https://developer.download.nvidia.com/compute/cuda/repos/$ubuntu_short_ver/$nv_arch/cuda-keyring_1.1-1_all.deb  && \
+    dpkg -i cuda-keyring_1.1-1_all.deb && \
+    apt update && \
+    apt remove -y cuda-nvrtc* && \
+    apt install -y cuda-nvrtc-dev-12-9 && \
+    rm cuda-keyring_1.1-1_all.deb && \
+    apt clean
+
+RUN echo '/usr/local/cuda-12.9/lib64/' > /etc/ld.so.conf.d/nvrtc_patch.conf && \
+    ldconfig
+
+RUN pip install flask-restful einops sentencepiece transformers tiktoken wandb
