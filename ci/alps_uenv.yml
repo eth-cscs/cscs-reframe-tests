@@ -25,7 +25,8 @@ setup and pull:
 #     - export PATH=$PWD:$UENV_PREFIX/libexec:$PATH
 #     - uenv-oras version
 #     - imgs=$(./ci/scripts/alps.sh uenv_image_find)
-  script: |
+  script: echo
+#   script: |
 #     echo "imgs=$imgs"
 #     unset UENVA
 #     uenv repo create
