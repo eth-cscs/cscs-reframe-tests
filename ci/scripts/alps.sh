@@ -111,7 +111,11 @@ jfrog_login() {
 # }}}
 # {{{ uenv_image_find 
 uenv_image_find() {
-    uenv --no-color image find | tail -n +2 | awk '{print $1}'
+    if [ -z $MY_UENV ] ;then
+        uenv --no-color image find | tail -n +2 | awk '{print $1}'
+    else
+        echo "$MY_UENV" | tr , "\n"
+    fi
 }
 # }}}
 # {{{ uenv_pull_meta_dir
