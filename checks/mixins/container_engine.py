@@ -24,13 +24,6 @@ class ContainerEngineMixin(rfm.RegressionMixin):
     #: :default: ``'/rfm_workdir/'``
     container_workdir = variable(str, type(None), value='/rfm_workdir')
 
-    #: Set the --environment option in launcher.
-    #:
-    #: Setting to `False` set the --environment option on the scheduler
-    #:
-    #: :default: ``True``
-    environment_in_launcher = variable(bool, value=True)
-
     #: A list of the container mounts following the <src dir>:<target dir>
     #: convention.
     #: The test stage directory is always mounted on `/rfm_workdir`.
