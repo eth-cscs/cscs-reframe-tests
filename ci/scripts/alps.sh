@@ -49,12 +49,13 @@ setup_jq() {
 # }}}
 # {{{ setup_uenv_and_oras 
 setup_uenv_and_oras() {
-  uenv_repo=https://github.com/eth-cscs/uenv
-  uenv_version=5.1.0
-  (wget --quiet $uenv_repo/archive/refs/tags/v$uenv_version.tar.gz && \
-  tar xf v$uenv_version.tar.gz && cd uenv-$uenv_version/ && \
-  echo N | ./install --prefix=$PWD --local && \
-  rm -f v$uenv_version.tar.gz uenv-$uenv_version)
+  # uenv is installed as a vservice now
+  exit 0
+  # uenv_version=8.1.0
+  # (wget --quiet https://github.com/eth-cscs/uenv2/archive/refs/tags/v$uenv_version.tar.gz && \
+  # tar xf v$uenv_version.tar.gz && cd uenv2-$uenv_version/ && \
+  # echo N | ./install --prefix=$PWD --local && \
+  # rm -f v$uenv_version.tar.gz uenv-$uenv_version)
 }
 # }}}
 # {{{ setup_oras_without_uenv 
@@ -110,7 +111,7 @@ jfrog_login() {
 # }}}
 # {{{ uenv_image_find 
 uenv_image_find() {
-    uenv --no-color image find | grep -v "uenv/version:tag" | awk '{print $1}'
+    uenv --no-color image find | tail -n +2 | awk '{print $1}'
 }
 # }}}
 # {{{ uenv_pull_meta_dir
@@ -139,43 +140,37 @@ oras_pull_meta_dir() {
 meta_has_reframe_yaml() {
     img=$1
     echo "# --- Checking img=$img for meta/extra/reframe.yaml"
-    meta_path=`uenv image inspect --format {meta} $img`
+    meta_path=`uenv image inspect --format={meta} $img`
     echo "meta_path=$meta_path"
     rfm_yaml="${meta_path}/extra/reframe.yaml" 
     test -f $rfm_yaml ; rc=$?
     
     # --- VASP
-    is_vasp=`echo $img |cut -d/ -f1`
-    if [ "$is_vasp" == "vasp" ] ;then
-        echo "# ---- no: vasp is a special case: "todi/gh200/vasp/v6.4.2/manifests/v1": response status code 403: Forbidden"
-    else
+#vasp     is_vasp=`echo $img |cut -d/ -f1`
+#vasp     if [ "$is_vasp" == "vasp" ] ;then
+#vasp         echo "# ---- no: vasp is a special case: "todi/gh200/vasp/v6.4.2/manifests/v1": response status code 403: Forbidden"
+#vasp     else
 
-    if [ $rc -eq 0 ] ;then
-        rctools=$(grep -q user-tools $rfm_yaml ; echo $?)
-        echo "rc=$rc rctools=$rctools"
-        if [ $rctools -ne 0 ] ;then
-            echo "# ---- reframe.yaml has been found --> pulling $img"
-            uenv image pull $img
-            echo
-            # meta/extra/reframe.yaml
-            # echo "# ---- reframe.yaml has been found --> adding it as store.yaml"
-            # imgpath=`uenv image inspect $img --format {path}`
-            # cp $rfm_yaml $imgpath/store.yaml
+        # continue if the uenv has an extra/reframe.yaml file    
+        if [ $rc -eq 0 ] ;then
+            rctools=$(grep -q user-tools $rfm_yaml ; echo $?)
+            echo "rc=$rc rctools=$rctools"
+            if [ $rctools -ne 0 ] ;then
+                echo "# ---- reframe.yaml has been found --> pulling $img"
+                uenv image pull $img
+                echo
+                # meta/extra/reframe.yaml
+                # echo "# ---- reframe.yaml has been found --> adding it as store.yaml"
+                # imgpath=`uenv image inspect $img --format {path}`
+                # cp $rfm_yaml $imgpath/store.yaml
 
-            # TODO: https://github.com/eth-cscs/alps-uenv/issues/127 <-------------
-            if [ "$img" == "prgenv-gnu/24.7:v1" ] ;then
-                sed -i 's-default/activate.sh-develop/activate.sh-' \
-                    $imgpath/store.yaml
+                echo "# ---- OK $rfm_yaml found in $img :-)"
+                ls $rfm_yaml
             fi
-            # TODO: https://github.com/eth-cscs/alps-uenv/issues/127 <-------------
-
-            echo "# ---- OK $rfm_yaml found in $img :-)"
-            ls $rfm_yaml
+        else
+            echo "# ---- no $rfm_yaml file found, skipping $img :-("
         fi
-    else
-        echo "# ---- no $rfm_yaml file found, skipping $img :-("
-    fi
-    fi
+#vasp     fi
 }
 # }}}
 # {{{ remove_last_comma_from_variable
@@ -335,7 +330,7 @@ launch_reframe_1arg() {
     export RFM_USE_LOGIN_SHELL=1
     # export RFM_AUTODETECT_XTHOSTNAME=1
     # reframe -V
-    echo "UENV=$UENV"
+    echo "# UENV=$UENV"
     echo "# img=$img"
     reframe -C ./config/cscs.py \
         --report-junit=report.xml \
