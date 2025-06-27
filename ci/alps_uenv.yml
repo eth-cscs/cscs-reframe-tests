@@ -15,7 +15,7 @@ setup and pull:
     SLURM_TIMELIMIT: '00:10:00'
     # Valid MODE=('container-runner', 'baremetal', 'f7t-controller')
   before_script:
-    - env
+    - echo MY_UENV=${MY_UENV}
     - echo "FIRECREST_SYSTEM=$FIRECREST_SYSTEM / F7T_URL=$F7T_URL / CLUSTER_NAME=$CLUSTER_NAME"
     - pwd
 #     - uname -a
