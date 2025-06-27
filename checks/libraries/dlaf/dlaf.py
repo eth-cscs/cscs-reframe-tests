@@ -4,7 +4,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 import reframe as rfm
 import reframe.utility.sanity as sn
-
 from uenv import uarch
 
 dlaf_references = {
@@ -64,7 +63,7 @@ slurm_config = {
 
 class dlaf_base(rfm.RunOnlyRegressionTest):
     valid_systems = ['+uenv']
-    valid_prog_environs = ['+dlaf']
+    valid_prog_environs = ['+dlaf -cp2k -cp2k-dev']
     maintainers = ["SSA"]
 
     def _sq_factor(self, n):
