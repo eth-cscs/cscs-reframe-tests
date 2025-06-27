@@ -1,0 +1,27 @@
+include:
+  - remote: 'https://gitlab.com/cscs-ci/recipes/-/raw/master/templates/v2/.ci-ext.yml'
+
+stages:
+  - pull
+
+setup and pull:
+  stage: pull
+  extends: .f7t-baremetal-runner
+  timeout: 2 hours
+  variables:
+    SLURM_TIMELIMIT: '00:05:00'
+  before_script:
+    - echo "FIRECREST_SYSTEM=$FIRECREST_SYSTEM / F7T_URL=$F7T_URL / CLUSTER_NAME=$CLUSTER_NAME"
+    - groups
+    - id
+    - pwd
+    - uenv --version
+    - imgs="vasp/v6.5.0:v1"
+  script: |
+    echo "imgs=$imgs"
+    uenv image pull --token=/capstor/scratch/cscs/bcumming/tokens/vasp6 --username=vasp6 vasp/v6.4.3:v2
+    echo "# ---- done"
+    echo x > rfm_uenv.env
+  artifacts:
+    reports:
+      dotenv: rfm_uenv.env
