@@ -50,7 +50,7 @@ setup_jq() {
 # {{{ setup_uenv_and_oras 
 setup_uenv_and_oras() {
   # uenv is installed as a vservice now
-  exit 0
+  echo
   # uenv_version=8.1.0
   # (wget --quiet https://github.com/eth-cscs/uenv2/archive/refs/tags/v$uenv_version.tar.gz && \
   # tar xf v$uenv_version.tar.gz && cd uenv2-$uenv_version/ && \
@@ -123,6 +123,7 @@ uenv_pull_meta_dir() {
     img=$1
     echo "--- Pulling metadata from $img"
     uenv image pull --only-meta $img &> uenv_pull_meta_dir.log
+    # TODO: https://github.com/eth-cscs/uenv2/issues/81
 }    
 # }}}    
 # {{{ oras_pull_meta_dir
