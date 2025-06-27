@@ -1,24 +1,13 @@
-ARG BASE=docker.io/nvidia/cuda:12.8.1-devel-ubuntu22.04
+ARG BASE=docker.io/nvidia/cuda:12.9.1-devel-ubuntu22.04
 
 FROM $BASE
 
-ARG MPICH_VER=4.3.0
 ARG GDRCOPY_VER=2.5
 
 RUN apt-get update && \
-    apt-get install -y autoconf libtool git wget libhwloc-dev && \
+    apt-get install -y autoconf libtool git wget libopenmpi-dev && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
-
-RUN wget -q http://www.mpich.org/static/downloads/${MPICH_VER}/mpich-${MPICH_VER}.tar.gz \
-    && tar xf mpich-${MPICH_VER}.tar.gz \
-    && cd mpich-${MPICH_VER} \
-    && ./configure --disable-fortran --with-device=ch3:sock -prefix=/usr \
-    && make -j 3 \
-    && make install \
-    && cd .. \
-    && rm -rf mpich-${MPICH_VER} \
-    && rm mpich-${MPICH_VER}.tar.gz
 
 RUN git clone -b v${GDRCOPY_VER} https://github.com/NVIDIA/gdrcopy.git && \
     cd gdrcopy && \
@@ -34,13 +23,21 @@ RUN git clone https://github.com/NVIDIA/nccl-tests.git && \
     cd ../ && \
     rm -rf nccl-tests
 
-FROM docker.io/nvidia/cuda:12.8.1-runtime-ubuntu22.04
+FROM docker.io/nvidia/cuda:12.9.1-runtime-ubuntu22.04
 
 RUN apt update && \
-    apt install -y libhwloc15 && \
+    apt install -y libhwloc15 libopenmpi3 && \
     apt clean && \
     rm -rf /var/lib/apt/lists/*
 
 COPY --from=0 /usr/local/bin/* /usr/local/bin
 COPY --from=0 /usr/local/lib/libgdr* /usr/local/lib
-COPY --from=0 /usr/lib/libmpi* /usr/lib
+
+# Copy files to avoid the following warning:
+# --------------------------------------------------------------------------
+# Sorry!  You were supposed to get help about:
+#     ini file:file not found
+# But I couldn't open the help file:
+#    /usr/share/openmpi/help-mpi-btl-openib.txt: No such file or directory.  Sorry!
+# --------------------------------------------------------------------------
+COPY --from=0 /usr/share/openmpi/ /usr/share/openmpi/

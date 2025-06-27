@@ -48,10 +48,6 @@ class XCCLTestBase(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
             f'-b {self.min_bytes}', f'-e {self.max_bytes}', f'-g 1'
         ]
 
-    @run_before('run')
-    def set_pmi2(self):
-        self.job.launcher.options += ['--mpi=pmi2']
-
     @sanity_function
     def assert_sanity(self):
         return sn.all([
@@ -77,12 +73,18 @@ class XCCLTestBase(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
 @rfm.simple_test
 class NCCLTestsCE(XCCLTestBase):
     valid_systems = ['+ce +nvgpu']
-
-    # FIXME update the image tag once the port issue is fixed
-    image_tag = parameter(['cuda12.3'])
+    image_tag = parameter(['cuda12.9.1'])
 
     # Disable Nvidia Driver requirement
     env_vars['NVIDIA_DISABLE_REQUIRE'] = 1
+
+    # Disable MCA components to avoid warnings
+    env_vars.update(
+        {
+            'PMIX_MCA_psec': '^munge',
+            'PMIX_MCA_gds': '^shmem2'
+        }
+    )
 
     reference_per_test = {
         'sendrecv': {
@@ -105,6 +107,10 @@ class NCCLTestsCE(XCCLTestBase):
         self.container_env_table['annotations.com.hooks'].update({
             'aws_ofi_nccl.variant': cuda_major
         })
+
+    @run_before('run')
+    def set_pmix(self):
+        self.job.launcher.options += ['--mpi=pmix']
 
 
 @rfm.simple_test
@@ -136,6 +142,10 @@ class RCCLTestCE(XCCLTestBase):
         self.container_env_table['annotations.com.hooks'].update({
             'aws_ofi_nccl.variant': rocm_major
         })
+
+    @run_before('run')
+    def set_pmi2(self):
+        self.job.launcher.options += ['--mpi=pmi2']
 
     @run_after('setup')
     def set_nccl_min_nchannels(self):
