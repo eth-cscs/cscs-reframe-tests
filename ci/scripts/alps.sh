@@ -122,7 +122,11 @@ uenv_image_find() {
 uenv_pull_meta_dir() {
     img=$1
     echo "--- Pulling metadata from $img"
-    uenv image pull --only-meta $img &> uenv_pull_meta_dir.log
+    is_vasp=`echo $img |cut -d/ -f1`
+    if [ "$is_vasp" == "vasp" ] ;then
+        vasp_flag="--token /users/reframe/vasp6 --username=vasp6"
+    fi
+    uenv image pull --only-meta $vasp $img &> uenv_pull_meta_dir.log
     # TODO: https://github.com/eth-cscs/uenv2/issues/81
 }    
 # }}}    
@@ -150,31 +154,25 @@ meta_has_reframe_yaml() {
     rfm_yaml="${meta_path}/extra/reframe.yaml" 
     test -f $rfm_yaml ; rc=$?
     
-    # --- VASP
-#vasp     is_vasp=`echo $img |cut -d/ -f1`
-#vasp     if [ "$is_vasp" == "vasp" ] ;then
-#vasp         echo "# ---- no: vasp is a special case: "todi/gh200/vasp/v6.4.2/manifests/v1": response status code 403: Forbidden"
-#vasp     else
+    # continue if the uenv has an extra/reframe.yaml file    
+    if [ $rc -eq 0 ] ;then
+        rctools=$(grep -q user-tools $rfm_yaml ; echo $?)
+        echo "rc=$rc rctools=$rctools"
+        if [ $rctools -ne 0 ] ;then
+            echo "# ---- reframe.yaml has been found --> pulling $img"
+            uenv image pull $img
+            echo
+            # meta/extra/reframe.yaml
+            # echo "# ---- reframe.yaml has been found --> adding it as store.yaml"
+            # imgpath=`uenv image inspect $img --format {path}`
+            # cp $rfm_yaml $imgpath/store.yaml
 
-        # continue if the uenv has an extra/reframe.yaml file    
-        if [ $rc -eq 0 ] ;then
-            rctools=$(grep -q user-tools $rfm_yaml ; echo $?)
-            echo "rc=$rc rctools=$rctools"
-            if [ $rctools -ne 0 ] ;then
-                echo "# ---- reframe.yaml has been found --> pulling $img"
-                uenv image pull $img
-                echo
-                # meta/extra/reframe.yaml
-                # echo "# ---- reframe.yaml has been found --> adding it as store.yaml"
-                # imgpath=`uenv image inspect $img --format {path}`
-                # cp $rfm_yaml $imgpath/store.yaml
-
-                echo "# ---- OK $rfm_yaml found in $img :-)"
-                ls $rfm_yaml
-            fi
-        else
-            echo "# ---- no $rfm_yaml file found, skipping $img :-("
+            echo "# ---- OK $rfm_yaml found in $img :-)"
+            ls $rfm_yaml
         fi
+    else
+        echo "# ---- no $rfm_yaml file found, skipping $img :-("
+    fi
 #vasp     fi
 }
 # }}}
