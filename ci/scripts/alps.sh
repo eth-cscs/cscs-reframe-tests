@@ -126,7 +126,7 @@ uenv_pull_meta_dir() {
     if [ "$is_vasp" == "vasp" ] ;then
         vasp_flag="--token /users/reframe/vasp6 --username=vasp6"
     fi
-    uenv image pull --only-meta $vasp $img &> uenv_pull_meta_dir.log
+    uenv image pull --only-meta $vasp_flag $img &> uenv_pull_meta_dir.log
     # TODO: https://github.com/eth-cscs/uenv2/issues/81
 }    
 # }}}    
@@ -160,7 +160,12 @@ meta_has_reframe_yaml() {
         echo "rc=$rc rctools=$rctools"
         if [ $rctools -ne 0 ] ;then
             echo "# ---- reframe.yaml has been found --> pulling $img"
-            uenv image pull $img
+
+            is_vasp=`echo $img |cut -d/ -f1`
+            if [ "$is_vasp" == "vasp" ] ;then
+                vasp_flag="--token /users/reframe/vasp6 --username=vasp6"
+            fi
+             uenv image pull $vasp_flag $img
             echo
             # meta/extra/reframe.yaml
             # echo "# ---- reframe.yaml has been found --> adding it as store.yaml"
