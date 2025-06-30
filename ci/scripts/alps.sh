@@ -173,7 +173,6 @@ meta_has_reframe_yaml() {
     else
         echo "# ---- no $rfm_yaml file found, skipping $img :-("
     fi
-#vasp     fi
 }
 # }}}
 # {{{ remove_last_comma_from_variable
