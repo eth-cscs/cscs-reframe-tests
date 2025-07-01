@@ -7,9 +7,9 @@
 #         -p normal --host=eiger --version=5.13.2:v2
 ##############################################################################
 from paraview.simple import *
-from paraview.modules.vtkRemotingViews import vtkPVOpenGLInformation
+# from paraview.modules.vtkRemotingViews import vtkPVOpenGLInformation
 
-import os
+# import os
 import random
 import subprocess
 import argparse
