@@ -51,18 +51,18 @@ sphere.ThetaResolution = 1024
 sphere.PhiResolution = 1024
 
 if Version <= (5, 11, 2):
-  pidscal = ProcessIdScalars(sphere)
+    pidscal = ProcessIdScalars(sphere)
 else:
-  pidscal = GenerateProcessIds(Input=sphere)
+    pidscal = GenerateProcessIds(Input=sphere)
 
 rep = Show(pidscal, view)
 
 if Version <= (5, 11, 2):
-  ColorBy(rep, 'ProcessId')
-  processIdLUT = GetColorTransferFunction('ProcessId')
+    ColorBy(rep, 'ProcessId')
+    processIdLUT = GetColorTransferFunction('ProcessId')
 else:
-  ColorBy(rep, ('POINTS', 'PointProcessIds'))
-  processIdLUT = GetColorTransferFunction('PointProcessIds')
+    ColorBy(rep, ('POINTS', 'PointProcessIds'))
+    processIdLUT = GetColorTransferFunction('PointProcessIds')
 
 processIdLUT.AnnotationsInitialized = 1
 processIdLUT.InterpretValuesAsCategories = 1
@@ -106,6 +106,7 @@ view.ViewSize = [1024, 1024]
 
 # change the pathname to a place where you have write access
 SourceVersion = servermanager.vtkSMProxyManager.GetParaViewSourceVersion()
-filename = basename + "/coloredSphere_v" + SourceVersion.split()[-1] + "." + Vendor + ".png"
+filename = \
+    f"{basename}/coloredSphere_v{SourceVersion.split()[-1]}.{Vendor}.png"
 SaveScreenshot(filename=filename, view=view)
 print("writing ", filename)
