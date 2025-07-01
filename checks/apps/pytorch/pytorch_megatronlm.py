@@ -23,7 +23,9 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
     time_limit = '30m'
 
     # The Megatron repository and release/commit to use.
-    megatron_repo = variable(str, value='https://github.com/swiss-ai/Megatron-LM.git')
+    megatron_repo = variable(
+        str, value='https://github.com/swiss-ai/Megatron-LM.git'
+    )
     megatron_release = variable(str, value='de14c22')
 
     # The LLM model to run
@@ -38,7 +40,7 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
     # The dataset_cache directory
     dataset_cache_dir = variable(str, type(None), value=None)
 
-    # The dataset_cache directory
+    # Enable NCCL Debug logging
     nccl_debug = variable(bool, value=False)
 
     # The number of checkpoint steps
@@ -241,10 +243,12 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
         )
         self.reference = {
             '*': {
-                'throughput_per_gpu': (model_config['ref_throughput_per_gpu'],
-                                       -0.1, None, 'TFLOP/s/GPU'),
-                'tokens_per_sec_per_gpu': (model_config['ref_tokens_per_sec_per_gpu'],
-                                           -0.1, None, 'tokens/sec/gpu'),
+                'throughput_per_gpu':
+                    (model_config['ref_throughput_per_gpu'], -0.1, None,
+                     'TFLOP/s/GPU'),
+                'tokens_per_sec_per_gpu':
+                    (model_config['ref_tokens_per_sec_per_gpu'], -0.1, None,
+                     'tokens/sec/gpu'),
             }
         }
 
@@ -273,7 +277,8 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
             'LOGGING_DIR': '$EXP_DIR/logging',
             'TENSORBOARD_DIR': '$LOGGING_DIR/tensorboard',
             'BACKUP_CODEBASE_DIR': '$EXP_DIR/Megatron-LM',
-            'DATASET_CACHE_DIR': self.dataset_cache_dir or '$PWD/datasets/cache',
+            'DATASET_CACHE_DIR': (self.dataset_cache_dir or
+                                  '$PWD/datasets/cache'),
             'HF_HOME': f'{self.hf_home}',
             'OMP_NUM_THREADS': self.num_cpus_per_task // self.num_gpus_per_node
         }
@@ -347,7 +352,6 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
         else:
             self.env_vars['WANDB_MODE'] = 'disabled'
 
-
         training_args = [
             f'--micro-batch-size {model_config["micro_batch_size"]}',
             f'--global-batch-size {model_config["global_batch_size"]}',
@@ -369,8 +373,8 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
         ]
 
         initialization_args = [
-        '--seed 28',
-        '--init-method-std 0.008944'
+            '--seed 28',
+            '--init-method-std 0.008944'
         ]
 
         checkpoint_args = [
@@ -383,12 +387,12 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
         ]
 
         mixed_precision_args = [
-        '--bf16'
+            '--bf16'
         ]
 
         distributed_args = [
             f'--tensor-model-parallel-size '
-            f'{model_config["tensor_model_parallel_size"] or self.num_gpus_per_node}',
+            f'{model_config["tensor_model_parallel_size"] or self.num_gpus_per_node}',  # noqa E262
             f'--pipeline-model-parallel-size '
             f'{model_config["pipeline_model_parallel_size"]}',
             f'--use-distributed-optimizer',
@@ -418,18 +422,17 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
             if model_config[ar]:
                 distributed_args += [f'--{ar.replace("_", "-")}']
 
-
         tokenizer_args = [
-        '--tokenizer-type HuggingFaceTokenizer',
-        '--tokenizer-model alehc/swissai-tokenizer'
+            '--tokenizer-type HuggingFaceTokenizer',
+            '--tokenizer-model alehc/swissai-tokenizer'
         ]
 
         data_args = [
-        f'--split 100,0,0',
-        f'--seq-length {model_config["sequence_length"]}',
-        f'--reset-position-ids',
-        f'--reset-attention-mask',
-        f'--eod-mask-loss',
+            f'--split 100,0,0',
+            f'--seq-length {model_config["sequence_length"]}',
+            f'--reset-position-ids',
+            f'--reset-attention-mask',
+            f'--eod-mask-loss',
         ]
 
         data_args += model_config.get('extra_data_args', [])
@@ -461,9 +464,10 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
             f'python $MEGATRON_LM_DIR/pretrain_gpt.py {" ".join(all_args)}'
         )
 
-        cmd_prefix = '' #'numactl --membind=0-3'
+        cmd_prefix = ''
         self.executable_opts = [
             rf"-c",
+
             # Open with single quote
             rf"'RANK=$SLURM_PROCID LOCAL_RANK=$SLURM_LOCALID "
             rf"PYTHONPATH=$MEGATRON_LM_DIR:$PYTHONPATH "
@@ -482,8 +486,7 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
     def tokens_per_sec_per_gpu(self):
         return sn.avg(
             sn.extractall(r'tokens/sec/gpu:\s*(?P<tokens>\S+)',
-                          self.stdout, tag='tokens', conv=float
-            )
+                          self.stdout, tag='tokens', conv=float)
         )
 
     @performance_function('TFLOP/s/GPU')
@@ -527,7 +530,6 @@ class PyTorchMegatronLM_CE(PyTorchMegatronLM, ContainerEngineMixin):
             self.container_mounts += [
                 f'{self.dataset_cache_dir}:{self.dataset_cache_dir}'
             ]
-
 
         if self.checkpoint_dir:
             self.container_mounts += [
