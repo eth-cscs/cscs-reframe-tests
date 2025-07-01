@@ -106,7 +106,7 @@ view.ViewSize = [1024, 1024]
 
 # change the pathname to a place where you have write access
 SourceVersion = servermanager.vtkSMProxyManager.GetParaViewSourceVersion()
-filename = \
-    f"{basename}/coloredSphere_v{SourceVersion.split()[-1]}.{Vendor}.png"
+filename = f"coloredSphere_v{SourceVersion.split()[-1]}.{Vendor}.png"
+# was: f"{basename}/coloredSphere_v{SourceVersion.split()[-1]}.{Vendor}.png"
 SaveScreenshot(filename=filename, view=view)
 print("writing ", filename)

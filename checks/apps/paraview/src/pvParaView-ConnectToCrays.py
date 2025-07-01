@@ -24,8 +24,7 @@ parser.add_argument("--version", type=str, default='5.13.2:v2',
                     help="ParaView version: 5.13.2:v2, 6.0???")
 
 parser.add_argument("--script", type=str,
-                    default='rc-submit.alps-pvserver.sh',
-                    # default='/users/jfavre/rc-submit.alps-pvserver.sh',
+                    default='/users/jfavre/rc-submit.alps-pvserver.sh',
                     help="remote shell script to create SLURM job")
 
 parser.add_argument("--nodes", type=int, default=1, help="SLURM userid")
