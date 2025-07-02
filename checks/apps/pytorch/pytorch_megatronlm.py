@@ -20,8 +20,6 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
 
     default_num_nodes = variable(int, type(None), value=None)
 
-    time_limit = '30m'
-
     # The Megatron repository and release/commit to use.
     megatron_repo = variable(
         str, value='https://github.com/swiss-ai/Megatron-LM.git'
@@ -295,6 +293,7 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
             f'cd -',
             f'echo "START TIME: $(date)"',
             f'ulimit -c 0',
+            f'mkdir -p $HF_HOME',
             f'mkdir -p $CKPT_DIR',
             f'mkdir -p $PROJECT_DIR',
             f'mkdir -p $TRIGGER_DIR',
@@ -569,3 +568,4 @@ class PyTorchMegatronLM_UENV(PyTorchMegatronLM):
 class PyTorchMegatronLM_CE_apertus70b(PyTorchMegatronLM_CE):
     tags = {'maintenance', 'ml'}
     model = parameter(['apertus3-70b'])
+    time_limit = '30m'
