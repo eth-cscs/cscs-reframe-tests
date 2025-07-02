@@ -20,6 +20,8 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
 
     default_num_nodes = variable(int, type(None), value=None)
 
+    time_limit = '20m'
+
     # The Megatron repository and release/commit to use.
     megatron_repo = variable(
         str, value='https://github.com/swiss-ai/Megatron-LM.git'
