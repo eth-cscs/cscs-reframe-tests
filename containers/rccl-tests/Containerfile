@@ -1,0 +1,35 @@
+ARG BASE=rocm/dev-ubuntu-22.04:6.3.4-complete
+
+FROM $BASE
+
+RUN apt-get update && \
+    apt-get install -y autotools-dev git wget libopenmpi-dev && \
+    rm -rf /var/lib/apt/lists/* && \
+    rm -rf /var/cache/apt/archives/*
+
+RUN git clone https://github.com/ROCM/rccl-tests.git && \
+    cd rccl-tests && \
+    which mpicxx && \
+    mpicxx --version && \
+    make MPI=1 -j $(nproc) && \
+    cp $(find build/ -type f -executable) /usr/local/bin && \
+    cd ../ && \
+    rm -rf rccl-tests
+
+FROM rocm/dev-ubuntu-22.04:6.3.4
+
+RUN apt-get update && \
+    apt-get install -y libhwloc15 rccl libopenmpi3 && \
+    rm -rf /var/lib/apt/lists/* && \
+    rm -rf /var/cache/apt/archives/*
+
+COPY --from=0 /usr/local/bin/* /usr/local/bin
+
+# Copy files to avoid the following warning:
+# --------------------------------------------------------------------------
+# Sorry!  You were supposed to get help about:
+#     ini file:file not found
+# But I couldn't open the help file:
+#    /usr/share/openmpi/help-mpi-btl-openib.txt: No such file or directory.  Sorry!
+# --------------------------------------------------------------------------
+COPY --from=0 /usr/share/openmpi/ /usr/share/openmpi/
