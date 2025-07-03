@@ -87,6 +87,9 @@ class ParaView_catalystClipping(rfm.RegressionTest):
             f'wget -q https://github.com/jfavre/DummySPH/archive/refs/tags/'
             f'{tgz} && tar xf {tgz} && rm -f {tgz}',
         ]
+        # on eiger, mpicxx/mpicc are broken (g++: No such file)
+        self.build_system.cc = 'gcc'
+        self.build_system.cxx = 'g++'
         self.build_system.config_opts = [
             f'-S DummySPH-{self.git_tag}/src',
             '-DINSITU=Catalyst'
