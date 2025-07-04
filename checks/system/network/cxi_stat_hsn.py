@@ -3,13 +3,11 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-import collections
 import pathlib
 import sys
 
 import reframe as rfm
 import reframe.utility.sanity as sn
-import uenv
 
 sys.path.append(str(pathlib.Path(__file__).parent.parent.parent /
                     'mixins'))
