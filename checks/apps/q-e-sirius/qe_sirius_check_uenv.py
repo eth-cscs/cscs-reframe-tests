@@ -112,7 +112,7 @@ class QeCheckAuSurfUENV(QeCheckUENV):
 
 @rfm.simple_test
 class QeCheckAuSurfUENVExec(QeCheckAuSurfUENV):
-    valid_prog_environs = ["+qe"]
+    valid_prog_environs = ["+q-e-sirius"]
     tags = {"uenv", "production"}
 
     @run_after("setup")
@@ -123,24 +123,3 @@ class QeCheckAuSurfUENVExec(QeCheckAuSurfUENV):
             self.executable = f"./mps-wrapper.sh pw.x"
 
 
-@rfm.simple_test
-class QeCheckAuSurfCustomExecUENV(QeCheckAuSurfUENV):
-    """
-    Same test as above, but using executables built by QeBuildTestUENV.
-    """
-
-    valid_prog_environs = ["+qe-dev"]
-    tags = {"uenv"}
-
-    @run_after("init")
-    def setup_dependency(self):
-        self.depends_on("QeBuildTestUENV", udeps.fully)
-
-    @run_after("setup")
-    def setup_executable(self):
-        parent = self.getdep("QeBuildTestUENV")
-
-        self.executable = f"{parent.pwx_executable}"
-        uarch = uenv.uarch(self.current_partition)
-        if uarch == "gh200":
-            self.executable = f"./mps-wrapper.sh {parent.pwx_executable}"
