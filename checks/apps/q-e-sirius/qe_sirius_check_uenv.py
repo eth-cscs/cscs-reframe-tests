@@ -59,15 +59,13 @@ class QeCheckUENV(rfm.RunOnlyRegressionTest):
         self.ntasks_per_core = 1
         self.time_limit = config["walltime"]
 
-        # srun options
-        self.job.launcher.options = ["--cpu-bind=socket"]
-
         # environment variables
         self.env_vars["OMP_NUM_THREADS"] = str(1)
         self.env_vars["SLURM_HINT"] = "nomultithread"
         if self.uarch == "gh200":
             self.env_vars["MPICH_GPU_SUPPORT_ENABLED"] = "1"
             self.env_vars["OMP_NUM_THREADS"] = str(20)
+            self.job.launcher.options = ["--cpu-bind=socket"]
 
         # set reference
         if self.uarch is not None and self.uarch in qe_references[self.test_name]:
