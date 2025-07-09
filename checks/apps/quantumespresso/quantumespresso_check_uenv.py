@@ -152,6 +152,7 @@ class QeCheckUENV(rfm.RunOnlyRegressionTest):
         if self.uarch == "gh200":
             self.env_vars["MPICH_GPU_SUPPORT_ENABLED"] = "1"
             self.env_vars["OMP_NUM_THREADS"] = str(20)
+            self.env_vars["SLURM_GPUS_PER_TASK"] = 1
 
         # set reference
         if self.uarch is not None and \
@@ -204,7 +205,7 @@ class QeCheckAuSurfUENVExec(QeCheckAuSurfUENV):
         self.executable = f"pw.x"
         uarch = uenv.uarch(self.current_partition)
         if uarch == 'gh200':
-            self.executable = f"./mps-wrapper.sh pw.x"
+            self.executable = f"pw.x"
 
 
 @rfm.simple_test
@@ -227,4 +228,4 @@ class QeCheckAuSurfCustomExecUENV(QeCheckAuSurfUENV):
         self.executable = f"{parent.pwx_executable}"
         uarch = uenv.uarch(self.current_partition)
         if uarch == 'gh200':
-            self.executable = f"./mps-wrapper.sh {parent.pwx_executable}"
+            self.executable = f"{parent.pwx_executable}"
