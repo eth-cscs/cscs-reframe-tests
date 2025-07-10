@@ -475,3 +475,7 @@ class SlurmTransparentHugepagesCheck(rfm.RunOnlyRegressionTest):
             opt = 'always'
 
         return sn.assert_found(rf'\[{opt}\]', self.stdout)
+
+
+@rfm.simple_test
+class SlurmParanoidCheck(rfm.RunOnlyRegressionTest):
