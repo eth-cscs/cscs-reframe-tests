@@ -101,7 +101,7 @@ class lammps_test(rfm.RunOnlyRegressionTest):
         run-kokkos: kokkos
     """
     executable = 'lmp'
-    valid_prog_environs = ['+lammps-gpu-prod', '+lammps-kokkos-prod']
+    valid_prog_environs = ['+lammps-gpu-prod']
     valid_systems = ['+uenv']
     maintainers = ['SSA']
     test_name = variable(str, value='lj')
