@@ -10,8 +10,8 @@ from uenv import uarch
 
 lammps_references = {
     'lj': {
-        'gh200': {'time_run': (14, None, 0.05, 's')},
-        'zen2': {'time_run': (45, None, 0.05, 's')}
+        'gh200': {'time_run': (45, None, 0.05, 's')},
+        'zen2': {'time_run': (87, None, 0.05, 's')}
     },
 }
 
