@@ -342,3 +342,8 @@ class Cp2kCheckRPA_UENVExec(Cp2kCheck_UENV):
         dest = os.path.join(self.stagedir, parent.wfn_file)
         shutil.copyfile(src, dest)
 # }}}
+
+# TODO: 
+#   https://github.com/reframe-hpc/reframe/pull/3481/files
+#   examples/tutorial/stream/stream_runonly_xfail_cond.py
+
