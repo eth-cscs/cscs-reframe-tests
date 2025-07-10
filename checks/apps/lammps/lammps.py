@@ -11,7 +11,7 @@ from uenv import uarch
 lammps_references = {
     'lj': {
         'gh200': {'time_run': (14, None, 0.05, 's')},
-        'zen2': {'time_run': (87, None, 0.05, 's')}
+        'zen2': {'time_run': (45, None, 0.05, 's')}
     },
 }
 
@@ -21,7 +21,6 @@ slurm_config = {
             "nodes": 2,
             "ntasks-per-node": 4,
             "gpus-per-node": 4,
-            "gpus-per-task": 1,
             "walltime": "10m",
             "gpu": True,
         },
@@ -44,7 +43,6 @@ class lammps_download(rfm.RunOnlyRegressionTest):
         '--quiet',
         'https://jfrog.svc.cscs.ch/artifactory/cscs-reframe-tests/lammps/'
         'LAMMPS_20230802.3_Source.tar.gz',
-        # 'https://download.lammps.org/tars/lammps-2Aug2023.tar.gz',
     ]
     local = True
 
@@ -124,10 +122,12 @@ class lammps_test(rfm.RunOnlyRegressionTest):
         if self.uarch == 'gh200':
             self.env_vars['MPICH_GPU_SUPPORT_ENABLED'] = '1'
             self.job.launcher.options += [
-                f'--gpus-per-task={config["gpus-per-task"]}',
                 f'--gpus-per-node={config["gpus-per-node"]}'
             ]
-            # or update extra_resources in the system config file
+            self.executable_opts = [
+                f'-sf gpu -pk {config["gpus-per-node"]} -i {self.test_name}.in']
+        else:
+            self.executable_opts = [f'-i {self.test_name}.in']
 
     @run_before('run')
     def prepare_reference(self):
