@@ -214,10 +214,11 @@ class lammps_kokkos_test(rfm.RunOnlyRegressionTest):
             self.executable_opts = [
                 f'-k on g 1 -sf kk -pk kokkos gpu/aware on -i {self.test_name}.in']
         else:
-            self.env_vars['OMP_NUM_THREADS'] = config['cpus-per-task']
+            self.env_vars['OMP_NUM_THREADS'] = config["cpus-per-task"]
             self.env_vars['OMP_PROC_BIND'] = 'spread'
             self.env_vars['OMP_PLACES'] = 'threads'
-            self.executable_opts = [f'-k on t {config['cpus-per-task']} -sf kk -i {self.test_name}.in']
+            self.executable_opts = [
+                f'-k on t {config["cpus-per-task"]} -sf kk -i {self.test_name}.in']
 
     @run_before('run')
     def prepare_reference(self):
