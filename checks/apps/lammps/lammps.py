@@ -125,7 +125,7 @@ class lammps_test(rfm.RunOnlyRegressionTest):
                 f'--gpus-per-node={config["gpus-per-node"]}'
             ]
             self.executable_opts = [
-                f'-sf gpu -pk {config["gpus-per-node"]} -i {self.test_name}.in']
+                f'-sf gpu -pk gpu {config["gpus-per-node"]} -i {self.test_name}.in']
         else:
             self.executable_opts = [f'-i {self.test_name}.in']
 
