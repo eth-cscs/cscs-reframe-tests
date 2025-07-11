@@ -81,7 +81,8 @@ class MLperfStorageCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
                        'v1.0-mpi_4.2.1')
     valid_systems = ['+nvgpu +ce']
     valid_prog_environs = ['builtin']
-    tags = {'production', 'ce', 'maintenance'}
+    # TODO: Revisit the tags in case this test becomes more reliable
+    tags = {'ce'}
     mlperf_data = fixture(mlperf_storage_datagen_ce, scope='environment')
 
     # Add here to supress the warning, set by the fixture
@@ -144,7 +145,8 @@ class MLperfStorageCECleanup(rfm.RunOnlyRegressionTest):
     num_tasks = 1
     executable = 'rm'
     mlperf = fixture(MLperfStorageCE, scope='environment')
-    tags = {'production', 'ce', 'maintenance'}
+    # TODO: Revisit the tags in case this test becomes more reliable
+    tags = {'ce'}
 
     @run_after('setup')
     def setup_exec_opts(self):
