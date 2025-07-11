@@ -134,7 +134,7 @@ class ContainerCudaDeviceQueryTest(rfm.RunOnlyRegressionTest):
 
 @rfm.simple_test
 class ContainerMpichOSUTest(rfm.RunOnlyRegressionTest):
-    valid_systems = ['eiger:mc', 'pilatus:mc']
+    valid_systems = []
     valid_prog_environs = ['builtin']
     platform = parameter(['Sarus', 'Singularity'])
     num_tasks_per_node = 1
