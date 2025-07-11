@@ -12,11 +12,11 @@ gromacs_references = {
     'STMV': {
         'gh200': {
             'perf': (117, -0.02, None, 'ns/day'),
-            'bondenergy': (164780, -0.01, None, 'kJ/mol'),
+            'totalenergy': (-1.17527e+07, 0.01, None, 'kJ/mol'),
         },
         'zen2': {
             'perf': (3.6, -0.02, None, 'ns/day'),
-            'bondenergy': (173989, -0.01, None, 'kJ/mol'),
+            'totalenergy': (-1.43595e+07, -0.01, None, 'kJ/mol'),
         },
     },
  }
@@ -115,7 +115,7 @@ class gromacs_build_test(rfm.CompileOnlyRegressionTest):
 
 @rfm.simple_test
 class gromacs_run_test(rfm.RunOnlyRegressionTest):
-    executable = './mps-wrapper.sh -- gmx_mpi mdrun -s topol.tpr'
+    executable = './mps-wrapper.sh -- gmx_mpi mdrun -s stmv2.tpr'
     executable_opts = [
         '-dlb no', '-npme 1', '-pin off', '-v', '-noconfout', '-nstlist 300'
     ]
@@ -166,23 +166,23 @@ class gromacs_run_test(rfm.RunOnlyRegressionTest):
         # set input files
         if self.test_name == 'STMV':
             jfrog = 'https://jfrog.svc.cscs.ch/artifactory/cscs-reframe-tests/'
-            self.prerun_cmds = [f'wget {jfrog}/gromacs/STMV/topol.tpr --quiet']
+            self.prerun_cmds = [f'wget {jfrog}/gromacs/STMV/stmv2.tpr --quiet']
 
     @run_after('setup')
     def postproc_run(self):
         """
-        Extract Bond Energy from the binary .edr file and write it to a
+        Extract Total Energy from the binary .edr file and write it to a
         readable .xvg file and then write it to stdout
         """
         self.postrun_cmds = [
-            'echo -e "1\\n" |'
+            'echo -e "12\\n" |'
             'gmx_mpi energy -f ener.edr -o ener.xvg',
             'cat ener.xvg'
         ]
 
     @sanity_function
     def validate_job(self):
-        regex1 = r'^Bond\s+\S+\s+'
+        regex1 = r'^Total Energy\s+\S+\s+'
         regex2 = r'^Performance:\s+\S+\s+'
         self.sanity_patterns = sn.all([
             sn.assert_found(regex1, self.stdout, msg='regex1 failed'),
@@ -194,8 +194,8 @@ class gromacs_run_test(rfm.RunOnlyRegressionTest):
     def perf(self):
         regex = r'^Performance:\s+(?P<ns_day>\S+)\s+'
         return sn.extractsingle(regex, self.stderr, 'ns_day', float)
-
+    
     @performance_function('kJ/mol')
-    def bondenergy(self):
-        regex = r'^Bond\s+(?P<bond_energy>\S+)\s+'
-        return sn.extractsingle(regex, self.stdout, 'bond_energy', int)
+    def totalenergy(self):
+        regex = r'^Total Energy\s+(?P<total_energy>\S+)\s+'
+        return sn.extractsingle(regex, self.stdout, 'total_energy', float)
