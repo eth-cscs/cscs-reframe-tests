@@ -30,7 +30,7 @@ site_configuration = {
                     'launcher': 'local'
                 },
                 {
-                    'name': 'mc',
+                    'name': 'normal',
                     'scheduler': 'slurm',
                     'time_limit': '10m',
                     'environs': [
@@ -46,7 +46,7 @@ site_configuration = {
                             'options': ['--mem={mem_per_node}']
                         },
                     ],
-                    'access': ['-Cmc', f'--account={osext.osgroup()}'],
+                    'access': [f'--account={osext.osgroup()}'],
                     'features': ['ce', 'remote', 'scontrol', 'uenv'],
                     'launcher': 'srun'
                 },
