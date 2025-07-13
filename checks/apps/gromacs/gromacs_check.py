@@ -12,7 +12,7 @@ gromacs_references = {
     'STMV': {
         'gh200': {
             'perf': (117, -0.02, None, 'ns/day'),
-            'totalenergy': (-1.17527e+07, 0.01, None, 'kJ/mol'),
+            'totalenergy': (-1.17527e+07, -0.01, None, 'kJ/mol'),
         },
         'zen2': {
             'perf': (3.6, -0.02, None, 'ns/day'),
