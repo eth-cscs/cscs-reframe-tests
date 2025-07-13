@@ -194,7 +194,7 @@ class gromacs_run_test(rfm.RunOnlyRegressionTest):
     def perf(self):
         regex = r'^Performance:\s+(?P<ns_day>\S+)\s+'
         return sn.extractsingle(regex, self.stderr, 'ns_day', float)
-    
+
     @performance_function('kJ/mol')
     def totalenergy(self):
         regex = r'^Total Energy\s+(?P<total_energy>\S+)\s+'
