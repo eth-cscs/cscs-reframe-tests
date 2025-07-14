@@ -568,6 +568,6 @@ class PyTorchMegatronLM_UENV(PyTorchMegatronLM):
 
 @rfm.simple_test
 class PyTorchMegatronLM_CE_apertus70b(PyTorchMegatronLM_CE):
-    tags = {'maintenance', 'ml'}
+    tags = {'ml'}
     model = parameter(['apertus3-70b'])
     time_limit = '30m'
