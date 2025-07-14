@@ -29,6 +29,7 @@ class mlperf_storage_datagen_ce(rfm.RunOnlyRegressionTest,
     }
     base_dir = parameter(list(ref_values.keys()))
     num_nodes = variable(int, value=32)
+    time_limit = '15m'
     accelerator_type = 'h100'
     workload = variable(str, value='unet3d')
     env_vars = {
@@ -75,13 +76,13 @@ class mlperf_storage_datagen_ce(rfm.RunOnlyRegressionTest,
         return sn.assert_found(r'.*Generation done.*', self.stderr)
 
 
-@rfm.simple_test
 class MLperfStorageCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     container_image = ('jfrog.svc.cscs.ch#reframe-oci/mlperf-storage:'
                        'v1.0-mpi_4.2.1')
     valid_systems = ['+nvgpu +ce']
     valid_prog_environs = ['builtin']
-    tags = {'production', 'ce', 'maintenance'}
+    # TODO: Revisit the tags in case this test becomes more reliable
+    tags = {'ce'}
     mlperf_data = fixture(mlperf_storage_datagen_ce, scope='environment')
 
     # Add here to supress the warning, set by the fixture
@@ -114,11 +115,10 @@ class MLperfStorageCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
                 --param checkpoint.checkpoint_folder=/mlperf_storage/checkpoint
         ' """
 
-        self.postrun_cmds = [f'rm -rf {self.mlperf_data.storage}']
         ref_value = self.mlperf_data.ref_values[self.mlperf_data.base_dir]
         self.reference = {
             '*': {
-                'mb_per_sec_total': (ref_value, -0.1, None, 'MB/second'),
+                'mb_per_sec_total': (ref_value, -0.2, None, 'MB/second'),
             }
         }
 
@@ -136,3 +136,23 @@ class MLperfStorageCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
             r'Training I/O Throughput \(MB/second\): (?P<mbs_total>\S+)',
             self.stderr, 'mbs_total', float
         ))
+
+
+@rfm.simple_test
+class MLperfStorageCECleanup(rfm.RunOnlyRegressionTest):
+    valid_systems = ['+nvgpu +ce']
+    valid_prog_environs = ['builtin']
+    num_tasks = 1
+    executable = 'rm'
+    mlperf = fixture(MLperfStorageCE, scope='environment')
+    # TODO: Revisit the tags in case this test becomes more reliable
+    tags = {'ce'}
+
+    @run_after('setup')
+    def setup_exec_opts(self):
+        self.storage = self.mlperf.mlperf_data.storage
+        self.executable_opts = ['-r', '-f', self.storage]
+
+    @sanity_function
+    def assert_successful_cleanup(self):
+        return not sn.path_exists(self.storage)

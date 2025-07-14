@@ -1,0 +1,53 @@
+FROM nvidia/cuda:12.4.1-devel-ubuntu22.04
+
+ARG NODEBURN_COMMIT_ID=be4f759
+
+RUN apt-get update && \
+    apt-get install -y wget git cmake
+
+RUN wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/sbsa/cuda-keyring_1.1-1_all.deb && \
+    if [ "$(uname -m)" != "x86_64" ]; then \
+        dpkg -i cuda-keyring_1.1-1_all.deb; \
+        apt-get update; \
+        apt-get -y install -y nvpl; \
+    else \
+        apt-get update; \
+        apt-get install -y libopenblas-dev; \
+    fi
+
+RUN git clone https://github.com/eth-cscs/node-burn.git && \
+    cd node-burn && \
+    git checkout $(NODEBURN_COMMIT_ID) && \
+    if [ "$(uname -m)" != "x86_64" ]; then \
+        sed -i 's/find_package(BLAS REQUIRED)/find_package(nvpl REQUIRED COMPONENTS blas)/' CMakeLists.txt; \
+        sed -i 's/BLAS::BLAS/nvpl::lapack_lp64_omp/' CMakeLists.txt; \
+    fi && \
+    cmake -DCMAKE_BUILD_TYPE=Release -DTF32=ON -DDOUBLE=OFF -B build && \
+    cmake -DCMAKE_BUILD_TYPE=Release -B build-f64 && \
+    cmake -DNB_GPU=OFF -DCMAKE_BUILD_TYPE=Release -DTF32=ON -DDOUBLE=OFF -B build-cpu && \
+    cmake -DNB_GPU=OFF -DCMAKE_BUILD_TYPE=Release -B build-f64-cpu && \
+    cmake --build build && \
+    cmake --build build-f64 && \
+    cmake --build build-cpu && \
+    cmake --build build-f64-cpu && \
+    cp build/burn /usr/local/bin && \
+    cp build-f64/burn /usr/local/bin/burn-f64 && \
+    cp build-cpu/burn /usr/local/bin/burn-cpu && \
+    cp build-f64-cpu/burn /usr/local/bin/burn-f64-cpu && \
+    cd .. \
+    rm -rf node-burn
+
+FROM nvidia/cuda:12.4.1-runtime-ubuntu22.04
+
+COPY --from=0 cuda-keyring_1.1-1_all.deb cuda-keyring_1.1-1_all.deb
+
+RUN  if [ "$(uname -m)" != "x86_64" ]; then \
+         dpkg -i cuda-keyring_1.1-1_all.deb; \
+         apt-get update; \
+         apt-get -y install -y libgomp1 libnvpl-blas0; \
+     else \
+         apt-get update; \
+         apt-get -y install -y libgomp1 libopenblas-dev; \
+     fi
+
+COPY --from=0 /usr/local/bin/burn* /usr/local/bin/

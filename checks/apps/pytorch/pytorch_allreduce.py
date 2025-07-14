@@ -84,7 +84,7 @@ class PyTorchNCCLAllReduce(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
         self.executable_opts = [
             f'--nproc_per_node={self.num_gpus_per_node}',
             f'--nnodes={self.num_nodes}',
-            f'--rdzv_endpoint {headnode_cmd}:6000',
+            f'--rdzv_endpoint {headnode_cmd}',
             f'--rdzv_backend c10d',
             f'all_reduce_bench.py',
         ]
@@ -152,7 +152,7 @@ class PyTorchRCCLAllReduce(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
         self.executable_opts = [
             f'--nproc_per_node={self.num_gpus_per_node}',
             f'--nnodes={self.num_nodes}',
-            f'--rdzv_endpoint {headnode_cmd}:6000',
+            f'--rdzv_endpoint {headnode_cmd}',
             f'--rdzv_backend c10d',
             f'all_reduce_bench.py',
         ]
