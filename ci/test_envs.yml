@@ -8,5 +8,8 @@ test_vars:
   stage: test
   extends: .container-runner-lightweight-zen2
   image: python:3.9
+  before_script:
+    - [ "$CI_COMMIT_REF_NAME" != "main" ] && unset RFM_HTTPJSON_URL
   script:
     - echo "CI_COMMIT_REF_NAME value: $CI_COMMIT_REF_NAME"
+  when: always
