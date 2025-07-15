@@ -1,0 +1,12 @@
+include:
+  - remote: 'https://gitlab.com/cscs-ci/recipes/-/raw/master/templates/v2/.ci-ext.yml'
+
+stages:
+  - test
+
+test_vars:
+  stage: test
+  extends: .container-runner-lightweight-zen2
+  image: python:3.9
+  script:
+    - echo "CI_COMMIT_REF_NAME value: $CI_COMMIT_REF_NAME"
