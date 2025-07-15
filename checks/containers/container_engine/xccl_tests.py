@@ -28,6 +28,10 @@ class XCCLTestBase(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     }
     env_vars = {
         'NCCL_DEBUG': 'Info',
+
+        # Disable MCA components to avoid warnings
+        'PMIX_MCA_psec': '^munge',
+        'PMIX_MCA_gds': '^shmem2'
     }
     tags = {'production', 'ce', 'maintenance'}
 
@@ -49,8 +53,8 @@ class XCCLTestBase(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
         ]
 
     @run_before('run')
-    def set_pmi2(self):
-        self.job.launcher.options += ['--mpi=pmi2']
+    def set_pmix(self):
+        self.job.launcher.options += ['--mpi=pmix']
 
     @sanity_function
     def assert_sanity(self):
@@ -77,12 +81,18 @@ class XCCLTestBase(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
 @rfm.simple_test
 class NCCLTestsCE(XCCLTestBase):
     valid_systems = ['+ce +nvgpu']
-
-    # FIXME update the image tag once the port issue is fixed
-    image_tag = parameter(['cuda12.3'])
+    image_tag = parameter(['cuda12.9.1'])
 
     # Disable Nvidia Driver requirement
     env_vars['NVIDIA_DISABLE_REQUIRE'] = 1
+
+    # Disable MCA components to avoid warnings
+    env_vars.update(
+        {
+            'PMIX_MCA_psec': '^munge',
+            'PMIX_MCA_gds': '^shmem2'
+        }
+    )
 
     reference_per_test = {
         'sendrecv': {
@@ -110,7 +120,7 @@ class NCCLTestsCE(XCCLTestBase):
 @rfm.simple_test
 class RCCLTestCE(XCCLTestBase):
     valid_systems = ['+ce +amdgpu']
-    image_tag = parameter(['rocm63'])
+    image_tag = parameter(['rocm6.3.4'])
     min_bytes = '4096M'
     max_bytes = '4096M'
     reference_per_test = {
@@ -130,7 +140,7 @@ class RCCLTestCE(XCCLTestBase):
 
     @run_after('init')
     def setup_ce(self):
-        rocm_major = self.image_tag[:-1]
+        rocm_major = self.image_tag.split('.')[0]
         self.container_image = (f'jfrog.svc.cscs.ch#reframe-oci/rccl-tests:'
                                 f'{self.image_tag}')
         self.container_env_table['annotations.com.hooks'].update({
