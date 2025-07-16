@@ -63,6 +63,8 @@ reframe:
     # - source ./uenv-5.1.0/bin/activate-uenv
     - uenv --version
     - echo "UENV=$UENV" | tr , "\n"
+    # Send data to elastic on main branch only
+    - [ "$CI_COMMIT_REF_NAME" != "main" ] && unset RFM_HTTPJSON_URL
   script:
     - hostname
     - rfm_path=$(./ci/scripts/alps.sh install_reframe)
@@ -100,5 +102,8 @@ notify_slack:
     - ls -a
     - pip install requests
     - python ./ci/scripts/slack_notify.py latest.json uenv
-  when: always
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "main"'
+      when: always
+    - when: never
 
