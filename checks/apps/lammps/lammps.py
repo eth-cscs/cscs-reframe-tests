@@ -14,7 +14,7 @@ lammps_references = {
     },
     'lj_kokkos': {
         'gh200': {'time_run': (5, None, 0.05, 's')},
-        'zen2': {'time_run': (26, None, 0.05, 's')}
+        'zen2': {'time_run': (174, None, 0.05, 's')}
     },
 }
 
@@ -41,7 +41,7 @@ slurm_config = {
         "zen2": {
             "nodes": 4,
             "ntasks-per-node": 32,
-            "cpus-per-task": 4,
+            "cpus-per-task": 2,
             "walltime": "10m",
             "gpu": False,
         },
@@ -200,6 +200,9 @@ class lammps_kokkos_test(rfm.RunOnlyRegressionTest):
         config = slurm_config[self.test_name][self.uarch]
         self.job.options = [f'--nodes={config["nodes"]}']
         self.num_tasks_per_node = config['ntasks-per-node']
+        if (self.uarch == 'zen2'):
+            self.num_cpus_per_task = config['cpus-per-task']
+            self.ntasks_per_core = 1
         self.num_tasks = config['nodes'] * self.num_tasks_per_node
         self.ntasks_per_core = 1
         self.time_limit = config['walltime']
@@ -215,11 +218,11 @@ class lammps_kokkos_test(rfm.RunOnlyRegressionTest):
                 f'-k on g 1 -sf kk -pk kokkos gpu/aware on -i {self.test_name}.in']
         else:
             self.job.launcher.options += ["--cpu-bind=cores"]
-            self.env_vars['OMP_NUM_THREADS'] = config["cpus-per-task"]
+            self.env_vars['OMP_NUM_THREADS'] = self.num_cpus_per_task
             self.env_vars['OMP_PROC_BIND'] = 'spread'
             self.env_vars['OMP_PLACES'] = 'threads'
             self.executable_opts = [
-                f'-k on t {config["cpus-per-task"]} -sf kk -i {self.test_name}.in']
+                f'-k on t {self.num_cpus_per_task} -sf kk -i {self.test_name}.in']
 
     @run_before('run')
     def prepare_reference(self):
