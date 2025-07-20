@@ -16,7 +16,7 @@ site_configuration = {
             'name': 'eiger',
             'descr': 'Alps Eiger vcluster',
             'hostnames': ['eiger'],
-            'modules_system': 'nomod',
+            'modules_system': 'lmod',
             'partitions': [
                 {
                     'name': 'login',
