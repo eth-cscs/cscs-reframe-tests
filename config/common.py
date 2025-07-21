@@ -142,6 +142,7 @@ site_configuration = {
                '--report-file=$PWD/latest.json',
                '-c checks/apps',
                '-c checks/libraries',
+               '-c checks/system/slurm',
                '-p \'(?!PrgEnv-ce)\'',
                '--tag=production'
            ]
