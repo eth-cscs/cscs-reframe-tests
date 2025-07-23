@@ -99,7 +99,7 @@ STRIDED_SCALARS=OFF SPH_DOUBLE=OFF CAN_LOAD_TIPSY=ON  CAN_LOAD_H5Part=OFF
         if self.h5part == "ON":
             infile = f'--h5part {self.input_dir}/{self.h5part_file}'
         elif self.tipsy == "ON":
-            infile = f'--h5part {self.input_dir}/{self.h5part_file}'
+            infile = f'--tipsy {self.input_dir}/{self.tipsy_file}'
 
         if self.test == 'binning':
             self.executable_opts = [f'--{self.test}', 'rho', infile, '2>&1']
