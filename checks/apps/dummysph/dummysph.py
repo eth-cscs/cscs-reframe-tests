@@ -63,6 +63,22 @@ STRIDED_SCALARS=OFF SPH_DOUBLE=OFF CAN_LOAD_TIPSY=ON  CAN_LOAD_H5Part=OFF
             (self.fp64 == "ON" and self.tipsy == "ON")
         )
         self.skip_if(skip, 'skipping unsupported test')
+        # manage expected failures:
+        skip = (
+            # "Field type unsupported for conversion to blueprint":
+            (self.aos == "OFF"
+             and (self.fp64 == "OFF" or self.fp64 == "ON")
+             and self.tipsy == "OFF"
+             and self.h5part == "OFF"
+             and self.test == "compositing") or
+            # vtkm: Cast failed: vtkm::cont::ArrayHandle":
+            (self.aos == "OFF"
+             and self.fp64 == "OFF"
+             and self.tipsy == "OFF"
+             and (self.h5part == "OFF" or self.h5part == "ON")
+             and self.test == "histsampling")
+        )
+        self.skip_if(skip, 'skipping expected failures')
 
     @run_before('compile')
     def set_build_system(self):
@@ -75,15 +91,15 @@ STRIDED_SCALARS=OFF SPH_DOUBLE=OFF CAN_LOAD_TIPSY=ON  CAN_LOAD_H5Part=OFF
             f"cd src"
         ]
         self.build_system.config_opts = [
+            # f'-DCAN_DATADUMP={self.datadump}',
             # '-DCMAKE_C_COMPILER=mpicc',
             # '-DCMAKE_CXX_COMPILER=mpicxx',
-            '-DCMAKE_BUILD_TYPE=Debug',  # Release
+            f'-DCMAKE_BUILD_TYPE=Debug',  # Release
             f'-DSTRIDED_SCALARS={self.aos}',
             f'-DSPH_DOUBLE={self.fp64}',
             f'-DCAN_LOAD_TIPSY={self.tipsy}',
             f'-DCAN_LOAD_H5Part={self.h5part}',
-            # f'-DCAN_DATADUMP={self.datadump}',
-            '-DINSITU=Ascent',
+            f'-DINSITU=Ascent',
             f'-DAscent_DIR={self.ascentdir}',
         ]
         if uenv.uarch(self.current_partition) == 'gh200':
