@@ -1,4 +1,4 @@
-# Copyright 2016-2022 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright 2016 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -475,3 +475,22 @@ class SlurmTransparentHugepagesCheck(rfm.RunOnlyRegressionTest):
             opt = 'always'
 
         return sn.assert_found(rf'\[{opt}\]', self.stdout)
+
+
+@rfm.simple_test
+class SlurmParanoidCheck(rfm.RunOnlyRegressionTest):
+    valid_systems = ['+remote +scontrol']
+    valid_prog_environs = ['builtin']
+    descr = (
+        'Check that perf_event_paranoid enables per-process and system wide'
+        'performance monitoring')
+    time_limit = '1m'
+    num_tasks_per_node = 1
+    sourcesdir = None
+    executable = 'cat /proc/sys/kernel/perf_event_paranoid'
+    tags = {'production', 'maintenance', 'slurm'}
+    maintainers = ['SSA']
+
+    @sanity_function
+    def validate(self):
+        return sn.assert_found(r'0', self.stdout)
