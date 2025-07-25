@@ -29,12 +29,12 @@ class ParaView_coloredSphere(rfm.RunOnlyRegressionTest):
     valid_systems = ['+uenv']
     valid_prog_environs = ['+paraview-python']
     num_tasks = 12
-    num_tasks_per_node = 4
+    num_tasks_per_node = 6
     time_limit = '3m'
     executable = '/user-environment/ParaView-5.13/bin/pvbatch'
     executable_opts = ['-- coloredSphere.py']
     maintainers = ['SSA']
-    tags = {'production', 'maintenance'}
+    tags = {'production'}
 
     @run_before('run')
     def output_file_info(self):
@@ -59,7 +59,6 @@ class ParaView_coloredSphere(rfm.RunOnlyRegressionTest):
 
 @rfm.simple_test
 class ParaView_catalystClipping(rfm.RegressionTest):
-    # TODO: fix mpicc on eiger ?
     valid_systems = ['+uenv +remote']
     valid_prog_environs = ['+paraview-python']
     git_tag = variable(str, value='0.1')
