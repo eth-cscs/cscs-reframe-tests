@@ -11,8 +11,8 @@ import uenv
 
 namd_references = {
     'stmv': {
-        'gh200': {'ns_day': (93, -0.05, None, 'ns/day')}, 
-        'zen2': {'ns_day': (5.25, -0.05, None, 'ns/day')}
+        'gh200': {'ns_day': (91, -0.05, None, 'ns/day')}, 
+        'zen2': {'ns_day': (4.7, -0.05, None, 'ns/day')}
     },
 }
 
