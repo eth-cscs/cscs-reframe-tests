@@ -1,4 +1,4 @@
-# Copyright 2016-2022 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright 2016 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -407,6 +407,7 @@ class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
     def available_nodes_percentage(self):
         return 100.0 * self.num_matches / self.num_all_matches
 
+
 @rfm.simple_test
 class SlurmPrologEpilogCheck(rfm.RunOnlyRegressionTest):
     valid_systems = ['*']
@@ -434,10 +435,62 @@ class SlurmPrologEpilogCheck(rfm.RunOnlyRegressionTest):
 
     @sanity_function
     def validate(self):
-        reason = sn.extractall('reason:\s*(.*)', self.stdout, tag=1)
+        reason = sn.extractall(r'reason:\s*(.*)', self.stdout, tag=1)
 
         if reason:
             return sn.assert_not_found('will be drained with reason', self.stdout,
                                        msg=f'{reason[0]}')
         else:
             return True
+
+
+@rfm.simple_test
+class SlurmTransparentHugepagesCheck(rfm.RunOnlyRegressionTest):
+    '''Check Slurm transparent hugepages configuration'''
+
+    hugepages_options = parameter(['default', 'always', 'madvise', 'never'])
+    valid_systems = ['+hugepages_slurm']
+    valid_prog_environs = ['builtin']
+    descr = 'Check Slurm transparent hugepages configuration'
+    time_limit = '2m'
+    num_tasks_per_node = 1
+    sourcesdir = None
+    executable = 'cat /sys/kernel/mm/transparent_hugepage/enabled'
+
+    tags = {'production', 'maintenance', 'slurm'}
+    maintainers = ['VCUE']
+
+    @run_after('setup')
+    def set_executable(self):
+        if self.hugepages_options != 'default':
+            slurm_opt = f'thp_{self.hugepages_options}'
+            self.job.options += [f'-C {slurm_opt}']
+
+    @sanity_function
+    def validate(self):
+        if self.hugepages_options != 'default':
+            opt = f'{self.hugepages_options}'
+        else:
+            # Default option should be 'always'
+            opt = 'always'
+
+        return sn.assert_found(rf'\[{opt}\]', self.stdout)
+
+
+@rfm.simple_test
+class SlurmParanoidCheck(rfm.RunOnlyRegressionTest):
+    valid_systems = ['+remote +scontrol']
+    valid_prog_environs = ['builtin']
+    descr = (
+        'Check that perf_event_paranoid enables per-process and system wide'
+        'performance monitoring')
+    time_limit = '1m'
+    num_tasks_per_node = 1
+    sourcesdir = None
+    executable = 'cat /proc/sys/kernel/perf_event_paranoid'
+    tags = {'production', 'maintenance', 'slurm'}
+    maintainers = ['SSA']
+
+    @sanity_function
+    def validate(self):
+        return sn.assert_found(r'0', self.stdout)

@@ -5,16 +5,24 @@
 
 import os
 import shutil
+
 import reframe as rfm
 import reframe.utility.sanity as sn
 import reframe.utility.udeps as udeps
-
 from uenv import uarch
 
 cp2k_references = {
-    'md': {'gh200': {'time_run': (68, None, 0.05, 's')}},
-    'pbe': {'gh200': {'time_run': (65, None, 0.05, 's')}},
-    'rpa': {'gh200': {'time_run': (575, None, 0.05, 's')}},
+    'md': {
+        'gh200': {'time_run': (52, None, 0.05, 's')},
+        'zen2': {'time_run': (91, None, 0.05, 's')}
+    },
+    'pbe': {
+        'gh200': {'time_run': (44, None, 0.05, 's')},
+        'zen2': {'time_run': (53, None, 0.05, 's')}
+    },
+    'rpa': {
+        'gh200': {'time_run': (575, None, 0.05, 's')}
+    },
 }
 
 
@@ -26,16 +34,30 @@ slurm_config = {
             'cpus-per-task': 16,
             'walltime': '0d0h5m0s',
             'gpu': True,
-        }
+        },
+        'zen2': {
+            'nodes': 1,
+            'ntasks-per-node': 32,
+            'cpus-per-task': 4,
+            'walltime': '0d0h5m0s',
+            'gpu': False,
+        },
     },
     'pbe': {
         'gh200': {
-            'nodes': 8,
+            'nodes': 2,
             'ntasks-per-node': 16,
             'cpus-per-task': 16,
             'walltime': '0d0h5m0s',
             'gpu': True,
-        }
+        },
+        'zen2': {
+            'nodes': 2,
+            'ntasks-per-node': 32,
+            'cpus-per-task': 4,
+            'walltime': '0d0h5m0s',
+            'gpu': True,
+        },
     },
     'rpa': {
         'gh200': {
@@ -44,7 +66,7 @@ slurm_config = {
             'cpus-per-task': 16,
             'walltime': '0d0h15m0s',
             'gpu': True,
-        }
+        },
     },
 }
 
@@ -54,7 +76,7 @@ class cp2k_download(rfm.RunOnlyRegressionTest):
     Download CP2K source code.
     '''
 
-    version = variable(str, value='2024.3')
+    version = variable(str, value='')
     descr = 'Fetch CP2K source code'
     sourcesdir = None
     executable = 'wget'
@@ -62,11 +84,15 @@ class cp2k_download(rfm.RunOnlyRegressionTest):
 
     @run_before('run')
     def set_version(self):
+        uenv_version = os.environ['UENV'].split('/')[1].split('.')[0]
+        uenv_src_d = {'2024': 'v2024.3', '2025': 'v2025.1'}
+        self.version = uenv_src_d[uenv_version] if self.version == '' else self.version
+
         url = 'https://jfrog.svc.cscs.ch/artifactory/cscs-reframe-tests'
+
         self.executable_opts = [
             '--quiet',
-            f'{url}/cp2k/v{self.version}.tar.gz'
-            # https://github.com/cp2k/cp2k/archive/refs/tags/v2024.3.tar.gz
+            f'{url}/cp2k/{self.version}.tar.gz'
         ]
 
     @sanity_function
@@ -81,8 +107,8 @@ class Cp2kBuildTestUENV(rfm.CompileOnlyRegressionTest):
     '''
 
     descr = 'CP2K Build Test'
-    valid_prog_environs = ['+cp2k-dev']
-    valid_systems = ['*']
+    valid_prog_environs = ['+cp2k-dev -dlaf']
+    valid_systems = ['+uenv']
     build_system = 'CMake'
     sourcesdir = None
     maintainers = ['SSA']
@@ -99,7 +125,7 @@ class Cp2kBuildTestUENV(rfm.CompileOnlyRegressionTest):
         self.build_system.max_concurrency = cpu.info['num_cpus_per_socket']
 
         tarsource = os.path.join(
-            self.cp2k_sources.stagedir, f'v{self.cp2k_sources.version}.tar.gz'
+            self.cp2k_sources.stagedir, f'{self.cp2k_sources.version}.tar.gz'
         )
 
         # Extract source code
@@ -138,9 +164,10 @@ class Cp2kBuildTestUENV(rfm.CompileOnlyRegressionTest):
 
 
 class Cp2kCheck_UENV(rfm.RunOnlyRegressionTest):
-    executable = './mps-wrapper.sh cp2k.psmp'
+    executable = './pika-bind.sh cp2k.psmp'
     maintainers = ['SSA']
-    valid_systems = ['*']
+    valid_systems = ['+uenv']
+    valid_prog_environs = ['+cp2k -dlaf']
 
     @run_before('run')
     def prepare_run(self):
@@ -156,6 +183,9 @@ class Cp2kCheck_UENV(rfm.RunOnlyRegressionTest):
         self.ntasks_per_core = 1
         self.time_limit = config['walltime']
 
+        # wrapper script
+        self.wrapper = './mps-wrapper.sh' if self.uarch == 'gh200' else ''
+
         # srun options
         self.job.launcher.options = ['--cpu-bind=cores']
 
@@ -166,9 +196,21 @@ class Cp2kCheck_UENV(rfm.RunOnlyRegressionTest):
         self.env_vars['OMP_PLACES'] = 'cores'
         self.env_vars['OMP_PROC_BIND'] = 'close'
 
+        self.env_vars["MIMALLOC_ALLOW_LARGE_OS_PAGES"] = "1"
+        self.env_vars["MIMALLOC_EAGER_COMMIT_DELAY"] = "0"
+
+        if self.uarch == "zen2":
+            self.env_vars["PIKA_THREADS"] = str((self.num_cpus_per_task // 2) - 1)
+        else:
+            self.env_vars["PIKA_THREADS"] = str(self.num_cpus_per_task - 1)
+
         if self.uarch == 'gh200':
             self.env_vars['MPICH_GPU_SUPPORT_ENABLED'] = '1'
             self.env_vars['CUDA_CACHE_DISABLE'] = '1'
+            self.env_vars["DLAF_BT_BAND_TO_TRIDIAG_HH_APPLY_GROUP_SIZE"] = \
+                "128"
+            self.env_vars["DLAF_UMPIRE_DEVICE_MEMORY_POOL_ALIGNMENT_BYTES"] = \
+                str(2**21)
 
         # set reference
         if self.uarch is not None and \
@@ -212,7 +254,7 @@ class Cp2kCheckMD_UENV(Cp2kCheck_UENV):
 
 @rfm.simple_test
 class Cp2kCheckMD_UENVExec(Cp2kCheckMD_UENV):
-    valid_prog_environs = ['+cp2k']
+    valid_prog_environs = ['+cp2k -dlaf']
     tags = {'uenv', 'production'}
 
 
@@ -222,7 +264,7 @@ class Cp2kCheckMD_UENVCustomExec(Cp2kCheckMD_UENV):
     Same test as above, but using executables built by Cp2kBuildTestUENV.
     '''
 
-    valid_prog_environs = ['+cp2k-dev']
+    valid_prog_environs = ['+cp2k-dev -dlaf']
     tags = {'uenv'}
 
     @run_after('init')
@@ -232,14 +274,14 @@ class Cp2kCheckMD_UENVCustomExec(Cp2kCheckMD_UENV):
     @run_after('setup')
     def setup_executable(self):
         parent = self.getdep('Cp2kBuildTestUENV')
-        self.executable = f'./mps-wrapper.sh {parent.cp2k_executable}'
+        self.executable = f'{self.wrapper} ./pika-bind.sh {parent.cp2k_executable}'
 
 
 # }}}
 # {{{ PBE
 class Cp2kCheckPBE_UENV(Cp2kCheck_UENV):
     test_name = 'pbe'
-    valid_prog_environs = ['+cp2k']
+    valid_prog_environs = ['+cp2k -dlaf']
     tags = {'uenv', 'production'}
     executable_opts = ['-i', 'H2O-128-PBE-TZ.inp']
     energy_reference = -2206.2426491358
@@ -251,7 +293,7 @@ class Cp2kCheckPBE_UENV(Cp2kCheck_UENV):
 
 @rfm.simple_test
 class Cp2kCheckPBE_UENVExec(Cp2kCheckPBE_UENV):
-    valid_prog_environs = ['+cp2k']
+    valid_prog_environs = ['+cp2k -dlaf']
     tags = {'uenv', 'production'}
 
 
@@ -261,7 +303,7 @@ class Cp2kCheckPBE_UENVCustomExec(Cp2kCheckPBE_UENV):
     Same test as above, but using executables built by Cp2kBuildTestUENV.
     '''
 
-    valid_prog_environs = ['+cp2k-dev']
+    valid_prog_environs = ['+cp2k-dev -dlaf']
     tags = {'uenv'}
 
     @run_after('init')
@@ -271,7 +313,7 @@ class Cp2kCheckPBE_UENVCustomExec(Cp2kCheckPBE_UENV):
     @run_after('setup')
     def setup_executable(self):
         parent = self.getdep('Cp2kBuildTestUENV')
-        self.executable = f'./mps-wrapper.sh {parent.cp2k_executable}'
+        self.executable = f'{self.wrapper} ./pika-bind.sh {parent.cp2k_executable}'
 
 
 # }}}
@@ -279,10 +321,11 @@ class Cp2kCheckPBE_UENVCustomExec(Cp2kCheckPBE_UENV):
 @rfm.simple_test
 class Cp2kCheckRPA_UENVExec(Cp2kCheck_UENV):
     test_name = 'rpa'
-    valid_prog_environs = ['+cp2k']
+    valid_prog_environs = ['+cp2k -dlaf']
     executable_opts = ['-i', 'H2O-128-RI-dRPA-TZ.inp']
     energy_reference = -2217.36884935325
     tags = {'maintenance'}
+    valid_systems = ['+nvgpu']
 
     def __init__(self):
         super().__init__()

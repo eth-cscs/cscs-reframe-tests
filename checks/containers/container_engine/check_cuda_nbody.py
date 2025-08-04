@@ -35,7 +35,7 @@ class CudaNBodyCheckCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     }
 
     num_bodies_per_gpu = variable(int, value=200000)
-    tags = {'production', 'ce'}
+    tags = {'production', 'ce', 'maintenance'}
 
     @run_after('setup')
     def set_num_gpus_per_node(self):

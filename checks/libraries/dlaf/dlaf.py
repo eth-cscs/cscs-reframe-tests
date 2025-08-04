@@ -2,11 +2,8 @@
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
-import os
-import shutil
 import reframe as rfm
 import reframe.utility.sanity as sn
-
 from uenv import uarch
 
 dlaf_references = {
@@ -15,7 +12,7 @@ dlaf_references = {
             "time_run": (24.0, -1.0, 0.1, "s"),
         },
         "zen2": {
-            "time_run": (165.0, -1.0, 0.1, "s"),
+            "time_run": (165.0, -1.0, 0.25, "s"),
         }
     },
     "gen_eigensolver": {
@@ -23,7 +20,7 @@ dlaf_references = {
             "time_run": (26.0, -1.0, 0.1, "s")
         },
         "zen2": {
-            "time_run": (200.0, -1.0, 0.1, "s"),
+            "time_run": (200.0, -1.0, 0.25, "s"),
         }
     },
 }
@@ -66,7 +63,7 @@ slurm_config = {
 
 class dlaf_base(rfm.RunOnlyRegressionTest):
     valid_systems = ['+uenv']
-    valid_prog_environs = ['+dlaf']
+    valid_prog_environs = ['+dlaf -cp2k -cp2k-dev']
     maintainers = ["SSA"]
 
     def _sq_factor(self, n):

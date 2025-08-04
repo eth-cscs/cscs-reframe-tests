@@ -1,0 +1,43 @@
+ARG BASE=docker.io/nvidia/cuda:12.9.1-devel-ubuntu22.04
+
+FROM $BASE
+
+ARG GDRCOPY_VER=2.5
+
+RUN apt-get update && \
+    apt-get install -y autoconf libtool git wget libopenmpi-dev && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN git clone -b v${GDRCOPY_VER} https://github.com/NVIDIA/gdrcopy.git && \
+    cd gdrcopy && \
+    export CUDA_PATH=${CUDA_HOME:-$(echo $(which nvcc) | grep -o '.*cuda')} && \
+    make CC=gcc CUDA=$CUDA_PATH lib && \
+    make lib_install && \
+    cd ../ && rm -rf gdrcopy
+
+RUN git clone https://github.com/NVIDIA/nccl-tests.git && \
+    cd nccl-tests && \
+    CXX=mpicxx make MPI=1 -j 4 && \
+    cp $(find build/ -type f -executable) /usr/local/bin && \
+    cd ../ && \
+    rm -rf nccl-tests
+
+FROM docker.io/nvidia/cuda:12.9.1-runtime-ubuntu22.04
+
+RUN apt update && \
+    apt install -y libhwloc15 libopenmpi3 && \
+    apt clean && \
+    rm -rf /var/lib/apt/lists/*
+
+COPY --from=0 /usr/local/bin/* /usr/local/bin
+COPY --from=0 /usr/local/lib/libgdr* /usr/local/lib
+
+# Copy files to avoid the following warning:
+# --------------------------------------------------------------------------
+# Sorry!  You were supposed to get help about:
+#     ini file:file not found
+# But I couldn't open the help file:
+#    /usr/share/openmpi/help-mpi-btl-openib.txt: No such file or directory.  Sorry!
+# --------------------------------------------------------------------------
+COPY --from=0 /usr/share/openmpi/ /usr/share/openmpi/

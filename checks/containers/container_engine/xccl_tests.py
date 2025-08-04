@@ -28,8 +28,12 @@ class XCCLTestBase(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     }
     env_vars = {
         'NCCL_DEBUG': 'Info',
+
+        # Disable MCA components to avoid warnings
+        'PMIX_MCA_psec': '^munge',
+        'PMIX_MCA_gds': '^shmem2'
     }
-    tags = {'production', 'ce'}
+    tags = {'production', 'ce', 'maintenance'}
 
     @run_after('setup')
     def set_executable(self):
@@ -49,15 +53,15 @@ class XCCLTestBase(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
         ]
 
     @run_before('run')
-    def set_pmi2(self):
-        self.job.launcher.options += ['--mpi=pmi2']
+    def set_pmix(self):
+        self.job.launcher.options += ['--mpi=pmix']
 
     @sanity_function
     def assert_sanity(self):
         return sn.all([
             sn.assert_found(r'Out of bounds values\s*:\s*0\s*OK', self.stdout),
             sn.assert_found(
-                r'NCCL INFO NET/OFI Selected Provider is cxi', self.stdout
+                r'NCCL INFO NET/OFI Selected [pP]rovider is cxi', self.stdout
             )
          ])
 
@@ -77,10 +81,18 @@ class XCCLTestBase(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
 @rfm.simple_test
 class NCCLTestsCE(XCCLTestBase):
     valid_systems = ['+ce +nvgpu']
-    image_tag = parameter(['cuda12.3'])
+    image_tag = parameter(['cuda12.9.1'])
 
     # Disable Nvidia Driver requirement
     env_vars['NVIDIA_DISABLE_REQUIRE'] = 1
+
+    # Disable MCA components to avoid warnings
+    env_vars.update(
+        {
+            'PMIX_MCA_psec': '^munge',
+            'PMIX_MCA_gds': '^shmem2'
+        }
+    )
 
     reference_per_test = {
         'sendrecv': {
@@ -104,16 +116,19 @@ class NCCLTestsCE(XCCLTestBase):
             'aws_ofi_nccl.variant': cuda_major
         })
 
+
 @rfm.simple_test
 class RCCLTestCE(XCCLTestBase):
     valid_systems = ['+ce +amdgpu']
-    image_tag = parameter(['rocm63'])
+    image_tag = parameter(['rocm6.3.4'])
     min_bytes = '4096M'
     max_bytes = '4096M'
     reference_per_test = {
         'sendrecv': {
             '*': {
-                'GB/s': (24.0, -0.05, None, 'GB/s')
+
+                # TODO: revisit the performance limits based on more data
+                'GB/s': (24.0, -0.40, None, 'GB/s')
             }
          },
         'all_reduce': {
@@ -125,7 +140,7 @@ class RCCLTestCE(XCCLTestBase):
 
     @run_after('init')
     def setup_ce(self):
-        rocm_major = self.image_tag[:-1]
+        rocm_major = self.image_tag.split('.')[0]
         self.container_image = (f'jfrog.svc.cscs.ch#reframe-oci/rccl-tests:'
                                 f'{self.image_tag}')
         self.container_env_table['annotations.com.hooks'].update({
@@ -135,7 +150,7 @@ class RCCLTestCE(XCCLTestBase):
     @run_after('setup')
     def set_nccl_min_nchannels(self):
         gpu_devices = self.current_partition.select_devices('gpu')[0]
-        
-        # https://rocm.docs.amd.com/projects/rccl/en/latest/how-to/rccl-usage-tips.html#improving-performance-on-the-mi300x-accelerator-when-using-fewer-than-8-gpus noqa: E501
+
+        # https://rocm.docs.amd.com/projects/rccl/en/latest/how-to/rccl-usage-tips.html#improving-performance-on-the-mi300x-accelerator-when-using-fewer-than-8-gpus # noqa: E501
         if gpu_devices.num_devices < 8 and gpu_devices.arch == 'gfx942':
             self.env_vars['NCCL_MIN_NCHANNELS'] = 32

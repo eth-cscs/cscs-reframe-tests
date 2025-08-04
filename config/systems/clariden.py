@@ -7,7 +7,6 @@
 #
 
 import reframe.utility.osext as osext
-import copy
 
 
 base_config = {
@@ -38,7 +37,8 @@ base_config = {
             'extras': {
                 'cn_memory': 825,
             },
-            'features': ['ce', 'gpu', 'nvgpu', 'remote', 'scontrol', 'uenv'],
+            'features': ['ce', 'gpu', 'nvgpu', 'remote', 'scontrol', 'uenv', 'hugepages_slurm'],
+            'access': [f'--account=a-{osext.osgroup()}'],
             'resources': [
                 {
                     'name': 'switches',
@@ -75,16 +75,4 @@ site_configuration = {
     ],
     'environments': [
     ],
-    'modes': [
-       {
-           'name': 'uenv_production',
-           'options': [
-               '--max-retries=1',
-               '--report-file=$PWD/latest.json',
-               '-c checks/apps',
-               '--tag=production'
-           ],
-           'target_systems': ['clariden'],
-       }
-   ]
 }

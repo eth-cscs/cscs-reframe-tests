@@ -41,8 +41,12 @@ site_configuration = {
                             'name': 'memory',
                             'options': ['--mem={mem_per_node}']
                         },
+                        {
+                            'name': 'gres',
+                            'options': ['--gres={gres}']
+                        },
                     ],
-                    'features': ['ce', 'gpu', 'nvgpu', 'remote', 'scontrol', 'uenv'],
+                    'features': ['ce', 'gpu', 'nvgpu', 'remote', 'scontrol', 'uenv', 'hugepages_slurm'],
                     'devices': [
                         {
                             'type': 'gpu',

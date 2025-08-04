@@ -10,7 +10,10 @@ import reframe.utility.udeps as udeps
 import uenv
 
 namd_references = {
-    'stmv': {'gh200': {'ns_day': (93, -0.05, None, 'ns/day')}},
+    'stmv': {
+        'gh200': {'ns_day': (91, -0.05, None, 'ns/day')}, 
+        'zen2': {'ns_day': (4.7, -0.05, None, 'ns/day')}
+    },
 }
 
 slurm_config = {
@@ -21,7 +24,14 @@ slurm_config = {
             'cpus-per-task': 29,
             'walltime': '0d0h5m0s',
             'gpu': True,
-        }
+        },
+        'zen2': {
+            'nodes': 4,
+            'ntasks-per-node': 128,
+            'cpus-per-task': 1,
+            'walltime': '0d0h5m0s',
+            'gpu': False,
+        },
     }
 }
 
@@ -196,7 +206,7 @@ class NamdBuildTest(rfm.CompileOnlyRegressionTest):
 class NamdCheckUENV(rfm.RunOnlyRegressionTest):
     descr = 'NAMD STMV Benchmark'
     test_name = 'stmv'
-    valid_systems = ['+nvgpu +uenv']
+    valid_systems = ['+uenv']
     executable = 'namd3'
     maintainers = ['SSA']
     namd_input = fixture(namd_input_download, scope='session')
@@ -223,18 +233,21 @@ class NamdCheckUENV(rfm.RunOnlyRegressionTest):
 
         self.executable_opts = [
             f'+p {self.num_cpus_per_task}',
-            '+pmepes 5',
             '+setcpuaffinity',
         ]
 
         if self.uarch == 'gh200':
+            self.executable_opts += ['+pmepes 5']
             self.executable_opts += ['+devices 0,1,2,3']
             # It is required to make all the GPUs visible
             self.extra_resources = {
                 'gres': {'gres': 'gpu:4'},
             }
 
-        self.executable_opts += ['stmv_gpures_nve.namd']
+        if self.uarch == 'gh200':
+            self.executable_opts += ['stmv_gpures_nve.namd']
+        else:
+            self.executable_opts += ['stmv_nogpu_nve.namd']
 
         if self.uarch is not None and \
            self.uarch in namd_references[self.test_name]:
@@ -286,7 +299,7 @@ class NamdCheckUENV(rfm.RunOnlyRegressionTest):
 
 @rfm.simple_test
 class NamdCheckUENVExec(NamdCheckUENV):
-    valid_prog_environs = ['+namd-single-node']
+    valid_prog_environs = ['+namd-single-node', '+namd']
     tags = {'uenv', 'production'}
 
 

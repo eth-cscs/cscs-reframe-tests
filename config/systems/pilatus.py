@@ -59,14 +59,6 @@ base_config = {
                 'cpeIntel'
             ],
             'max_jobs': 100,
-
-            #FIXME temporary workaround for uenv=prgenv-gnu_23.11
-            'env_vars': [
-                [
-                    'LD_LIBRARY_PATH',
-                    '$LD_LIBRARY_PATH:/opt/cray/libfabric/1.15.2.0/lib64'
-                ]
-            ],
             'extras': {
                 'cn_memory': 256,
             },
@@ -147,21 +139,4 @@ site_configuration = {
             'modules': ['cray', 'cpeIntel']
         },
     ],
-    'modes': [
-       {
-           'name': 'cpe_production',
-           'options': [
-               '--report-file=$PWD/latest.json',
-               '-c checks/system/integration/eiger.py',
-               '-c checks/prgenv/mpi.py',
-               '-c checks/microbenchmarks/mpi/osu/osu_run.py',
-               '-c checks/microbenchmarks/mpi/osu/osu_tests.py',
-               '-c checks/microbenchmarks/cpu/alloc_speed/alloc_speed.py',
-               '-c checks/microbenchmarks/cpu/stream/stream.py',
-               '-c checks/prgenv/affinity_check.py',
-           ],
-           'target_systems': ['pilatus'],
-       }
-   ]
-
 }

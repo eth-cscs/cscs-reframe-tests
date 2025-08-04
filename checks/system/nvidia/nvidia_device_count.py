@@ -12,6 +12,7 @@ import reframe.utility.sanity as sn
 
 sys.path.append(str(pathlib.Path(__file__).parent.parent.parent / 'mixins'))
 from cuda_visible_devices_all import CudaVisibleDevicesAllMixin
+from container_engine import ContainerEngineCPEMixin
 
 
 class BuildDeviceCountBase(rfm.CompileOnlyRegressionTest):
@@ -24,7 +25,7 @@ class BuildDeviceCountBase(rfm.CompileOnlyRegressionTest):
 
     @run_before('compile')
     def setup_compilers(self):
-        self.build_system.ldflags = ['-lnvidia-ml']
+        self.build_system.ldflags = ['-L${CUDA_HOME}/lib64', '-lnvidia-ml']
 
     @sanity_function
     def validate_build(self):
@@ -75,7 +76,7 @@ class NvidiaDeviceCountBase(CudaVisibleDevicesAllMixin,
         )
 
 
-class CPE_BuildDeviceCount(BuildDeviceCountBase):
+class CPE_BuildDeviceCount(BuildDeviceCountBase, ContainerEngineCPEMixin):
     valid_prog_environs = ['+cuda -uenv']
 
     # FIXME: version of clang compiler and default gcc not compatible
@@ -90,7 +91,10 @@ class CPE_BuildDeviceCount(BuildDeviceCountBase):
     @run_before('compile')
     def setup_modules(self):
         sm = self.current_partition.select_devices('gpu')[0].arch[-2:]
-        self.modules = ['cudatoolkit', f'craype-accel-nvidia{sm}']
+
+        # FIXME Temporary workaround for cudatoolkit absence in ce image
+        if 'containerized_cpe' not in self.current_environ.features:
+            self.modules = ['cudatoolkit', f'craype-accel-nvidia{sm}']
 
 
 class UENV_BuildDeviceCount(BuildDeviceCountBase):
@@ -98,7 +102,7 @@ class UENV_BuildDeviceCount(BuildDeviceCountBase):
 
 
 @rfm.simple_test
-class CPE_NvidiaDeviceCount(NvidiaDeviceCountBase):
+class CPE_NvidiaDeviceCount(NvidiaDeviceCountBase, ContainerEngineCPEMixin):
     valid_systems = ['+nvgpu']
     valid_prog_environs = ['+cuda -uenv']
     device_count_bin = fixture(CPE_BuildDeviceCount, scope='environment')
@@ -107,7 +111,8 @@ class CPE_NvidiaDeviceCount(NvidiaDeviceCountBase):
     @run_after('setup')
     def setup_modules(self):
         sm = self.current_partition.select_devices('gpu')[0].arch[-2:]
-        self.modules = ['cudatoolkit', f'craype-accel-nvidia{sm}']
+        if 'containerized_cpe' not in self.current_environ.features:
+            self.modules = ['cudatoolkit', f'craype-accel-nvidia{sm}']
 
 
 @rfm.simple_test
