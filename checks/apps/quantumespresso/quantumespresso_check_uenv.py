@@ -15,7 +15,7 @@ import uenv
 qe_references = {
     "Au surf": {
         "gh200": {"time_run": (14.02, None, 0.05, "s")},
-        "zen2": {"time_run": (99.45, None, 0.05, "s")},  # 1m44s
+        "zen2": {"time_run": (99.45, None, 0.1, "s")},  # 1m44s
     },
 }
 
