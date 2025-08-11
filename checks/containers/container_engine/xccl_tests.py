@@ -47,6 +47,13 @@ class XCCLTestBase(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
         self.num_tasks = self.num_nodes * self.num_gpus_per_node
 
     @run_after('setup')
+    def set_nchannels_per_net_peer(self):
+        # The following boosts performance for sendrecv in multiple nodes
+        # See https://github.com/NVIDIA/nccl/issues/1272
+        if self.test_name == 'sendrecv':
+            self.env_vars['NCCL_NCHANNELS_PER_NET_PEER'] = 4
+
+    @run_after('setup')
     def set_executable_opts(self):
         self.executable_opts = [
             f'-b {self.min_bytes}', f'-e {self.max_bytes}', f'-g 1'
