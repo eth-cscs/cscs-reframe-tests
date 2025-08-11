@@ -8,6 +8,7 @@ import pathlib
 import sys
 import reframe as rfm
 import reframe.utility.sanity as sn
+from uenv import uarch
 
 
 perf_ref = {
@@ -62,3 +63,13 @@ class AmdGPUBenchmarks(rfm.RegressionTest):
             r'radix sort time for \d+ key-value pairs: \S+ s, '
             r'bandwidth: (?P<bw>\S+) MiB\/s')
         return sn.extractsingle(regex, self.stdout, 'bw', float)
+
+    @run_before("run")
+    def validate_reference_perf(self):
+        _uarch = uarch(self.current_partition)
+        if _uarch is not None and \
+           _uarch in perf_ref[self.benchmark]:
+            self.reference = {
+                self.current_partition.fullname:
+                    perf_ref[self.benchmark][uarch]
+            }
