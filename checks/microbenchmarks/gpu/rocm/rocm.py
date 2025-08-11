@@ -10,6 +10,13 @@ import reframe as rfm
 import reframe.utility.sanity as sn
 
 
+perf_ref = {
+    "rocPRISM": {
+        "gh200": {"bw": (13314.2, -0.05, None, "MiB/s")},
+    }
+}
+
+
 @rfm.simple_test
 class AmdGPUBenchmarks(rfm.RegressionTest):
     '''
@@ -47,3 +54,11 @@ class AmdGPUBenchmarks(rfm.RegressionTest):
         self.sanity_patterns = sn.all([
             sn.assert_found(r'radix sort time.*MiB/s', self.stdout)
         ])
+
+    # NOTE: the name of this function needs to match with the reference dict
+    @performance_function("MiB/s")
+    def bw(self):
+        regex = (
+            r'radix sort time for \d+ key-value pairs: \S+ s, '
+            r'bandwidth: (?P<bw>\S+) MiB\/s')
+        return sn.extractsingle(regex, self.stdout, 'bw', float)
