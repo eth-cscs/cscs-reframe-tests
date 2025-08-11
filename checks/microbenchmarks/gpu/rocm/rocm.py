@@ -37,10 +37,12 @@ class AmdGPUBenchmarks(rfm.RegressionTest):
     def prepare_build(self):
         self.build_system.builddir = 'build'
         self.prebuild_cmds = [f'ln -fs {self.benchmark}/* .', 'pwd']
+        gpu_arch = self.current_partition.select_devices('gpu')[0].arch
         self.build_system.config_opts = [
             f'-DWITH_CUDA=OFF',
             f'-DWITH_HIP=ON',
-            f'-DCMAKE_HIP_ARCHITECTURES="gfx90a;gfx942"'
+            f'-DCMAKE_HIP_ARCHITECTURES="{gpu_arch}"'
+            # f'-DCMAKE_HIP_ARCHITECTURES="gfx90a;gfx942"'
         ]
 
     @run_before('run')
