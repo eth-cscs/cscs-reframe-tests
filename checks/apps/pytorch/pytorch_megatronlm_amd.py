@@ -29,7 +29,7 @@ class PyTorchMegatronLM_AMD(rfm.RunOnlyRegressionTest):
     dataset_cache_dir = variable(str, type(None), value=None)
     enable_fp8 = variable(bool, value=False)
     sequence_parallel = variable(bool, value=True)
-    gemm_tuning= variable(bool, value=True)
+    gemm_tuning = variable(bool, value=True)
     mcore = variable(bool, value=True)
     conti_params = variable(bool, value=False)
     fsdp = variable(bool, value=False)
@@ -37,7 +37,7 @@ class PyTorchMegatronLM_AMD(rfm.RunOnlyRegressionTest):
     rope_fusion = variable(bool, value=True)
     eval_interval = variable(int, value=5000)
     save_interval = variable(int, value=5000)
-    eval_iters= variable(int, value=1)
+    eval_iters = variable(int, value=1)
     recompute = variable(bool, value=False)
     nccl_debug = variable(bool, value=False)
     batch_size_per_node = variable(int, value=256)
@@ -79,7 +79,7 @@ class PyTorchMegatronLM_AMD(rfm.RunOnlyRegressionTest):
                 f'--lr-decay-style cosine',
                 f'--lr-warmup-iters 1',
             ]
-       }
+        }
     }
 
     sourcesdir = None
@@ -97,7 +97,7 @@ class PyTorchMegatronLM_AMD(rfm.RunOnlyRegressionTest):
 
         curr_part = self.current_partition
         self.num_gpus_per_node = curr_part.select_devices('gpu')[0].num_devices
-        self.num_tasks =  self.num_nodes * self.num_tasks_per_node
+        self.num_tasks = self.num_nodes * self.num_tasks_per_node
         gpu_arch = curr_part.select_devices('gpu')[0].arch
         self.skip_if(
             gpu_arch != 'gfx942', 'test valid only for AMD MI300'
@@ -105,7 +105,6 @@ class PyTorchMegatronLM_AMD(rfm.RunOnlyRegressionTest):
         self.num_cpus_per_task = model_config.get(
             'cpus_per_task', (curr_part.processor.num_cpus //
                               curr_part.processor.num_cpus_per_core)
-               
         )
         self.reference = {
             '*': {
@@ -147,17 +146,17 @@ class PyTorchMegatronLM_AMD(rfm.RunOnlyRegressionTest):
         if self.gemm_tuning:
             self.env_vars['TE_HIPBLASLT_TUNING_RUN_COUNT'] = 10
             self.env_vars['TE_HIPBLASLT_TUNING_ALGO_COUNT'] = 50
-        
+
         if self.nccl_debug:
             self.env_vars['NCCL_DEBUG'] = 'Info'
 
         self.prerun_cmds = [
             f'set -x',
- 
+
             # Download tokenizer model
             f'mkdir -p tokenizer',
             f'cd tokenizer',
-            f'wget https://huggingface.co/NousResearch/Llama-2-7b-chat-hf/resolve/main/tokenizer.model', # noqa E262
+            f'wget https://huggingface.co/NousResearch/Llama-2-7b-chat-hf/resolve/main/tokenizer.model',  # noqa E262
             f'cd -',
 
             # Clone Megatron repo
@@ -166,7 +165,7 @@ class PyTorchMegatronLM_AMD(rfm.RunOnlyRegressionTest):
             f'git fetch origin',
             f'git checkout {self.megatron_release}',
             f'cd -',
- 
+
             # Create the corresponding dirs
             f'echo "START TIME: $(date)"',
             f'ulimit -c 0',
@@ -243,13 +242,13 @@ class PyTorchMegatronLM_AMD(rfm.RunOnlyRegressionTest):
                 f'--recompute-num-layers {model_config["num_layers"]}',
                 f'--recompute-granularity full',
                 f'--recompute-method block'
-            ] 
+            ]
 
         if self.use_flash_attn:
             gpt_args += [
                 '--use-flash-attn'
             ]
-        
+
         if not self.rope_fusion:
             gpt_args += [
                 '--no-rope-fusion'
@@ -274,19 +273,19 @@ class PyTorchMegatronLM_AMD(rfm.RunOnlyRegressionTest):
         if self.enable_fp8:
             fp8_args += [
                 '--transformer-impl=transformer_engine',
-                '--fp8-margin=0', 
+                '--fp8-margin=0',
                 '--fp8-format=hybrid',
                 '--fp8-interval=1',
                 '--fp8-amax-history-len=1024',
                 '--fp8-amax-compute-algo=max',
                 '--attention-softmax-in-fp32'
-            ] 
+            ]
 
         initialization_args = [
             '--init-method-std 0.02'
         ]
- 
-        output_args = [ 
+
+        output_args = [
             f'--log-interval 1',
             f'--log-progress',
             f'--log-throughput',
@@ -333,7 +332,6 @@ class PyTorchMegatronLM_AMD(rfm.RunOnlyRegressionTest):
 
         all_args = [
             *gpt_args,
-            *logging_args,
             *model_config['regularization_args'],
             *fp8_args,
             *initialization_args,
@@ -351,7 +349,7 @@ class PyTorchMegatronLM_AMD(rfm.RunOnlyRegressionTest):
             f'torchrun  '
             f'--nproc_per_node {self.num_gpus_per_node} '
             f'--nnodes {self.num_nodes} '
-            f'--master_add $MASTER_ADDR '
+            f'--master_addr $MASTER_ADDR '
             f'--master_port $MASTER_PORT '
             f'--node_rank=$SLURM_PROCID '
             f'$MEGATRON_LM_DIR/pretrain_gpt.py {" ".join(all_args)}'
