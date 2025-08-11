@@ -19,7 +19,7 @@ class MpiInitTest(rfm.RegressionTest, ContainerEngineCPEMixin):
     This test checks the value returned by calling MPI_Init_thread.
     '''
     required_threads = ['funneled', 'serialized', 'multiple']
-    valid_prog_environs = ['+mpi']
+    valid_prog_environs = ['+mpi +prgenv']
     valid_systems = ['+remote']
     build_system = 'Make'
     sourcesdir = 'src/mpi_thread'
