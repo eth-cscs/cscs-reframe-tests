@@ -73,5 +73,5 @@ class AmdGPUBenchmarks(rfm.RegressionTest):
            _uarch in perf_ref[self.benchmark]:
             self.reference = {
                 self.current_partition.fullname:
-                    perf_ref[self.benchmark][uarch]
+                    perf_ref[self.benchmark][_uarch]
             }
