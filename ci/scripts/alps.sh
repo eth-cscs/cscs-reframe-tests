@@ -346,6 +346,8 @@ launch_reframe_1arg() {
         --prefix=$SCRATCH/rfm-$CI_JOB_ID \
         -r
 }
+# }}}
+# {{{ launch_reframe_bencher
 launch_reframe_bencher() {
     export RFM_AUTODETECT_METHODS="cat /etc/xthostname,hostname"
     export RFM_USE_LOGIN_SHELL=1
