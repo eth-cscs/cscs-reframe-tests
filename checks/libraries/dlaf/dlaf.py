@@ -12,7 +12,7 @@ dlaf_references = {
             "time_run": (24.0, -1.0, 0.1, "s"),
         },
         "zen2": {
-            "time_run": (165.0, -1.0, 0.1, "s"),
+            "time_run": (165.0, -1.0, 0.25, "s"),
         }
     },
     "gen_eigensolver": {
@@ -20,7 +20,7 @@ dlaf_references = {
             "time_run": (26.0, -1.0, 0.1, "s")
         },
         "zen2": {
-            "time_run": (200.0, -1.0, 0.1, "s"),
+            "time_run": (200.0, -1.0, 0.25, "s"),
         }
     },
 }

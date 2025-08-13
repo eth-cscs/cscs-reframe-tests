@@ -6,6 +6,7 @@
   prefix = 'ausurf',
   pseudo_dir = './',
   outdir = './out/'
+  disk_io = 'none'
 /
 
 &SYSTEM

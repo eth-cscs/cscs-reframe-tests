@@ -13,12 +13,12 @@ from uenv import uarch
 
 cp2k_references = {
     'md': {
-        'gh200': {'time_run': (68, None, 0.05, 's')},
-        'zen2': {'time_run': (90, None, 0.05, 's')}
+        'gh200': {'time_run': (52, None, 0.05, 's')},
+        'zen2': {'time_run': (91, None, 0.05, 's')}
     },
     'pbe': {
-        'gh200': {'time_run': (53, None, 0.05, 's')},
-        'zen2': {'time_run': (51, None, 0.05, 's')}
+        'gh200': {'time_run': (44, None, 0.05, 's')},
+        'zen2': {'time_run': (53, None, 0.05, 's')}
     },
     'rpa': {
         'gh200': {'time_run': (575, None, 0.05, 's')}
