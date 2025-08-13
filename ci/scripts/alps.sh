@@ -362,7 +362,7 @@ launch_reframe_bencher() {
         --prefix=$SCRATCH/rfm-$CI_JOB_ID \
         -c ./checks/microbenchmarks/gpu/amd_gpu/amd_gpu.py \
         -r
-    python ./utility/bencher_metric_format.py latest.json
+    python3 ./utility/bencher_metric_format.py latest.json
 }
 # }}}
 # {{{ oneuptime
