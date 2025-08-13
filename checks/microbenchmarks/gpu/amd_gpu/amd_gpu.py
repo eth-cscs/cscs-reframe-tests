@@ -27,8 +27,7 @@ class AmdGPUBenchmarks(rfm.RegressionTest):
 @rfm.simple_test
 class rocPRISM(AmdGPUBenchmarks):
     benchmark = 'rocPRISM'
-    # _executable_opts = parameter(['6', '12', '27'])
-    _executable_opts = parameter(['27'])
+    _executable_opts = parameter(['6', '12', '27'])
 
     @run_before('compile')
     def prepare_build(self):
@@ -45,7 +44,7 @@ class rocPRISM(AmdGPUBenchmarks):
             self.build_system.config_opts = [
                 f'-DWITH_CUDA=ON',
                 f'-DWITH_HIP=OFF',
-                f'-DCMAKE_CUDA_ARCHITECTURES="{gpu_arch}"'
+                f'-DCMAKE_CUDA_ARCHITECTURES="{gpu_arch.removeprefix("sm_")}"'
             ]
 
     @run_before('run')
