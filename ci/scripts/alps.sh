@@ -429,8 +429,7 @@ launch_reframe_bencher() {
         --branch main \
         \
         --token $BENCHER_API_TOKEN \
-        --project $BENCHER_PROJECT \
-        --github-actions $BENCHER_COMMENT_TOKEN
+        --project $BENCHER_PROJECT
 }
 # }}}
 # {{{ oneuptime
