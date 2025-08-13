@@ -27,7 +27,7 @@ def reframe_to_bmf(reframe_report):
 
             perfvalues = testcase["perfvalues"]
             benchmark_measures = {}
-            for k,v in perfvalues.items():
+            for k, v in perfvalues.items():
                 measure = k.split(':')[-1]
                 benchmark_measures[measure] = {"value": v[0]}
 

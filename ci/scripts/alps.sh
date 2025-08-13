@@ -407,6 +407,7 @@ case $in in
     launch_reframe_1img) launch_reframe_1img "$img";;
     launch_reframe) launch_reframe;;
     launch_reframe_1arg) launch_reframe_1arg "$img";;
+    launch_reframe_bencher) launch_reframe_bencher "$img";;
     oneuptime) oneuptime "$img" "$pe";;
     *) echo "unknown arg=$in";;
 esac

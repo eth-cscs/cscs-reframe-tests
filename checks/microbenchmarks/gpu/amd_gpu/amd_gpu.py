@@ -3,12 +3,8 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-import os
-import pathlib
-import sys
 import reframe as rfm
 import reframe.utility.sanity as sn
-from uenv import uarch
 
 
 class AmdGPUBenchmarks(rfm.RegressionTest):
@@ -36,14 +32,14 @@ class rocPRISM(AmdGPUBenchmarks):
         gpu_arch = self.current_partition.select_devices('gpu')[0].arch
         if 'rocm' in self.current_environ.features:
             self.build_system.config_opts = [
-                f'-DWITH_CUDA=OFF',
-                f'-DWITH_HIP=ON',
+                '-DWITH_CUDA=OFF',
+                '-DWITH_HIP=ON',
                 f'-DCMAKE_HIP_ARCHITECTURES="{gpu_arch}"'
             ]
         else:
             self.build_system.config_opts = [
-                f'-DWITH_CUDA=ON',
-                f'-DWITH_HIP=OFF',
+                '-DWITH_CUDA=ON',
+                '-DWITH_HIP=OFF',
                 f'-DCMAKE_CUDA_ARCHITECTURES="{gpu_arch.removeprefix("sm_")}"'
             ]
 
@@ -61,7 +57,11 @@ class rocPRISM(AmdGPUBenchmarks):
     def set_perf_vars(self):
         make_perf = sn.make_performance_function
 
-        regex = r'radix sort time for (?P<keys>\S+) key-value pairs: (?P<latency>\S+) s, bandwidth: (?P<bandwidth>\S+) MiB/s'
+        regex = (
+            r'radix sort time for (?P<keys>\S+) '
+            r'key-value pairs: (?P<latency>\S+) s, '
+            r'bandwidth: (?P<bandwidth>\S+) MiB/s'
+        )
         keys = sn.extractsingle(regex, self.stdout, 'keys', int)
         latency = sn.extractsingle(regex, self.stdout, 'latency', float)
         bandwidth = sn.extractsingle(regex, self.stdout, 'bandwidth', float)
