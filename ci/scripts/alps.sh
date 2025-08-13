@@ -369,7 +369,20 @@ launch_reframe_bencher() {
     ################################################################################
     # Setup Bencher
     ################################################################################
-    ARCH="linux-arm-64"
+    arch=$(uname -m | tr '[:upper:]' '[:lower:]')
+    case "$arch" in
+        aarch64|arm64)
+            ARCH="linux-arm-64"
+            ;;
+        x86_64|amd64)
+            ARCH="linux-x86-64"
+            ;;
+        *)
+            echo "Unknown architecture: $arch" >&2
+            exit 1
+            ;;
+    esac
+    echo "Detected architecture (Bencher installation): $ARCH"
     REPO="bencherdev/bencher"
 
     TAG=$(curl -s https://api.github.com/repos/$REPO/releases/latest | grep tag_name | cut -d '"' -f4)
@@ -386,17 +399,34 @@ launch_reframe_bencher() {
     ################################################################################
     # Bencher run
     ################################################################################
-    ls bencher=*.json
+    bmf_file=$(ls bencher=*.json)
+    testbed="${bmf_file#*=}"
+    testbed="${testbed%.json}"
+
     ./bencher run \
         --threshold-measure latency \
         --threshold-test percentage \
         --threshold-max-sample-size 64 \
+        --threshold-lower-boundary _ \
         --threshold-upper-boundary 0.1 \
+        \
+        --threshold-measure bandwidth \
+        --threshold-test percentage \
+        --threshold-max-sample-size 64 \
+        --threshold-lower-boundary 0.1 \
+        --threshold-upper-boundary _ \
+        \
+        --threshold-measure keys/second \
+        --threshold-test percentage \
+        --threshold-max-sample-size 64 \
+        --threshold-lower-boundary 0.1 \
+        --threshold-upper-boundary _ \
+        \
         --thresholds-reset \
         --file bencher=*.json \
         --project $BENCHER_PROJECT \
         --branch main \
-        --testbed reframe-ci-cd \
+        --testbed $testbed \
         --adapter json \
         --token $BENCHER_API_TOKEN
 }

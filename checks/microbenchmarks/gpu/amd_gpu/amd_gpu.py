@@ -23,8 +23,7 @@ class AmdGPUBenchmarks(rfm.RegressionTest):
 @rfm.simple_test
 class rocPRISM(AmdGPUBenchmarks):
     benchmark = 'rocPRISM'
-    # _executable_opts = parameter(['6', '12', '27'])
-    _executable_opts = parameter(['6'])
+    _executable_opts = parameter(['6', '12', '27'])
 
     @run_before('compile')
     def prepare_build(self):
