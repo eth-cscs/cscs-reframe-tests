@@ -37,10 +37,15 @@ class rocPRISM(AmdGPUBenchmarks):
                 f'-DCMAKE_HIP_ARCHITECTURES="{gpu_arch}"'
             ]
         else:
+            gpu_arch = (
+                gpu_arch[len("sm_"):]
+                if gpu_arch.startswith("sm_")
+                else gpu_arch
+            )
             self.build_system.config_opts = [
                 '-DWITH_CUDA=ON',
                 '-DWITH_HIP=OFF',
-                f'-DCMAKE_CUDA_ARCHITECTURES="{gpu_arch.removeprefix("sm_")}"'
+                f'-DCMAKE_CUDA_ARCHITECTURES="{gpu_arch}"'
             ]
 
     @run_before('run')
