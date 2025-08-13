@@ -53,7 +53,7 @@ reframe:
   extends: .f7t-baremetal-runner
   timeout: 8 hours
   variables:
-    SLURM_TIMELIMIT: '00:15:00'
+    SLURM_TIMELIMIT: '00:20:00'
   needs: ['setup and pull']
   before_script:
     - echo "FIRECREST_SYSTEM=$FIRECREST_SYSTEM / F7T_URL=$F7T_URL / CLUSTER_NAME=$CLUSTER_NAME"
@@ -77,7 +77,6 @@ reframe:
     paths:
       - report.xml
       - latest.json
-      - bencher=*.json
     reports:
       junit: report.xml
 

@@ -355,6 +355,7 @@ launch_reframe_bencher() {
     # reframe -V
     echo "# UENV=$UENV"
     echo "# img=$img"
+    
     reframe -C ./config/cscs.py \
         --report-junit=report.xml \
         $img \
@@ -362,7 +363,42 @@ launch_reframe_bencher() {
         --prefix=$SCRATCH/rfm-$CI_JOB_ID \
         -c ./checks/microbenchmarks/gpu/amd_gpu/amd_gpu.py \
         -r
+
     python3 ./utility/bencher_metric_format.py latest.json
+
+    ################################################################################
+    # Setup Bencher
+    ################################################################################
+    ARCH="linux-arm-64"
+    REPO="bencherdev/bencher"
+
+    TAG=$(curl -s https://api.github.com/repos/$REPO/releases/latest | grep tag_name | cut -d '"' -f4)
+    FILENAME="bencher-${TAG}-${ARCH}"
+    URL="https://github.com/${REPO}/releases/download/${TAG}/${FILENAME}"
+
+    echo "Downloading $FILENAME from $URL"
+    curl -LO "$URL"
+    mv "$FILENAME" bencher
+
+    chmod +x bencher
+    echo "Testing ./bencher --version -> $(./bencher --version)"
+
+    ################################################################################
+    # Bencher run
+    ################################################################################
+    ls bencher=*.json
+    ./bencher run \
+        --threshold-measure latency \
+        --threshold-test percentage \
+        --threshold-max-sample-size 64 \
+        --threshold-upper-boundary 0.1 \
+        --thresholds-reset \
+        --file bencher=*.json \
+        --project $BENCHER_PROJECT \
+        --branch main \
+        --testbed reframe-ci-cd \
+        --adapter json \
+        --token $BENCHER_API_TOKEN
 }
 # }}}
 # {{{ oneuptime
