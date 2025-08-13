@@ -383,8 +383,8 @@ launch_reframe_bencher() {
             ;;
     esac
     echo "Detected architecture (Bencher installation): $ARCH"
-    REPO="bencherdev/bencher"
 
+    REPO="bencherdev/bencher"
     TAG=$(curl -s https://api.github.com/repos/$REPO/releases/latest | grep tag_name | cut -d '"' -f4)
     FILENAME="bencher-${TAG}-${ARCH}"
     URL="https://github.com/${REPO}/releases/download/${TAG}/${FILENAME}"
@@ -422,13 +422,15 @@ launch_reframe_bencher() {
         --threshold-lower-boundary 0.1 \
         --threshold-upper-boundary _ \
         \
-        --thresholds-reset \
-        --file bencher=*.json \
-        --project $BENCHER_PROJECT \
-        --branch main \
-        --testbed $testbed \
         --adapter json \
-        --token $BENCHER_API_TOKEN
+        --file bencher=*.json \
+        --testbed $testbed \
+        --thresholds-reset \
+        --branch main \
+        \
+        --token $BENCHER_API_TOKEN \
+        --project $BENCHER_PROJECT \
+        --github-actions $BENCHER_COMMENT_TOKEN
 }
 # }}}
 # {{{ oneuptime
