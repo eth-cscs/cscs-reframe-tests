@@ -31,10 +31,16 @@ class ParaView_coloredSphere(rfm.RunOnlyRegressionTest):
     num_tasks = 12
     num_tasks_per_node = 6
     time_limit = '3m'
-    executable = '/user-environment/ParaView-5.13/bin/pvbatch'
+    executable = './ParaView/bin/pvbatch'
+    # executable = '/user-environment/ParaView-5.13/bin/pvbatch'
     executable_opts = ['-- coloredSphere.py']
     maintainers = ['SSA']
     tags = {'production'}
+
+    @run_before('run')
+    def find_pvbatch(self):
+        self.prerun_cmds = [
+            'ln -fs /user-environment/ParaView-[0-9]* ParaView']
 
     @run_before('run')
     def output_file_info(self):
@@ -71,8 +77,7 @@ class ParaView_catalystClipping(rfm.RegressionTest):
     executable = './bin/dummysph_catalystV2'
     env_vars = {
         'CATALYST_IMPLEMENTATION_NAME': 'paraview',
-        'CATALYST_IMPLEMENTATION_PATHS':
-        '/user-environment/ParaView-5.13/lib64/catalyst',
+        'CATALYST_IMPLEMENTATION_PATHS': '$PWD/ParaView/lib64/catalyst',
         'CATALYST_DATA_DUMP_DIRECTORY': '$PWD/dataset',
     }
     maintainers = ['SSA']
@@ -82,9 +87,9 @@ class ParaView_catalystClipping(rfm.RegressionTest):
     def prepare_build(self):
         tgz = f'v{self.git_tag}.tar.gz'
         self.prebuild_cmds = [
-            f'# tested with paraview/5.13.2:v2 -v paraview-python',
             f'wget -q https://github.com/jfavre/DummySPH/archive/refs/tags/'
             f'{tgz} && tar xf {tgz} && rm -f {tgz}',
+            f'ln -fs /user-environment/ParaView-[0-9]* ParaView',
         ]
         # on eiger, mpicxx/mpicc are broken (g++: No such file)
         self.build_system.cc = 'gcc'
