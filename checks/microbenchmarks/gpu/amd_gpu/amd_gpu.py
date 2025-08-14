@@ -27,7 +27,7 @@ class rocPRISM(AmdGPUBenchmarks):
 
     @run_before('compile')
     def prepare_build(self):
-        self.build_system.builddir = 'build'
+        self.build_system.builddir = f'build_{self.benchmark}'
         self.prebuild_cmds = [f'ln -fs {self.benchmark}/* .', 'pwd']
         gpu_arch = self.current_partition.select_devices('gpu')[0].arch
         if 'rocm' in self.current_environ.features:
