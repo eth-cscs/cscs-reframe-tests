@@ -43,6 +43,12 @@ def reframe_to_bmf(reframe_report):
                 )
             bmf[benchmark_name] = benchmark_measures
 
+    if not environ or not partition or not system:
+        raise ValueError(
+            "Error: No passing testcases found; "
+            "cannot determine environment, partition, or system."
+        )
+
     environ_ = environ.pop()
     partition_ = partition.pop()
     system_ = system.pop()
