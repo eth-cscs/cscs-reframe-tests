@@ -112,7 +112,7 @@ site_configuration = {
             ]
         },
         {
-           'name': 'cpe_production',
+           'name': 'daily_production',
            'options': [
                '-Sstrict_check=1',
                '--max-retries=1',

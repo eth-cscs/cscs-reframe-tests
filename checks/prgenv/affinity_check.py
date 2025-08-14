@@ -5,7 +5,7 @@
 
 import os
 import pathlib
-import sys 
+import sys
 
 import reframe as rfm
 import reframe.utility.sanity as sn
@@ -21,11 +21,11 @@ class CompileAffinityTool(rfm.CompileOnlyRegressionTest,
     valid_systems = [
         '*'
     ]
-    valid_prog_environs = ['+mpi']
+    valid_prog_environs = ['+mpi +prgenv']
     build_system = 'Make'
     build_locally = False
-    env_vars = {'MPICH_GPU_SUPPORT_ENABLED': 0} 
-    
+    env_vars = {'MPICH_GPU_SUPPORT_ENABLED': 0}
+
     sourcesdir = 'https://github.com/vkarak/affinity'
     tags = {'production', 'scs', 'maintenance', 'craype'}
 
@@ -48,7 +48,7 @@ class CompileAffinityTool(rfm.CompileOnlyRegressionTest,
 
 class CompileAffinityToolNoOmp(CompileAffinityTool):
     valid_systems = ['*']
-    valid_prog_environs = ['+mpi +openmp']
+    valid_prog_environs = ['+mpi +openmp +prgenv']
 
     @run_before('compile')
     def set_build_opts(self):
@@ -73,7 +73,7 @@ class AffinityTestBase(rfm.RunOnlyRegressionTest,
         '+remote'
     ]
     valid_prog_environs = [
-        '+openmp'
+        '+openmp +prgenv'
     ]
 
     tags = {'production', 'scs', 'maintenance', 'craype'}
