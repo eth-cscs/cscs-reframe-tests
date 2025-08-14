@@ -14,16 +14,20 @@ def reframe_to_bmf(reframe_report):
         data = json.load(f)
 
     # Bencher Metric Format
+    # Bencher can upload JSON files that follow this format
     bmf = {}
 
+    environ = set()
+    partition = set()
+    system = set()
     for run in data["runs"]:
         for testcase in run["testcases"]:
             if testcase["result"] != "pass":
                 continue
 
-            environ = testcase["environ"]
-            partition = testcase["partition"]
-            system = testcase["system"]
+            environ.add(testcase["environ"])
+            partition.add(testcase["partition"])
+            system.add(testcase["system"])
 
             perfvalues = testcase["perfvalues"]
             benchmark_measures = {}
@@ -32,9 +36,24 @@ def reframe_to_bmf(reframe_report):
                 benchmark_measures[measure] = {"value": v[0]}
 
             benchmark_name = testcase["display_name"]
+            if benchmark_name in bmf:
+                raise ValueError(
+                    f"Error: Duplicate benchmark name '{benchmark_name}' "
+                    f"found in the report."
+                )
             bmf[benchmark_name] = benchmark_measures
 
-    bencher_file_name = f"bencher={system}={partition}={environ}.json"
+    environ_ = environ.pop()
+    partition_ = partition.pop()
+    system_ = system.pop()
+    if len(environ) != 0 or len(partition) != 0 or len(system) != 0:
+        raise ValueError(
+            "Error: A Bencher JSON file must report exactly one "
+            "environment, partition, and system."
+        )
+
+    # The bencher file name is used in CI/CD as the testbed option
+    bencher_file_name = f"bencher={system_}={partition_}={environ_}.json"
     with open(bencher_file_name, "w") as f:
         json.dump(bmf, f, indent=2)
 
