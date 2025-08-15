@@ -174,7 +174,7 @@ class lammps_gpu_test(rfm.RunOnlyRegressionTest):
         hh = sn.extractsingle(regex, self.stdout, 'hh', int)
         mm = sn.extractsingle(regex, self.stdout, 'mm', int)
         ss = sn.extractsingle(regex, self.stdout, 'ss', int)
-        return (hh*3600 + mm*60 + ss)
+        return float(hh*3600 + mm*60 + ss)
 
 
 @rfm.simple_test
@@ -251,4 +251,4 @@ class lammps_kokkos_test(rfm.RunOnlyRegressionTest):
         hh = sn.extractsingle(regex, self.stdout, 'hh', int)
         mm = sn.extractsingle(regex, self.stdout, 'mm', int)
         ss = sn.extractsingle(regex, self.stdout, 'ss', int)
-        return (hh*3600 + mm*60 + ss)
+        return float(hh*3600 + mm*60 + ss)
