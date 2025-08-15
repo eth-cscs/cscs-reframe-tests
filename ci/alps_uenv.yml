@@ -82,7 +82,7 @@ reframe:
         ./ci/scripts/alps.sh launch_reframe_1arg "--mode uenv_production"
       else
         # BENCHER_API_TOKEN is defined (even if empty)
-        ./ci/scripts/alps.sh launch_reframe_bencher "--mode uenv_production"
+        ./ci/scripts/alps.sh launch_reframe_bencher "--mode uenv_production -c ./checks/microbenchmarks/gpu/amd_gpu/amd_gpu.py"
       fi
   artifacts:
     when: always

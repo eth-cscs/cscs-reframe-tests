@@ -349,7 +349,7 @@ launch_reframe_1arg() {
 # }}}
 # {{{ launch_reframe_bencher
 launch_reframe_bencher() {
-    launch_reframe_1arg "$img" "-c ./checks/microbenchmarks/gpu/amd_gpu/amd_gpu.py"
+    launch_reframe_1arg "$img"
 
     python3 ./utility/bencher_metric_format.py latest.json
 
