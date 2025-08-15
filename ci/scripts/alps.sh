@@ -338,10 +338,10 @@ launch_reframe_1arg() {
     # export RFM_AUTODETECT_XTHOSTNAME=1
     # reframe -V
     echo "# UENV=$UENV"
-    echo "# img=$img"
+    echo "# img=$1"
     reframe -C ./config/cscs.py \
         --report-junit=report.xml \
-        $img \
+        "$@" \
         --system=$system \
         --prefix=$SCRATCH/rfm-$CI_JOB_ID \
         -r
@@ -349,20 +349,7 @@ launch_reframe_1arg() {
 # }}}
 # {{{ launch_reframe_bencher
 launch_reframe_bencher() {
-    export RFM_AUTODETECT_METHODS="cat /etc/xthostname,hostname"
-    export RFM_USE_LOGIN_SHELL=1
-    # export RFM_AUTODETECT_XTHOSTNAME=1
-    # reframe -V
-    echo "# UENV=$UENV"
-    echo "# img=$img"
-    
-    reframe -C ./config/cscs.py \
-        --report-junit=report.xml \
-        $img \
-        --system=$system \
-        --prefix=$SCRATCH/rfm-$CI_JOB_ID \
-        -c ./checks/microbenchmarks/gpu/amd_gpu/amd_gpu.py \
-        -r
+    launch_reframe_1arg "$img" "-c ./checks/microbenchmarks/gpu/amd_gpu/amd_gpu.py"
 
     python3 ./utility/bencher_metric_format.py latest.json
 

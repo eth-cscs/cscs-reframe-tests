@@ -67,7 +67,7 @@ class rocPRISM(AmdGPUBenchmarks):
             r'key-value pairs: (?P<latency>\S+) s, '
             r'bandwidth: (?P<bandwidth>\S+) MiB/s'
         )
-        keys = sn.extractsingle(regex, self.stdout, 'keys', int)
+        keys = sn.extractsingle(regex, self.stdout, 'keys', float)
         latency = sn.extractsingle(regex, self.stdout, 'latency', float)
         bandwidth = sn.extractsingle(regex, self.stdout, 'bandwidth', float)
 
