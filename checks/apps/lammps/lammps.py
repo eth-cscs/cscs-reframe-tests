@@ -130,7 +130,6 @@ class lammps_gpu_test(rfm.RunOnlyRegressionTest):
         self.job.options = [f'--nodes={config["nodes"]}']
         self.num_tasks_per_node = config['ntasks-per-node']
         self.num_tasks = config['nodes'] * self.num_tasks_per_node
-        self.ntasks_per_core = 1
         self.time_limit = config['walltime']
         self.executable_opts = [f'-i {self.test_name}.in']
 
@@ -200,9 +199,9 @@ class lammps_kokkos_test(rfm.RunOnlyRegressionTest):
         config = slurm_config[self.test_name][self.uarch]
         self.job.options = [f'--nodes={config["nodes"]}']
         self.num_tasks_per_node = config['ntasks-per-node']
+        self.num_cpus_per_task = 1
         if (self.uarch == 'zen2'):
             self.num_cpus_per_task = config['cpus-per-task']
-            self.ntasks_per_core = 1
         self.num_tasks = config['nodes'] * self.num_tasks_per_node
         self.time_limit = config['walltime']
         self.executable_opts = [f'-i {self.test_name}.in']
