@@ -11,6 +11,7 @@ class AmdGPUBenchmarks(rfm.RegressionTest):
     '''
     Base class for amd-gpu-benchmarks
     '''
+    maintainers = ['SSA']
     sourcesdir = 'https://github.com/eth-cscs/amd-gpu-benchmarks.git'
     valid_prog_environs = ['+rocm', '+cuda']
     valid_systems = ['+remote']
