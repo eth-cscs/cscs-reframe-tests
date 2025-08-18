@@ -204,7 +204,6 @@ class lammps_kokkos_test(rfm.RunOnlyRegressionTest):
             self.num_cpus_per_task = config['cpus-per-task']
             self.ntasks_per_core = 1
         self.num_tasks = config['nodes'] * self.num_tasks_per_node
-        self.ntasks_per_core = 1
         self.time_limit = config['walltime']
         self.executable_opts = [f'-i {self.test_name}.in']
 
