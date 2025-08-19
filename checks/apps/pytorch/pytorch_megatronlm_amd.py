@@ -22,6 +22,9 @@ class PyTorchMegatronLM_AMD(rfm.RunOnlyRegressionTest):
     megatron_repo = variable(
         str, value='https://github.com/ROCm/Megatron-LM'
     )
+
+    # FIXME: this PR needs to be merged so that the distributed
+    # checkpointinting succeeds: https://github.com/ROCm/Megatron-LM/pull/83
     megatron_release = variable(str, value='38fc830')
     model = parameter(['llama2-7b'])
     exit_interval = variable(int, value=10)
@@ -85,6 +88,7 @@ class PyTorchMegatronLM_AMD(rfm.RunOnlyRegressionTest):
     sourcesdir = None
     executable = 'bash'
 
+    maintainers = ['VCUE']
     tags = {'maintenance', 'production', 'ml'}
 
     @run_after('setup')
@@ -376,6 +380,7 @@ class PyTorchMegatronLM_AMD(rfm.RunOnlyRegressionTest):
 
 
 class pytorch_image_import(rfm.RunOnlyRegressionTest):
+    sourcesdir = None
     image = variable(
         str,
         value=('docker://rocm/megatron-lm:v25.6_py312')
