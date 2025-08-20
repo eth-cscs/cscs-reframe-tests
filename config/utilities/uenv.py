@@ -131,6 +131,8 @@ def _get_uenvs():
             if len(views) > 0:
                 env['resources']['uenv_views'] = {'views': ','.join(views)}
             env['features'] += ['uenv']
+            if env['name'].startswith('prgenv'):
+                env['features'] += ['prgenv']
 
             uenv_environments.append(env)
 
