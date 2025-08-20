@@ -89,7 +89,7 @@ class PyTorchMegatronLM_AMD(rfm.RunOnlyRegressionTest):
     executable = 'bash'
 
     maintainers = ['VCUE']
-    tags = {'maintenance', 'production', 'ml'}
+    tags = {'ml'}
 
     @run_after('setup')
     def setup_test(self):
