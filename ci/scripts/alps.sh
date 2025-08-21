@@ -340,13 +340,98 @@ launch_reframe_1arg() {
     # export RFM_AUTODETECT_XTHOSTNAME=1
     # reframe -V
     echo "# UENV=$UENV"
+    echo "# img=$1"
+    reframe -C ./config/cscs.py \
+        --report-junit=report.xml \
+        "$@" \
+        --system=$system \
+        --prefix=$SCRATCH/rfm-$CI_JOB_ID \
+        -r
+}
+# }}}
+# {{{ launch_reframe_bencher
+launch_reframe_bencher() {
+    export RFM_AUTODETECT_METHODS="cat /etc/xthostname,hostname"
+    export RFM_USE_LOGIN_SHELL=1
+    # export RFM_AUTODETECT_XTHOSTNAME=1
+    # reframe -V
+    echo "# UENV=$UENV"
     echo "# img=$img"
+
     reframe -C ./config/cscs.py \
         --report-junit=report.xml \
         $img \
         --system=$system \
         --prefix=$SCRATCH/rfm-$CI_JOB_ID \
+        -c ./checks/microbenchmarks/gpu/amd_gpu/amd_gpu.py \
         -r
+
+    python3 ./utility/bencher_metric_format.py latest.json
+
+    ################################################################################
+    # Setup Bencher
+    ################################################################################
+    arch=$(uname -m | tr '[:upper:]' '[:lower:]')
+    case "$arch" in
+        aarch64|arm64)
+            ARCH="linux-arm-64"
+            ;;
+        x86_64|amd64)
+            ARCH="linux-x86-64"
+            ;;
+        *)
+            echo "Unknown architecture: $arch" >&2
+            exit 1
+            ;;
+    esac
+    echo "Detected architecture (Bencher installation): $ARCH"
+
+    REPO="bencherdev/bencher"
+    TAG=$(curl -s https://api.github.com/repos/$REPO/releases/latest | grep tag_name | cut -d '"' -f4)
+    FILENAME="bencher-${TAG}-${ARCH}"
+    URL="https://github.com/${REPO}/releases/download/${TAG}/${FILENAME}"
+
+    echo "Downloading $FILENAME from $URL"
+    curl -LO "$URL"
+    mv "$FILENAME" bencher
+
+    chmod +x bencher
+    echo "Testing ./bencher --version -> $(./bencher --version)"
+
+    ################################################################################
+    # Bencher run
+    ################################################################################
+    bmf_file=$(ls bencher=*.json)
+    testbed="${bmf_file#*=}"
+    testbed="${testbed%.json}"
+
+    ./bencher run \
+        --threshold-measure latency \
+        --threshold-test percentage \
+        --threshold-max-sample-size 64 \
+        --threshold-lower-boundary _ \
+        --threshold-upper-boundary 0.1 \
+        \
+        --threshold-measure bandwidth \
+        --threshold-test percentage \
+        --threshold-max-sample-size 64 \
+        --threshold-lower-boundary 0.1 \
+        --threshold-upper-boundary _ \
+        \
+        --threshold-measure keys/second \
+        --threshold-test percentage \
+        --threshold-max-sample-size 64 \
+        --threshold-lower-boundary 0.1 \
+        --threshold-upper-boundary _ \
+        \
+        --adapter json \
+        --file bencher=*.json \
+        --testbed $testbed \
+        --thresholds-reset \
+        --branch main \
+        \
+        --token $BENCHER_API_TOKEN \
+        --project $BENCHER_PROJECT
 }
 # }}}
 # {{{ oneuptime
@@ -391,6 +476,7 @@ case $in in
     launch_reframe_1img) launch_reframe_1img "$img";;
     launch_reframe) launch_reframe;;
     launch_reframe_1arg) launch_reframe_1arg "$img";;
+    launch_reframe_bencher) launch_reframe_bencher "$img";;
     oneuptime) oneuptime "$img" "$pe";;
     *) echo "unknown arg=$in";;
 esac
