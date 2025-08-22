@@ -14,7 +14,6 @@ base_dir = os.path.dirname(os.path.abspath(__file__))
 utilities_path = os.path.join(base_dir, 'utilities')
 sys.path.append(utilities_path)
 
-import firecrest_slurm
 import uenv
 
 
