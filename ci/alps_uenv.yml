@@ -79,10 +79,10 @@ reframe:
     - |
       if [ -z "${BENCHER_API_TOKEN+x}" ]; then
         # BENCHER_API_TOKEN is UNDEFINED
-        ./ci/scripts/alps.sh launch_reframe_1arg "--mode uenv_production"
+        ./ci/scripts/alps.sh launch_reframe_1arg "--mode daily_production"
       else
         # BENCHER_API_TOKEN is defined (even if empty)
-        ./ci/scripts/alps.sh launch_reframe_bencher "--mode uenv_production"
+        ./ci/scripts/alps.sh launch_reframe_bencher "--mode daily_production"
       fi
   artifacts:
     when: always
