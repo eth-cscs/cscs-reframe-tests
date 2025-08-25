@@ -274,9 +274,9 @@ install_reframe() {
 
     # FIXME: This is temporary until this PR is merged: https://github.com/reframe-hpc/reframe/pull/3516
     (wget --quiet "https://github.com/ekouts/reframe/archive/refs/heads/feat/sanity_logging.zip" && \
-    unzip -qq "sanity_logging.zip" && cd reframe-sanity_logging && ./bootstrap.sh &> /dev/null)
-    export PATH="$(pwd)/reframe-sanity_logging/bin:$PATH"
-    echo "$(pwd)/reframe-sanity_logging/bin"
+    unzip -qq "sanity_logging.zip" && cd reframe-feat-sanity_logging && ./bootstrap.sh &> /dev/null)
+    export PATH="$(pwd)/reframe-feat-sanity_logging/bin:$PATH"
+    echo "$(pwd)/reframe-feat-sanity_logging/bin"
     # deps for cscs-reframe-tests.git:
     pip install python-hostlist requests &> .deps.cscs-reframe-tests
     # (wget --quiet "https://github.com/reframe-hpc/reframe/archive/refs/tags/v4.5.2.tar.gz" && \
