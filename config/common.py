@@ -147,6 +147,17 @@ site_configuration = {
            ]
         },
         {
+           'name': 'uenv_deployment',
+           'options': [
+               '-Sstrict_check=1',
+               '--report-file=$PWD/latest.json',
+               '-c checks/apps',
+               '-c checks/libraries',
+               '-c checks/prgenv',
+               '-p \'(?!PrgEnv-.*|builtin)\'',
+           ]
+        },
+        {
             'name': 'appscheckout_flexible',
             'options': [
                 '--unload-module=reframe',
