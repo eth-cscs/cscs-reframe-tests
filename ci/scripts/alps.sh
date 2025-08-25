@@ -356,11 +356,9 @@ launch_reframe_bencher() {
     # export RFM_AUTODETECT_XTHOSTNAME=1
     # reframe -V
     echo "# UENV=$UENV"
-    echo "# img=$img"
 
     reframe -C ./config/cscs.py \
         --report-junit=report.xml \
-        $img \
         --system=$system \
         --prefix=$SCRATCH/rfm-$CI_JOB_ID \
         -c ./checks/microbenchmarks/gpu/amd_gpu/amd_gpu.py \
@@ -476,7 +474,7 @@ case $in in
     launch_reframe_1img) launch_reframe_1img "$img";;
     launch_reframe) launch_reframe;;
     launch_reframe_1arg) launch_reframe_1arg "$img";;
-    launch_reframe_bencher) launch_reframe_bencher "$img";;
+    launch_reframe_bencher) launch_reframe_bencher;;
     oneuptime) oneuptime "$img" "$pe";;
     *) echo "unknown arg=$in";;
 esac
