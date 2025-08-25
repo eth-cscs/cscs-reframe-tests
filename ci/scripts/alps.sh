@@ -340,10 +340,10 @@ launch_reframe_1arg() {
     # export RFM_AUTODETECT_XTHOSTNAME=1
     # reframe -V
     echo "# UENV=$UENV"
-    echo "# img=$1"
+    echo "# args=$@"
     reframe -C ./config/cscs.py \
         --report-junit=report.xml \
-        "$@" \
+        $@ \
         --system=$system \
         --prefix=$SCRATCH/rfm-$CI_JOB_ID \
         -r
