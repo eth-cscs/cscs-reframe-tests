@@ -10,6 +10,9 @@ def reframe_to_bmf(reframe_report):
     if not path.exists():
         sys.exit(f"Error: File '{reframe_report}' not found.")
 
+    print("Converting ReFrame report to Bencher Metric Format...", flush=True)
+    print(f"File: {reframe_report}", flush=True)
+
     with open(reframe_report, "r", encoding="utf-8") as f:
         data = json.load(f)
 
@@ -62,6 +65,9 @@ def reframe_to_bmf(reframe_report):
     bencher_file_name = f"bencher={system_}={partition_}={environ_}.json"
     with open(bencher_file_name, "w") as f:
         json.dump(bmf, f, indent=2)
+
+    print(f"Bencher Metric Format file created: {bencher_file_name}",
+          flush=True)
 
 
 if __name__ == "__main__":
