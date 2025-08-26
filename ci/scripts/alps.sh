@@ -357,9 +357,15 @@ launch_reframe_bencher() {
     # reframe -V
     echo "# UENV=$UENV"
 
+    if [ "$CLUSTER_NAME" = "beverin" ]; then
+      mi=":mi300"
+    else
+      mi=""
+    fi
+
     reframe -C ./config/cscs.py \
         --report-junit=report.xml \
-        --system=$system \
+        --system=$system$mi \
         --prefix=$SCRATCH/rfm-$CI_JOB_ID \
         -c ./checks/microbenchmarks/gpu/amd_gpu/amd_gpu.py \
         -r
