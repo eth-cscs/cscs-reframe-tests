@@ -13,7 +13,7 @@ class AmdGPUBenchmarks(rfm.RegressionTest):
     '''
     maintainers = ['SSA']
     sourcesdir = 'https://github.com/eth-cscs/amd-gpu-benchmarks.git'
-    valid_prog_environs = ['+rocm', '+cuda']
+    valid_prog_environs = ['+rocm', '+prgenv +cuda']
     valid_systems = ['+remote']
     build_system = 'CMake'
     time_limit = '2m'
