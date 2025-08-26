@@ -154,7 +154,7 @@ site_configuration = {
                '-c checks/apps',
                '-c checks/libraries',
                '-c checks/prgenv',
-               '-p \'(?!PrgEnv-.*|builtin)\'',
+               "-p '(?!PrgEnv-.*|builtin)'",
            ]
         },
         {
