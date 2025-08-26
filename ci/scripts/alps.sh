@@ -365,6 +365,7 @@ launch_reframe_bencher() {
 
     reframe -C ./config/cscs.py \
         --report-junit=report.xml \
+        --report-file latest.json \
         --system=$system$mi \
         --prefix=$SCRATCH/rfm-$CI_JOB_ID \
         -c ./checks/microbenchmarks/gpu/amd_gpu/amd_gpu.py \
