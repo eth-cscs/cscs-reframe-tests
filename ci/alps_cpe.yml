@@ -16,6 +16,8 @@ reframe:
     - echo "FIRECREST_SYSTEM=$FIRECREST_SYSTEM / F7T_URL=$F7T_URL / CLUSTER_NAME=$CLUSTER_NAME"
     - uname -a
     - pwd
+    # Send data to elastic on main branch only
+    - '[ "$CI_COMMIT_REF_NAME" != "main" ] && unset RFM_HTTPJSON_URL'
   script:
     - hostname
     - rfm_path=$(./ci/scripts/alps.sh install_reframe)
@@ -55,5 +57,7 @@ notify_slack:
     - ls -a
     - pip install requests
     - python ./ci/scripts/slack_notify.py latest.json cpe
-  when: always
-
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "main"'
+      when: always
+    - when: never

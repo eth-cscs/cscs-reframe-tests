@@ -105,7 +105,7 @@ class HelloWorldTestSerial(HelloWorldBaseTest):
     num_tasks = 1
     num_tasks_per_node = 1
     num_cpus_per_task = 1
-    valid_prog_environs = ['+serial']
+    valid_prog_environs = ['+serial +prgenv']
 
     @run_after('init')
     def update_description(self):
@@ -121,7 +121,7 @@ class HelloWorldTestOpenMP(HelloWorldBaseTest):
     num_tasks = 1
     num_tasks_per_node = 1
     num_cpus_per_task = 4
-    valid_prog_environs = ['+openmp']
+    valid_prog_environs = ['+openmp +prgenv']
 
     @run_before('compile')
     def set_openmp_flags(self):
@@ -154,7 +154,7 @@ class HelloWorldTestMPI(HelloWorldBaseTest):
     num_tasks = 2
     num_tasks_per_node = 1
     num_cpus_per_task = 1
-    valid_prog_environs = ['+mpi']
+    valid_prog_environs = ['+mpi +prgenv']
 
     @run_after('init')
     def update_description(self):
@@ -171,7 +171,7 @@ class HelloWorldTestMPIOpenMP(HelloWorldBaseTest):
     num_tasks = 6
     num_tasks_per_node = 3
     num_cpus_per_task = 4
-    valid_prog_environs = ['+mpi +openmp']
+    valid_prog_environs = ['+mpi +openmp +prgenv']
 
     @run_after('init')
     def update_description(self):

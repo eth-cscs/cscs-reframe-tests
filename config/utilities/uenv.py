@@ -93,9 +93,10 @@ def _get_uenvs():
                 image_environments = yaml.load(
                     image_envs.read(), Loader=yaml.BaseLoader)
         except OSError as err:
-            raise ConfigError(
-                f"problem loading the metadata from '{rfm_meta}'"
-            )
+            print(f'Skipping uenv `{uenv}`, there was an error '
+                  f'reading the metadata: {err}')
+
+            continue
 
         for k, v in image_environments.items():
             # strip out the fields that are not to be part reframe environment
@@ -130,6 +131,8 @@ def _get_uenvs():
             if len(views) > 0:
                 env['resources']['uenv_views'] = {'views': ','.join(views)}
             env['features'] += ['uenv']
+            if env['name'].startswith('prgenv'):
+                env['features'] += ['prgenv']
 
             uenv_environments.append(env)
 

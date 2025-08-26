@@ -52,9 +52,14 @@ reframe:
   stage: run
   extends: .f7t-baremetal-runner
   timeout: 8 hours
-  variables:
-    SLURM_TIMELIMIT: '02:00:00'
   needs: ['setup and pull']
+  rules:
+    - if: '$BENCHER_API_TOKEN == null'
+      variables:
+        SLURM_TIMELIMIT: '02:00:00'
+    - if: '$BENCHER_API_TOKEN'
+      variables:
+        SLURM_TIMELIMIT: '00:20:00'
   before_script:
     - echo "FIRECREST_SYSTEM=$FIRECREST_SYSTEM / F7T_URL=$F7T_URL / CLUSTER_NAME=$CLUSTER_NAME"
     - uname -a
@@ -63,13 +68,22 @@ reframe:
     # - source ./uenv-5.1.0/bin/activate-uenv
     - uenv --version
     - echo "UENV=$UENV" | tr , "\n"
+    # Send data to elastic on main branch only
+    - '[ "$CI_COMMIT_REF_NAME" != "main" ] && unset RFM_HTTPJSON_URL'
   script:
     - hostname
     - rfm_path=$(./ci/scripts/alps.sh install_reframe)
     - echo "rfm_path=$rfm_path"
     - export PATH=$rfm_path:$PATH
     - reframe -V
-    - ./ci/scripts/alps.sh launch_reframe_1arg "--mode uenv_production"
+    - |
+      if [ -z "${BENCHER_API_TOKEN+x}" ]; then
+        # BENCHER_API_TOKEN is UNDEFINED
+        ./ci/scripts/alps.sh launch_reframe_1arg "--mode daily_production"
+      else
+        # BENCHER_API_TOKEN is defined (even if empty)
+        ./ci/scripts/alps.sh launch_reframe_bencher "--mode daily_production"
+      fi
   artifacts:
     when: always
     paths:
@@ -100,5 +114,7 @@ notify_slack:
     - ls -a
     - pip install requests
     - python ./ci/scripts/slack_notify.py latest.json uenv
-  when: always
-
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "main"'
+      when: always
+    - when: never
