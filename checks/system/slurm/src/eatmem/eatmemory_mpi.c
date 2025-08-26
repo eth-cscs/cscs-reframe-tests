@@ -115,10 +115,11 @@ int main(int argc, char *argv[]) {
            getTotalSystemMemory(), getFreeSystemMemory());
     cscs_read_proc_meminfo(rank);
   }
-  int chunk = 16777216; // 16M
+  // chunk * x cores:
+  // int chunk = 16777216; // 16M
   // int chunk =  33554432; //  32M
   // int chunk =  67108864; //  64M
-  // int chunk = 134217728; // 128M
+  int chunk = 134217728; // 128M
   // int chunk = 268435456; // = 256M
   // int chunk=536870912; // = 512M
   // int chunk=1073741824; // = 1G
