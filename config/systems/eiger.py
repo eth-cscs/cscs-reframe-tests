@@ -11,6 +11,7 @@ import reframe.utility.osext as osext
 
 
 site_configuration = {
+    'resourcesdir': '/capstor/store/cscs/cscs/public/reframe/resources',
     'systems': [
         {
             'name': 'eiger',
