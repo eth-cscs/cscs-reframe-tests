@@ -87,16 +87,12 @@ class UENV_NVMLCheck(NvmlBase):
 
     @run_after('setup')
     def setup_src(self):
-        cuda_root = None
         cuda_home = os.environ.get("CUDA_HOME")
-        if cuda_home is not None:
-            cuda_root = cuda_home
-        else:
-            cuda_root = (
-                f"`echo $UENV_VIEW |cut -d: -f1`"
-                f"/env"
-                f"/`echo $UENV_VIEW |cut -d: -f3`")
-
+        cuda_root = cuda_home if cuda_home is not None else (
+            f"`echo $UENV_VIEW |cut -d: -f1`"
+            f"/env"
+            f"/`echo $UENV_VIEW |cut -d: -f3`"
+        )
         self.sourcepath = f'{cuda_root}/nvml/example/example.c'
         self.prebuild_cmds = [f'echo "# sourcepath={self.sourcepath}"']
         self.build_system.cflags = [f'-I {cuda_root}/include']
