@@ -46,7 +46,21 @@ class CudaSamplesBase(rfm.RegressionTest, ContainerEngineCPEMixin):
             # The tags v12.[6-7] do not exist, fall back to v12.5
             rf"[[ $CUDA_VER = 'v12.6' || $CUDA_VER = 'v12.7' ]] && "
             rf"export CUDA_VER='v12.5'",
+            rf"echo CUDA_VER=$CUDA_VER",
             rf"git checkout ${{CUDA_VER}}",
+        ]
+        # concurrentKernels is osbsolete since cuda/12.8, fall back to v12.5:
+        # https://github.com/NVIDIA/cuda-samples/releases/tag/v12.8
+        if self.sample == 'concurrentKernels':
+            self.prebuild_cmds += [
+                rf"# concurrentKernels is osbsolete since cuda/12.8",
+                rf"[[ $CUDA_VER = 'v12.8' ]] && "
+                rf"export CUDA_VER='v12.5'",
+                rf"echo CUDA_VER=$CUDA_VER",
+                rf"git checkout ${{CUDA_VER}}",
+            ]
+
+        self.prebuild_cmds += [
             rf"cd Samples/{self.sample_dir[self.sample]}/{self.sample}"
         ]
 
@@ -82,7 +96,8 @@ class CPE_CudaSamples(CudaSamplesBase):
         'LD_LIBRARY_PATH': '$CUDA_HOME/lib64:$LD_LIBRARY_PATH'
     }
     valid_systems = ['+nvgpu']
-    valid_prog_environs = ['+cuda -uenv']
+    valid_prog_environs = []  # stop testing CPE
+    # valid_prog_environs = ['+cuda +cpe -uenv']
 
     @run_after('setup')
     def set_modules(self):
@@ -109,7 +124,7 @@ class CPE_CudaSamples(CudaSamplesBase):
         # for simpleCUBLAS and conjugateGradientCudaGraphs:
         if 'containerized_cpe' not in self.current_environ.features:
             self.build_system.options += [
-                'EXTRA_NVCCFLAGS="-I $CUDATOOLKIT_HOME/../../math_libs/include"',
+                'EXTRA_NVCCFLAGS="-I $CUDATOOLKIT_HOME/../../math_libs/include"',  # noqa: E501
                 'EXTRA_LDFLAGS="-L $CUDATOOLKIT_HOME/../../math_libs/lib64"'
             ]
 
@@ -118,11 +133,9 @@ class CPE_CudaSamples(CudaSamplesBase):
 class UENV_CudaSamples(CudaSamplesBase):
     env_vars = {'LD_LIBRARY_PATH': '$CUDA_HOME/lib64:$LD_LIBRARY_PATH'}
     valid_systems = ['+nvgpu']
-    valid_prog_environs = ['+cuda +uenv']
+    valid_prog_environs = ['+cuda +uenv -cpe']
 
     @run_before('compile')
     def set_build_flags(self):
-        self.prebuild_cmds += [
-            'echo CUDA_HOME=$CUDA_HOME',
-        ]
+        self.prebuild_cmds += ['echo CUDA_HOME=$CUDA_HOME']
         self.build_system.options += [f'CUDA_PATH=$CUDA_HOME']
