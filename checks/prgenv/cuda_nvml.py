@@ -3,6 +3,7 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
+import os
 import pathlib
 import sys
 
@@ -47,7 +48,7 @@ class NvmlBase(rfm.RegressionTest):
 @rfm.simple_test
 class CPE_NVMLCheck(NvmlBase, ContainerEngineCPEMixin):
     valid_systems = ['+nvgpu']
-    valid_prog_environs = ['+cuda -uenv']
+    valid_prog_environs = ['+prgenv +cuda +cpe -uenv']
     tags = {'production', 'external-resources', 'health', 'craype'}
 
     @run_after('setup')
@@ -81,12 +82,22 @@ class CPE_NVMLCheck(NvmlBase, ContainerEngineCPEMixin):
 @rfm.simple_test
 class UENV_NVMLCheck(NvmlBase):
     valid_systems = ['+nvgpu']
-    valid_prog_environs = ['+cuda +uenv']
-    sourcepath = '$CUDA_HOME/nvml/example/example.c'
+    valid_prog_environs = ['+prgenv +cuda +uenv -cpe']
     tags = {'production', 'external-resources', 'health', 'uenv'}
 
-    @run_before('compile')
-    def set_build_flags(self):
-        self.prebuild_cmds = [f'echo "# {self.sourcepath}"']
-        self.build_system.cflags = ['-I $CUDA_HOME/include']
-        self.build_system.ldflags = ['-L $CUDA_HOME/lib64 -lnvidia-ml']
+    @run_after('setup')
+    def setup_src(self):
+        cuda_root = None
+        cuda_home = os.environ.get("CUDA_HOME")
+        if cuda_home is not None:
+            cuda_root = cuda_home
+        else:
+            cuda_root = (
+                f"`echo $UENV_VIEW |cut -d: -f1`"
+                f"/env"
+                f"/`echo $UENV_VIEW |cut -d: -f3`")
+
+        self.sourcepath = f'{cuda_root}/nvml/example/example.c'
+        self.prebuild_cmds = [f'echo "# sourcepath={self.sourcepath}"']
+        self.build_system.cflags = [f'-I {cuda_root}/include']
+        self.build_system.ldflags = [f'-L {cuda_root}/lib64 -lnvidia-ml']
