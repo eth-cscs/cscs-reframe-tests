@@ -1,0 +1,27 @@
+include:
+  - remote: 'https://gitlab.com/cscs-ci/recipes/-/raw/master/templates/v2/.ci-ext.yml'
+
+stages:
+  - run
+
+run rfm_test:
+  stage: run
+  tags: [daint-login-baremetal]
+  variables:
+    GIT_STRATEGY: fetch
+    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_PROJECT_NAME
+  script:
+    - hostname
+    - rfm_path=$(./ci/scripts/alps.sh install_reframe)
+    - echo "rfm_path=$rfm_path"
+    - export PATH=$rfm_path:$PATH
+    - reframe -V
+    - ./ci/scripts/alps.sh launch_reframe_1arg "--mode cpe_production"
+  artifacts:
+    when: always
+    paths:
+      - reframe.out
+      - report.xml
+      - latest.json
+    reports:
+      junit: report.xml
