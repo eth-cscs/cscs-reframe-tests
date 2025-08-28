@@ -26,22 +26,27 @@ class PyTorchNCCLAllReduce(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     valid_prog_environs = ['builtin']
     num_nodes = variable(int, value=8)
     sourcesdir = None
-    curated_images = ['nvcr.io#nvidia/pytorch:24.12-py3']
+    curated_images = ['nvcr.io#nvidia/pytorch:25.06-py3']
 
     # NOTE: only the "-py3" image is supported by the test
     supported_flavors = ["-py3"]
 
+
     pytorch_tags = nvidia_image_tags('pytorch')
     latest_tags = []
 
-    for flavor in supported_flavors:
-        versions = []
-        for tag in pytorch_tags:
-            if re.match(rf'^\d+\.\d+{flavor}$', tag):
-                versions.append(tag[:-len(flavor)])
-        if versions:
-            latest_version = max(versions)
-            latest_tags += [f'{latest_version+flavor}']
+    # FIXME: 25.08-py3 version and above use Cuda 13 see:
+    # https://jira.cscs.ch/browse/VCUE-1039
+
+    # for flavor in supported_flavors:
+    #     versions = []
+    #     for tag in pytorch_tags:
+    #         if re.match(rf'^\d+\.\d+{flavor}$', tag):
+    #             versions.append(tag[:-len(flavor)])
+    #     if versions:
+    #                     versions.sort(reverse=True)
+    #         for v in versions:
+    #         latest_tags += [f'{latest_version+flavor}']
 
     latest_images = [f'nvcr.io#nvidia/pytorch:{tag}' for tag in latest_tags]
     image = parameter(curated_images + latest_images)
