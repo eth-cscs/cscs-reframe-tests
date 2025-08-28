@@ -82,7 +82,7 @@ reframe:
         ./ci/scripts/alps.sh launch_reframe_1arg "--mode daily_production"
       else
         # BENCHER_API_TOKEN is defined (even if empty)
-        ./ci/scripts/alps.sh launch_reframe_bencher "--mode daily_production"
+        ./ci/scripts/alps.sh launch_reframe_bencher
       fi
   artifacts:
     when: always

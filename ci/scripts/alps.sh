@@ -356,12 +356,17 @@ launch_reframe_bencher() {
     # export RFM_AUTODETECT_XTHOSTNAME=1
     # reframe -V
     echo "# UENV=$UENV"
-    echo "# img=$img"
+
+    if [ "$CLUSTER_NAME" = "beverin" ]; then
+      mi=":mi300"
+    else
+      mi=""
+    fi
 
     reframe -C ./config/cscs.py \
         --report-junit=report.xml \
-        $img \
-        --system=$system \
+        --report-file latest.json \
+        --system=$system$mi \
         --prefix=$SCRATCH/rfm-$CI_JOB_ID \
         -c ./checks/microbenchmarks/gpu/amd_gpu/amd_gpu.py \
         -r
@@ -476,7 +481,7 @@ case $in in
     launch_reframe_1img) launch_reframe_1img "$img";;
     launch_reframe) launch_reframe;;
     launch_reframe_1arg) launch_reframe_1arg "$img";;
-    launch_reframe_bencher) launch_reframe_bencher "$img";;
+    launch_reframe_bencher) launch_reframe_bencher;;
     oneuptime) oneuptime "$img" "$pe";;
     *) echo "unknown arg=$in";;
 esac

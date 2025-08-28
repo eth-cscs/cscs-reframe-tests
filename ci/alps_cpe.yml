@@ -24,7 +24,7 @@ reframe:
     - echo "rfm_path=$rfm_path"
     - export PATH=$rfm_path:$PATH
     - reframe -V
-    - ./ci/scripts/alps.sh launch_reframe_1arg "--mode cpe_production"
+    - ./ci/scripts/alps.sh launch_reframe_1arg "--mode daily_production"
   artifacts:
     when: always
     # on_failure
