@@ -10,7 +10,7 @@ import reframe as rfm
 import reframe.utility.sanity as sn
 
 sys.path.append(str(pathlib.Path(__file__).parent.parent / 'mixins'))
-from container_engine import ContainerEngineCPEMixin
+from container_engine import ContainerEngineCPEMixin  # noqa: E402
 
 
 @rfm.simple_test
@@ -118,3 +118,52 @@ class MpiInitTest(rfm.RegressionTest, ContainerEngineCPEMixin):
                                                [sn.evaluate(req_thread_m)],
                          msg='sanity_eq: {0} != {1}'),
         ])
+
+
+@rfm.simple_test
+class MpiGpuDirectOOM(rfm.RegressionTest, ContainerEngineCPEMixin):
+    '''
+    This test checks the issue reported in:
+    https://github.com/eth-cscs/alps-gh200-reproducers/tree/main/gpudirect-oom
+    '''
+    gh = 'https://github.com/eth-cscs/alps-gh200-reproducers'
+    ipc = parameter(['ON', 'OFF'])
+    # ipc ON is only a workaround (i.e slower perf.)
+    valid_systems = ['+remote']
+    valid_prog_environs = ['+mpi +prgenv']
+    build_system = 'SingleSource'
+    sourcesdir = 'src/alps-gh200-reproducers'
+    sourcepath = 'gpudirect_oom.cpp'
+    time_limit = '1m'
+    build_locally = False
+    env_vars = {'MPICH_GPU_SUPPORT_ENABLED': 1}
+    regex = r'rank: \d, gpu_free: (?P<bytes>\d+), gpu_total:'
+    tags = {'production', 'uenv', 'craype'}
+
+    @run_before('compile')
+    def set_cuda(self):
+        self.build_system.cxxflags = [
+            '-I ${CUDATOOLKIT_HOME:-$CUDA_HOME}/include'
+        ]
+        self.build_system.ldflags = [
+            '-L ${CUDATOOLKIT_HOME:-$CUDA_HOME}/lib64 -lcudart'
+        ]
+
+    @run_before('run')
+    def use_hpe_workaround(self):
+        self.num_tasks = 2
+        self.prerun_cmds = [f'# {self.gh}/blob/main/gpudirect-oom/README.md']
+        if self.ipc == 'ON':
+            self.env_vars['MPICH_GPU_IPC_ENABLED'] = 'ON'
+
+    @sanity_function
+    def set_sanity(self):
+        return sn.assert_found(self.regex, self.stderr)
+
+    @performance_function('bytes')
+    def gpu_free(self):
+        """
+        with MPICH_GPU_IPC_ENABLED=ON, gpu_free should remain mostly constant
+        without it, GPU0 will run out of memory (that is a bug)
+        """
+        return sn.min(sn.extractall(self.regex, self.stderr, 'bytes', float))
