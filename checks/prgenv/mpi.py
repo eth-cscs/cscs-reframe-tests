@@ -126,11 +126,13 @@ class MpiGpuDirectOOM(rfm.RegressionTest, ContainerEngineCPEMixin):
     This test checks the issue reported in:
     https://github.com/eth-cscs/alps-gh200-reproducers/tree/main/gpudirect-oom
     '''
+    maintainers = ['SSA']
     gh = 'https://github.com/eth-cscs/alps-gh200-reproducers'
-    ipc = parameter(['ON', 'OFF'])
+    ipc = parameter(['0', '1'])
     # ipc ON is only a workaround (i.e slower perf.)
-    valid_systems = ['+remote']
-    valid_prog_environs = ['+mpi +prgenv']
+    valid_systems = ['+remote +nvgpu', '+remote +amdgpu']
+    # DGPUDIRECT_OOM_HIP
+    valid_prog_environs = ['+mpi +cuda +prgenv -cpe', '+mpi +rocm +prgenv -cpe']
     build_system = 'SingleSource'
     sourcesdir = 'src/alps-gh200-reproducers'
     sourcepath = 'gpudirect_oom.cpp'
@@ -141,19 +143,26 @@ class MpiGpuDirectOOM(rfm.RegressionTest, ContainerEngineCPEMixin):
     tags = {'production', 'uenv', 'craype'}
 
     @run_before('compile')
-    def set_cuda(self):
-        self.build_system.cxxflags = [
-            '-I ${CUDATOOLKIT_HOME:-$CUDA_HOME}/include'
-        ]
-        self.build_system.ldflags = [
-            '-L ${CUDATOOLKIT_HOME:-$CUDA_HOME}/lib64 -lcudart'
-        ]
+    def set_gpu_flags(self):
+        flags_d = {
+            'sm_90': '-I ${CUDATOOLKIT_HOME:-$CUDA_HOME}/include',   # GH200
+            'gfx942': '-D__HIP_PLATFORM_AMD__ -DGPUDIRECT_OOM_HIP',  # mi300
+            'gfx90a': '-D__HIP_PLATFORM_AMD__ -DGPUDIRECT_OOM_HIP',  # mi200
+        }
+        ldflags_d = {
+            'sm_90': '-L ${CUDATOOLKIT_HOME:-$CUDA_HOME}/lib64 -lcudart',
+            'gfx942': '-lamdhip64',
+            'gfx90a': '-lamdhip64',
+        }
+        gpu_arch = self.current_partition.select_devices('gpu')[0].arch
+        self.build_system.cxxflags = [flags_d[gpu_arch]]
+        self.build_system.ldflags = [ldflags_d[gpu_arch]]
 
     @run_before('run')
     def use_hpe_workaround(self):
         self.num_tasks = 2
         self.prerun_cmds = [f'# {self.gh}/blob/main/gpudirect-oom/README.md']
-        if self.ipc == 'ON':
+        if self.ipc == '1':
             self.env_vars['MPICH_GPU_IPC_ENABLED'] = 'ON'
 
     @sanity_function

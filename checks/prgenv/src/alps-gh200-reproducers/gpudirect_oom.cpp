@@ -81,7 +81,7 @@ int main(int argc, char* argv[]) {
     // When misbehaving, this should fail in ~10 iterations on a 96GiB GPU. The
     // large allocation per iteration is ~8GiB and the small allocation of 2MiB
     // is insignificant in comparison.
-    const std::size_t niter = 100;
+    const std::size_t niter = 30;
     std::vector<void*> ptrs(niter, nullptr);
     for (std::size_t iter = 0; iter < niter; ++iter) {
         std::ostringstream os;
