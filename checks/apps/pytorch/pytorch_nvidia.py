@@ -1,4 +1,4 @@
-import re
+import re  # noqa: F401
 import sys
 import pathlib
 import reframe as rfm

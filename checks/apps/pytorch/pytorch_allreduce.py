@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import pathlib
-import re
+import re  # noqa: F401
 import sys
 
 import reframe as rfm
