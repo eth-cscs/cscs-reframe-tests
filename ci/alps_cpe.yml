@@ -10,8 +10,16 @@ reframe:
   stage: run
   extends: .f7t-baremetal-runner
   timeout: 8 hours
-  variables:
-    SLURM_TIMELIMIT: '02:00:00'
+#  variables:
+#    SLURM_TIMELIMIT: '02:00:00'
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == api'
+      variables:
+        SLURM_TIMELIMIT: '00:30:00'
+    - if: '$CI_PIPELINE_SOURCE == schedule'
+      variables:
+        SLURM_TIMELIMIT: '02:00:00'
+  before_script:
   before_script:
     - echo "FIRECREST_SYSTEM=$FIRECREST_SYSTEM / F7T_URL=$F7T_URL / CLUSTER_NAME=$CLUSTER_NAME"
     - uname -a
@@ -24,12 +32,16 @@ reframe:
     - echo "rfm_path=$rfm_path"
     - export PATH=$rfm_path:$PATH
     - reframe -V
-    # - ./ci/scripts/alps.sh launch_reframe_1arg "--mode daily_production"
+    # https://docs.gitlab.com/ci/jobs/job_rules/#ci_pipeline_source-predefined-variable
+    # CI_PIPELINE_SOURCE=api - PR
+    # CI_PIPELINE_SOURCE=schedule - CRON
     - echo "CI_PIPELINE_SOURCE=$CI_PIPELINE_SOURCE"
-    - if [ "$CI_PIPELINE_SOURCE" = "schedule" ]; then
-        echo "This is a scheduled pipeline.";
+    - if [ "$CI_PIPELINE_SOURCE" = "api" ]; then
+        tests_pr=`git diff --name-only origin/main |grep checks |grep py$ |awk '{printf "-c %s ",$0}'`;
+        echo "tests_pr=$tests_pr"
+        ./ci/scripts/alps.sh launch_reframe_1arg "$tests_pr";
       else
-        echo "This is not a scheduled pipeline.";
+        ./ci/scripts/alps.sh launch_reframe_1arg "--mode daily_production";
       fi
   artifacts:
     when: always
