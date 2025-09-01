@@ -47,7 +47,9 @@ base_config = {
             'extras': {
                 'cn_memory': 825,
             },
-            'features': ['ce', 'gpu', 'nvgpu', 'remote', 'scontrol', 'uenv', 'hugepages_slurm'],
+            'features': [
+                'ce', 'gpu', 'nvgpu', 'remote', 'scontrol', 'uenv',
+                'hugepages_slurm'],
             'resources': [
                 {
                     'name': 'switches',
@@ -73,7 +75,8 @@ base_config = {
                         # Mount both the stagedir and the directory related
                         # used 3 levels above (the one related to the system)
                         # to be able to find fixtures
-                        '--container-mounts={stagedir}/../../../,{stagedir}:/rfm_workdir',
+                        '--container-mounts={stagedir}/../../../,'  # split
+                        '{stagedir}:/rfm_workdir',
                         '--container-workdir=/rfm_workdir'
                      ]
                 },
@@ -107,7 +110,8 @@ site_configuration = {
     'environments': [
         {
             'name': 'PrgEnv-cray',
-            'features': ['cpe',
+            'features': [
+                'cpe',
                 'serial', 'openmp', 'mpi', 'cuda', 'openacc', 'hdf5',
                 # 'netcdf-hdf5parallel',
                 # FIXME MPI Error when using pnetcdf
@@ -118,7 +122,8 @@ site_configuration = {
         },
         {
             'name': 'PrgEnv-ce',
-            'features': ['ce',
+            'features': [
+                'cpe',
                 'serial', 'openmp', 'mpi', 'cuda', 'containerized_cpe'],
             'resources': {
                 'cpe_ce_image': {
@@ -133,9 +138,9 @@ site_configuration = {
         {
             'name': 'PrgEnv-gnu',
             'target_systems': ['daint'],
-            'features': ['cpe',
-                'serial', 'openmp', 'mpi', 'cuda', 'alloc_speed',
-                'hdf5'
+            'features': [
+                'cpe',
+                'serial', 'openmp', 'mpi', 'cuda', 'alloc_speed', 'hdf5'
                 # 'netcdf-hdf5parallel',
                 # FIXME MPI Error when using pnetcdf
                 # 'pnetcdf'
@@ -145,17 +150,19 @@ site_configuration = {
         {
             'name': 'PrgEnv-nvidia',
             'target_systems': ['daint'],
-            'features': ['cpe',
-                'serial', 'openmp', 'mpi', 'cuda', 'alloc_speed',
-                'hdf5', 'netcdf-hdf5parallel', 'pnetcdf'],
+            'features': [
+                'cpe',
+                'serial', 'openmp', 'mpi', 'cuda', 'alloc_speed', 'hdf5',
+                'netcdf-hdf5parallel', 'pnetcdf'],
             'modules': ['cray', 'PrgEnv-nvidia', 'craype-arm-grace']
         },
         {
             'name': 'PrgEnv-nvhpc',
             'target_systems': ['daint'],
-            'features': ['cpe',
-                'serial', 'openmp', 'mpi', 'cuda', 'alloc_speed',
-                'hdf5', 'netcdf-hdf5parallel', 'pnetcdf'],
+            'features': [
+                'cpe',
+                'serial', 'openmp', 'mpi', 'cuda', 'alloc_speed', 'hdf5',
+                'netcdf-hdf5parallel', 'pnetcdf'],
             'modules': ['cray', 'PrgEnv-nvhpc', 'craype-arm-grace']
         },
     ],

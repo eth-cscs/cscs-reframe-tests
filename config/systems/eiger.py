@@ -11,13 +11,14 @@ import reframe.utility.osext as osext
 
 
 site_configuration = {
-    'resourcesdir': '/capstor/store/cscs/cscs/public/reframe/resources',
     'systems': [
         {
             'name': 'eiger',
             'descr': 'Alps Eiger vcluster',
             'hostnames': ['eiger'],
             'modules_system': 'lmod',
+            'resourcesdir':
+                '/capstor/store/cscs/cscs/public/reframe/resources',
             'partitions': [
                 {
                     'name': 'login',

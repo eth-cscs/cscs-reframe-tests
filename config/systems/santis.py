@@ -7,13 +7,14 @@
 #
 
 site_configuration = {
-    'resourcesdir': '/capstor/store/cscs/cscs/public/reframe/resources',
     'systems': [
         {
             'name': 'santis',
             'descr': 'santis vcluster',
             'hostnames': ['santis'],
             'modules_system': 'nomod',
+            'resourcesdir':
+                '/capstor/store/cscs/cscs/public/reframe/resources',
             'partitions': [
                 {
                     'name': 'login',
