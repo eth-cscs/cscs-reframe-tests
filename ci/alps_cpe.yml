@@ -31,9 +31,16 @@ reframe:
     - echo "CI_PIPELINE_SOURCE=$CI_PIPELINE_SOURCE"
     - |
       if [ "$CI_PIPELINE_SOURCE" = "api" ]; then
-        tests_pr=$(git diff --name-only origin/main |grep checks |grep py$ |awk '{printf "-c %s ",$0}');
+        git remote add ori https://github.com/eth-cscs/cscs-reframe-tests;
+        git fetch ori main;
+        tests_pr=$(git diff --name-only ori/main |grep checks |grep py$ |awk '{printf "-c %s ",$0}');
         echo "tests_pr=$tests_pr";
-        ./ci/scripts/alps.sh launch_reframe_1arg "$tests_pr";
+        if [ -z "$tests_pr" ]; then
+          echo "no new/modified test(s) found, exiting";
+          exit 0
+        else
+          ./ci/scripts/alps.sh launch_reframe_1arg "$tests_pr";
+        fi
       else
         ./ci/scripts/alps.sh launch_reframe_1arg "--mode daily_production";
       fi
