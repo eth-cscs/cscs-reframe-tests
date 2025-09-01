@@ -11,7 +11,7 @@ import os
 
 base_config = {
     'modules_system': 'lmod',
-    # 'resourcesdir': '/apps/common/UES/reframe/resources',
+    'resourcesdir': '/capstor/store/cscs/cscs/public/reframe/resources',
     'partitions': [
         {
             'name': 'login',
