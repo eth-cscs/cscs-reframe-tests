@@ -11,6 +11,7 @@ setup:
   variables:
     SLURM_TIMELIMIT: '00:01:00'
     # Valid MODE=('container-runner', 'baremetal', 'f7t-controller')
+    # ...
   before_script:
     - echo "FIRECREST_SYSTEM=$FIRECREST_SYSTEM / F7T_URL=$F7T_URL / CLUSTER_NAME=$CLUSTER_NAME"
     - pwd
