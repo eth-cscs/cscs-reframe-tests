@@ -97,6 +97,7 @@ reframe:
           fi
         else
           ./ci/scripts/alps.sh launch_reframe_1arg "--mode daily_production"
+        fi
       else
         # BENCHER_API_TOKEN is defined (even if empty)
         ./ci/scripts/alps.sh launch_reframe_bencher
