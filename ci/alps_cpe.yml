@@ -32,9 +32,8 @@ reframe:
     - git remote -v
     - |
       if [ "$CI_PIPELINE_SOURCE" = "api" ]; then
-        git remote add ori2 https://github.com/eth-cscs/cscs-reframe-tests;
-        git fetch ori2 main;
-        tests_pr=$(git diff --name-only ori2/main |grep checks |grep py$ |awk '{printf "-c %s ",$0}');
+        git fetch ori main;
+        tests_pr=$(git diff --name-only ori/main |grep checks |grep py$ |awk '{printf "-c %s ",$0}');
         echo "tests_pr=$tests_pr";
         if [ -z "$tests_pr" ]; then
           echo "no new/modified test(s) found, exiting";
