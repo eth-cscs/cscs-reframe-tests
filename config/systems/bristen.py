@@ -11,6 +11,7 @@ import reframe.utility.osext as osext
 
 base_config = {
     'modules_system': 'nomod',
+    'resourcesdir': '/capstor/store/cscs/cscs/public/reframe/resources',
     'partitions': [
         {
             'name': 'login',
