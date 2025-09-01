@@ -29,7 +29,7 @@ reframe:
     # CI_PIPELINE_SOURCE=schedule - CRON
     - echo "CI_PIPELINE_SOURCE=$CI_PIPELINE_SOURCE"
     - if [ "$CI_PIPELINE_SOURCE" = "api" ]; then
-        tests_pr=`git diff --name-only origin/main |grep checks |grep py$ |awk '{printf "-c %s ",$0}'`;
+        tests_pr=$(git diff --name-only origin/main |grep checks |grep py$ |awk '{printf "-c %s ",$0}');
         echo "tests_pr=$tests_pr"
         ./ci/scripts/alps.sh launch_reframe_1arg "$tests_pr";
       else
