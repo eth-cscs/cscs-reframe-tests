@@ -24,7 +24,13 @@ reframe:
     - echo "rfm_path=$rfm_path"
     - export PATH=$rfm_path:$PATH
     - reframe -V
-    - ./ci/scripts/alps.sh launch_reframe_1arg "--mode daily_production"
+    # - ./ci/scripts/alps.sh launch_reframe_1arg "--mode daily_production"
+    - echo "CI_PIPELINE_SOURCE=$CI_PIPELINE_SOURCE"
+    - if [ "$CI_PIPELINE_SOURCE" = "schedule" ]; then
+        echo "This is a scheduled pipeline.";
+      else
+        echo "This is not a scheduled pipeline.";
+      fi
   artifacts:
     when: always
     # on_failure
