@@ -79,7 +79,18 @@ reframe:
     - |
       if [ -z "${BENCHER_API_TOKEN+x}" ]; then
         # BENCHER_API_TOKEN is UNDEFINED
-        ./ci/scripts/alps.sh launch_reframe_1arg "--mode daily_production"
+        # 
+        # https://docs.gitlab.com/ci/jobs/job_rules/#ci_pipeline_source-predefined-variable
+        # CI_PIPELINE_SOURCE=api - PR
+        # CI_PIPELINE_SOURCE=schedule - CRON
+        echo "CI_PIPELINE_SOURCE=$CI_PIPELINE_SOURCE"
+        if [ "$CI_PIPELINE_SOURCE" = "api" ]; then
+          # run only the tests modified in the current PR
+          tests_pr=$(git diff --name-only origin/main |grep checks |grep py$ |awk '{printf "-c %s ",$0}');
+          echo "tests_pr=$tests_pr";
+          ./ci/scripts/alps.sh launch_reframe_1arg "$tests_pr";
+        else
+          ./ci/scripts/alps.sh launch_reframe_1arg "--mode daily_production"
       else
         # BENCHER_API_TOKEN is defined (even if empty)
         ./ci/scripts/alps.sh launch_reframe_bencher
@@ -87,6 +98,7 @@ reframe:
   artifacts:
     when: always
     paths:
+      - reframe.out
       - report.xml
       - latest.json
     reports:
