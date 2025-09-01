@@ -10,15 +10,8 @@ reframe:
   stage: run
   extends: .f7t-baremetal-runner
   timeout: 8 hours
-#  variables:
-#    SLURM_TIMELIMIT: '02:00:00'
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == api'
-      variables:
-        SLURM_TIMELIMIT: '00:30:00'
-    - if: '$CI_PIPELINE_SOURCE == schedule'
-      variables:
-        SLURM_TIMELIMIT: '02:00:00'
+  variables:
+    SLURM_TIMELIMIT: '02:00:00'
   before_script:
     - echo "FIRECREST_SYSTEM=$FIRECREST_SYSTEM / F7T_URL=$F7T_URL / CLUSTER_NAME=$CLUSTER_NAME"
     - uname -a
