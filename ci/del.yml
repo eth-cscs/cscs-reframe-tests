@@ -1,0 +1,24 @@
+include:
+  - remote: 'https://gitlab.com/cscs-ci/recipes/-/raw/master/templates/v2/.ci-ext.yml'
+
+stages:
+  - a
+
+setup:
+  stage: a
+  extends: .f7t-baremetal-runner
+  timeout: 2 hours
+  variables:
+    SLURM_TIMELIMIT: '00:01:00'
+    # Valid MODE=('container-runner', 'baremetal', 'f7t-controller')
+  before_script:
+    - echo "FIRECREST_SYSTEM=$FIRECREST_SYSTEM / F7T_URL=$F7T_URL / CLUSTER_NAME=$CLUSTER_NAME"
+    - pwd
+    - echo "CI_PIPELINE_SOURCE=$CI_PIPELINE_SOURCE"
+  script:
+    - echo "CI_PIPELINE_SOURCE=$CI_PIPELINE_SOURCE"
+    - if [ "$CI_PIPELINE_SOURCE" = "schedule" ]; then
+        echo "This is a scheduled pipeline.";
+      else
+        echo "This is not a scheduled pipeline.";
+      fi
