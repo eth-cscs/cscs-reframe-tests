@@ -1,4 +1,4 @@
-# Copyright 2016-2023 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright 2016 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -10,15 +10,16 @@ import reframe as rfm
 import reframe.utility.sanity as sn
 
 sys.path.append(
-    str(pathlib.Path(__file__).parent.parent / 'mixins')
+    str(pathlib.Path(__file__).parent.parent.parent / 'mixins')
 )
-from container_engine import ContainerEngineCPEMixin
+from container_engine import ContainerEngineCPEMixin  # noqa: E402
 
 
-class CudaSamplesBase(rfm.RegressionTest, ContainerEngineCPEMixin):
+class CudaSamplesBase(rfm.RegressionTest):
     sourcesdir = 'https://github.com/NVIDIA/cuda-samples.git'
     build_system = 'Make'
     build_locally = False
+    maintainers = ['PA', 'SSA']
     sample = parameter([
         'concurrentKernels', 'deviceQuery', 'bandwidthTest', 'simpleCUBLAS',
         'conjugateGradientCudaGraphs'
@@ -91,13 +92,29 @@ class CudaSamplesBase(rfm.RegressionTest, ContainerEngineCPEMixin):
 
 
 @rfm.simple_test
-class CPE_CudaSamples(CudaSamplesBase):
+class UENV_CudaSamples(CudaSamplesBase):
+    valid_systems = ['+nvgpu']
+    valid_prog_environs = ['+uenv +prgenv +cuda -cpe']
+    env_vars = {'LD_LIBRARY_PATH': '$CUDA_HOME/lib64:$LD_LIBRARY_PATH'}
+
+    @run_before('compile')
+    def set_build_flags(self):
+        self.prebuild_cmds += ['echo CUDA_HOME=$CUDA_HOME']
+        self.build_system.options += [f'CUDA_PATH=$CUDA_HOME']
+
+
+@rfm.simple_test
+class CPE_CudaSamples(CudaSamplesBase, ContainerEngineCPEMixin):
+    valid_systems = ['+nvgpu']
+    valid_prog_environs = ['+cpe +cuda -uenv -containerized_cpe']
     env_vars = {
         'LD_LIBRARY_PATH': '$CUDA_HOME/lib64:$LD_LIBRARY_PATH'
     }
-    valid_systems = ['+nvgpu']
-    valid_prog_environs = []  # stop testing CPE
-    # valid_prog_environs = ['+cuda +cpe -uenv']
+
+    @run_after('init')
+    def skip_uenv_tests(self):
+        # it seems that valid_prog_environs ignores -uenv
+        self.skip_if(os.environ.get("UENV") is not None)
 
     @run_after('setup')
     def set_modules(self):
@@ -127,15 +144,3 @@ class CPE_CudaSamples(CudaSamplesBase):
                 'EXTRA_NVCCFLAGS="-I $CUDATOOLKIT_HOME/../../math_libs/include"',  # noqa: E501
                 'EXTRA_LDFLAGS="-L $CUDATOOLKIT_HOME/../../math_libs/lib64"'
             ]
-
-
-@rfm.simple_test
-class UENV_CudaSamples(CudaSamplesBase):
-    env_vars = {'LD_LIBRARY_PATH': '$CUDA_HOME/lib64:$LD_LIBRARY_PATH'}
-    valid_systems = ['+nvgpu']
-    valid_prog_environs = ['+cuda +uenv -cpe']
-
-    @run_before('compile')
-    def set_build_flags(self):
-        self.prebuild_cmds += ['echo CUDA_HOME=$CUDA_HOME']
-        self.build_system.options += [f'CUDA_PATH=$CUDA_HOME']
