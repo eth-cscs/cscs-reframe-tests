@@ -20,7 +20,6 @@ reframe:
       variables:
         SLURM_TIMELIMIT: '02:00:00'
   before_script:
-  before_script:
     - echo "FIRECREST_SYSTEM=$FIRECREST_SYSTEM / F7T_URL=$F7T_URL / CLUSTER_NAME=$CLUSTER_NAME"
     - uname -a
     - pwd
