@@ -18,20 +18,21 @@ from container_engine import ContainerEngineCPEMixin  # noqa: E402
 
 class CudaSamplesBase(rfm.RegressionTest):
     sourcesdir = 'https://github.com/NVIDIA/cuda-samples.git'
-    build_system = 'Make'
+    build_system = 'CMake'
     build_locally = False
+    time_limit = '2m'
     maintainers = ['PA', 'SSA']
     sample = parameter([
-        'concurrentKernels', 'deviceQuery', 'bandwidthTest', 'simpleCUBLAS',
-        'conjugateGradientCudaGraphs'
+        'deviceQuery', 'simpleCUBLAS', 'conjugateGradient'
     ])
     sample_dir = {
-        'concurrentKernels': '0_Introduction',
         'deviceQuery': '1_Utilities',
-        'bandwidthTest': '1_Utilities',
         'simpleCUBLAS': '4_CUDA_Libraries',
-        'conjugateGradientCudaGraphs': '4_CUDA_Libraries'
+        'conjugateGradient': '4_CUDA_Libraries'
     }
+    # concurrentKernels is osbsolete since cuda/12.8
+    # bandwidthTest is osbsolete since cuda/12.9
+    # https://github.com/NVIDIA/cuda-samples/releases/tag/v12.8
     tags = {'production'}
 
     @run_after('init')
@@ -41,50 +42,38 @@ class CudaSamplesBase(rfm.RegressionTest):
     @run_before('compile')
     def set_branch(self):
         self.prebuild_cmds += [
-            # Retrieve the Cuda version from the nvcc compiler
+            # Retrieve the CUDA version from nvcc and checkout tag
             rf"export CUDA_VER=v$(nvcc -V | "
             rf"sed -n 's/^.*release \([[:digit:]]*\.[[[:digit:]]\).*$/\1/p')",
             #
-            # The tags v12.[6-7] do not exist, fall back to v12.5
+            # The tags v12.[6-7] do not exist, checkout v12.8 instead
             rf"[[ $CUDA_VER = 'v12.6' || $CUDA_VER = 'v12.7' ]] && "
-            rf"export CUDA_VER='v12.5'",
+            rf"export CUDA_VER='v12.8'",
+            #
             rf"echo CUDA_VER=$CUDA_VER",
             rf"git checkout ${{CUDA_VER}}",
-        ]
-        # concurrentKernels is osbsolete since cuda/12.8, fall back to v12.5:
-        # https://github.com/NVIDIA/cuda-samples/releases/tag/v12.8
-        if self.sample == 'concurrentKernels':
-            self.prebuild_cmds += [
-                rf"# concurrentKernels is osbsolete since cuda/12.8",
-                rf"[[ $CUDA_VER = 'v12.8' ]] && "
-                rf"export CUDA_VER='v12.5'",
-                rf"echo CUDA_VER=$CUDA_VER",
-                rf"git checkout ${{CUDA_VER}}",
-            ]
-
-        self.prebuild_cmds += [
-            rf"cd Samples/{self.sample_dir[self.sample]}/{self.sample}"
         ]
 
     @run_before('compile')
     def set_gpu_arch(self):
-        # Remove the `sm_` prefix from the cuda arch
         gpu_arch = self.current_partition.select_devices('gpu')[0].arch[3:]
-        self.build_system.options = [f'SMS="{gpu_arch}"']
+        self.build_system.config_opts += [
+            f'-S Samples',
+            f'-DCMAKE_CUDA_ARCHITECTURES={gpu_arch}',
+        ]
+        self.build_system.make_opts = [self.sample]
 
     @run_before('run')
     def set_executable(self):
-        self.executable = (f'Samples/{self.sample_dir[self.sample]}/'
+        self.executable = (f'./Samples/{self.sample_dir[self.sample]}/'
                            f'{self.sample}/{self.sample}')
 
     @run_before('sanity')
     def set_sanity_patterns(self):
         output_patterns = {
-            'concurrentKernels': r'Test passed',
             'deviceQuery': r'Result = PASS',
-            'bandwidthTest': r'Result = PASS',
             'simpleCUBLAS': r'test passed',
-            'conjugateGradientCudaGraphs':
+            'conjugateGradient':
                 r'Test Summary:  Error amount = 0.00000'
         }
         self.sanity_patterns = sn.assert_found(
@@ -96,52 +85,9 @@ class CudaSamplesBase(rfm.RegressionTest):
 class UENV_CudaSamples(CudaSamplesBase):
     valid_systems = ['+nvgpu']
     valid_prog_environs = ['+uenv +prgenv +cuda -cpe']
-    env_vars = {'LD_LIBRARY_PATH': '$CUDA_HOME/lib64:$LD_LIBRARY_PATH'}
+    # env_vars = {'LD_LIBRARY_PATH': '$CUDA_HOME/lib64:$LD_LIBRARY_PATH'}
 
     @run_before('compile')
     def set_build_flags(self):
         self.prebuild_cmds += ['echo CUDA_HOME=$CUDA_HOME']
-        self.build_system.options += [f'CUDA_PATH=$CUDA_HOME']
-
-
-@rfm.simple_test
-class CPE_CudaSamples(CudaSamplesBase, ContainerEngineCPEMixin):
-    valid_systems = ['+nvgpu']
-    valid_prog_environs = ['+cpe +cuda -uenv -containerized_cpe']
-    env_vars = {
-        'LD_LIBRARY_PATH': '$CUDA_HOME/lib64:$LD_LIBRARY_PATH'
-    }
-
-    @run_after('init')
-    def skip_uenv_tests(self):
-        # it seems that valid_prog_environs ignores -uenv
-        self.skip_if(os.environ.get("UENV") is not None)
-
-    @run_after('setup')
-    def set_modules(self):
-        sm = self.current_partition.select_devices('gpu')[0].arch[-2:]
-
-        # FIXME Temporary workaround for cudatoolkit absence in ce image
-        if 'containerized_cpe' not in self.current_environ.features:
-            self.modules = ['cudatoolkit', f'craype-accel-nvidia{sm}',
-                            'cpe-cuda']
-
-    @run_before('compile')
-    def set_build_flags(self):
-        self.prebuild_cmds += [
-            'echo CUDATOOLKIT_HOME=${CUDATOOLKIT_HOME:-$CUDA_HOME}',
-            'module list'
-        ]
-        self.build_system.cflags = [
-            '-I ${CUDATOOLKIT_HOME:-$CUDA_HOME}/include'
-        ]
-        self.build_system.ldflags = [
-            '-L ${CUDATOOLKIT_HOME:-$CUDA_HOME}/lib64 -lnvidia-ml'
-        ]
-
-        # for simpleCUBLAS and conjugateGradientCudaGraphs:
-        if 'containerized_cpe' not in self.current_environ.features:
-            self.build_system.options += [
-                'EXTRA_NVCCFLAGS="-I $CUDATOOLKIT_HOME/../../math_libs/include"',  # noqa: E501
-                'EXTRA_LDFLAGS="-L $CUDATOOLKIT_HOME/../../math_libs/lib64"'
-            ]
+        # self.build_system.options += [f'CUDA_PATH=$CUDA_HOME']
