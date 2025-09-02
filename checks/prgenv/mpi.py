@@ -125,11 +125,26 @@ class MpiGpuDirectOOM(rfm.RegressionTest, ContainerEngineCPEMixin):
     '''
     This test checks the issue reported in:
     https://github.com/eth-cscs/alps-gh200-reproducers/tree/main/gpudirect-oom
+
+    - with MPICH_GPU_IPC_ENABLED=1 (or default), GPU0 will run out of memory
+      (that is a bug),
+    - with MPICH_GPU_IPC_ENABLED=0, GPU0 will not run out of memory,
+      and gpu_free should remain ~constant but this is only a workaround,
+      (i.e slower performance)
+
+    man intro_mpi:
+        - By default, MPICH_GPU_IPC_ENABLED is set to 1.
+        - Setting MPICH_GPU_IPC_ENABLED to 1 enables GPU IPC support for
+          intra-node GPU-GPU communication operations.
+        - Setting MPICH_GPU_IPC_ENABLED to 0 disables GPU IPC support, it can
+        also have a noticeable impact on intra-node MPI performance.
+        - If MPICH_GPU_SUPPORT_ENABLED is set to 1, MPICH_GPU_IPC_ENABLED is
+        automatically set to 1. MPICH_GPU_IPC_ENABLED has no effect if
+        MPICH_GPU_SUPPORT_ENABLED is set to 0.
     '''
     maintainers = ['SSA']
     gh = 'https://github.com/eth-cscs/alps-gh200-reproducers'
     ipc = parameter(['0', '1'])
-    # ipc=0 (OFF) is only a workaround (i.e slower performance)
     valid_systems = ['+remote +nvgpu', '+remote +amdgpu']
     valid_prog_environs = [
         '+mpi +cuda +prgenv -cpe',
@@ -147,8 +162,8 @@ class MpiGpuDirectOOM(rfm.RegressionTest, ContainerEngineCPEMixin):
     def set_gpu_flags(self):
         flags_d = {
             'sm_90': '-I ${CUDATOOLKIT_HOME:-$CUDA_HOME}/include',   # GH200
-            'gfx942': '-D__HIP_PLATFORM_AMD__ -DGPUDIRECT_OOM_HIP',  # mi300
-            'gfx90a': '-D__HIP_PLATFORM_AMD__ -DGPUDIRECT_OOM_HIP',  # mi200
+            'gfx942': '-D__HIP_PLATFORM_AMD__ -DGPUDIRECT_OOM_HIP',  # MI300
+            'gfx90a': '-D__HIP_PLATFORM_AMD__ -DGPUDIRECT_OOM_HIP',  # MI200
         }
         ldflags_d = {
             'sm_90': '-L ${CUDATOOLKIT_HOME:-$CUDA_HOME}/lib64 -lcudart',
@@ -162,9 +177,13 @@ class MpiGpuDirectOOM(rfm.RegressionTest, ContainerEngineCPEMixin):
     @run_before('run')
     def use_hpe_workaround(self):
         self.num_tasks = 2
-        self.prerun_cmds = [f'# {self.gh}/blob/main/gpudirect-oom/README.md']
-        self.env_vars['MPICH_GPU_IPC_ENABLED'] = 'ON' \
-            if self.ipc == '1' else 'OFF'
+        if self.ipc == '0':
+            self.env_vars['MPICH_GPU_IPC_ENABLED'] = '0'
+
+        self.prerun_cmds += [
+            f'# {self.gh}/blob/main/gpudirect-oom/README.md',
+            f'echo MPICH_GPU_IPC_ENABLED=$MPICH_GPU_IPC_ENABLED'
+        ]
 
     @sanity_function
     def set_sanity(self):
@@ -172,8 +191,4 @@ class MpiGpuDirectOOM(rfm.RegressionTest, ContainerEngineCPEMixin):
 
     @performance_function('bytes')
     def gpu_free(self):
-        """
-        with MPICH_GPU_IPC_ENABLED=1 (ON), gpu_free should remain ~constant
-        without it, GPU0 will run out of memory (that is a bug)
-        """
         return sn.min(sn.extractall(self.regex, self.stderr, 'bytes', float))
