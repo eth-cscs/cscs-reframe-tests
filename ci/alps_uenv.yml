@@ -70,7 +70,7 @@ reframe:
     - echo "UENV=$UENV" | tr , "\n"
     # Send data to elastic on main branch only
     - '[ "$CI_COMMIT_REF_NAME" != "main" ] && unset RFM_HTTPJSON_URL'
-    - (git remote add oripr https://github.com/eth-cscs/cscs-reframe-tests ; echo)
+    - git remote add oripr https://github.com/eth-cscs/cscs-reframe-tests || true
   script:
     - hostname
     - rfm_path=$(./ci/scripts/alps.sh install_reframe)
