@@ -70,6 +70,7 @@ reframe:
     - echo "UENV=$UENV" | tr , "\n"
     # Send data to elastic on main branch only
     - '[ "$CI_COMMIT_REF_NAME" != "main" ] && unset RFM_HTTPJSON_URL'
+    - (git remote add oripr https://github.com/eth-cscs/cscs-reframe-tests ; echo)
   script:
     - hostname
     - rfm_path=$(./ci/scripts/alps.sh install_reframe)
@@ -86,7 +87,6 @@ reframe:
         # CI_PIPELINE_SOURCE=schedule - CRON
         echo "CI_PIPELINE_SOURCE=$CI_PIPELINE_SOURCE"
         if [ "$CI_PIPELINE_SOURCE" = "api" ]; then
-          git remote add oripr https://github.com/eth-cscs/cscs-reframe-tests
           git fetch oripr main;
           tests_pr=$(git diff --name-only oripr/main |grep checks |grep py$ |awk '{printf "-c %s ",$0}');
           echo "tests_pr=$tests_pr";
