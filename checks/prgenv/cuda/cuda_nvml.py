@@ -1,23 +1,25 @@
-# Copyright 2016-2023 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright 2016 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
+import os
 import pathlib
 import sys
 
 import reframe as rfm
 import reframe.utility.sanity as sn
 
-sys.path.append(str(pathlib.Path(__file__).parent.parent / 'mixins'))
-from container_engine import ContainerEngineCPEMixin
+sys.path.append(str(pathlib.Path(__file__).parent.parent.parent / 'mixins'))
+from container_engine import ContainerEngineCPEMixin  # noqa: E402
 
 
-class NvmlBase(rfm.RegressionTest):
+class CudaNvmlBase(rfm.RegressionTest):
     descr = 'Checks that nvml can report GPU informations'
     build_locally = False
     build_system = 'SingleSource'
     sourcesdir = None
+    maintainers = ['PA', 'SSA']
 
     @sanity_function
     def set_sanity(self):
@@ -45,10 +47,35 @@ class NvmlBase(rfm.RegressionTest):
 
 
 @rfm.simple_test
-class CPE_NVMLCheck(NvmlBase, ContainerEngineCPEMixin):
+class UENV_NVML(CudaNvmlBase):
     valid_systems = ['+nvgpu']
-    valid_prog_environs = ['+cuda -uenv']
+    valid_prog_environs = ['+uenv +prgenv +cuda -cpe']
+    tags = {'production', 'external-resources', 'health', 'uenv'}
+
+    @run_after('setup')
+    def setup_src(self):
+        cuda_home = os.environ.get("CUDA_HOME")
+        cuda_root = cuda_home if cuda_home is not None else (
+            f"`echo $UENV_VIEW |cut -d: -f1`"
+            f"/env"
+            f"/`echo $UENV_VIEW |cut -d: -f3`"
+        )
+        self.sourcepath = f'{cuda_root}/nvml/example/example.c'
+        self.prebuild_cmds = [f'echo "# sourcepath={self.sourcepath}"']
+        self.build_system.cflags = [f'-I {cuda_root}/include']
+        self.build_system.ldflags = [f'-L {cuda_root}/lib64 -lnvidia-ml']
+
+
+@rfm.simple_test
+class CPE_NVML(CudaNvmlBase, ContainerEngineCPEMixin):
+    valid_systems = ['+nvgpu']
+    valid_prog_environs = ['+cuda +cpe -uenv -containerized_cpe']
     tags = {'production', 'external-resources', 'health', 'craype'}
+
+    @run_after('init')
+    def skip_uenv_tests(self):
+        # it seems that valid_prog_environs ignores -uenv
+        self.skip_if(os.environ.get("UENV") is not None)
 
     @run_after('setup')
     def setup_modules(self):
@@ -73,20 +100,6 @@ class CPE_NVMLCheck(NvmlBase, ContainerEngineCPEMixin):
             '-L ${CUDATOOLKIT_HOME:-$CUDA_HOME} -lnvidia-ml'
         ]
 
-        # Address the __gxx_personality_v0 symbol issue in libmpi_gtl_cuda
-        if 'PrgEnv-gnu' == self.current_environ.name:
-            self.build_system.ldflags += ['-lstdc++']
-
-
-@rfm.simple_test
-class UENV_NVMLCheck(NvmlBase):
-    valid_systems = ['+nvgpu']
-    valid_prog_environs = ['+cuda +uenv']
-    sourcepath = '$CUDA_HOME/nvml/example/example.c'
-    tags = {'production', 'external-resources', 'health', 'uenv'}
-
-    @run_before('compile')
-    def set_build_flags(self):
-        self.prebuild_cmds = [f'echo "# {self.sourcepath}"']
-        self.build_system.cflags = ['-I $CUDA_HOME/include']
-        self.build_system.ldflags = ['-L $CUDA_HOME/lib64 -lnvidia-ml']
+# ref         # Address the __gxx_personality_v0 symbol issue in lbmpi_gtl_cuda
+# ref         if 'PrgEnv-gnu' == self.current_environ.name:
+# ref             self.build_system.ldflags += ['-lstdc++']

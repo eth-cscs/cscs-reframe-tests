@@ -112,7 +112,9 @@ jfrog_login() {
 # {{{ uenv_image_find
 uenv_image_find() {
     if [ -z $MY_UENV ] ;then
-        uenv --no-color image find | tail -n +2 | awk '{print $1}'
+        # uenv --no-color image find | tail -n +2 | awk '{print $1}'
+        echo "MY_UENV is not set, not sure what uenv to test"
+        exit -1
     else
         echo "$MY_UENV" | tr , "\n"
     fi
