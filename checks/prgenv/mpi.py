@@ -129,10 +129,11 @@ class MpiGpuDirectOOM(rfm.RegressionTest, ContainerEngineCPEMixin):
     maintainers = ['SSA']
     gh = 'https://github.com/eth-cscs/alps-gh200-reproducers'
     ipc = parameter(['0', '1'])
-    # ipc ON is only a workaround (i.e slower perf.)
+    # ipc=0 (OFF) is only a workaround (i.e slower performance)
     valid_systems = ['+remote +nvgpu', '+remote +amdgpu']
-    # DGPUDIRECT_OOM_HIP
-    valid_prog_environs = ['+mpi +cuda +prgenv -cpe', '+mpi +rocm +prgenv -cpe']
+    valid_prog_environs = [
+        '+mpi +cuda +prgenv -cpe',
+        '+mpi +rocm +prgenv -cpe']
     build_system = 'SingleSource'
     sourcesdir = 'src/alps-gh200-reproducers'
     sourcepath = 'gpudirect_oom.cpp'
@@ -162,8 +163,8 @@ class MpiGpuDirectOOM(rfm.RegressionTest, ContainerEngineCPEMixin):
     def use_hpe_workaround(self):
         self.num_tasks = 2
         self.prerun_cmds = [f'# {self.gh}/blob/main/gpudirect-oom/README.md']
-        if self.ipc == '1':
-            self.env_vars['MPICH_GPU_IPC_ENABLED'] = 'ON'
+        self.env_vars['MPICH_GPU_IPC_ENABLED'] = 'ON' \
+            if self.ipc == '1' else 'OFF'
 
     @sanity_function
     def set_sanity(self):
@@ -172,7 +173,7 @@ class MpiGpuDirectOOM(rfm.RegressionTest, ContainerEngineCPEMixin):
     @performance_function('bytes')
     def gpu_free(self):
         """
-        with MPICH_GPU_IPC_ENABLED=ON, gpu_free should remain mostly constant
+        with MPICH_GPU_IPC_ENABLED=1 (ON), gpu_free should remain ~constant
         without it, GPU0 will run out of memory (that is a bug)
         """
         return sn.min(sn.extractall(self.regex, self.stderr, 'bytes', float))
