@@ -158,6 +158,10 @@ class MpiGpuDirectOOM(rfm.RegressionTest, ContainerEngineCPEMixin):
     regex = r'rank: \d, gpu_free: (?P<bytes>\d+), gpu_total:'
     tags = {'production', 'uenv', 'craype'}
 
+    @run_after('setup')
+    def skip_mi200(self):
+        self.skip_if('-pmi200' in self.current_partition.access)
+
     @run_before('compile')
     def set_gpu_flags(self):
         flags_d = {
