@@ -29,6 +29,10 @@ class MpiInitTest(rfm.RegressionTest, ContainerEngineCPEMixin):
     env_vars = {'MPICH_GPU_SUPPORT_ENABLED': 0}
     tags = {'production', 'craype', 'uenv'}
 
+    @run_after('setup')
+    def skip_mi200(self):
+        self.skip_if('-pmi200' in self.current_partition.access, 'skip MI200')
+
     @run_before('run')
     def set_job_parameters(self):
         # To avoid: "MPIR_pmi_init(83)....: PMI2_Job_GetId returned 14"
@@ -160,7 +164,7 @@ class MpiGpuDirectOOM(rfm.RegressionTest, ContainerEngineCPEMixin):
 
     @run_after('setup')
     def skip_mi200(self):
-        self.skip_if('-pmi200' in self.current_partition.access)
+        self.skip_if('-pmi200' in self.current_partition.access, 'skip MI200')
 
     @run_before('compile')
     def set_gpu_flags(self):
