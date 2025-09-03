@@ -19,6 +19,8 @@ reframe:
     # Send data to elastic on main branch only
     - '[ "$CI_COMMIT_REF_NAME" != "main" ] && unset RFM_HTTPJSON_URL'
     - git remote add oripr https://github.com/eth-cscs/cscs-reframe-tests || true
+    - echo "it is safe to ignore error: remote already exists"
+    - git remote -v
   script:
     - hostname
     - rfm_path=$(./ci/scripts/alps.sh install_reframe)
@@ -30,10 +32,12 @@ reframe:
     # CI_PIPELINE_SOURCE=api - PR
     # CI_PIPELINE_SOURCE=schedule - CRON
     - echo "CI_PIPELINE_SOURCE=$CI_PIPELINE_SOURCE"
-    - git remote -v
     - |
-      if [ "$CI_PIPELINE_SOURCE" = "api" ]; then
+      if [ "$CRON_RUN" = "true" ]; then
+        ./ci/scripts/alps.sh launch_reframe_1arg "--mode daily_production";
+      else
         git fetch oripr main;
+        git diff --name-only oripr/main;
         tests_pr=$(git diff --name-only oripr/main |grep checks |grep py$ |awk '{printf "-c %s ",$0}');
         echo "tests_pr=$tests_pr";
         if [ -z "$tests_pr" ]; then
@@ -42,8 +46,6 @@ reframe:
         else
           ./ci/scripts/alps.sh launch_reframe_1arg "$tests_pr";
         fi
-      else
-        ./ci/scripts/alps.sh launch_reframe_1arg "--mode daily_production";
       fi
   artifacts:
     when: always
