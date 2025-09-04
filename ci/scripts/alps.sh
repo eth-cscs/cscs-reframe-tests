@@ -111,10 +111,20 @@ jfrog_login() {
 # }}}
 # {{{ uenv_image_find
 uenv_image_find() {
+# uf |egrep -v "scorep|prgenv|paraview|netcdf-tools|linaro-forge|linalg|jupyterlab|julia|editors" \
+# |grep -v 'size(MB)' |cut -d/ -f1 |sort -u
+    ignore_list="scorep|paraview|netcdf-tools|linaro-forge|linalg|jupyterlab|julia|editors"
     if [ -z $MY_UENV ] ;then
-        # uenv --no-color image find | tail -n +2 | awk '{print $1}'
-        echo "MY_UENV is not set, not sure what uenv to test"
-        exit -1
+        # -z MY_UENV means 
+        # get the list of deployed supported apps (skip header line):
+        uenv_apps=$(uenv image find |tail -n +2 |egrep -v "$ignore_list" |cut -d/ -f1 |sort -u)
+        for aa in $uenv_apps ;do
+            # keep only the most recent uenv (this will break if uenv output changes):
+            uu=$(uenv image find |grep $aa |sort -nk 6 |tail -1 |awk '{print $1}')
+            echo "$uu"
+        done
+        # echo "MY_UENV is not set, not sure what uenv to test"
+        # exit -1
     else
         echo "$MY_UENV" | tr , "\n"
     fi
