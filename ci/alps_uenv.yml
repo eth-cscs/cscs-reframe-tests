@@ -64,7 +64,7 @@ reframe:
     - echo "UENV=$UENV" | tr , "\n"
     # Send data to elastic on main branch only
     - '[ "$CI_COMMIT_REF_NAME" != "main" ] && unset RFM_HTTPJSON_URL'
-    - git remote add oripr https://github.com/eth-cscs/cscs-reframe-tests || true
+    - 'git remote add oripr https://github.com/eth-cscs/cscs-reframe-tests || true'
     - echo "it is safe to ignore error: remote already exists"
     - git remote -v
     - hostname
