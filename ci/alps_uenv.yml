@@ -64,8 +64,6 @@ reframe:
     - echo "FIRECREST_SYSTEM=$FIRECREST_SYSTEM / F7T_URL=$F7T_URL / CLUSTER_NAME=$CLUSTER_NAME"
     - uname -a
     - pwd
-    # - ./ci/scripts/alps.sh setup_uenv_and_oras &> setup_uenv_and_oras.log
-    # - source ./uenv-5.1.0/bin/activate-uenv
     - uenv --version
     - echo "UENV=$UENV" | tr , "\n"
     # Send data to elastic on main branch only
