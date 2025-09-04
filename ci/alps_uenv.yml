@@ -18,12 +18,8 @@ setup and pull:
     - echo "FIRECREST_SYSTEM=$FIRECREST_SYSTEM / F7T_URL=$F7T_URL / CLUSTER_NAME=$CLUSTER_NAME"
     - pwd
     - uname -a
-    # - ./ci/scripts/alps.sh setup_uenv_and_oras &> setup_uenv_and_oras.log
-    # - source ./uenv-5.1.0/bin/activate-uenv
     - uenv --version
-    # - export PATH=$PWD:$UENV_PREFIX/libexec:$PATH
-    # - uenv-oras version
-    - imgs=$(./ci/scripts/alps.sh uenv_image_find)
+    - 'imgs=$(./ci/scripts/alps.sh uenv_image_find)'
   script: |
     echo "imgs=$imgs"
     unset UENVA
