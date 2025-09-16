@@ -120,7 +120,7 @@ uenv_image_find() {
         uenv_apps=$(uenv image find |tail -n +2 |egrep -v "$ignore_list" |cut -d/ -f1 |sort -u)
         for aa in $uenv_apps ;do
             # keep only the most recent uenv (this will break if uenv output changes):
-            uu=$(uenv image find |grep $aa |sort -nk 6 |tail -1 |awk '{print $1}')
+            uu=$(uenv image find $aa |sort -nk 6 |tail -1 |awk '{print $1}')
             echo "$uu"
         done
         # echo "MY_UENV is not set, not sure what uenv to test"
