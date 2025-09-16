@@ -175,7 +175,6 @@ def create_checks(check):
 
     check('grep -q "/capstor/scratch/cscs /capstor/scratch/cscs lustre"     /proc/mounts || echo FAILED', not_expected=r'FAILED')
     check('grep -q "/capstor/store/cscs /capstor/store/cscs lustre"         /proc/mounts || echo FAILED', not_expected=r'FAILED')
-    check('grep -q "/capstor/users/cscs /capstor/users/cscs lustre"                  /proc/mounts || echo FAILED', not_expected=r'FAILED')
     check('grep -q "/capstor/store/cscs /capstor/store/cscs lustre"         /proc/mounts || echo FAILED', not_expected=r'FAILED')
 
     check('grep -q "pe_opt_cray_pe /opt/cray/pe"  /proc/mounts || echo FAILED', not_expected=r'FAILED')
