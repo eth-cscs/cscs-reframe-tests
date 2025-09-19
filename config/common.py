@@ -6,7 +6,33 @@
 # ReFrame CSCS settings
 #
 
+import json
 import os
+import pprint
+
+
+def _format_httpjson(record, extras, ignore_keys):
+    """
+    https://github.com/eth-cscs/cscs-reframe-tests/pull/380
+    """
+    data = {}
+    for attr, val in record.__dict__.items():
+        if attr in ignore_keys or attr.startswith('_'):
+            continue
+
+        if attr == "check_perf_value" and val:
+            data[attr] = float(val)
+        elif attr == "check_perf_ref" and val:
+            data[attr] = float(val)
+        else:
+            data[attr] = val
+
+    print(data["check_perf_value"])
+    print(data["check_perf_ref"])
+
+    data.update(extras)
+
+    return json.dumps(data)
 
 
 site_configuration = {
@@ -75,6 +101,13 @@ site_configuration = {
                         'rfm_ci_pipeline': os.getenv("CI_PIPELINE_URL", "#"),
                         'rfm_ci_project': os.getenv("CI_PROJECT_PATH", "Unknown CI Project")
                     },
+                    'debug': True,
+                    "json_formatter": _format_httpjson,
+#del                     'format_perfvars': (
+#del                         '%(check_perf_value)s.xx|%(check_perf_unit)s|'
+#del                         #'%(check_perf_ref)s|%(check_perf_lower_thres)s|'
+#del                         #'%(check_perf_upper_thres)s|'
+#del                     ),
                     'ignore_keys': ['check_perfvalues']
                 }
             ]
