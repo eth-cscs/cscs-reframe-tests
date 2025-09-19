@@ -8,7 +8,6 @@
 
 import json
 import os
-import pprint
 
 
 def _format_httpjson(record, extras, ignore_keys):
@@ -27,8 +26,8 @@ def _format_httpjson(record, extras, ignore_keys):
         else:
             data[attr] = val
 
-    print(data["check_perf_value"])
-    print(data["check_perf_ref"])
+    # print(data["check_perf_value"])
+    # print(data["check_perf_ref"])
 
     data.update(extras)
 
