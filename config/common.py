@@ -19,9 +19,9 @@ def _format_httpjson(record, extras, ignore_keys):
         if attr in ignore_keys or attr.startswith('_'):
             continue
 
-        if attr == "check_perf_value" and val:
+        if attr == "check_perf_value" and val is not None:
             data[attr] = float(val)
-        elif attr == "check_perf_ref" and val:
+        elif attr == "check_perf_ref" and val is not None:
             data[attr] = float(val)
         else:
             data[attr] = val
