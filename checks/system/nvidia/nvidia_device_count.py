@@ -98,7 +98,7 @@ class CPE_BuildDeviceCount(BuildDeviceCountBase, ContainerEngineCPEMixin):
 
 
 class UENV_BuildDeviceCount(BuildDeviceCountBase):
-    valid_prog_environs = ['+cuda +uenv']
+    valid_prog_environs = ['+prgenv +cuda +uenv']
 
 
 @rfm.simple_test
@@ -117,6 +117,6 @@ class CPE_NvidiaDeviceCount(NvidiaDeviceCountBase, ContainerEngineCPEMixin):
 
 @rfm.simple_test
 class UENV_NvidiaDeviceCount(NvidiaDeviceCountBase):
-    valid_prog_environs = ['+cuda +uenv']
+    valid_prog_environs = ['+prgenv +cuda +uenv']
     device_count_bin = fixture(UENV_BuildDeviceCount, scope='environment')
     tags = {'production'}
