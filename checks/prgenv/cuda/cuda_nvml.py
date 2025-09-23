@@ -50,7 +50,7 @@ class CudaNvmlBase(rfm.RegressionTest):
 class UENV_NVML(CudaNvmlBase):
     valid_systems = ['+nvgpu']
     valid_prog_environs = ['+uenv +prgenv +cuda -cpe']
-    tags = {'production', 'external-resources', 'health', 'uenv'}
+    tags = {'external-resources', 'health', 'uenv'}
 
     @run_after('setup')
     def setup_src(self):
@@ -70,7 +70,7 @@ class UENV_NVML(CudaNvmlBase):
 class CPE_NVML(CudaNvmlBase, ContainerEngineCPEMixin):
     valid_systems = ['+nvgpu']
     valid_prog_environs = ['+cuda +cpe -uenv -containerized_cpe']
-    tags = {'production', 'external-resources', 'health', 'craype'}
+    tags = {'external-resources', 'health', 'craype'}
 
     @run_after('init')
     def skip_uenv_tests(self):
