@@ -16,7 +16,7 @@ class DefaultPrgEnvCheck(rfm.RunOnlyRegressionTest):
     modules = ['cray']
     executable = 'module'
     executable_opts = ['--terse', 'list']
-    tags = {'production', 'craype'}
+    tags = {'craype'}
 
     @sanity_function
     def assert_cray(self):
@@ -32,7 +32,7 @@ class EnvironmentCheck(rfm.RunOnlyRegressionTest):
     valid_prog_environs = ['PrgEnv-aocc', 'PrgEnv-cray', 'PrgEnv-gnu']
     executable = 'module'
     executable_opts = ['--terse', 'list']
-    tags = {'production', 'craype'}
+    tags = {'craype'}
 
     @sanity_function
     def assert_found_module(self):
@@ -46,7 +46,7 @@ class CrayVariablesCheck(rfm.RunOnlyRegressionTest):
     valid_prog_environs = ['builtin']
     executable = 'module'
     modules = ['cray']
-    tags = {'production', 'craype'}
+    tags = {'craype'}
 
     @run_before('run')
     def set_exec_opts(self):
