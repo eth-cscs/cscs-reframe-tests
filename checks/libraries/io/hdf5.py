@@ -42,14 +42,14 @@ class CPE_HDF5Test(HDF5TestBase):
     modules = ['cray-hdf5']
     valid_prog_environs = ['+mpi +hdf5 -uenv']
     valid_systems = ['+remote']
-    tags = {'production', 'health', 'craype'}
+    tags = {'health', 'craype'}
 
 
 @rfm.simple_test
 class Uenv_HDF5Test(HDF5TestBase):
     valid_prog_environs = ['+mpi +hdf5 +uenv']
     valid_systems = ['+remote']
-    tags = {'production', 'health', 'uenv'}
+    tags = {'health', 'uenv'}
 
     @run_before('compile')
     def set_build_flags(self):
