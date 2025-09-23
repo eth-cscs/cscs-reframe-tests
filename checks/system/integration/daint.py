@@ -133,18 +133,18 @@ def create_checks(check):
 
     # ----------------------------------------------------------------------- #
     #
-    #                         Cray Programming Environment
+    #                         Cray Programming Environment (deprecated)
     #
     # ----------------------------------------------------------------------- #
 
-    check.CLASS = "CPE"
+#    check.CLASS = "CPE"
 
-    check('bash -c "module --redirect load cray || echo FAILED"', not_expected=r'FAILED')
-    check('bash -c "module --redirect load cray && module --redirect list"', expected=r'craype-arm-grace', not_expected=r'craype-x86-rome')
+#    check('bash -c "module --redirect load cray || echo FAILED"', not_expected=r'FAILED')
+#    check('bash -c "module --redirect load cray && module --redirect list"', expected=r'craype-arm-grace', not_expected=r'craype-x86-rome')
 
-    check('bash -c "module --redirect spider PrgEnv-cray/8.5.0   || echo FAILED"', not_expected=r'FAILED')
-    check('bash -c "module --redirect spider PrgEnv-gnu/8.5.0    || echo FAILED"', not_expected=r'FAILED')
-    check('bash -c "module --redirect spider PrgEnv-nvidia/8.5.0 || echo FAILED"', not_expected=r'FAILED')
+#    check('bash -c "module --redirect spider PrgEnv-cray/8.5.0   || echo FAILED"', not_expected=r'FAILED')
+#    check('bash -c "module --redirect spider PrgEnv-gnu/8.5.0    || echo FAILED"', not_expected=r'FAILED')
+#    check('bash -c "module --redirect spider PrgEnv-nvidia/8.5.0 || echo FAILED"', not_expected=r'FAILED')
 
     # ----------------------------------------------------------------------- #
     #
