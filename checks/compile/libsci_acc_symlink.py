@@ -18,7 +18,7 @@ class LibSciAccSymLinkTest(rfm.RunOnlyRegressionTest):
         'libsci_acc_cray_nv90', 'libsci_acc_gnu_nv90'
     ])
 
-    tags = {'production', 'craype', 'health'}
+    tags = {'craype', 'health'}
 
     @run_after('init')
     def set_descr(self): 
