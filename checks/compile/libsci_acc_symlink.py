@@ -21,7 +21,7 @@ class LibSciAccSymLinkTest(rfm.RunOnlyRegressionTest):
     tags = {'craype', 'health'}
 
     @run_after('init')
-    def set_descr(self): 
+    def set_descr(self):
         self.descr = f'LibSciAcc symlink check of {self.lib_name}'
 
     @sanity_function
