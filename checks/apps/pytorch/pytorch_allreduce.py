@@ -22,6 +22,7 @@ from nvcr import nvidia_image_tags
 
 @rfm.simple_test
 class PyTorchNCCLAllReduce(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
+    descr = 'All-reduce PyTorch benchmark with CE (NCCL version)'
     valid_systems = ['+nvgpu']
     valid_prog_environs = ['builtin']
     num_nodes = variable(int, value=8)
@@ -109,6 +110,7 @@ class PyTorchNCCLAllReduce(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
 
 @rfm.simple_test
 class PyTorchRCCLAllReduce(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
+    descr = 'All-reduce PyTorch benchmark with CE (RCCL version)'
     valid_systems = ['+amdgpu']
     valid_prog_environs = ['builtin']
     num_nodes = variable(int, value=8)
