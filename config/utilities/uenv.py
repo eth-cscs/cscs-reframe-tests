@@ -78,8 +78,16 @@ def _get_uenvs():
                 f"{inspect_cmd}='{{system}}'", shell=True).stdout.strip()
 
             image_path = pathlib.Path(image_path)
-            if not(image_path.is_file() and image_path.stat().st_size > 0):
-                raise ConfigError(f"{uenv_name} was not pulled or is empty")
+            # Check that uenv was pulled
+            if not image_path.is_file():
+                raise ConfigError(f"{uenv_name} is missing, "
+                    f"try pulling it with: uenv image pull {uenv_name}")
+            try:
+                if image_path.stat().st_size == 0:
+                    raise ConfigError(f"{uenv_name} is empty, "
+                        f"try pulling it with: uenv image pull {uenv_name}")
+            except FileNotFoundError:
+                raise ConfigError(f"{uenv_name} was not found")
 
             # FIXME temporary workaround for older uenv versions
             if Version(uenv_version) >= Version('5.1.0-dev'):
