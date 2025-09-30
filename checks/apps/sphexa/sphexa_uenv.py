@@ -12,7 +12,7 @@ import reframe.utility.udeps as udeps
 class sphexa_build(rfm.RunOnlyRegressionTest):
     descr = 'Clone and Build SPHEXA'
     maintainers = ['SSA']
-    valid_systems = ['+remote']
+    valid_systems = ['+uenv']
     valid_prog_environs = ['+mpi +cuda -cpe']
     sourcesdir = None
     branch = variable(str, value='develop')
@@ -63,7 +63,7 @@ class sphexa_build(rfm.RunOnlyRegressionTest):
 class sphexa_strong_scaling(rfm.RunOnlyRegressionTest):
     descr = 'Run SPHEXA'
     maintainers = ['SSA']
-    valid_systems = ['+remote']
+    valid_systems = ['+uenv']
     valid_prog_environs = ['+mpi +cuda -cpe']
 
     @run_after('init')
