@@ -112,7 +112,7 @@ site_configuration = {
             ]
         },
         {
-           'name': 'cpe_production',
+           'name': 'daily_production',
            'options': [
                '-Sstrict_check=1',
                '--max-retries=1',
@@ -144,6 +144,17 @@ site_configuration = {
                '-c checks/libraries',
                '-p \'(?!PrgEnv-ce)\'',
                '--tag=production'
+           ]
+        },
+        {
+           'name': 'uenv_deployment',
+           'options': [
+               '-Sstrict_check=1',
+               '--report-file=$PWD/latest.json',
+               '-c checks/apps',
+               '-c checks/libraries',
+               '-c checks/prgenv',
+               "-p '(?!PrgEnv-.*|builtin)'",
            ]
         },
         {

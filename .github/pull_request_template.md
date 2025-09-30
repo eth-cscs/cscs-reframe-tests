@@ -3,7 +3,11 @@
 ```console
 $ reframe -r ...
 ```
-- You can manually trigger 1 (or more) CI pipelines by adding a `cscs-ci run alps-daint-uenv` comment in the Pull Request
-- By default all UENVs will be tested, however you can restrict to a single UENV with: `cscs-ci run alps-daint-uenv;MY_UENV=cp2k/2025.1:v2`
+
+- You can manually trigger 1 (or more) CI pipelines by writing a comment in this Pull Request. For example:
+  - CPE testing:  add `cscs-ci run alps-daint-cpe`
+  - UENV testing: add `cscs-ci run alps-daint-uenv;MY_UENV=prgenv-gnu/25.06:rc5`
+  - By default all UENVs will be tested: this is no longer true
+  - Tested platforms: daint, santis, clariden, eiger, bristen, beverin
 
 Thank you for taking the time to contribute to `cscs-reframe-tests` !
