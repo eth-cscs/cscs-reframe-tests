@@ -17,6 +17,7 @@ from container_engine import ContainerEngineMixin  # noqa: E402
 
 @rfm.simple_test
 class CUDA_MPS_CE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
+    descr = 'Check for CUDA MPS with CE'
     valid_prog_environs = ['builtin']
     valid_systems = ['+ce +nvgpu']
     test_name = 'cuda_mps'

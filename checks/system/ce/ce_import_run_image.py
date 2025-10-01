@@ -42,6 +42,7 @@ class enroot_import_image_ngc(enroot_import_image):
 
 @rfm.simple_test
 class RunJobCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
+    descr = 'CE check with Dockerhub import and simple image run (ubuntu)'
     valid_systems = ['+ce']
     valid_prog_environs = ['builtin']
     container_image = ''  # Defined after setup
@@ -62,6 +63,7 @@ class RunJobCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
 
 @rfm.simple_test
 class RunNVGPUJobCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
+    descr = 'CE check with NGC import and Stream job on GPU'
     valid_systems = ['+ce +nvgpu']
     valid_prog_environs = ['builtin']
     container_image = ''  # Defined after setup

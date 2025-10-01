@@ -17,6 +17,7 @@ from container_engine import ContainerEngineMixin  # noqa: E402
 
 @rfm.simple_test
 class SSH_CE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
+    descr = 'Checks if SSH is available with CE'
     valid_prog_environs = ['builtin']
     valid_systems = ['+ce']
     test_name = 'ssh'
