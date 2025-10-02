@@ -37,4 +37,3 @@ class CUDA_MPS_CE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     @sanity_function
     def assert_sanity(self):
         return sn.assert_found(r'^\d+ nvidia-cuda-mps-control -d$', self.stdout)
-
