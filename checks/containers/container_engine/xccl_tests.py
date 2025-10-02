@@ -87,6 +87,7 @@ class XCCLTestBase(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
 
 @rfm.simple_test
 class NCCLTestsCE(XCCLTestBase):
+    descr = 'Point-to-Point and All-Reduce NCCL tests with CE'
     valid_systems = ['+ce +nvgpu']
     image_tag = parameter(['cuda12.9.1'])
 
@@ -126,6 +127,7 @@ class NCCLTestsCE(XCCLTestBase):
 
 @rfm.simple_test
 class RCCLTestCE(XCCLTestBase):
+    descr = 'Point-to-Point and All-Reduce RCCL tests with CE'
     valid_systems = ['+ce +amdgpu']
     image_tag = parameter(['rocm6.3.4'])
     min_bytes = '4096M'
