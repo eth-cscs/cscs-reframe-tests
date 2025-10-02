@@ -1,7 +1,9 @@
-# Copyright 2016-2023 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
+
+import os
 
 import reframe as rfm
 import reframe.utility.sanity as sn
@@ -40,14 +42,19 @@ class HDF5TestBase(rfm.RegressionTest):
 @rfm.simple_test
 class CPE_HDF5Test(HDF5TestBase):
     modules = ['cray-hdf5']
-    valid_prog_environs = ['+mpi +hdf5 -uenv']
     valid_systems = ['+remote']
-    tags = {'production', 'health', 'craype'}
+    valid_prog_environs = ['+cpe -uenv']
+    tags = {'health', 'craype'}
+
+    @run_after('init')
+    def skip_uenv_tests(self):
+        # it seems that valid_prog_environs ignores -uenv
+        self.skip_if(os.environ.get("UENV") is not None)
 
 
 @rfm.simple_test
 class Uenv_HDF5Test(HDF5TestBase):
-    valid_prog_environs = ['+mpi +hdf5 +uenv']
+    valid_prog_environs = ['-cpe +uenv +prgenv']
     valid_systems = ['+remote']
     tags = {'production', 'health', 'uenv'}
 

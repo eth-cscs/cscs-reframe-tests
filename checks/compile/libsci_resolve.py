@@ -12,8 +12,8 @@ class LibSciResolveBaseTest(rfm.CompileOnlyRegressionTest):
     sourcepath = 'libsci_resolve.f90'
     executable = 'libsciresolve.x'
     valid_systems = ['daint:login', 'daint:normal']
-    maintainers = ['AJ', 'LM']
-    tags = {'production', 'craype'}
+    maintainers = ['VCUE']
+    tags = {'craype'}
 
     @run_after('setup')
     def set_postbuild_cmds(self):
