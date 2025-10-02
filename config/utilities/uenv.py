@@ -126,7 +126,7 @@ def _get_uenvs():
                 'uenv': {
                     'file': str(image_path),
                     'mount': image_mount,
-                    'uenv': f'{image_path}:{image_mount}' if image_mount is not None else f'{image_path}'
+                    'uenv': f'{image_path}:{image_mount}' if image_mount else str(image_path)
                 }
             }
             if len(views) > 0:
