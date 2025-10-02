@@ -22,7 +22,7 @@ class sphexa_build(rfm.RunOnlyRegressionTest):
     sph_testing = parameter(['OFF'])
     sph_analytical = parameter(['OFF'])
     sph_build_type = parameter(['Debug'])
-    tags = {'uenv', 'production', 'maintenance'}
+    tags = {'uenv'}
 
     @run_before('run')
     def prepare_build(self):
@@ -138,7 +138,7 @@ class sphexa_strong_scaling(rfm.RunOnlyRegressionTest):
 
 @rfm.simple_test
 class sphexa_evrard_strong_scaling(sphexa_strong_scaling):
-    tags = {'uenv', 'production', 'maintenance'}
+    tags = {'uenv'}
     # run a simple setup in the CI:
     num_gpus = parameter([4, 8])
     sph_testcase = parameter(['evrard'])
