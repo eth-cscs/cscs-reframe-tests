@@ -228,7 +228,9 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
 
     @run_after('setup')
     def setup_test(self):
-        descr = 'Megatron tests with synthetic data, with options for large scale and real data tests'
+        descr = (
+            'Megatron tests with synthetic data, with options for large scale '
+            'and real data tests')
         model_config = self.configurations[self.model]
         if self.default_num_nodes is None:
             self.num_nodes = model_config['num_nodes']
