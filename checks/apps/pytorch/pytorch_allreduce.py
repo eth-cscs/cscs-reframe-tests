@@ -68,7 +68,7 @@ class PyTorchNCCLAllReduce(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
                     'aws_ofi_nccl.enabled': 'true',
                     'aws_ofi_nccl.variant': 'cuda12',
             },
-       }
+        }
 
     @run_after('setup')
     def setup_test(self):
@@ -82,7 +82,7 @@ class PyTorchNCCLAllReduce(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
 
     @run_after('setup')
     def set_executable_opts(self):
-        self.prerun_cmds = ['wget https://jfrog.svc.cscs.ch/artifactory/cscs-reframe-tests/PyTorch/all_reduce_bench.py'] # noqa: E501
+        self.prerun_cmds = ['wget https://jfrog.svc.cscs.ch/artifactory/cscs-reframe-tests/PyTorch/all_reduce_bench.py']  # noqa: E501
         headnode_cmd = (
             '$(scontrol show hostnames $SLURM_JOB_NODELIST | head -n 1)'
         )
@@ -103,8 +103,7 @@ class PyTorchNCCLAllReduce(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     @performance_function('GB/s')
     def bandwidth(self):
         return sn.extractsingle(r'\|\s*16GiB\s*\|\s*(?P<busbw>\S+)GBps\s*\|',
-                                self.stdout, tag='busbw', conv=float
-        )
+                                self.stdout, tag='busbw', conv=float)
 
 
 @rfm.simple_test
@@ -117,7 +116,6 @@ class PyTorchRCCLAllReduce(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     curated_images = [
         'rocm/pytorch:rocm6.3.3_ubuntu24.04_py3.12_pytorch_release_2.4.0'
     ]
-
     image = parameter(curated_images) #+ latest_images)
     executable = 'torchrun'
     num_tasks_per_node = 1
@@ -166,7 +164,6 @@ class PyTorchRCCLAllReduce(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     @run_after('setup')
     def set_nccl_min_nchannels(self):
         gpu_devices = self.current_partition.select_devices('gpu')[0]
-        
         # https://rocm.docs.amd.com/projects/rccl/en/latest/how-to/rccl-usage-tips.html#improving-performance-on-the-mi300x-accelerator-when-using-fewer-than-8-gpus noqa: E501
         if gpu_devices.num_devices < 8 and gpu_devices.arch == 'gfx942':
             self.env_vars['NCCL_MIN_NCHANNELS'] = 32
