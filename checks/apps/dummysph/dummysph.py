@@ -1,8 +1,9 @@
-# Copyright 2025 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
+import os
 import reframe as rfm
 import reframe.utility.sanity as sn
 import uenv
@@ -11,37 +12,33 @@ import uenv
 @rfm.simple_test
 class DummySPH_Uenv_Ascent_Single(rfm.RegressionTest):
     descr = "Build and Run Ascent tests with DummySPH"
-    valid_systems = ['+remote']
-    valid_prog_environs = ['+uenv +cuda']
-    ascentdir = variable(
-        str,
-        value=('/capstor/store/cscs/cscs/csstaff/jfavre/ascent/0.9.4/lib/'
-               'cmake/ascent')
-    )
-    # TODO: deploy a uenv with ascent,
-    #       until then using (local install + prgenv-gnu/24.11:v2)
+    valid_systems = ['+uenv']
+    valid_prog_environs = ['+ascent +uenv -cpe']
     sourcesdir = 'https://github.com/jfavre/DummySPH.git'
     tag = variable(str, value='92a06a1')  # v0.1
-    aos = parameter(['OFF'])  # STRIDED_SCALARS:
-    # ON = struct tipsy (AOS) / OFF = std::vector (SOA)
+
+    aos = parameter(['OFF'])  # ON=struct tipsy (AOS) / OFF = std::vector (SOA)
     fp64 = parameter(['OFF', 'ON'])  # OFF=<float>, ON=<double>
-    input_dir = variable(
-        str, value='/capstor/store/cscs/cscs/csstaff/jfavre/ascent')
     tipsy = parameter(['OFF', 'ON'])
-    tipsy_file = variable(str, value='hr8799_bol_bd1.017300')
-    # https://jfrog.svc.cscs.ch/artifactory/cscs-reframe-tests/dummysph/
-    # -> hr8799_bol_bd1.017300.gz (1.06G) will take ~33 s (39.0MB/s)
     h5part = parameter(['OFF', 'ON'])
+    test = parameter(['rendering', 'thresholding', 'compositing', 'binning',
+                      'histsampling'])
+
+    # --- input data:
+    # In https://jfrog.svc.cscs.ch/artifactory/cscs-reframe-tests/dummysph/
+    # but loading ~1G (hr8799_bol_bd1.017300.gz) will take ~33 s (40 MB/s)
+    # -> using CSCS resourcesdir instead
+    # -> or /capstor/store/cscs/cscs/csstaff/jfavre/ascent
+    tipsy_file = variable(str, value='hr8799_bol_bd1.017300')
     h5part_file = variable(str, value='dump_wind-shock.h5')
-    test = parameter(['rendering', 'thresholding', 'compositing',
-                      'histsampling', 'binning'])
+
     datadump = variable(str, value='OFF')
-    num_gpus = variable(int, value=4)
     build_system = 'CMake'
     build_locally = False
     executable = './src/bin/dummysph_ascent'
     time_limit = '4m'
 
+    # {{{ skip unsupported tests
     @run_after('init')
     def skip_test(self):
         """
@@ -79,6 +76,12 @@ STRIDED_SCALARS=OFF SPH_DOUBLE=OFF CAN_LOAD_TIPSY=ON  CAN_LOAD_H5Part=OFF
              and self.test == "histsampling")
         )
         self.skip_if(skip, 'skipping expected failures')
+    # }}}
+
+    @run_before('compile')
+    def set_input_dir(self):
+        self.input_dir = os.path.join(self.current_system.resourcesdir,
+                                      'ascent', 'inputs')
 
     @run_before('compile')
     def set_build_system(self):
@@ -88,22 +91,28 @@ STRIDED_SCALARS=OFF SPH_DOUBLE=OFF CAN_LOAD_TIPSY=ON  CAN_LOAD_H5Part=OFF
             f"git checkout {self.tag}",
             f"git switch -c {self.tag}",
             f"touch _{self.aos}_{self.fp64}_{self.tipsy}_{self.h5part}",
-            f"cd src"
+            f"cd src",
+            # temporary workaround until new release:
+            f'cp {self.input_dir}/../CMakeLists.txt .',
+            f'sed -i "s-CAMP_HAVE_CUDA)-CAMP_HAVE_CUDA) || defined (ASCENT_CUDA_ENABLED)-" cuda_helpers.cpp',
         ]
         self.build_system.config_opts = [
             # f'-DCAN_DATADUMP={self.datadump}',
             # '-DCMAKE_C_COMPILER=mpicc',
             # '-DCMAKE_CXX_COMPILER=mpicxx',
             f'-DCMAKE_BUILD_TYPE=Debug',  # Release
+            f'-DCMAKE_CUDA_HOST_COMPILER=mpicxx',
             f'-DSTRIDED_SCALARS={self.aos}',
             f'-DSPH_DOUBLE={self.fp64}',
             f'-DCAN_LOAD_TIPSY={self.tipsy}',
             f'-DCAN_LOAD_H5Part={self.h5part}',
             f'-DINSITU=Ascent',
-            f'-DAscent_DIR={self.ascentdir}',
+            f'-DAscent_DIR=`find /user-tools/ -name ascent |grep ascent- |grep cmake`'  # noqa: E402
         ]
         if uenv.uarch(self.current_partition) == 'gh200':
-            cmake_arch = '-DCMAKE_CUDA_ARCHITECTURES=90'
+            cmake_arch = (
+                '-DCMAKE_CUDA_ARCHITECTURES=90 '
+                '-DCMAKE_CUDA_HOST_COMPILER=mpicxx')
             self.build_system.config_opts.append(cmake_arch)
 
     @run_before('run')
