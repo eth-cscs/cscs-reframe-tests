@@ -16,6 +16,7 @@ from container_engine import ContainerEngineMixin  # noqa: E402
 
 @rfm.simple_test
 class CudaNBodyCheckCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
+    descr = 'Single-node N-Body test for GPUs using CE (from CUDA samples)'
     valid_systems = ['+ce +nvgpu']
     valid_prog_environs = ['builtin']
     sourcesdir = None
