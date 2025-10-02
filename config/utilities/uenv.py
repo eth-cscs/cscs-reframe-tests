@@ -60,7 +60,7 @@ def _get_uenvs():
         if len(image_mount) > 0:
             image_mount = image_mount[0]
         else:
-            image_mount = _UENV_MOUNT_DEFAULT
+            image_mount = None
 
         # Check if given uenv_name is a path to a squashfs archive
         uenv_path = pathlib.Path(uenv_name)
@@ -124,8 +124,9 @@ def _get_uenvs():
             env['name'] = f'{uenv_name_pretty}_{k}'
             env['resources'] = {
                 'uenv': {
-                    'mount': image_mount,
                     'file': str(image_path),
+                    'mount': image_mount,
+                    'uenv': f'{image_path}:{image_mount}' if image_mount is not None else f'{image_path}'
                 }
             }
             if len(views) > 0:
