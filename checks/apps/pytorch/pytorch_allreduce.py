@@ -32,7 +32,6 @@ class PyTorchNCCLAllReduce(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     # NOTE: only the "-py3" image is supported by the test
     supported_flavors = ["-py3"]
 
-
     pytorch_tags = nvidia_image_tags('pytorch')
     latest_tags = []
 
