@@ -38,6 +38,7 @@ class rocPRISM(AmdGPUBenchmarks):
         self.build_system.srcdir = self._srcdir
         self.build_system.builddir = f'build_{self.benchmark}'
         self.prebuild_cmds += [f'cd {self.build_system.srcdir}']
+        self.build_system.max_concurrency = 8
         gpu_arch = self.current_partition.select_devices('gpu')[0].arch
         if 'rocm' in self.current_environ.features:
             self.build_system.config_opts = [
