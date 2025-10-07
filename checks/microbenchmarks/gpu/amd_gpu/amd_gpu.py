@@ -28,6 +28,7 @@ class AmdGPUBenchmarks(rfm.RegressionTest):
 @rfm.simple_test
 class rocPRISM(AmdGPUBenchmarks):
     benchmark = 'rocPRISM'
+    algo = parameter(['radix-sort', 'scan', 'reduce'])
     _executable_opts = parameter(['6', '12', '27'])
 
     @run_before('compile')
@@ -58,29 +59,58 @@ class rocPRISM(AmdGPUBenchmarks):
 
     @run_before('run')
     def set_executable(self):
-        self.executable = os.path.join(self._srcdir, self.build_system.builddir, 'radix-sort')
+        self.executable = os.path.join(self._srcdir, self.build_system.builddir, self.algo)
         self.executable_opts = [self._executable_opts]
 
     @run_before('sanity')
     def set_sanity(self):
-        regex = r'radix sort time for.*key-value pairs:.*s, bandwidth:.*MiB/s'
+        if self.algo == 'radix-sort':
+            regex = r'radix sort time for.*key-value pairs:.*s, bandwidth:.*MiB/s'
+        elif self.algo == 'scan':
+            regex = r'exclusive scan time for.*values:.*s, bandwidth:.*MiB/s'
+        elif self.algo == 'reduce':
+            regex = r'reduction time for.*values:.*s, bandwidth:.*MiB/s'
+        else:
+            raise ValueError(f'Unknown algorithm: {self.algo}')
         self.sanity_patterns = sn.all([sn.assert_found(regex, self.stdout)])
 
     @run_before('performance')
     def set_perf_vars(self):
         make_perf = sn.make_performance_function
 
-        regex = (
-            r'radix sort time for (?P<keys>\S+) '
-            r'key-value pairs: (?P<latency>\S+) s, '
-            r'bandwidth: (?P<bandwidth>\S+) MiB/s'
-        )
-        keys = sn.extractsingle(regex, self.stdout, 'keys', float)
+        if self.algo == 'radix-sort':
+            regex = (
+                r'radix sort time for (?P<items>\S+) '
+                r'key-value pairs: (?P<latency>\S+) s, '
+                r'bandwidth: (?P<bandwidth>\S+) MiB/s'
+            )
+            unit_name = 'keys/second'
+            unit = 'Gkeys/s'
+        elif self.algo == 'scan':
+            regex = (
+                r'exclusive scan time for (?P<items>\S+) '
+                r'values: (?P<latency>\S+) s, '
+                r'bandwidth: (?P<bandwidth>\S+) MiB/s'
+            )
+            unit_name = 'values/second'
+            unit = 'Gvalues/s'
+        elif self.algo == 'reduce':
+            regex = (
+                r'reduction time for (?P<items>\S+) '
+                r'values: (?P<latency>\S+) s, '
+                r'bandwidth: (?P<bandwidth>\S+) MiB/s'
+            )
+            unit_name = 'values/second'
+            unit = 'Gvalues/s'
+        else:
+            raise ValueError(f'Unknown algorithm: {self.algo}')
+
+        items = sn.extractsingle(regex, self.stdout, 'items', float)
         latency = sn.extractsingle(regex, self.stdout, 'latency', float)
         bandwidth = sn.extractsingle(regex, self.stdout, 'bandwidth', float)
 
         self.perf_variables = {
             'latency': make_perf(latency, 's'),
             'bandwidth': make_perf(bandwidth, 'MiB/s'),
-            'keys/second': make_perf((keys/latency)/1e9, 'Gkeys/s'),
+            unit_name: make_perf((items/latency)/1e9, unit),
         }
