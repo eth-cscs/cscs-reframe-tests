@@ -69,6 +69,9 @@ FFLAGS     += $(VASP_TARGET_CPU)
   
 # Software emulation of quadruple precsion (mandatory)
 QD         ?= $(shell find /user-environment/ -wholename "*compilers/extras/qd" -not -path "*REDIST*" | head -1)
+ifeq ($(strip $(QD)),)
+$(error QD directory not found! Please ensure that the quadruple precision library is installed in /user-environment/)
+endif
 LLIBS      += -L$(QD)/lib -lqdmod -lqd -Wl,-rpath,$(QD)/lib
 INCS       += -I$(QD)/include/qd
   
