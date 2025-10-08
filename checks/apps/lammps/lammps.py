@@ -74,7 +74,7 @@ class lammps_build_test(rfm.CompileOnlyRegressionTest):
     descr = 'LAMMPS Build Test'
     valid_prog_environs = ['+lammps-kokkos-dev']
     valid_systems = ['+gpu']
-    maintainers = ['SSA']
+    maintainers = ['PK', 'SK', 'RM', 'SSA']
     sourcesdir = None
     lammps_sources = fixture(lammps_download, scope='environment')
     build_system = 'CMake'

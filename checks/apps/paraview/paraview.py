@@ -75,7 +75,7 @@ class ParaView_catalystClipping(rfm.RegressionTest):
         '/user-environment/ParaView-5.13/lib64/catalyst',
         'CATALYST_DATA_DUMP_DIRECTORY': '$PWD/dataset',
     }
-    maintainers = ['SSA']
+    maintainers = ['JF', 'JB', 'SSA']
     tags = {'production'}
 
     @run_before('compile')

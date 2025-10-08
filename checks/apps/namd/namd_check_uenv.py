@@ -143,7 +143,7 @@ class NamdBuildTest(rfm.CompileOnlyRegressionTest):
     valid_systems = ['+nvgpu +uenv']
     build_system = AutotoolsCustom()
     sourcesdir = None
-    maintainers = ['SSA']
+    maintainers = ['RM', 'JPC', 'SSA']
     namd_sources = fixture(namd_download, scope='session')
     build_locally = False
     tags = {'uenv'}

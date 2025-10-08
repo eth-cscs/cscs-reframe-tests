@@ -50,7 +50,7 @@ class arbor_build(rfm.CompileOnlyRegressionTest):
     valid_prog_environs = ['+arbor-dev']
     build_system = 'CMake'
     sourcesdir = None
-    maintainers = ['bcumming']
+    maintainers = ['BC', 'SSA']
     arbor_sources = fixture(arbor_download, scope='session')
     # NOTE: required so that the build stage is performed on
     # a compute node using an sbatch job.
