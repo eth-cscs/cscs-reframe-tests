@@ -31,6 +31,39 @@ class rocPRISM(AmdGPUBenchmarks):
     algo = parameter(['radix-sort', 'scan', 'reduce'])
     _executable_opts = parameter(['6', '12', '27'])
 
+    _algo_specs = {
+        'radix-sort': {
+            'sanity_regex': r'radix sort time for.*key-value pairs:.*s, bandwidth:.*MiB/s',
+            'perf_regex': (
+                r'radix sort time for (?P<items>\S+) '
+                r'key-value pairs: (?P<latency>\S+) s, '
+                r'bandwidth: (?P<bandwidth>\S+) MiB/s'
+            ),
+            'unit_name': 'keys/second',
+            'unit': 'Gkeys/s'
+        },
+        'scan': {
+            'sanity_regex': r'exclusive scan time for.*values:.*s, bandwidth:.*MiB/s',
+            'perf_regex': (
+                r'exclusive scan time for (?P<items>\S+) '
+                r'values: (?P<latency>\S+) s, '
+                r'bandwidth: (?P<bandwidth>\S+) MiB/s'
+            ),
+            'unit_name': 'values/second',
+            'unit': 'Gvalues/s'
+        },
+        'reduce': {
+            'sanity_regex': r'reduction time for.*values:.*s, bandwidth:.*MiB/s',
+            'perf_regex': (
+                r'reduction time for (?P<items>\S+) '
+                r'values: (?P<latency>\S+) s, '
+                r'bandwidth: (?P<bandwidth>\S+) MiB/s'
+            ),
+            'unit_name': 'values/second',
+            'unit': 'Gvalues/s'
+        }
+    }
+
     @run_before('compile')
     def prepare_build(self):
         # self.build_system.srcdir is not available in set_executable
@@ -65,53 +98,20 @@ class rocPRISM(AmdGPUBenchmarks):
 
     @run_before('sanity')
     def set_sanity(self):
-        if self.algo == 'radix-sort':
-            regex = r'radix sort time for.*key-value pairs:.*s, bandwidth:.*MiB/s'
-        elif self.algo == 'scan':
-            regex = r'exclusive scan time for.*values:.*s, bandwidth:.*MiB/s'
-        elif self.algo == 'reduce':
-            regex = r'reduction time for.*values:.*s, bandwidth:.*MiB/s'
-        else:
-            raise ValueError(f'Unknown algorithm: {self.algo}')
-        self.sanity_patterns = sn.all([sn.assert_found(regex, self.stdout)])
+        spec = self._algo_specs[self.algo]
+        self.sanity_patterns = sn.all([sn.assert_found(spec['sanity_regex'], self.stdout)])
 
     @run_before('performance')
     def set_perf_vars(self):
         make_perf = sn.make_performance_function
+        spec = self._algo_specs[self.algo]
 
-        if self.algo == 'radix-sort':
-            regex = (
-                r'radix sort time for (?P<items>\S+) '
-                r'key-value pairs: (?P<latency>\S+) s, '
-                r'bandwidth: (?P<bandwidth>\S+) MiB/s'
-            )
-            unit_name = 'keys/second'
-            unit = 'Gkeys/s'
-        elif self.algo == 'scan':
-            regex = (
-                r'exclusive scan time for (?P<items>\S+) '
-                r'values: (?P<latency>\S+) s, '
-                r'bandwidth: (?P<bandwidth>\S+) MiB/s'
-            )
-            unit_name = 'values/second'
-            unit = 'Gvalues/s'
-        elif self.algo == 'reduce':
-            regex = (
-                r'reduction time for (?P<items>\S+) '
-                r'values: (?P<latency>\S+) s, '
-                r'bandwidth: (?P<bandwidth>\S+) MiB/s'
-            )
-            unit_name = 'values/second'
-            unit = 'Gvalues/s'
-        else:
-            raise ValueError(f'Unknown algorithm: {self.algo}')
-
-        items = sn.extractsingle(regex, self.stdout, 'items', float)
-        latency = sn.extractsingle(regex, self.stdout, 'latency', float)
-        bandwidth = sn.extractsingle(regex, self.stdout, 'bandwidth', float)
+        items = sn.extractsingle(spec['perf_regex'], self.stdout, 'items', float)
+        latency = sn.extractsingle(spec['perf_regex'], self.stdout, 'latency', float)
+        bandwidth = sn.extractsingle(spec['perf_regex'], self.stdout, 'bandwidth', float)
 
         self.perf_variables = {
             'latency': make_perf(latency, 's'),
             'bandwidth': make_perf(bandwidth, 'MiB/s'),
-            unit_name: make_perf((items/latency)/1e9, unit),
+            spec['unit_name']: make_perf((items/latency)/1e9, spec['unit']),
         }
