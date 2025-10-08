@@ -67,7 +67,7 @@ if site_configuration and uenv_environs:
                 resources.append(
                     {
                         'name': 'uenv',
-                        'options': ['--uenv={file}:{mount}']
+                        'options': ['--uenv={uenv}']
                     }
                 )
                 resources.append(

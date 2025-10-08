@@ -12,8 +12,8 @@ import reframe.utility.udeps as udeps
 class sphexa_build(rfm.RunOnlyRegressionTest):
     descr = 'Clone and Build SPHEXA'
     maintainers = ['SSA']
-    valid_systems = ['+remote']
-    valid_prog_environs = ['+sphexa']
+    valid_systems = ['+uenv']
+    valid_prog_environs = ['+mpi +cuda -cpe']
     sourcesdir = None
     branch = variable(str, value='develop')
     build_system = 'CustomBuild'
@@ -22,13 +22,13 @@ class sphexa_build(rfm.RunOnlyRegressionTest):
     sph_testing = parameter(['OFF'])
     sph_analytical = parameter(['OFF'])
     sph_build_type = parameter(['Debug'])
-    tags = {'uenv', 'production', 'maintenance'}
+    tags = {'uenv'}
 
     @run_before('run')
     def prepare_build(self):
         self.prerun_cmds = [
             f'git clone --branch={self.branch} --depth=1 '
-            'https://github.com/sphexa-org/sphexa.git',
+            f'https://github.com/sphexa-org/sphexa.git sphexa.git',
             f'wget --quiet {self.url}/sphexa/50c.h5'
         ]
         self.job.options = ['--nodes=1']
@@ -36,21 +36,21 @@ class sphexa_build(rfm.RunOnlyRegressionTest):
         self.executable_opts = ['| grep -m1 nid']
         self.postrun_cmds = [
             # git log:
-            'cd sphexa ; git log -n1 ; cd ..',
-            # cmake step1:
-            'cmake -S sphexa -B build -G Ninja '
+            'cd sphexa.git ; git log -n1 ; cd ..',
+            # cmake configure step:
+            'cmake -S sphexa.git -B build '
+            # NOTE: -G Ninja is possible too
             '-DCMAKE_C_COMPILER=mpicc '
             '-DCMAKE_CXX_COMPILER=mpicxx '
-            '-DCMAKE_CUDA_COMPILER=/user-environment/env/default/bin/nvcc '
+            '-DCMAKE_CUDA_COMPILER=nvcc '
             '-DCMAKE_CUDA_ARCHITECTURES=90 '
             '-DCMAKE_CUDA_FLAGS=-ccbin=mpicxx '
             '-DCSTONE_WITH_GPU_AWARE_MPI=ON '
             f'-DBUILD_TESTING={self.sph_testing} '
             f'-DBUILD_ANALYTICAL={self.sph_analytical} '
             f'-DCMAKE_BUILD_TYPE={self.sph_build_type}',
-            # cmake step2:
-            'cd build',
-            'ninja -j `/usr/bin/nproc` main/src/sphexa/sphexa-cuda'
+            # cmake building step:
+            'cmake --build build -j `/usr/bin/nproc` -t sphexa-cuda'
         ]
 
     @sanity_function
@@ -63,8 +63,8 @@ class sphexa_build(rfm.RunOnlyRegressionTest):
 class sphexa_strong_scaling(rfm.RunOnlyRegressionTest):
     descr = 'Run SPHEXA'
     maintainers = ['SSA']
-    valid_systems = ['+remote']
-    valid_prog_environs = ['+sphexa']
+    valid_systems = ['+uenv']
+    valid_prog_environs = ['+mpi +cuda -cpe']
 
     @run_after('init')
     def setup_dependency(self):
@@ -138,7 +138,7 @@ class sphexa_strong_scaling(rfm.RunOnlyRegressionTest):
 
 @rfm.simple_test
 class sphexa_evrard_strong_scaling(sphexa_strong_scaling):
-    tags = {'uenv', 'production', 'maintenance'}
+    tags = {'uenv'}
     # run a simple setup in the CI:
     num_gpus = parameter([4, 8])
     sph_testcase = parameter(['evrard'])
