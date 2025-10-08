@@ -123,7 +123,7 @@ site_configuration = {
         {
             'name': 'PrgEnv-ce',
             'features': [
-                'cpe',
+                'cpe', 'prgenv',
                 'serial', 'openmp', 'mpi', 'cuda', 'containerized_cpe'],
             'resources': {
                 'cpe_ce_image': {

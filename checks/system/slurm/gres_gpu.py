@@ -9,7 +9,7 @@ import reframe.utility.sanity as sn
 
 @rfm.simple_test
 class SlurmGPUGresTest(rfm.RunOnlyRegressionTest):
-    '''Ensure that the Slurm GRES (Gereric REsource Scheduling) of the number
+    descr = '''Ensure that the Slurm GRES (Generic REsource Scheduling) of the number
        of gpus is correctly set on all the nodes of each partition.
 
        For the current partition, the test performs the following steps:
