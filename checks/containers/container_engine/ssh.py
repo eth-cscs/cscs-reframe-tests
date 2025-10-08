@@ -20,6 +20,7 @@ class SSH_CE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     descr = 'Checks if SSH is available with CE'
     valid_prog_environs = ['builtin']
     valid_systems = ['+ce']
+    maintainers = ['AM', 'VCUE']
     test_name = 'ssh'
     num_nodes = variable(int, value=1)
     container_image = 'ubuntu:24.04'

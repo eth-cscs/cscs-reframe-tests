@@ -19,6 +19,7 @@ class CudaNBodyCheckCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     descr = 'Single-node N-Body test for GPUs using CE (from CUDA samples)'
     valid_systems = ['+ce +nvgpu']
     valid_prog_environs = ['builtin']
+    self.maintainers = ['AM', 'VCUE']
     sourcesdir = None
     num_tasks = 1
     num_tasks_per_node = 1
