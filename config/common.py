@@ -26,9 +26,6 @@ def _format_httpjson(record, extras, ignore_keys):
         else:
             data[attr] = val
 
-    # print(data["check_perf_value"])
-    # print(data["check_perf_ref"])
-
     data.update(extras)
 
     return json.dumps(data)
@@ -100,13 +97,8 @@ site_configuration = {
                         'rfm_ci_pipeline': os.getenv("CI_PIPELINE_URL", "#"),
                         'rfm_ci_project': os.getenv("CI_PROJECT_PATH", "Unknown CI Project")
                     },
-                    'debug': True,
+                    # 'debug': True,
                     "json_formatter": _format_httpjson,
-#del                     'format_perfvars': (
-#del                         '%(check_perf_value)s.xx|%(check_perf_unit)s|'
-#del                         #'%(check_perf_ref)s|%(check_perf_lower_thres)s|'
-#del                         #'%(check_perf_upper_thres)s|'
-#del                     ),
                     'ignore_keys': ['check_perfvalues']
                 }
             ]
