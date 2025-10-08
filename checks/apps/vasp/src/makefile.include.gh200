@@ -63,15 +63,6 @@ CXX_PARS    = nvc++ --no_warnings
 VASP_TARGET_CPU ?= -tp host
 FFLAGS     += $(VASP_TARGET_CPU)
   
-# Specify your NV HPC-SDK installation (mandatory)
-#... first try to set it automatically
-#NVROOT      =$(shell which nvfortran | awk -F /compilers/bin/nvfortran '{ print $$1 }')
-  
-# If the above fails, then NVROOT needs to be set manually
-#NVHPC      ?= /opt/nvidia/hpc_sdk
-#NVVERSION   = 21.11
-#NVROOT      = $(NVHPC)/Linux_x86_64/$(NVVERSION)
-  
 ## Improves performance when using NV HPC-SDK >=21.11 and CUDA >11.2
 #OFLAG_IN   = -fast -Mwarperf
 #SOURCE_IN  := nonlr.o
