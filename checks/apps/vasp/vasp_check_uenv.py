@@ -106,7 +106,7 @@ class VaspCheckUENV(rfm.RunOnlyRegressionTest):
 @rfm.simple_test
 class VaspBuildTestUENV(rfm.CompileOnlyRegressionTest):
     '''
-    Test VASP build from source.
+    Test VASP build from source using a modified makefile.
     '''
 
     descr = 'VASP Build Test'
