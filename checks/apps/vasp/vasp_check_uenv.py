@@ -43,7 +43,7 @@ slurm_config = {
 @rfm.simple_test
 class VaspCheckUENV(rfm.RunOnlyRegressionTest):
     executable = 'vasp_std'
-    maintainers = ['SF', 'RM', 'SSA']
+    maintainers = ['fraschs', 'romeli', 'SSA']
     valid_systems = ['*']
 
     valid_prog_environs = ['+vasp']

@@ -20,7 +20,7 @@ class enroot_import_image(rfm.RunOnlyRegressionTest):
     executable = 'enroot'
     valid_systems = ['+ce']
     valid_prog_environs = ['builtin']
-    maintainers = ['AM', 'VCUE']
+    maintainers = ['amadonna', 'VCUE']
 
     @run_before('run')
     def set_executable_opts(self):

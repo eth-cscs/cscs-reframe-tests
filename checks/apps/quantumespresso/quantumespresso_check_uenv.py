@@ -77,7 +77,7 @@ class QeBuildTestUENV(rfm.CompileOnlyRegressionTest):
     valid_systems = ["*"]
     build_system = "CMake"
     sourcesdir = None
-    maintainers = ['SP', 'AK', 'SSA']
+    maintainers = ['simonpi', 'antonk', 'SSA']
     qe_sources = fixture(qe_download, scope="environment")
     build_locally = False
     tags = {"uenv"}

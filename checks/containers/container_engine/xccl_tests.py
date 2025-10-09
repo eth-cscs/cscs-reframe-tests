@@ -16,7 +16,7 @@ from container_engine import ContainerEngineMixin  # noqa: E402
 
 class XCCLTestBase(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     valid_prog_environs = ['builtin']
-    maintainers = ['AM', 'VCUE']
+    maintainers = ['amadonna', 'VCUE']
     sourcesdir = None
     test_name = parameter(['all_reduce', 'sendrecv'])
     num_nodes = variable(int, value=2)

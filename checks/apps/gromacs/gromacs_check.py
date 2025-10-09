@@ -52,7 +52,7 @@ slurm_config = {
 
 class gromacs_download(rfm.RunOnlyRegressionTest):
     descr = 'Fetch GROMACS source code'
-    maintainers = ['PK', 'SK', 'RM', 'SSA']
+    maintainers = ['pkanduri', 'sebkelle', 'romeli', 'SSA']
     version = variable(str, value='2024.3')
     sourcesdir = None
     executable = 'wget'
