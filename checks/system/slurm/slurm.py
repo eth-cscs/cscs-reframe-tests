@@ -172,7 +172,9 @@ class ConstraintRequestCabinetGrouping(SlurmSimpleBaseCheck):
 
 @rfm.simple_test
 class MemoryOverconsumptionCheck(SlurmCompiledBaseCheck):
+    # TODO: maintainers = ['@jgphpc', '@ekouts']
     descr = 'Tests if requested memory limit works'
+    valid_prog_environs = ['+uenv -cpe +prgenv']
     time_limit = '2m'
     tags.add('mem')
     build_system = 'SingleSource'
@@ -190,12 +192,12 @@ class MemoryOverconsumptionCheck(SlurmCompiledBaseCheck):
 
 
 @rfm.simple_test
-class MemoryOverconsumptionMpiCheck(SlurmCompiledBaseCheck):
-    descr = 'Tests for max allocatable memory'
+class MemoryOverconsumptionCheckMPI(SlurmCompiledBaseCheck):
     # TODO: maintainers = ['@jgphpc', '@ekouts']
+    descr = 'Tests for max allocatable memory'
     valid_systems = ['+remote']
-    valid_prog_environs = ['+prgenv +mpi']
-    time_limit = '5m'
+    valid_prog_environs = ['+uenv -cpe +prgenv +mpi']
+    time_limit = '4m'
     build_system = 'SingleSource'
     sourcepath = 'eatmem/eatmemory_mpi.c'
     # env_vars = {'MPICH_GPU_SUPPORT_ENABLED': 0}
