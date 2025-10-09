@@ -495,7 +495,7 @@ class SlurmTransparentHugepagesCheck(rfm.RunOnlyRegressionTest):
 class SlurmParanoidCheck(rfm.RunOnlyRegressionTest):
     valid_systems = ['+remote +scontrol']
     valid_prog_environs = ['builtin']
-    maintainers = ['JG', 'PA']
+    maintainers = ['piccinal', 'PA']
     descr = (
         'Check that perf_event_paranoid enables per-process and system wide'
         'performance monitoring')

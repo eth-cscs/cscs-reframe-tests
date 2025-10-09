@@ -115,7 +115,7 @@ class VaspBuildTestUENV(rfm.CompileOnlyRegressionTest):
     valid_systems = ['*']
     build_system = 'Make'
     # only build std target
-    maintainers = ['SF', 'RM', 'SSA']
+    maintainers = ['fraschs', 'romeli', 'SSA']
     # run on node to load uenv
     build_locally = False
     tags = {'uenv'}
