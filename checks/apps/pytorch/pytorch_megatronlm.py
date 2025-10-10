@@ -525,6 +525,7 @@ class pytorch_image_import(rfm.RunOnlyRegressionTest):
 class PyTorchMegatronLM_CE(PyTorchMegatronLM, ContainerEngineMixin):
     valid_systems = ['+nvgpu +ce']
     valid_prog_environs = ['builtin']
+    maintainers = ['ml-team']
     pytorch_image = fixture(pytorch_image_import, scope='session')
 
     @run_after('setup')
@@ -564,6 +565,7 @@ class PyTorchMegatronLM_CE(PyTorchMegatronLM, ContainerEngineMixin):
 class PyTorchMegatronLM_UENV(PyTorchMegatronLM):
     valid_systems = ['+nvgpu +uenv']
     valid_prog_environs = ['+pytorch']
+    maintainers = ['ml-team']
 
     @run_after('setup')
     def patch_numpy(self):

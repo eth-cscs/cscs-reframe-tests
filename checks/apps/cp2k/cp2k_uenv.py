@@ -111,7 +111,7 @@ class Cp2kBuildTestUENV(rfm.CompileOnlyRegressionTest):
     valid_systems = ['+uenv']
     build_system = 'CMake'
     sourcesdir = None
-    maintainers = ['SSA']
+    maintainers = ['tmathieu, 'romeli', 'abussy', 'simbergm',  'SSA']
     cp2k_sources = fixture(cp2k_download, scope='session')
     build_locally = False
     tags = {'uenv'}

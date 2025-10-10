@@ -64,7 +64,7 @@ slurm_config = {
 class dlaf_base(rfm.RunOnlyRegressionTest):
     valid_systems = ['+uenv']
     valid_prog_environs = ['+dlaf -cp2k -cp2k-dev']
-    maintainers = ["SSA"]
+    maintainers = ['simbergm', 'rasolca', 'SSA']
 
     def _sq_factor(self, n):
         """

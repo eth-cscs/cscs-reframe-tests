@@ -26,6 +26,7 @@ class PyTorchDdpPipAmd(PyTorchAmdTestBase):
     descr = 'Check the training throughput with native cray-python and rocm'
     modules = ['cray', 'rocm', 'cray-python']
     valid_prog_environs = ['builtin']
+    maintainers = ['ml-team']
     rocm_version = parameter([
         '5.0', # match cray rocm
         '5.2', # pt1.13.1
@@ -85,6 +86,7 @@ class SetupAmdContainerVenv(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
 class PyTorchDdpCeAmd(PyTorchAmdTestBase, ContainerEngineMixin):
     descr = 'Check the training throughput using the ContainerEngine and ROCm images'
     valid_systems = ['+ce +amdgpu']
+    maintainers = ['ml-team']
     venv = fixture(SetupAmdContainerVenv)
     num_nodes = parameter([1, 3])
     aws_ofi_nccl = parameter([True, False])

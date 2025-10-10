@@ -29,6 +29,7 @@ class NodeBurnCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     image_repository = 'jfrog.svc.cscs.ch#reframe-oci/node-burn'
     image_tag = 'cuda-12.4_nb-be4f759'
     valid_prog_environs = ['builtin']
+    maintainers = ['VCUE', 'PA']
     nb_duration = variable(int, value=20)
     flexible = variable(bool, value=False)
     container_image = f'{image_repository}:{image_tag}'

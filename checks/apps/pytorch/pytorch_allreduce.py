@@ -28,6 +28,7 @@ class PyTorchNCCLAllReduce(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     num_nodes = variable(int, value=8)
     sourcesdir = None
     curated_images = ['nvcr.io#nvidia/pytorch:25.06-py3']
+    maintainers = ['ml-team']
 
     # NOTE: only the "-py3" image is supported by the test
     supported_flavors = ["-py3"]
@@ -111,6 +112,7 @@ class PyTorchRCCLAllReduce(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     descr = 'All-reduce PyTorch benchmark with CE (RCCL version)'
     valid_systems = ['+amdgpu']
     valid_prog_environs = ['builtin']
+    maintainers = ['ml-team']
     num_nodes = variable(int, value=8)
     sourcesdir = None
     curated_images = [
