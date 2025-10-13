@@ -16,7 +16,7 @@ from container_engine import ContainerEngineMixin  # noqa: E402
 
 @rfm.simple_test
 class dcgm_rpm_bin_and_lib_installed(rfm.RunOnlyRegressionTest):
-    descr = 'Check DGCM executable and libraries are installed'
+    descr = 'Check DCGM executable and libraries are installed'
     maintainers = ['VCUE', 'PA']
     tags = {'maintenance', 'vs-node-validator'}
     valid_systems = ['+nvgpu']
@@ -34,7 +34,7 @@ class dcgm_rpm_bin_and_lib_installed(rfm.RunOnlyRegressionTest):
 
 @rfm.simple_test
 class dcgm_ce_hook_avail(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
-    descr = 'Check DGCM CE hook is working with gssr'
+    descr = 'Check DCGM CE hook is working with gssr'
     maintainers = ['VCUE', 'PA']
     tags = {'ce', 'maintenance', 'vs-node-validator'}
     valid_systems = ['+ce +nvgpu']
