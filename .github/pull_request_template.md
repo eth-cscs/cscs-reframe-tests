@@ -7,5 +7,6 @@ $ reframe -r ...
 - You can manually trigger 1 (or more) CI pipelines by writing a comment in this Pull Request. For example:
   - UENV testing: add `cscs-ci run alps-daint-uenv;MY_UENV=prgenv-gnu/25.06:rc5`
       - Test platforms: daint, santis, clariden, eiger, bristen, beverin
+      - CSCS staff: More info in https://confluence.cscs.ch/spaces/reframe --> Contributing+Pull+Requests
 
 Thank you for taking the time to contribute to `cscs-reframe-tests` !
