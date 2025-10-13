@@ -3,6 +3,7 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
+import os
 import reframe as rfm
 import reframe.utility.sanity as sn
 
@@ -12,10 +13,13 @@ class AmdGPUBenchmarks(rfm.RegressionTest):
     Base class for amd-gpu-benchmarks
     '''
     maintainers = ['SSA']
-    sourcesdir = 'https://github.com/eth-cscs/amd-gpu-benchmarks.git'
+    sourcesdir = None
     valid_prog_environs = ['+rocm', '+prgenv +cuda']
     valid_systems = ['+remote']
     build_system = 'CMake'
+    prebuild_cmds = [
+            'git clone --depth 1 -b reframe-ci https://github.com/eth-cscs/amd-gpu-benchmarks.git'
+    ]
     time_limit = '2m'
     build_locally = False
     tags = {'production', 'uenv'}
@@ -28,8 +32,11 @@ class rocPRISM(AmdGPUBenchmarks):
 
     @run_before('compile')
     def prepare_build(self):
+        # self.build_system.srcdir is not available in set_executable
+        self._srcdir = f'amd-gpu-benchmarks/{self.benchmark}'
+        self.build_system.srcdir = self._srcdir
         self.build_system.builddir = f'build_{self.benchmark}'
-        self.prebuild_cmds = [f'ln -fs {self.benchmark}/* .', 'pwd']
+        self.prebuild_cmds += [f'cd {self.build_system.srcdir}']
         gpu_arch = self.current_partition.select_devices('gpu')[0].arch
         if 'rocm' in self.current_environ.features:
             self.build_system.config_opts = [
@@ -51,7 +58,7 @@ class rocPRISM(AmdGPUBenchmarks):
 
     @run_before('run')
     def set_executable(self):
-        self.executable = f'{self.build_system.builddir}/radix-sort'
+        self.executable = os.path.join(self._srcdir, self.build_system.builddir, 'radix-sort')
         self.executable_opts = [self._executable_opts]
 
     @run_before('sanity')
