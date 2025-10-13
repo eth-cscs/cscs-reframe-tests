@@ -14,8 +14,8 @@ class AmdGPUBenchmarks(rfm.RegressionTest):
     '''
     maintainers = ['SSA']
     sourcesdir = None
-    valid_prog_environs = ['+rocm', '+prgenv +cuda']
-    valid_systems = ['+remote']
+    valid_prog_environs = ['+rocm', '+uenv +cuda']
+    valid_systems = ['+uenv']
     build_system = 'CMake'
     prebuild_cmds = [
             'git clone --depth 1 -b reframe-ci https://github.com/eth-cscs/amd-gpu-benchmarks.git'
