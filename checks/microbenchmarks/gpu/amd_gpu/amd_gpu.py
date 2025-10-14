@@ -18,7 +18,7 @@ class AmdGPUBenchmarks(rfm.RegressionTest):
     valid_systems = ['+uenv']
     build_system = 'CMake'
     prebuild_cmds = [
-            'git clone --depth 1 -b reframe-ci https://github.com/eth-cscs/amd-gpu-benchmarks.git'
+        'git clone --depth 1 -b reframe-ci https://github.com/eth-cscs/amd-gpu-benchmarks.git'
     ]
     time_limit = '2m'
     build_locally = False
