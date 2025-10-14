@@ -10,7 +10,7 @@ import reframe.utility.sanity as sn
 
 class ROCmGPUBenchmarks(rfm.RegressionTest):
     '''
-    Base class for amd-gpu-benchmarks
+    Base class for ROCm GPU microbenchmarks.
     '''
     maintainers = ['SSA']
     sourcesdir = None
