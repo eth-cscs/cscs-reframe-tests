@@ -14,7 +14,7 @@ class AmdGPUBenchmarks(rfm.RegressionTest):
     '''
     maintainers = ['SSA']
     sourcesdir = None
-    valid_prog_environs = ['+rocm', '+uenv +cuda']
+    valid_prog_environs = [' +uenv +prgenv +rocm', ' +uenv +prgenv +cuda']
     valid_systems = ['+uenv']
     build_system = 'CMake'
     prebuild_cmds = [
