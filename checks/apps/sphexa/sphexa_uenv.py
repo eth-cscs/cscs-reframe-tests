@@ -13,7 +13,7 @@ class sphexa_build(rfm.RunOnlyRegressionTest):
     descr = 'Clone and Build SPHEXA'
     maintainers = ['SSA']
     valid_systems = ['+uenv']
-    valid_prog_environs = ['+mpi +cuda -cpe']
+    valid_prog_environs = ['+mpi +cuda -cpe', '+rocm']
     sourcesdir = None
     branch = variable(str, value='develop')
     build_system = 'CustomBuild'
@@ -21,7 +21,7 @@ class sphexa_build(rfm.RunOnlyRegressionTest):
         str, value='https://jfrog.svc.cscs.ch/artifactory/cscs-reframe-tests')
     sph_testing = parameter(['OFF'])
     sph_analytical = parameter(['OFF'])
-    sph_build_type = parameter(['Debug'])
+    sph_build_type = parameter(['Release'])
     tags = {'uenv'}
 
     @run_before('run')
@@ -34,29 +34,40 @@ class sphexa_build(rfm.RunOnlyRegressionTest):
         self.job.options = ['--nodes=1']
         self.executable = 'hostname'
         self.executable_opts = ['| grep -m1 nid']
+        self.exename = 'sphexa-hip' if 'rocm' in self.current_environ.features else 'sphexa-cuda' 
+        cmakeArgs = [
+            '-DCMAKE_C_COMPILER=mpicc',
+            '-DCMAKE_CXX_COMPILER=mpicxx',
+            '-DCSTONE_WITH_GPU_AWARE_MPI=ON',
+            f'-DBUILD_TESTING={self.sph_testing}',
+            f'-DBUILD_ANALYTICAL={self.sph_analytical}',
+            f'-DCMAKE_BUILD_TYPE={self.sph_build_type}',
+        ]
+
+        if 'rocm' in self.current_environ.features:
+            cmakeArgs += [
+                '-DCMAKE_HIP_ARCHITECTURES="gfx90a;gfx942"',
+            ]
+        else:
+            cmakeArgs += [
+                '-DCMAKE_CUDA_COMPILER=nvcc',
+                '-DCMAKE_CUDA_ARCHITECTURES=90',
+                '-DCMAKE_CUDA_FLAGS=-ccbin=mpicxx',
+            ]
+            
         self.postrun_cmds = [
             # git log:
             'cd sphexa.git ; git log -n1 ; cd ..',
             # cmake configure step:
-            'cmake -S sphexa.git -B build '
+            'cmake -S sphexa.git -B build ' + ' '.join(cmakeArgs),
             # NOTE: -G Ninja is possible too
-            '-DCMAKE_C_COMPILER=mpicc '
-            '-DCMAKE_CXX_COMPILER=mpicxx '
-            '-DCMAKE_CUDA_COMPILER=nvcc '
-            '-DCMAKE_CUDA_ARCHITECTURES=90 '
-            '-DCMAKE_CUDA_FLAGS=-ccbin=mpicxx '
-            '-DCSTONE_WITH_GPU_AWARE_MPI=ON '
-            f'-DBUILD_TESTING={self.sph_testing} '
-            f'-DBUILD_ANALYTICAL={self.sph_analytical} '
-            f'-DCMAKE_BUILD_TYPE={self.sph_build_type}',
-            # cmake building step:
-            'cmake --build build -j `/usr/bin/nproc` -t sphexa-cuda'
+            f'cmake --build build -j `/usr/bin/nproc` -t {self.exename}'
         ]
 
     @sanity_function
     def validate_build(self):
         self._executable = os.path.join(self.stagedir, 'build',
-                                        'main', 'src', 'sphexa', 'sphexa-cuda')
+                                        'main', 'src', 'sphexa', self.exename)
         return os.path.isfile(self._executable)
 
 
@@ -64,7 +75,7 @@ class sphexa_strong_scaling(rfm.RunOnlyRegressionTest):
     descr = 'Run SPHEXA'
     maintainers = ['SSA']
     valid_systems = ['+uenv']
-    valid_prog_environs = ['+mpi +cuda -cpe']
+    valid_prog_environs = ['+mpi +cuda -cpe', '+rocm']
 
     @run_after('init')
     def setup_dependency(self):
@@ -78,7 +89,7 @@ class sphexa_strong_scaling(rfm.RunOnlyRegressionTest):
 
     @run_after('setup')
     def set_executable(self):
-        sphexa = 'sphexa-cuda'
+        sphexa = 'sphexa-hip'
         executable = os.path.join(
             self.build_dir, 'build', 'main', 'src', 'sphexa', sphexa)
         infile = os.path.join(self.build_dir, self.sph_infile)
@@ -87,7 +98,7 @@ class sphexa_strong_scaling(rfm.RunOnlyRegressionTest):
             f'cp {infile} .',
             f'ldd {sphexa}',
         ]
-        self.executable = f'./cuda-vars.sh ./{sphexa}'
+        self.executable = f'./mi200-vars.sh ./{sphexa}'
 
     @run_before('run')
     def set_exe_opts(self):
@@ -99,7 +110,7 @@ class sphexa_strong_scaling(rfm.RunOnlyRegressionTest):
         ]
         self.num_tasks = self.num_gpus
         self.num_tasks_per_node = self.nt_per_node
-        self.num_cpus_per_task = 71
+        self.num_cpus_per_task = 7
         self.job.options = [
             f'--nodes={int(self.num_gpus / self.num_tasks_per_node)}'
             if self.num_tasks > self.num_tasks_per_node else '--nodes=1',
@@ -124,7 +135,6 @@ class sphexa_strong_scaling(rfm.RunOnlyRegressionTest):
             r'Total execution time of \d+ iterations of \S+ '
             r'up to t = \S+: (?P<sec>\S+)s$')
         return sn.extractsingle(regex_t, self.stdout, 'sec', float)
-        # TODO: report power cap (nodelist is already in json)
 
     @performance_function('s')
     def sec_per_step(self):
