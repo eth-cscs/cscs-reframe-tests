@@ -26,6 +26,22 @@ class XCCLTestBase(rfm.RunOnlyRegressionTest):
     min_bytes = variable(str, value='1024M')
     max_bytes = variable(str, value='1024M')
     tags = {'production', 'maintenance'} # TODO: ce? uenv?
+    env_vars = {
+        'NCCL_DEBUG': 'Info',
+    }
+
+    reference_per_test = {
+        'sendrecv': {
+            '*': {
+                'GB/s': (24.0, -0.05, None, 'GB/s')
+            }
+         },
+        'all_reduce': {
+            '*': {
+                'GB/s': (90.0, -0.05, None, 'GB/s')
+            }
+        }
+    }
 
     @run_after('setup')
     def set_executable(self):
@@ -38,12 +54,12 @@ class XCCLTestBase(rfm.RunOnlyRegressionTest):
         self.num_tasks_per_node = self.num_gpus_per_node
         self.num_tasks = self.num_nodes * self.num_gpus_per_node
 
-    # @run_after('setup')
-    # def set_nchannels_per_net_peer(self): # TODO: always set? should be part of env vars set generally
-    #     # The following boosts performance for sendrecv in multiple nodes
-    #     # See https://github.com/NVIDIA/nccl/issues/1272
-    #     if self.test_name == 'sendrecv':
-    #         self.env_vars['NCCL_NCHANNELS_PER_NET_PEER'] = 4
+    @run_after('setup')
+    def set_nchannels_per_net_peer(self):
+        # The following boosts performance for sendrecv in multiple nodes
+        # See https://github.com/NVIDIA/nccl/issues/1272
+        if self.test_name == 'sendrecv':
+            self.env_vars['NCCL_NCHANNELS_PER_NET_PEER'] = 4
 
     @run_after('setup')
     def set_executable_opts(self):
@@ -64,7 +80,6 @@ class XCCLTestBase(rfm.RunOnlyRegressionTest):
     def set_reference(self):
         self.reference = self.reference_per_test[self.test_name]
 
-    # TODO: check for range of references (different message sizes), not just the avg bus bandwidth
     @run_before('performance')
     def set_perf(self):
         self.perf_patterns = {
@@ -79,26 +94,6 @@ class XCCLTestBaseCE(XCCLTestBase, ContainerEngineMixin):
             'aws_ofi_nccl.enabled': 'true'
         }
     }
-    env_vars = {
-        'NCCL_DEBUG': 'Info',
-
-        # Disable MCA components to avoid warnings
-        'PMIX_MCA_psec': '^munge',
-        'PMIX_MCA_gds': '^shmem2'
-    }
-
-    @run_before('run')
-    def set_pmix(self):
-        self.job.launcher.options += ['--mpi=pmix']
-
-
-class NCCLTestsCE(XCCLTestBaseCe):
-    descr = 'Point-to-Point and All-Reduce NCCL tests with CE'
-    valid_systems = ['+ce +nvgpu']
-    image_tag = parameter(['cuda12.9.1'])
-
-    # Disable Nvidia Driver requirement
-    env_vars['NVIDIA_DISABLE_REQUIRE'] = 1
 
     # Disable MCA components to avoid warnings
     env_vars.update(
@@ -108,18 +103,38 @@ class NCCLTestsCE(XCCLTestBaseCe):
         }
     )
 
-    reference_per_test = {
-        'sendrecv': {
-            '*': {
-                'GB/s': (24.0, -0.05, None, 'GB/s')
-            }
-         },
-        'all_reduce': {
-            '*': {
-                'GB/s': (75.0, -0.05, None, 'GB/s')
-            }
+    @run_before('run')
+    def set_pmix(self):
+        self.job.launcher.options += ['--mpi=pmix']
+
+def _set_xccl_uenv_env_vars(env_vars):
+    env_vars.update(
+        {
+            'NCCL_CROSS_NIC': '1',
+            'NCCL_NET': '\'AWS Libfabric\'',
+            'NCCL_NET_GDR_LEVEL': 'PHB',
+            'NCCL_PROTO': '^LL128',
+            'FI_CXI_DEFAULT_CQ_SIZE': '131072',
+            'FI_CXI_DEFAULT_TX_SIZE': '32768',
+            'FI_CXI_DISABLE_HOST_REGISTER': '1',
+            'FI_CXI_RDZV_EAGER_SIZE': '0',
+            'FI_CXI_RDZV_GET_MIN': '0',
+            'FI_CXI_RDZV_PROTO': 'alt_read',
+            'FI_CXI_RDZV_THRESHOLD': '0',
+            'FI_CXI_RX_MATCH_MODE': 'software',
+            'FI_MR_CACHE_MONITOR': 'userfaultfd',
         }
-    }
+    )
+
+
+@rfm.simple_test
+class NCCLTestsCE(XCCLTestBaseCE):
+    descr = 'Point-to-Point and All-Reduce NCCL tests with CE'
+    valid_systems = ['+ce +nvgpu']
+    image_tag = parameter(['cuda12.9.1'])
+
+    # Disable Nvidia Driver requirement
+    env_vars['NVIDIA_DISABLE_REQUIRE'] = 1
 
     @run_after('init')
     def setup_ce(self):
@@ -137,27 +152,15 @@ class NCCLTestsUENV(XCCLTestBase):
     valid_systems = ['+nvgpu']
     valid_prog_environs = ['+uenv +prgenv +nccl-tests']
 
-    # reference_per_test = {
-    #     'sendrecv': {
-    #         '*': {
-    #             'GB/s': (24.0, -0.05, None, 'GB/s')
-    #         }
-    #      },
-    #     'all_reduce': {
-    #         '*': {
-    #             'GB/s': (75.0, -0.05, None, 'GB/s')
-    #         }
-    #     }
-    # }
+    @run_after('setup')
+    def set_env_vars(self):
+        _set_xccl_uenv_env_vars(self.env_vars)
 
-    # @run_after('init')
-    # def setup_ce(self):
-    #     cuda_major = self.image_tag.split('.')[0]
-    #     self.container_image = (f'jfrog.svc.cscs.ch#reframe-oci/nccl-tests:'
-    #                             f'{self.image_tag}')
-    #     self.container_env_table['annotations.com.hooks'].update({
-    #         'aws_ofi_nccl.variant': cuda_major
-    #     })
+
+def _set_rccl_min_nchannels(gpu_devices, env_vars):
+    # https://rocm.docs.amd.com/projects/rccl/en/latest/how-to/rccl-usage-tips.html#improving-performance-on-the-mi300x-accelerator-when-using-fewer-than-8-gpus # noqa: E501
+    if gpu_devices.num_devices < 8 and gpu_devices.arch == 'gfx942':
+        env_vars['NCCL_MIN_NCHANNELS'] = 32
 
 
 @rfm.simple_test
@@ -165,22 +168,6 @@ class RCCLTestCE(XCCLTestBaseCE):
     descr = 'Point-to-Point and All-Reduce RCCL tests with CE'
     valid_systems = ['+ce +amdgpu']
     image_tag = parameter(['rocm6.3.4'])
-    min_bytes = '4096M'
-    max_bytes = '4096M'
-    reference_per_test = {
-        'sendrecv': {
-            '*': {
-
-                # TODO: revisit the performance limits based on more data
-                'GB/s': (24.0, -0.40, None, 'GB/s')
-            }
-         },
-        'all_reduce': {
-            '*': {
-                'GB/s': (90.0, -0.05, None, 'GB/s')
-            }
-        }
-    }
 
     @run_after('init')
     def setup_ce(self):
@@ -192,9 +179,28 @@ class RCCLTestCE(XCCLTestBaseCE):
         })
 
     @run_after('setup')
-    def set_nccl_min_nchannels(self):
-        gpu_devices = self.current_partition.select_devices('gpu')[0]
+    def set_env_vars(self):
+        _set_rccl_min_nchannels(self.current_partition.select_devices('gpu')[0], self.env_vars)
 
-        # https://rocm.docs.amd.com/projects/rccl/en/latest/how-to/rccl-usage-tips.html#improving-performance-on-the-mi300x-accelerator-when-using-fewer-than-8-gpus # noqa: E501
-        if gpu_devices.num_devices < 8 and gpu_devices.arch == 'gfx942':
-            self.env_vars['NCCL_MIN_NCHANNELS'] = 32
+
+def _set_rccl_uenv_env_vars(env_vars):
+    env_vars.update(
+        {
+            'NCCL_GDRCOPY_ENABLE': '1',
+            'NCCL_NET_FORCE_FLUSH': '1',
+            'FI_CXI_DISABLE_NON_INJECT_MSG_IDC': '1',
+        }
+    )
+
+
+@rfm.simple_test
+class RCCLTestsUENV(XCCLTestBase):
+    descr = 'Point-to-Point and All-Reduce RCCL tests with uenv'
+    valid_systems = ['+amdgpu']
+    valid_prog_environs = ['+uenv']
+
+    @run_after('setup')
+    def set_env_vars(self):
+        _set_rccl_min_nchannels(self.current_partition.select_devices('gpu')[0], self.env_vars)
+        _set_xccl_uenv_env_vars(self.env_vars)
+        _set_rccl_uenv_env_vars(self.env_vars)
