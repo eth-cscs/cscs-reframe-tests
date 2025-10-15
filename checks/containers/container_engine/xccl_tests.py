@@ -13,10 +13,6 @@ sys.path.append(str(pathlib.Path(__file__).parent.parent.parent / 'mixins'))
 
 from container_engine import ContainerEngineMixin  # noqa: E402
 
-# TODO: move to non-containers directory (microbenchmarks? next to osu)
-# TODO: generalize reference (store results in csv?)
-# TODO: run with more nodes
-
 class XCCLTestBase(rfm.RunOnlyRegressionTest):
     valid_prog_environs = ['builtin']
     maintainers = ['amadonna', 'VCUE']
@@ -25,7 +21,7 @@ class XCCLTestBase(rfm.RunOnlyRegressionTest):
     num_nodes = variable(int, value=2)
     min_bytes = variable(str, value='1024M')
     max_bytes = variable(str, value='1024M')
-    tags = {'production', 'maintenance'} # TODO: ce? uenv?
+    tags = {'production', 'maintenance'}
     env_vars = {
         'NCCL_DEBUG': 'Info',
     }
