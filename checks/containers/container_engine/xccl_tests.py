@@ -193,7 +193,7 @@ def _set_rccl_uenv_env_vars(env_vars):
 class RCCLTestsUENV(XCCLTestBase):
     descr = 'Point-to-Point and All-Reduce RCCL tests with uenv'
     valid_systems = ['+amdgpu']
-    valid_prog_environs = ['+uenv']
+    valid_prog_environs = ['+uenv +prgenv +rccl-tests']
 
     @run_after('setup')
     def set_env_vars(self):
