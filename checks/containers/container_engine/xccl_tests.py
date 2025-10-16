@@ -91,17 +91,17 @@ class XCCLTestBaseCE(XCCLTestBase, ContainerEngineMixin):
         }
     }
 
-    # Disable MCA components to avoid warnings
-    env_vars.update(
-        {
-            'PMIX_MCA_psec': '^munge',
-            'PMIX_MCA_gds': '^shmem2'
-        }
-    )
-
     @run_before('run')
     def set_pmix(self):
         self.job.launcher.options += ['--mpi=pmix']
+
+        # Disable MCA components to avoid warnings
+        self.env_vars.update(
+            {
+                'PMIX_MCA_psec': '^munge',
+                'PMIX_MCA_gds': '^shmem2'
+            }
+        )
 
 def _set_xccl_uenv_env_vars(env_vars):
     env_vars.update(
