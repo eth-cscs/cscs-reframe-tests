@@ -13,7 +13,7 @@ sys.path.append(str(pathlib.Path(__file__).parent.parent.parent / 'mixins'))
 
 from container_engine import ContainerEngineMixin  # noqa: E402
 
-class XCCLTestBase(rfm.RunOnlyRegressionTest):
+class XCCLTestsBase(rfm.RunOnlyRegressionTest):
     valid_prog_environs = ['builtin']
     maintainers = ['amadonna', 'VCUE']
     sourcesdir = None
@@ -84,7 +84,7 @@ class XCCLTestBase(rfm.RunOnlyRegressionTest):
                 self.stdout, 'gbs', float)
         }
 
-class XCCLTestBaseCE(XCCLTestBase, ContainerEngineMixin):
+class XCCLTestsBaseCE(XCCLTestsBase, ContainerEngineMixin):
     container_env_table = {
         'annotations.com.hooks': {
             'aws_ofi_nccl.enabled': 'true'
@@ -124,7 +124,7 @@ def _set_xccl_uenv_env_vars(env_vars):
 
 
 @rfm.simple_test
-class NCCLTestsCE(XCCLTestBaseCE):
+class NCCLTestsCE(XCCLTestsBaseCE):
     descr = 'Point-to-Point and All-Reduce NCCL tests with CE'
     valid_systems = ['+ce +nvgpu']
     image_tag = parameter(['cuda12.9.1'])
@@ -143,7 +143,7 @@ class NCCLTestsCE(XCCLTestBaseCE):
 
 
 @rfm.simple_test
-class NCCLTestsUENV(XCCLTestBase):
+class NCCLTestsUENV(XCCLTestsBase):
     descr = 'Point-to-Point and All-Reduce NCCL tests with uenv'
     valid_systems = ['+nvgpu']
     valid_prog_environs = ['+uenv +prgenv +nccl-tests']
@@ -160,7 +160,7 @@ def _set_rccl_min_nchannels(gpu_devices, env_vars):
 
 
 @rfm.simple_test
-class RCCLTestCE(XCCLTestBaseCE):
+class RCCLTestsCE(XCCLTestsBaseCE):
     descr = 'Point-to-Point and All-Reduce RCCL tests with CE'
     valid_systems = ['+ce +amdgpu']
     image_tag = parameter(['rocm6.3.4'])
@@ -185,12 +185,13 @@ def _set_rccl_uenv_env_vars(env_vars):
             'NCCL_GDRCOPY_ENABLE': '1',
             'NCCL_NET_FORCE_FLUSH': '1',
             'FI_CXI_DISABLE_NON_INJECT_MSG_IDC': '1',
+            'LD_PRELOAD': '/user-environment/linux-zen3/libfabric-2.3.0-fqevnqh2smbhsgiawcwlnk6co42jdqf5/lib/libfabric.so',
         }
     )
 
 
 @rfm.simple_test
-class RCCLTestsUENV(XCCLTestBase):
+class RCCLTestsUENV(XCCLTestsBase):
     descr = 'Point-to-Point and All-Reduce RCCL tests with uenv'
     valid_systems = ['+amdgpu']
     valid_prog_environs = ['+uenv +prgenv +rccl-tests']
