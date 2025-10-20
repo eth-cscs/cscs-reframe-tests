@@ -66,6 +66,7 @@ STRIDED_SCALARS=OFF SPH_DOUBLE=OFF CAN_LOAD_TIPSY=ON  CAN_LOAD_H5Part=OFF
             # "Field type unsupported for conversion to blueprint":
             (self.aos == "OFF"
              and (self.fp64 == "OFF" or self.fp64 == "ON")
+             # intentionally redundant
              and self.tipsy == "OFF"
              and self.h5part == "OFF"
              and self.test == "compositing") or
@@ -89,6 +90,7 @@ STRIDED_SCALARS=OFF SPH_DOUBLE=OFF CAN_LOAD_TIPSY=ON  CAN_LOAD_H5Part=OFF
         self.build_system.max_concurrency = 6
         self.build_system.srcdir = 'src'
         self.prebuild_cmds += [
+            # https://github.com/jfavre/DummySPH/releases/
             f"git checkout {self.commit}",
             f"git switch -c {self.commit}",
             f"touch _{self.aos}_{self.fp64}_{self.tipsy}_{self.h5part}",
@@ -126,7 +128,6 @@ STRIDED_SCALARS=OFF SPH_DOUBLE=OFF CAN_LOAD_TIPSY=ON  CAN_LOAD_H5Part=OFF
     @run_before('run')
     def set_executable_tests(self):
         self.job.options = [f'--nodes=1']
-        self.rpt = 'rpt'
         infile = ''
         if self.h5part == "ON":
             infile = f'--h5part {self.input_dir}/{self.h5part_file}'
