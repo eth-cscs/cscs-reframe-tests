@@ -10,13 +10,14 @@ import uenv
 
 
 @rfm.simple_test
-class DummySPH_Uenv_Ascent_Single(rfm.RegressionTest):
+class dummysph_uenv_ascent_single(rfm.RegressionTest):
     descr = "Build and Run Ascent tests with DummySPH"
+    maintainers = ['SSA']
     valid_systems = ['+uenv']
     valid_prog_environs = ['+ascent +uenv -cpe']
     sourcesdir = 'https://github.com/jfavre/DummySPH.git'
-    tag = variable(str, value='92a06a1')  # v0.1
-
+    commit = variable(str, value='92a06a1')  # v0.1
+    #
     aos = parameter(['OFF'])  # ON=struct tipsy (AOS) / OFF = std::vector (SOA)
     fp64 = parameter(['OFF', 'ON'])  # OFF=<float>, ON=<double>
     tipsy = parameter(['OFF', 'ON'])
@@ -88,13 +89,14 @@ STRIDED_SCALARS=OFF SPH_DOUBLE=OFF CAN_LOAD_TIPSY=ON  CAN_LOAD_H5Part=OFF
         self.build_system.max_concurrency = 6
         self.build_system.srcdir = 'src'
         self.prebuild_cmds += [
-            f"git checkout {self.tag}",
-            f"git switch -c {self.tag}",
+            f"git checkout {self.commit}",
+            f"git switch -c {self.commit}",
             f"touch _{self.aos}_{self.fp64}_{self.tipsy}_{self.h5part}",
             f"cd src",
-            # temporary workaround until new release:
+            # temporary workaround until new release of DummySPH:
             f'cp {self.input_dir}/../CMakeLists.txt .',
-            f'sed -i "s-CAMP_HAVE_CUDA)-CAMP_HAVE_CUDA) || defined (ASCENT_CUDA_ENABLED)-" cuda_helpers.cpp',
+            f'sed -i "s-CAMP_HAVE_CUDA)-CAMP_HAVE_CUDA) || '
+            f'defined (ASCENT_CUDA_ENABLED)-" cuda_helpers.cpp',
         ]
         self.build_system.config_opts = [
             # f'-DCAN_DATADUMP={self.datadump}',
@@ -109,11 +111,17 @@ STRIDED_SCALARS=OFF SPH_DOUBLE=OFF CAN_LOAD_TIPSY=ON  CAN_LOAD_H5Part=OFF
             f'-DINSITU=Ascent',
             f'-DAscent_DIR=`find /user-tools/ -name ascent |grep ascent- |grep cmake`'  # noqa: E402
         ]
+        cmake_arch = ''
         if uenv.uarch(self.current_partition) == 'gh200':
             cmake_arch = (
                 '-DCMAKE_CUDA_ARCHITECTURES=90 '
                 '-DCMAKE_CUDA_HOST_COMPILER=mpicxx')
-            self.build_system.config_opts.append(cmake_arch)
+        elif uenv.uarch(self.current_partition) == 'a100':
+            cmake_arch = (
+                '-DCMAKE_CUDA_ARCHITECTURES=80 '
+                '-DCMAKE_CUDA_HOST_COMPILER=mpicxx')
+
+        self.build_system.config_opts.append(cmake_arch)
 
     @run_before('run')
     def set_executable_tests(self):
