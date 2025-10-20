@@ -14,51 +14,45 @@ import reframe.utility.sanity as sn
 
 class SlurmSimpleBaseCheck(rfm.RunOnlyRegressionTest):
     '''Base class for Slurm simple binary tests'''
-    valid_systems = ['daint:normal', 'eiger:mc', 'pilatus:mc']
-    valid_prog_environs = ['PrgEnv-cray']
+    valid_systems = ['+remote']
+    valid_prog_environs = ['+prgenv']
     tags = {'slurm', 'maintenance', 'ops', 'production', 'single-node'}
     num_tasks_per_node = 1
-
-    @run_after('init')
-    def customize_systems(self):
-        if self.current_system.name in ['arolla', 'tsa']:
-            self.valid_prog_environs = ['PrgEnv-gnu', 'PrgEnv-pgi']
-            self.exclusive_access = True
+    maintainers = ['VCUE', 'PA']
 
 
 class SlurmCompiledBaseCheck(rfm.RegressionTest):
     '''Base class for Slurm tests that require compiling some code'''
-
-    valid_systems = []
-    valid_prog_environs = ['PrgEnv-cray']
-    tags = {'slurm', 'maintenance', 'ops',
-            'production', 'single-node'}
+    valid_systems = ['+remote']
+    valid_prog_environs = ['+prgenv']
+    build_locally = False
+    tags = {'slurm', 'maintenance', 'ops', 'production', 'single-node'}
     num_tasks_per_node = 1
+    maintainers = ['VCUE', 'PA']
 
 
 @rfm.simple_test
 class HostnameCheck(SlurmSimpleBaseCheck):
+    descr = 'Check hostname pattern nidXXXXXX on the CN'
+    sourcesdir = None
+    time_limit = '1m'
     executable = '/bin/hostname'
     valid_prog_environs = ['builtin']
-    hostname_patt = {
-        'daint:normal': r'^nid\d{6}$',
-        'eiger:mc': r'^nid\d{6}$',
-        'pilatus:mc': r'^nid\d{6}$'
-    }
+    tags.add('flexible')
 
     @run_before('sanity')
     def set_sanity_patterns(self):
-        partname = self.current_partition.fullname
-        num_matches = sn.count(
-            sn.findall(self.hostname_patt[partname], self.stdout)
-        )
+        num_matches = sn.count(sn.findall(r'^nid\d{6}$', self.stdout))
         self.sanity_patterns = sn.assert_eq(self.num_tasks, num_matches)
 
 
 @rfm.simple_test
 class EnvironmentVariableCheck(SlurmSimpleBaseCheck):
+    descr = 'Test if user env variables are propagated to CN'
+    sourcesdir = None
+    time_limit = '1m'
     num_tasks = 2
-    valid_systems = ['daint:normal', 'eiger:mc', 'pilatus:mc']
+    valid_prog_environs = ['builtin']
     executable = '/bin/echo'
     executable_opts = ['$MY_VAR']
     env_vars = {'MY_VAR': 'TEST123456!'}
@@ -72,7 +66,11 @@ class EnvironmentVariableCheck(SlurmSimpleBaseCheck):
 
 @rfm.simple_test
 class RequiredConstraintCheck(SlurmSimpleBaseCheck):
-    valid_systems = []
+    descr = 'Test if -C constraint is required (deprecated)'
+    sourcesdir = None
+    time_limit = '1m'
+    valid_prog_environs = ['builtin']
+    valid_systems = []  # will never run, we use slurm partitions now
     executable = 'srun'
     executable_opts = ['-A', osext.osgroup(), 'hostname']
 
@@ -86,24 +84,32 @@ class RequiredConstraintCheck(SlurmSimpleBaseCheck):
 
 @rfm.simple_test
 class RequestLargeMemoryNodeCheck(SlurmSimpleBaseCheck):
-    valid_systems = []
+    descr = 'Check if slurm memory flag works (deprecated, replaced by MemoryOverconsumptionCheck)'
+    sourcesdir = None
+    time_limit = '1m'
+    valid_systems = []  # use MemoryOverconsumptionCheck instead
+    valid_prog_environs = ['builtin']
     executable = '/usr/bin/free'
     executable_opts = ['-h']
-
-    @sanity_function
-    def assert_memory_is_bounded(self):
-        mem_obtained = sn.extractsingle(r'Mem:\s+(?P<mem>\S+)G',
-                                        self.stdout, 'mem', float)
-        return sn.assert_bounded(mem_obtained, 122.0, 128.0)
 
     @run_before('run')
     def set_memory_limit(self):
         self.job.options = ['--mem=120000']
 
+    @sanity_function
+    def assert_memory_is_bounded(self):
+        mem_obtained = sn.extractsingle(r'Mem:\s+(?P<mem>\S+)G',
+                                        self.stdout, 'mem', float)
+        return sn.assert_bounded(mem_obtained, 122.0, None)
+
 
 @rfm.simple_test
-class DefaultRequestGPU(SlurmSimpleBaseCheck):
-    valid_systems = ['daint:normal']
+class NvidiaSmiDriverVersion(SlurmSimpleBaseCheck):
+    descr = 'Nvidia-smi sanity check (output driver version)'
+    sourcesdir = None
+    time_limit = '1m'
+    valid_prog_environs = ['builtin']
+    valid_systems = ['+nvgpu']
     executable = 'nvidia-smi'
 
     @sanity_function
@@ -114,17 +120,24 @@ class DefaultRequestGPU(SlurmSimpleBaseCheck):
 
 @rfm.simple_test
 class DefaultRequestGPUSetsGRES(SlurmSimpleBaseCheck):
-    valid_systems = []
+    descr = 'Checks slurm config for 4-GPUs per node'
+    sourcesdir = None
+    time_limit = '1m'
+    valid_prog_environs = ['builtin']
+    valid_systems = ['+gpu']
     executable = 'scontrol show job ${SLURM_JOB_ID}'
+    tags.add('flexible')
 
     @sanity_function
     def assert_found_resources(self):
-        return sn.assert_found(r'.*(TresPerNode|Gres)=.*gpu=4.*', self.stdout)
+        return sn.assert_found(r'.*(AllocTRES|Gres)=.*gres/gpu=4.*',
+                               self.stdout)
 
 
 @rfm.simple_test
 class DefaultRequest(SlurmSimpleBaseCheck):
-    valid_systems = ['daint:normal']
+    descr = 'Sanity check for core count (needs to be updated)'
+    valid_systems = []  # will never run, TODO: use .reframe/topology/
     # This is a basic test that should return the number of CPUs on the
     # system which, on a MC node should be 72
     executable = 'lscpu -p |grep -v "^#" -c'
@@ -136,18 +149,13 @@ class DefaultRequest(SlurmSimpleBaseCheck):
 
 @rfm.simple_test
 class ConstraintRequestCabinetGrouping(SlurmSimpleBaseCheck):
-    valid_systems = []
+    descr = 'Checks if contraint works for requesting specific cabinets (deprecated, needs attention)'
+    valid_systems = []  # will never run, TODO: update
     executable = 'cat /proc/cray_xt/cname'
     cabinets = {
         'daint:gpu': 'c0-1',
         'daint:mc': 'c1-0',
     }
-
-    @sanity_function
-    def assert_found_cabinet(self):
-        # We choose a default pattern that will cause assert_found() to fail
-        cabinet = self.cabinets.get(self.current_system.name, r'$^')
-        return sn.assert_found(fr'{cabinet}.*', self.stdout)
 
     @run_before('run')
     def set_slurm_constraint(self):
@@ -155,46 +163,45 @@ class ConstraintRequestCabinetGrouping(SlurmSimpleBaseCheck):
         if cabinet:
             self.job.options = [f'--constraint={cabinet}']
 
+    @sanity_function
+    def assert_found_cabinet(self):
+        # We choose a default pattern that will cause assert_found() to fail
+        cabinet = self.cabinets.get(self.current_system.name, r'$^')
+        return sn.assert_found(fr'{cabinet}.*', self.stdout)
+
 
 @rfm.simple_test
 class MemoryOverconsumptionCheck(SlurmCompiledBaseCheck):
-    time_limit = '1m'
-    valid_systems = ['daint:normal', 'eiger:mc', 'pilatus:mc']
+    # TODO: maintainers = ['@jgphpc', '@ekouts']
+    descr = 'Tests if requested memory limit works'
+    valid_prog_environs = ['+uenv -cpe +prgenv']
+    time_limit = '2m'
     tags.add('mem')
-    sourcepath = 'eatmemory.c'
+    build_system = 'SingleSource'
+    sourcepath = 'eatmem/eatmemory.c'
     executable_opts = ['4000M']
+
+    @run_before('run')
+    def set_memory_limit(self):
+        self.job.options = ['--mem=2000']
 
     @sanity_function
     def assert_found_exceeded_memory(self):
         return sn.assert_found(r'(exceeded memory limit)|(Out Of Memory)',
                                self.stderr)
 
-    @run_before('run')
-    def set_memory_limit(self):
-        self.job.options = ['--mem=2000']
-
 
 @rfm.simple_test
-class MemoryOverconsumptionMpiCheck(SlurmCompiledBaseCheck):
-    maintainers = ['@jgphpc', '@ekouts']
+class MemoryOverconsumptionCheckMPI(SlurmCompiledBaseCheck):
+    # TODO: maintainers = ['@jgphpc', '@ekouts']
+    descr = 'Tests for max allocatable memory'
     valid_systems = ['+remote']
-    time_limit = '5m'
+    valid_prog_environs = ['+uenv -cpe +prgenv +mpi']
+    time_limit = '4m'
     build_system = 'SingleSource'
-    sourcepath = 'eatmemory_mpi.c'
-    env_vars = {'MPICH_GPU_SUPPORT_ENABLED': 0}
+    sourcepath = 'eatmem/eatmemory_mpi.c'
+    # env_vars = {'MPICH_GPU_SUPPORT_ENABLED': 0}
     tags.add('mem')
-
-    @run_before('compile')
-    def unset_ldflags(self):
-        if 'alps' in self.current_partition.features:
-            self.build_system.ldflags = ['-L.']
-
-    @run_before('run')
-    def set_job_parameters(self):
-        # fix for "MPIR_pmi_init(83)....: PMI2_Job_GetId returned 14"
-        self.job.launcher.options += (
-            self.current_environ.extras.get('launcher_options', [])
-        )
 
     @run_before('run')
     def set_num_tasks(self):
@@ -212,17 +219,19 @@ class MemoryOverconsumptionMpiCheck(SlurmCompiledBaseCheck):
     @performance_function('GB')
     def cn_avail_memory_from_sysconf(self):
         regex = r'memory from sysconf: total: \S+ \S+ avail: (?P<mem>\S+) GB'
-        return sn.extractsingle(regex, self.stdout, 'mem', int)
+        # return float to avoid truncation in Elastic
+        return sn.extractsingle(regex, self.stdout, 'mem', float)
 
     @performance_function('GB')
     def cn_max_allocated_memory(self):
         regex = (r'^Eating \d+ MB\/mpi \*\d+mpi = -\d+ MB memory from \/proc\/'
                  r'meminfo: total: \d+ GB, free: \d+ GB, avail: \d+ GB, using:'
                  r' (\d+) GB')
-        return sn.max(sn.extractall(regex, self.stdout, 1, int))
+        # return float to avoid truncation in Elastic
+        return sn.max(sn.extractall(regex, self.stdout, 1, float))
 
     @run_before('performance')
-    def set_references(self):
+    def set_reference_from_config_systems_file(self):
         reference_mem = self.current_partition.extras['cn_memory'] - 3
         self.reference = {
             '*': {
@@ -233,10 +242,12 @@ class MemoryOverconsumptionMpiCheck(SlurmCompiledBaseCheck):
 
 @rfm.simple_test
 class slurm_response_check(rfm.RunOnlyRegressionTest):
+    descr = 'Slurm basic commands test (squeue, sacct)'
     command = parameter(['squeue', 'sacct'])
-    descr = 'Slurm command test'
+    sourcesdir = None
     valid_systems = ['-remote']
     valid_prog_environs = ['builtin']
+    maintainers = ['VCUE', 'PA']
     num_tasks = 1
     num_tasks_per_node = 1
     reference = {
@@ -249,7 +260,7 @@ class slurm_response_check(rfm.RunOnlyRegressionTest):
     }
     executable = 'time -p'
     tags = {'diagnostic', 'health'}
-    maintainers = ['CB', 'VH']
+    # TODO: maintainers = ['CB', 'VH']
 
     @run_before('run')
     def set_exec_opts(self):
@@ -283,10 +294,10 @@ def get_system_partitions():
 
 @rfm.simple_test
 class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
-    '''check system queue status'''
-
+    descr = 'check system queue status (# of nodes)'
     valid_systems = ['-remote']
     valid_prog_environs = ['builtin']
+    maintainers = ['VCUE', 'PA']
     tags = {'slurm', 'ops', 'production', 'single-node'}
     min_avail_nodes = variable(int, value=1)
     ratio_minavail_nodes = variable(float, value=0.1)
@@ -330,12 +341,12 @@ class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
         matches = sn.extractall(
             fr'^{re.escape(self.slurm_partition)},up,'
             fr'(?P<nodes>\d+),(allocated|reserved|idle|mixed)',
-            self.stdout, 'nodes', int
+            self.stdout, 'nodes', float
         )
         num_matches = sn.sum(matches)
         all_matches = sn.extractall(fr'^{re.escape(self.slurm_partition)},up,'
                                     fr'(?P<nodes>\d+),.*', self.stdout,
-                                    'nodes', int)
+                                    'nodes', float)
         self.num_all_matches = sn.sum(all_matches)
         diff_matches = self.num_all_matches - num_matches
         return sn.assert_le(diff_matches,
@@ -365,7 +376,7 @@ class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
             sn.extractall(
                 fr'^{re.escape(self.slurm_partition)},up,'
                 fr'(?P<nodes>\d+),idle',
-                self.stdout, 'nodes', int
+                self.stdout, 'nodes', float
             )
         )
 
@@ -375,7 +386,7 @@ class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
             sn.extractall(
                 fr'^{re.escape(self.slurm_partition)},up,'
                 fr'(?P<nodes>\d+),allocated',
-                self.stdout, 'nodes', int
+                self.stdout, 'nodes', float
             )
         )
 
@@ -385,7 +396,7 @@ class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
             sn.extractall(
                 fr'^{re.escape(self.slurm_partition)},up,'
                 fr'(?P<nodes>\d+),mixed',
-                self.stdout, 'nodes', int
+                self.stdout, 'nodes', float
             )
         )
 
@@ -395,7 +406,7 @@ class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
             sn.extractall(
                 fr'^{re.escape(self.slurm_partition)},up,'
                 fr'(?P<nodes>\d+),reserved',
-                self.stdout, 'nodes', int
+                self.stdout, 'nodes', float
             )
         )
 
@@ -410,8 +421,10 @@ class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
 
 @rfm.simple_test
 class SlurmPrologEpilogCheck(rfm.RunOnlyRegressionTest):
+    descr = 'Runs Prolog and Epilog tests'
     valid_systems = ['*']
     valid_prog_environs = ['builtin']
+    maintainers = ['VCUE', 'PA']
     time_limit = '2m'
     kafka_logger = '/etc/slurm/utils/kafka_logger'
     prolog_dir = '/etc/slurm/node_prolog.d/'
@@ -446,11 +459,12 @@ class SlurmPrologEpilogCheck(rfm.RunOnlyRegressionTest):
 
 @rfm.simple_test
 class SlurmTransparentHugepagesCheck(rfm.RunOnlyRegressionTest):
-    '''Check Slurm transparent hugepages configuration'''
+    descr = 'Checks if Slurm transparent hugepages constraint works'
 
     hugepages_options = parameter(['default', 'always', 'madvise', 'never'])
     valid_systems = ['+hugepages_slurm']
     valid_prog_environs = ['builtin']
+    maintainers = ['VCUE', 'PA']
     descr = 'Check Slurm transparent hugepages configuration'
     time_limit = '2m'
     num_tasks_per_node = 1
@@ -481,6 +495,7 @@ class SlurmTransparentHugepagesCheck(rfm.RunOnlyRegressionTest):
 class SlurmParanoidCheck(rfm.RunOnlyRegressionTest):
     valid_systems = ['+remote +scontrol']
     valid_prog_environs = ['builtin']
+    maintainers = ['piccinal', 'PA']
     descr = (
         'Check that perf_event_paranoid enables per-process and system wide'
         'performance monitoring')
@@ -494,3 +509,40 @@ class SlurmParanoidCheck(rfm.RunOnlyRegressionTest):
     @sanity_function
     def validate(self):
         return sn.assert_found(r'0', self.stdout)
+
+
+@rfm.simple_test
+class SlurmGPUGresTest(SlurmSimpleBaseCheck):
+    descr = '''Ensure that the Slurm GRES (Gereric REsource Scheduling) of the number
+       of gpus is correctly set on all the nodes of each partition.'''
+
+    '''   For the current partition, the test performs the following steps:
+       1) count the number of nodes (node_count)
+       2) count the number of nodes having Gres=gpu:N (gres_count) where
+          N=num_devices from the configuration
+       3) ensure that 1) and 2) match
+    '''
+    valid_systems = ['+scontrol +gpu']
+    valid_prog_environs = ['builtin']
+    maintainers = ['VCUE', 'PA']
+    sourcesdir = None
+    time_limit = '1m'
+    num_tasks_per_node = 1
+    executable = 'scontrol'
+    executable_opts = ['show', 'nodes', '--oneliner']
+    tags = {'production', 'maintenance'}
+
+    @sanity_function
+    def assert_gres_valid(self):
+        partition_name = self.current_partition.name
+        gpu_count = self.current_partition.select_devices('gpu')[0].num_devices
+        part_re = rf'Partitions=\S*{partition_name}'
+        gres_re = rf'gres/gpu={gpu_count} '
+        node_count = sn.count(sn.extractall(part_re, self.stdout))
+        gres_count = sn.count(
+            sn.extractall(rf'{part_re}.*{gres_re}', self.stdout))
+        return sn.assert_eq(
+            node_count, gres_count,
+            f'{gres_count}/{node_count} of '
+            f'{partition_name} nodes satisfy {gres_re}'
+        )

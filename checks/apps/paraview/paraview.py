@@ -33,7 +33,7 @@ class ParaView_coloredSphere(rfm.RunOnlyRegressionTest):
     time_limit = '3m'
     executable = '/user-environment/ParaView-5.13/bin/pvbatch'
     executable_opts = ['-- coloredSphere.py']
-    maintainers = ['SSA']
+    maintainers = ['jfavre', 'biddisco', 'SSA']
     tags = {'production'}
 
     @run_before('run')
@@ -75,7 +75,7 @@ class ParaView_catalystClipping(rfm.RegressionTest):
         '/user-environment/ParaView-5.13/lib64/catalyst',
         'CATALYST_DATA_DUMP_DIRECTORY': '$PWD/dataset',
     }
-    maintainers = ['SSA']
+    maintainers = ['jfavre', 'biddisco', 'SSA']
     tags = {'production'}
 
     @run_before('compile')

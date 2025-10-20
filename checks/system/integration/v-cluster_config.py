@@ -70,6 +70,7 @@ class MountPointExistsTest(rfm.RunOnlyRegressionTest):
         valid_systems = []
     descr = 'Test mount points in the system'
     valid_prog_environs = ['builtin']
+    maintainers = ['VCUE', 'PA']
     time_limit = '2m'
     tags = {'mount', 'vs-node-validator'}
 
@@ -98,6 +99,7 @@ class PackagePresentTest(rfm.RunOnlyRegressionTest):
         valid_systems = []
     descr = 'Test pkgs installation in the system'
     valid_prog_environs = ['builtin']
+    maintainers = ['VCUE', 'PA']
     time_limit = '2m'
     tags = {'tools', 'vs-node-validator'}
 
@@ -131,6 +133,7 @@ class EnvVariableConfigTest(rfm.RunOnlyRegressionTest):
         valid_systems = []
     descr = 'Test environment variables of the system'
     valid_prog_environs = ['builtin']
+    maintainers = ['VCUE', 'PA']
     time_limit = '2m'
     tags = {'env_var', 'vs-node-validator'}
 
@@ -143,27 +146,3 @@ class EnvVariableConfigTest(rfm.RunOnlyRegressionTest):
         return sn.assert_found(self.envs_info[1], self.stdout,
                                msg=f'Environment variable {self.envs_info[0]} is not set up correctly')
 
-
-@rfm.simple_test
-class ProxyConfigTest(rfm.RunOnlyRegressionTest):
-
-    proxy_info_par = [(k, v)
-                      for k, v in proxy_info.items() if v and "None" not in v]
-    if proxy_info_par:
-        proxy_info = parameter(proxy_info_par)
-        valid_systems = ['+remote']
-    else:
-        valid_systems = []
-    descr = 'Test proxy configuration of the system'
-    valid_prog_environs = ['builtin']
-    time_limit = '2m'
-    tags = {'proxy', 'vs-node-validator'}
-
-    @run_after('setup')
-    def set_executable(self):
-        self.executable = f'printenv {self.proxy_info[0]}'
-
-    @sanity_function
-    def validate(self):
-        return sn.assert_found(self.proxy_info[1], self.stdout,
-                               msg=f'Proxy configuration {self.proxy_info[0]} is not set up correctly')

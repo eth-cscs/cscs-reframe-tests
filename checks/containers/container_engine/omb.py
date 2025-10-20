@@ -17,6 +17,7 @@ from container_engine import ContainerEngineMixin  # noqa: E402
 class OMB_Base_CE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     valid_prog_environs = ['builtin']
     valid_systems = ['+ce']
+    self.maintainers = ['amadonna', 'VCUE']
     sourcesdir = None
     test_name = parameter(['pt2pt/osu_bw', 'collective/osu_alltoall'])
     num_nodes = variable(int, value=2)
@@ -75,6 +76,7 @@ class OMB_Base_CE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
 
 @rfm.simple_test
 class OMB_MPICH_CE(OMB_Base_CE):
+    descr = 'OSU Micro-benchmarks for MPICH/CE (Point-to-Point and All-to-All)'
     container_image = (
         'jfrog.svc.cscs.ch#reframe-oci/osu-mb:7.5-mpich4.3.0-ofi1.15-cuda12.8'
     )
@@ -99,6 +101,7 @@ class OMB_MPICH_CE(OMB_Base_CE):
 
 @rfm.simple_test
 class OMB_OMPI_CE(OMB_Base_CE):
+    descr = 'OSU Micro-benchmarks for OpenMPI/CE (Point-to-Point and All-to-All)'
     container_image = (f'jfrog.svc.cscs.ch#reframe-oci/osu-mb:7.5-ompi5.0.7-ofi1.15-cuda12.8')
     valid_systems = ['+ce +nvgpu']
     reference_per_test = {
