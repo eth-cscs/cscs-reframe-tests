@@ -8,9 +8,9 @@ import reframe as rfm
 import reframe.utility.sanity as sn
 
 
-class ROCmGPUBenchmarks(rfm.RegressionTest):
+class GPUBenchmarks(rfm.RegressionTest):
     '''
-    Base class for ROCm GPU microbenchmarks.
+    Base class for GPU microbenchmarks.
     '''
     maintainers = ['SSA']
     sourcesdir = None
@@ -18,7 +18,7 @@ class ROCmGPUBenchmarks(rfm.RegressionTest):
     valid_systems = ['+uenv']
     build_system = 'CMake'
     prebuild_cmds = [
-        'git clone --depth 1 -b reframe-ci https://github.com/eth-cscs/amd-gpu-benchmarks.git'
+        'git clone --depth 1 -b reframe-ci https://github.com/eth-cscs/gpu-benchmarks.git'
     ]
     time_limit = '2m'
     build_locally = False
@@ -26,7 +26,7 @@ class ROCmGPUBenchmarks(rfm.RegressionTest):
 
 
 @rfm.simple_test
-class rocPRISM(ROCmGPUBenchmarks):
+class ParallelAlgos(GPUBenchmarks):
     benchmark = 'rocPRISM'
     algo = parameter(['radix-sort', 'scan', 'reduce'])
     _executable_opts = parameter(['6', '12', '27'])
@@ -67,7 +67,7 @@ class rocPRISM(ROCmGPUBenchmarks):
     @run_before('compile')
     def prepare_build(self):
         # self.build_system.srcdir is not available in set_executable
-        self._srcdir = f'amd-gpu-benchmarks/{self.benchmark}'
+        self._srcdir = f'gpu-benchmarks/{self.benchmark}'
         self.build_system.srcdir = self._srcdir
         self.build_system.builddir = f'build_{self.benchmark}'
         self.prebuild_cmds += [f'cd {self.build_system.srcdir}']

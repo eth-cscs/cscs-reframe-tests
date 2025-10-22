@@ -380,7 +380,7 @@ launch_reframe_bencher() {
         --report-file latest.json \
         --system=$system$mi \
         --prefix=$SCRATCH/rfm-$CI_JOB_ID \
-        -c ./checks/microbenchmarks/gpu/rocm_libs/gpu.py \
+        -c ./checks/microbenchmarks/gpu/gpu_benchmarks/parallel_algos.py \
         -r
 
     python3 ./utility/bencher_metric_format.py latest.json
