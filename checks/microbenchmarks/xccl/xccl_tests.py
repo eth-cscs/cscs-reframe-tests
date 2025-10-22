@@ -24,6 +24,7 @@ class XCCLTestsBase(rfm.RunOnlyRegressionTest):
     tags = {'production', 'maintenance'}
     env_vars = {
         'NCCL_DEBUG': 'Info',
+        'FI_LOG_LEVEL': 'Info',
     }
 
     reference_per_test = {
