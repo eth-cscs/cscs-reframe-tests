@@ -8,13 +8,13 @@ import reframe as rfm
 import reframe.utility.sanity as sn
 
 
-class AmdGPUBenchmarks(rfm.RegressionTest):
+class ROCmGPUBenchmarks(rfm.RegressionTest):
     '''
-    Base class for amd-gpu-benchmarks
+    Base class for ROCm GPU microbenchmarks.
     '''
     maintainers = ['SSA']
     sourcesdir = None
-    valid_prog_environs = ['+rocm', '+uenv +cuda']
+    valid_prog_environs = ['+uenv +prgenv +rocm', '+uenv +prgenv +cuda']
     valid_systems = ['+uenv']
     build_system = 'CMake'
     prebuild_cmds = [
@@ -26,7 +26,7 @@ class AmdGPUBenchmarks(rfm.RegressionTest):
 
 
 @rfm.simple_test
-class rocPRISM(AmdGPUBenchmarks):
+class rocPRISM(ROCmGPUBenchmarks):
     benchmark = 'rocPRISM'
     algo = parameter(['radix-sort', 'scan', 'reduce'])
     _executable_opts = parameter(['6', '12', '27'])
