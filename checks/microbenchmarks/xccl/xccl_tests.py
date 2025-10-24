@@ -13,6 +13,7 @@ sys.path.append(str(pathlib.Path(__file__).parent.parent.parent / 'mixins'))
 
 from container_engine import ContainerEngineMixin  # noqa: E402
 
+
 class XCCLTestsBase(rfm.RunOnlyRegressionTest):
     valid_prog_environs = ['builtin']
     maintainers = ['amadonna', 'VCUE']
@@ -61,7 +62,8 @@ class XCCLTestsBase(rfm.RunOnlyRegressionTest):
     @run_after('setup')
     def set_executable_opts(self):
         self.executable_opts = [
-            f'--minbytes {self.min_bytes}', f'--maxbytes {self.max_bytes}', '--ngpus 1'
+            f'--minbytes {self.min_bytes}', f'--maxbytes {self.max_bytes}',
+            '--ngpus 1'
         ]
 
     @sanity_function
@@ -85,6 +87,7 @@ class XCCLTestsBase(rfm.RunOnlyRegressionTest):
                 self.stdout, 'gbs', float)
         }
 
+
 class XCCLTestsBaseCE(XCCLTestsBase, ContainerEngineMixin):
     container_env_table = {
         'annotations.com.hooks': {
@@ -103,6 +106,7 @@ class XCCLTestsBaseCE(XCCLTestsBase, ContainerEngineMixin):
                 'PMIX_MCA_gds': '^shmem2'
             }
         )
+
 
 def _set_xccl_uenv_env_vars(env_vars):
     env_vars.update(
@@ -177,7 +181,8 @@ class RCCLTestsCE(XCCLTestsBaseCE):
 
     @run_after('setup')
     def set_env_vars(self):
-        _set_rccl_min_nchannels(self.current_partition.select_devices('gpu')[0], self.env_vars)
+        _set_rccl_min_nchannels(
+            self.current_partition.select_devices('gpu')[0], self.env_vars)
 
 
 def _set_rccl_uenv_env_vars(env_vars):
@@ -198,6 +203,7 @@ class RCCLTestsUENV(XCCLTestsBase):
 
     @run_after('setup')
     def set_env_vars(self):
-        _set_rccl_min_nchannels(self.current_partition.select_devices('gpu')[0], self.env_vars)
+        _set_rccl_min_nchannels(
+            self.current_partition.select_devices('gpu')[0], self.env_vars)
         _set_xccl_uenv_env_vars(self.env_vars)
         _set_rccl_uenv_env_vars(self.env_vars)
