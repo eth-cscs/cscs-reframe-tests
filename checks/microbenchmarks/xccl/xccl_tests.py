@@ -186,7 +186,6 @@ def _set_rccl_uenv_env_vars(env_vars):
             'NCCL_GDRCOPY_ENABLE': '1',
             'NCCL_NET_FORCE_FLUSH': '1',
             'FI_CXI_DISABLE_NON_INJECT_MSG_IDC': '1',
-            'LD_PRELOAD': '/user-environment/linux-zen3/libfabric-2.3.0-fqevnqh2smbhsgiawcwlnk6co42jdqf5/lib/libfabric.so',
         }
     )
 
