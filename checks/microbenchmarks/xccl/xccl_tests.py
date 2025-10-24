@@ -111,6 +111,8 @@ class XCCLTestsBaseCE(XCCLTestsBase, ContainerEngineMixin):
 def _set_xccl_uenv_env_vars(env_vars):
     env_vars.update(
         {
+            # These variables are documented on
+            # https://docs.cscs.ch/software/communication/nccl/#using-nccl
             'NCCL_CROSS_NIC': '1',
             'NCCL_NET': '\'AWS Libfabric\'',
             'NCCL_NET_GDR_LEVEL': 'PHB',
@@ -118,12 +120,13 @@ def _set_xccl_uenv_env_vars(env_vars):
             'FI_CXI_DEFAULT_CQ_SIZE': '131072',
             'FI_CXI_DEFAULT_TX_SIZE': '32768',
             'FI_CXI_DISABLE_HOST_REGISTER': '1',
-            'FI_CXI_RDZV_EAGER_SIZE': '0',
-            'FI_CXI_RDZV_GET_MIN': '0',
-            'FI_CXI_RDZV_PROTO': 'alt_read',
-            'FI_CXI_RDZV_THRESHOLD': '0',
             'FI_CXI_RX_MATCH_MODE': 'software',
             'FI_MR_CACHE_MONITOR': 'userfaultfd',
+            # The following have been found to help avoid hangs, but are not yet
+            # documented elsewhere
+            'FI_CXI_RDZV_EAGER_SIZE': '0',
+            'FI_CXI_RDZV_GET_MIN': '0',
+            'FI_CXI_RDZV_THRESHOLD': '0',
         }
     )
 
