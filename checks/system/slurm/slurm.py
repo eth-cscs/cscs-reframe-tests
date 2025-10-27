@@ -516,7 +516,8 @@ class SlurmParanoidCheck(rfm.RunOnlyRegressionTest):
 
 @rfm.simple_test
 class SlurmGPUGresTest(SlurmSimpleBaseCheck):
-    descr = '''Ensure that the Slurm GRES (Generic REsource Scheduling) of the
+    descr = '''
+       Ensure that the Slurm GRES (Generic REsource Scheduling) of the
        number of gpus is correctly set on all the nodes of each partition.
 
        For the current partition, the test performs the following steps:
