@@ -150,7 +150,7 @@ class DefaultRequest(SlurmSimpleBaseCheck):
 
 @rfm.simple_test
 class ConstraintRequestCabinetGrouping(SlurmSimpleBaseCheck):
-    descr = 'Checks if contraint works for requesting specific cabinets (deprecated, needs attention)'  # noqa: E402
+    descr = 'Checks if constraint works for requesting specific cabinets (deprecated, needs attention)'  # noqa: E402
     valid_systems = []  # will never run, TODO: update
     executable = 'cat /proc/cray_xt/cname'
     cabinets = {
