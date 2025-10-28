@@ -17,7 +17,7 @@ from container_engine import ContainerEngineMixin  # noqa: E402
 class OMB_Base_CE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     valid_prog_environs = ['builtin']
     valid_systems = ['+ce']
-    self.maintainers = ['amadonna', 'VCUE']
+    maintainers = ['amadonna', 'VCUE']
     sourcesdir = None
     test_name = parameter(['pt2pt/osu_bw', 'collective/osu_alltoall'])
     num_nodes = variable(int, value=2)
