@@ -1,4 +1,4 @@
-# Copyright 2025 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -144,6 +144,7 @@ class ParallelAlgos(GPUBenchmarks):
         if ref_bw is not None:
             self.reference = {
                 self.current_partition.fullname: {
-                    'bandwidth': (ref_bw, -0.60, None, 'MiB/s') # 40% of the reference bandwidth
+                    'bandwidth': (ref_bw, -0.6, None, 'MiB/s')
+                    # will pass when: (60% * ref_bw) < bandwidth < +infinity
                 }
             }
