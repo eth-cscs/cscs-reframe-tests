@@ -515,6 +515,26 @@ class SlurmParanoidCheck(rfm.RunOnlyRegressionTest):
 
 
 @rfm.simple_test
+class SlurmNoLowNoiseModeCheck(rfm.RunOnlyRegressionTest):
+    valid_systems = ['+remote +scontrol']
+    valid_prog_environs = ['builtin']
+    maintainers = ['???', '???']
+    descr = ('Check that there are no low noise mode parameters in /proc/cmdline')
+    time_limit = '1m'
+    num_tasks_per_node = 1
+    sourcesdir = None
+    executable = 'cat /proc/cmdline'
+    tags = {'production', 'maintenance', 'slurm'}
+
+    @sanity_function
+    def validate(self):
+        return sn.all([
+            sn.assert_not_found(r'lnm', self.stdout),
+            sn.assert_not_found(r'isolcpus', self.stdout),
+        ])
+
+
+@rfm.simple_test
 class SlurmGPUGresTest(SlurmSimpleBaseCheck):
     descr = '''
        Ensure that the Slurm GRES (Generic REsource Scheduling) of the
