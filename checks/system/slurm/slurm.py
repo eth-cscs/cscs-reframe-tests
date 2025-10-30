@@ -515,11 +515,15 @@ class SlurmParanoidCheck(rfm.RunOnlyRegressionTest):
 
 
 @rfm.simple_test
-class SlurmNoLowNoiseModeCheck(rfm.RunOnlyRegressionTest):
+class SlurmNoIsolCpus(rfm.RunOnlyRegressionTest):
     valid_systems = ['+remote +scontrol']
     valid_prog_environs = ['builtin']
-    maintainers = ['???', '???']
-    descr = ('Check that there are no low noise mode parameters in /proc/cmdline')
+    maintainers = ['msimberg', 'SSA']
+    descr = '''
+	Check that isolcpus isn\'t enabled as it prevents threads from
+	migrating between cores. This makes e.g. make jobs or OpenMPI threads
+        all be stuck to one core.
+    '''
     time_limit = '1m'
     num_tasks_per_node = 1
     sourcesdir = None
@@ -528,11 +532,7 @@ class SlurmNoLowNoiseModeCheck(rfm.RunOnlyRegressionTest):
 
     @sanity_function
     def validate(self):
-        return sn.all([
-            sn.assert_not_found(r'\blnm=', self.stdout),
-            sn.assert_not_found(r'\blnm\.full=', self.stdout),
-            sn.assert_not_found(r'\bisolcpus=', self.stdout),
-        ])
+        return sn.assert_not_found(r'\bisolcpus=', self.stdout),
 
 
 @rfm.simple_test
