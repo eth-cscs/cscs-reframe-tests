@@ -522,7 +522,9 @@ class SlurmNoIsolCpus(rfm.RunOnlyRegressionTest):
     descr = '''
 	Check that isolcpus isn\'t enabled as it prevents threads from
 	migrating between cores. This makes e.g. make jobs or OpenMPI threads
-        all be stuck to one core.
+	all be stuck to one core. See e.g.
+	https://www.kernel.org/doc/html/latest/admin-guide/kernel-parameters.html
+        and https://access.redhat.com/solutions/480473 for more details.
     '''
     time_limit = '1m'
     num_tasks_per_node = 1
