@@ -31,12 +31,12 @@ class XCCLTestsBase(rfm.RunOnlyRegressionTest):
     reference_per_test = {
         'sendrecv': {
             '*': {
-                'GB/s': (24.0, -0.05, None, 'GB/s')
+                'GB/s': (24.0, -0.05, 0.05, 'GB/s')
             }
          },
         'all_reduce': {
             '*': {
-                'GB/s': (90.0, -0.05, None, 'GB/s')
+                'GB/s': (150.0, -0.05, 0.05, 'GB/s')
             }
         }
     }
