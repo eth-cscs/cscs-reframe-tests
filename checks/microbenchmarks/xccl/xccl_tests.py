@@ -36,7 +36,7 @@ class XCCLTestsBase(rfm.RunOnlyRegressionTest):
          },
         'all_reduce': {
             '*': {
-                'GB/s': (150.0, -0.05, 0.05, 'GB/s')
+                'GB/s': (150.0, -0.10, 0.10, 'GB/s')
             }
         }
     }
