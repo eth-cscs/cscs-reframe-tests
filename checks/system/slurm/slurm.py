@@ -529,8 +529,9 @@ class SlurmNoLowNoiseModeCheck(rfm.RunOnlyRegressionTest):
     @sanity_function
     def validate(self):
         return sn.all([
-            sn.assert_not_found(r'lnm', self.stdout),
-            sn.assert_not_found(r'isolcpus', self.stdout),
+            sn.assert_not_found(r'\blnm=', self.stdout),
+            sn.assert_not_found(r'\blnm\.full=', self.stdout),
+            sn.assert_not_found(r'\bisolcpus=', self.stdout),
         ])
 
 
