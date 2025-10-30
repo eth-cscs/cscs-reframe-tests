@@ -108,6 +108,12 @@ class XCCLTestsBaseCE(XCCLTestsBase, ContainerEngineMixin):
         )
 
 
+class XCCLTestsBaseUENV(XCCLTestsBase):
+    @run_before('run')
+    def set_pmix(self):
+        self.job.launcher.options += ['--mpi=cray_shasta']
+
+
 def _set_xccl_uenv_env_vars(env_vars):
     env_vars.update(
         {
@@ -151,7 +157,7 @@ class NCCLTestsCE(XCCLTestsBaseCE):
 
 
 @rfm.simple_test
-class NCCLTestsUENV(XCCLTestsBase):
+class NCCLTestsUENV(XCCLTestsBaseUENV):
     descr = 'Point-to-Point and All-Reduce NCCL tests with uenv'
     valid_systems = ['+nvgpu']
     valid_prog_environs = ['+uenv +prgenv +nccl-tests']
@@ -199,7 +205,7 @@ def _set_rccl_uenv_env_vars(env_vars):
 
 
 @rfm.simple_test
-class RCCLTestsUENV(XCCLTestsBase):
+class RCCLTestsUENV(XCCLTestsBaseUENV):
     descr = 'Point-to-Point and All-Reduce RCCL tests with uenv'
     valid_systems = ['+amdgpu']
     valid_prog_environs = ['+uenv +prgenv +rccl-tests']
