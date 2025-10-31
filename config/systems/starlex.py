@@ -48,7 +48,8 @@ site_configuration = {
                             'options': ['--gres={gres}']
                         },
                     ],
-                    'features': ['ce', 'gpu', 'nvgpu', 'remote', 'scontrol', 'uenv', 'hugepages_slurm'],
+                    'features': ['ce', 'gpu', 'nvgpu', 'remote', 'scontrol',
+                                 'uenv', 'hugepages_slurm'],
                     'devices': [
                         {
                             'type': 'gpu',
