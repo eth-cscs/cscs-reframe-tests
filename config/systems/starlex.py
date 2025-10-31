@@ -12,7 +12,7 @@ site_configuration = {
             'name': 'starlex',
             'descr': 'starlex vcluster',
             'hostnames': ['starlex'],
-            'modules_system': 'nomod',
+            'modules_system': 'lmod',
             'resourcesdir':
                 '/capstor/store/cscs/cscs/public/reframe/resources',
             'partitions': [
