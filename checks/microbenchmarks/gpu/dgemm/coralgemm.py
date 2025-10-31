@@ -17,7 +17,7 @@ class CoralGemmBase(rfm.RegressionTest):
     valid_systems = ['+uenv']
     build_system = 'CMake'
     prebuild_cmds = [
-        'git clone --depth 1 --branch 2024.12 git@github.com:AMD-HPC/CoralGemm.git'
+        'git clone --depth 1 --branch 2024.12 https://github.com/AMD-HPC/CoralGemm.git'
     ]
     time_limit = '2m'
     build_locally = False
