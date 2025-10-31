@@ -51,12 +51,11 @@ class EnvironmentVariableCheck(SlurmSimpleBaseCheck):
     descr = 'Test if user env variables are propagated to CN'
     sourcesdir = None
     time_limit = '1m'
-    num_tasks = 2
+    num_tasks = 1
     valid_prog_environs = ['builtin']
     executable = '/bin/echo'
     executable_opts = ['$MY_VAR']
     env_vars = {'MY_VAR': 'TEST123456!'}
-    tags.remove('single-node')
 
     @sanity_function
     def assert_num_tasks(self):

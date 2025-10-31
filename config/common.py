@@ -175,9 +175,7 @@ site_configuration = {
            'options': [
                '-Sstrict_check=1',
                '--report-file=$PWD/latest.json',
-               '-c checks/apps',
-               '-c checks/libraries',
-               '-c checks/prgenv',
+               '-c checks',
                "-p '(?!PrgEnv-.*|builtin)'",
            ]
         },
