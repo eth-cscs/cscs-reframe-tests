@@ -11,7 +11,7 @@ import reframe.utility.sanity as sn
 @rfm.simple_test
 class CoralGemm(rfm.RegressionTest):
     descr = 'AMD CoralGemm test'
-    valid_systems = ['+amdgpu +uenv', '+nvidia +uenv']
+    valid_systems = ['+amdgpu +uenv', '+nvgpu +uenv']
     valid_prog_environs = ['+uenv +prgenv +rocm', '+uenv +prgenv +cuda']
     maintainers = ['SSA']
     sourcesdir = None
@@ -20,7 +20,7 @@ class CoralGemm(rfm.RegressionTest):
         'git clone --depth 1 --branch 2024.12 '
         'https://github.com/AMD-HPC/CoralGemm.git'
     ]
-    time_limit = '2m'
+    time_limit = '3m'
     build_locally = False
     num_tasks_per_node = 1
     tags = {'production', 'uenv', 'benchmark'}
@@ -212,5 +212,11 @@ class CoralGemm(rfm.RegressionTest):
     reference = {
         'beverin:mi300': {
             'min_gflops': (67331, -0.10, 0.10, 'GFlops'),
+        },
+        'beverin:mi200': {
+            'min_gflops': (26426, -0.10, 0.10, 'GFlops'),
+        },
+        'daint:normal': {
+            'min_gflops': (40687, -0.10, 0.10, 'GFlops'),
         }
     }
