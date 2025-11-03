@@ -11,7 +11,7 @@ import reframe.utility.sanity as sn
 @rfm.simple_test
 class CoralGemm(rfm.RegressionTest):
     descr = 'AMD CoralGemm test'
-    valid_systems = ['+amdgpu +uenv']
+    valid_systems = ['+amdgpu +uenv', '+nvidia +uenv']
     valid_prog_environs = ['+uenv +prgenv +rocm', '+uenv +prgenv +cuda']
     maintainers = ['SSA']
     sourcesdir = None
@@ -186,14 +186,31 @@ class CoralGemm(rfm.RegressionTest):
 
         return sn.all([s1, s2])
 
-    @performance_function('GFlops')
-    def min_gflops(self):
+    @sn.deferrable
+    def extract_gflops(self, func=sn.min):
         regex = r'^'
         # We get one column per GPU and one for the timestamp
         regex += ''.join(r'\s*(\d+.\d+)' for i in range(self.num_gpus + 1))
         regex += r'\s*$'
-        return sn.min(
-            sn.min(
+        gflops = func(
+            func(
                 sn.extractall(regex, self.stdout, i+1, float)
             ) for i in range(self.num_gpus)
         )
+        return gflops
+
+    @run_before('performance')
+    def set_perf_vars(self):
+        make_perf = sn.make_performance_function
+        
+        self.perf_variables = {
+            'min_gflops': make_perf(self.extract_gflops(sn.min), 'GFlops'),
+            'max_gflops': make_perf(self.extract_gflops(sn.max), 'GFlops'),
+            'avg_gflops': make_perf(self.extract_gflops(sn.avg), 'GFlops')
+        }
+
+    reference = {
+        'beverin:mi300': {
+            'min_gflops': (67331, -0.10, 0.10, 'GFlops'),
+        }
+    }
