@@ -8,10 +8,8 @@ import reframe as rfm
 import reframe.utility.sanity as sn
 
 
-class CoralGemmBase(rfm.RegressionTest):
-    '''
-    Base class for CoralGemm tests.
-    '''
+@rfm.simple_test
+class CoralGemm(rfm.RegressionTest):
     maintainers = ['SSA']
     sourcesdir = None
     valid_prog_environs = ['+uenv +prgenv +rocm', '+uenv +prgenv +cuda']
@@ -24,13 +22,9 @@ class CoralGemmBase(rfm.RegressionTest):
     time_limit = '2m'
     build_locally = False
     tags = {'production', 'uenv'}
-
-
-@rfm.simple_test
-class CoralGemm(CoralGemmBase):
-    valid_systems = ['+amdgpu']
-    valid_prog_environs = ['+rocm']
-    build_system = 'CMake'
+    # valid_systems = ['+amdgpu']
+    # valid_prog_environs = ['+rocm']
+    # build_system = 'CMake'
 
     # Data precision for matrix A, B, C and computation
     precision_A = variable(str, value='R_64F')
@@ -88,6 +82,7 @@ class CoralGemm(CoralGemmBase):
         self._srcdir = 'CoralGemm'
         self.build_system.srcdir = self._srcdir
         self.build_system.builddir = 'build'
+        self.prebuild_cmds += [f'cd {self.build_system.srcdir}']
 
         gpu_arch = self.current_partition.select_devices('gpu')[0].arch
         if 'rocm' in self.current_environ.features:
