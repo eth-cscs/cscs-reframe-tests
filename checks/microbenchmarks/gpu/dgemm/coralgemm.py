@@ -10,10 +10,11 @@ import reframe.utility.sanity as sn
 
 @rfm.simple_test
 class CoralGemm(rfm.RegressionTest):
+    descr = 'AMD CoralGemm test'
+    valid_systems = ['+amdgpu +uenv']
+    valid_prog_environs = ['+uenv +prgenv +rocm', '+uenv +prgenv +cuda']
     maintainers = ['SSA']
     sourcesdir = None
-    valid_prog_environs = ['+uenv +prgenv +rocm', '+uenv +prgenv +cuda']
-    valid_systems = ['+uenv']
     build_system = 'CMake'
     prebuild_cmds = [
         'git clone --depth 1 --branch 2024.12 '
@@ -21,10 +22,8 @@ class CoralGemm(rfm.RegressionTest):
     ]
     time_limit = '2m'
     build_locally = False
-    tags = {'production', 'uenv'}
-    # valid_systems = ['+amdgpu']
-    # valid_prog_environs = ['+rocm']
-    # build_system = 'CMake'
+    num_tasks_per_node = 1
+    tags = {'production', 'uenv', 'benchmark'}
 
     # Data precision for matrix A, B, C and computation
     precision_A = variable(str, value='R_64F')
@@ -74,19 +73,14 @@ class CoralGemm(rfm.RegressionTest):
     # set beta to zero
     zero_beta = variable(bool, value=False)
 
-    num_tasks_per_node = 1
-    tags = {'benchmark'}
-
     @run_before('compile')
     def set_build_options(self):
-        self._srcdir = 'CoralGemm'
-        self.build_system.srcdir = self._srcdir
+        self.build_system.configuredir = 'CoralGemm'
         self.build_system.builddir = 'build'
-        self.prebuild_cmds += [f'cd {self.build_system.srcdir}']
 
         gpu_arch = self.current_partition.select_devices('gpu')[0].arch
         if 'rocm' in self.current_environ.features:
-            self.build_system.cmake_opts = [
+            self.build_system.config_opts = [
                 '-DCMAKE_BUILD_TYPE=Release',
                 '-DUSE_CUDA=OFF',
                 '-DUSE_HIP=ON',
@@ -99,6 +93,7 @@ class CoralGemm(rfm.RegressionTest):
                 else gpu_arch
             )
             self.build_system.config_opts = [
+                '-DCMAKE_BUILD_TYPE=Release',
                 '-DUSE_CUDA=ON',
                 '-DUSE_HIP=OFF',
                 f'-DCMAKE_CUDA_ARCHITECTURES="{gpu_arch}"'
@@ -112,9 +107,7 @@ class CoralGemm(rfm.RegressionTest):
     @run_before('run')
     def set_executable(self):
         # Set mandatory arguments of the benchmark
-        self.executable = os.path.join(self._srcdir,
-                                       self.build_system.builddir,
-                                       'gemm')
+        self.executable = os.path.join(self.build_system.builddir, 'gemm')
         self.executable_opts = [
             f'{self.precision_A} ',
             f'{self.precision_B} ',
