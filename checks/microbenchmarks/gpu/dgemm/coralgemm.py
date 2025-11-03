@@ -1,4 +1,4 @@
-# Copyright 2024 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -6,6 +6,7 @@
 import os
 import reframe as rfm
 import reframe.utility.sanity as sn
+
 
 class CoralGemmBase(rfm.RegressionTest):
     '''
@@ -17,11 +18,13 @@ class CoralGemmBase(rfm.RegressionTest):
     valid_systems = ['+uenv']
     build_system = 'CMake'
     prebuild_cmds = [
-        'git clone --depth 1 --branch 2024.12 https://github.com/AMD-HPC/CoralGemm.git'
+        'git clone --depth 1 --branch 2024.12 '
+        'https://github.com/AMD-HPC/CoralGemm.git'
     ]
     time_limit = '2m'
     build_locally = False
     tags = {'production', 'uenv'}
+
 
 @rfm.simple_test
 class CoralGemm(CoralGemmBase):
@@ -114,8 +117,9 @@ class CoralGemm(CoralGemmBase):
     @run_before('run')
     def set_executable(self):
         # Set mandatory arguments of the benchmark
-        self.executable = os.path.join(self._srcdir, self.build_system.builddir, 
-            'gemm ')
+        self.executable = os.path.join(self._srcdir,
+                                       self.build_system.builddir,
+                                       'gemm')
         self.executable_opts = [
             f'{self.precision_A} ',
             f'{self.precision_B} ',
@@ -135,43 +139,43 @@ class CoralGemm(CoralGemmBase):
 
         # Set optional arguments of the benchmark
         if self.batched:
-           self.executable_opts.append(' batched')
+            self.executable_opts.append(' batched')
 
         if self.strided:
-           self.executable_opts.append(' strided')
+            self.executable_opts.append(' strided')
 
         if self.ex_api:
-           self.executable_opts.append(' ex')
+            self.executable_opts.append(' ex')
 
         if self.hipBLASLt_api:
-           self.executable_opts.append(' lt')
+            self.executable_opts.append(' lt')
 
         if self.host_A:
-           self.executable_opts.append(' hostA')
+            self.executable_opts.append(' hostA')
 
         if self.host_B:
-           self.executable_opts.append(' hostB')
+            self.executable_opts.append(' hostB')
 
         if self.host_C:
-           self.executable_opts.append(' hostC')
+            self.executable_opts.append(' hostC')
 
         if self.coherent_A:
-           self.executable_opts.append(' coherentA')
+            self.executable_opts.append(' coherentA')
 
         if self.coherent_B:
-           self.executable_opts.append(' coherentB')
+            self.executable_opts.append(' coherentB')
 
         if self.coherent_C:
-           self.executable_opts.append(' coherentC')
+            self.executable_opts.append(' coherentC')
 
         if self.shared_A:
-           self.executable_opts.append(' sharedA')
+            self.executable_opts.append(' sharedA')
 
         if self.shared_B:
-           self.executable_opts.append(' sharedB')
+            self.executable_opts.append(' sharedB')
 
         if self.zero_beta:
-           self.executable_opts.append(' zeroBeta')
+            self.executable_opts.append(' zeroBeta')
 
         # Set the time limit with a padding of 2 minutes
         self.time_limit = self.duration + 120
@@ -182,7 +186,8 @@ class CoralGemm(CoralGemmBase):
         # simultaneously, so we check that the output contains performance
         # results for all GPUs.
         s1 = sn.all([
-            sn.assert_found(rf'device_{i}_\[GFLOPS\]', self.stdout) for i in range(self.num_gpus)
+            sn.assert_found(rf'device_{i}_\[GFLOPS\]', self.stdout)
+            for i in range(self.num_gpus)
         ])
 
         # We also check that the output does not contain more GPUs than
