@@ -28,7 +28,7 @@ class GPUBenchmarks(rfm.RegressionTest):
 
 @rfm.simple_test
 class ParallelAlgos(GPUBenchmarks):
-    benchmark = 'rocPRISM'
+    benchmark = 'parallel_algos'
     algo = parameter(['radix-sort', 'scan', 'reduce'])
     _executable_opts = parameter(['6', '12', '27'])
 
