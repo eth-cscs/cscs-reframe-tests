@@ -31,12 +31,12 @@ class XCCLTestsBase(rfm.RunOnlyRegressionTest):
     reference_per_test = {
         'sendrecv': {
             '*': {
-                'GB/s': (24.0, -0.05, None, 'GB/s')
+                'GB/s': (24.0, -0.05, 0.05, 'GB/s')
             }
          },
         'all_reduce': {
             '*': {
-                'GB/s': (90.0, -0.05, None, 'GB/s')
+                'GB/s': (150.0, -0.10, 0.10, 'GB/s')
             }
         }
     }
@@ -108,6 +108,15 @@ class XCCLTestsBaseCE(XCCLTestsBase, ContainerEngineMixin):
         )
 
 
+class XCCLTestsBaseUENV(XCCLTestsBase):
+    @run_before('run')
+    def set_pmix(self):
+        # Some clusters, like clariden, don't use cray_shasta as default.
+        # cray_shasta is required for cray-mpich, which most uenvs use.  This
+        # will need to be updated when uenvs can have OpenMPI in them.
+        self.job.launcher.options += ['--mpi=cray_shasta']
+
+
 def _set_xccl_uenv_env_vars(env_vars):
     env_vars.update(
         {
@@ -151,7 +160,7 @@ class NCCLTestsCE(XCCLTestsBaseCE):
 
 
 @rfm.simple_test
-class NCCLTestsUENV(XCCLTestsBase):
+class NCCLTestsUENV(XCCLTestsBaseUENV):
     descr = 'Point-to-Point and All-Reduce NCCL tests with uenv'
     valid_systems = ['+nvgpu']
     valid_prog_environs = ['+uenv +prgenv +nccl-tests']
@@ -199,7 +208,7 @@ def _set_rccl_uenv_env_vars(env_vars):
 
 
 @rfm.simple_test
-class RCCLTestsUENV(XCCLTestsBase):
+class RCCLTestsUENV(XCCLTestsBaseUENV):
     descr = 'Point-to-Point and All-Reduce RCCL tests with uenv'
     valid_systems = ['+amdgpu']
     valid_prog_environs = ['+uenv +prgenv +rccl-tests']
