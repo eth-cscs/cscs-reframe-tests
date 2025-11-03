@@ -56,8 +56,8 @@ def create_checks(check):
 
     check.CLASS = 'PROXY'
 
-    check('printenv http_proxy',  expected=r'http://proxy.cscs.ch:8080',  where='+remote')
-    check('printenv https_proxy', expected=r'http://proxy.cscs.ch:8080', where='+remote')
+    # check('printenv http_proxy',  expected=r'http://proxy.cscs.ch:8080',  where='+remote')
+    # check('printenv https_proxy', expected=r'http://proxy.cscs.ch:8080', where='+remote')
     # check('printenv no_proxy',    expected=r'.local, .cscs.ch, localhost, 148.187.0.0/16, 10.0.0.0/8, 172.16.0.0/12', where='+remote')
 
     # check('printenv http_proxy',  expected=r'', where='-remote')

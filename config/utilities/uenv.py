@@ -21,7 +21,7 @@ def uarch(partition):
 
     partition: reframe partition information
     returns:
-       'a100', 'gh200', 'mi200', 'zen2' or 'zen3'
+       'a100', 'gh200', 'mi200', 'mi300', 'zen2' or 'zen3'
        None -> unable to identify uarch
     """
     gpus = partition.devices
@@ -33,6 +33,8 @@ def uarch(partition):
             return 'a100'
         if device.arch == 'gfx90a':
             return 'mi200'
+        if device.arch == 'gfx942':
+            return 'mi300'
         return None
 
     cpus = partition.processor
@@ -60,7 +62,7 @@ def _get_uenvs():
         if len(image_mount) > 0:
             image_mount = image_mount[0]
         else:
-            image_mount = _UENV_MOUNT_DEFAULT
+            image_mount = None
 
         # Check if given uenv_name is a path to a squashfs archive
         uenv_path = pathlib.Path(uenv_name)
@@ -78,6 +80,16 @@ def _get_uenvs():
                 f"{inspect_cmd}='{{system}}'", shell=True).stdout.strip()
 
             image_path = pathlib.Path(image_path)
+            # Check that uenv was pulled
+            if not image_path.is_file():
+                raise ConfigError(f"{uenv_name} is missing, "
+                    f"try pulling it with: uenv image pull {uenv_name}")
+            try:
+                if image_path.stat().st_size == 0:
+                    raise ConfigError(f"{uenv_name} is empty, "
+                        f"try pulling it with: uenv image pull {uenv_name}")
+            except FileNotFoundError:
+                raise ConfigError(f"{uenv_name} was not found")
 
             # FIXME temporary workaround for older uenv versions
             if Version(uenv_version) >= Version('5.1.0-dev'):
@@ -124,8 +136,9 @@ def _get_uenvs():
             env['name'] = f'{uenv_name_pretty}_{k}'
             env['resources'] = {
                 'uenv': {
-                    'mount': image_mount,
                     'file': str(image_path),
+                    'mount': image_mount,
+                    'uenv': f'{image_path}:{image_mount}' if image_mount else str(image_path)
                 }
             }
             if len(views) > 0:

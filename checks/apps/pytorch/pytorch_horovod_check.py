@@ -19,7 +19,7 @@ class cscs_pytorch_horovod_check(pytorch_cnn_check):
     valid_prog_environs = ['builtin']
     modules = ['PyTorch']
     tags |= {'production'}
-    maintainers = ['sarafael', 'henrique']
+    maintainers = ['ml-team']
     allref = {
         'sm_60': {
             'inception_v3': {

@@ -3,6 +3,7 @@ import reframe.utility.sanity as sn
 
 @rfm.simple_test
 class cpi_build_test(rfm.RegressionTest):
+    descr = 'Simple mpi test'
     valid_systems = ['+remote']
     valid_prog_environs = ['+mpi']
     build_system = 'SingleSource'

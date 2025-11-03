@@ -18,12 +18,8 @@ setup and pull:
     - echo "FIRECREST_SYSTEM=$FIRECREST_SYSTEM / F7T_URL=$F7T_URL / CLUSTER_NAME=$CLUSTER_NAME"
     - pwd
     - uname -a
-    # - ./ci/scripts/alps.sh setup_uenv_and_oras &> setup_uenv_and_oras.log
-    # - source ./uenv-5.1.0/bin/activate-uenv
     - uenv --version
-    # - export PATH=$PWD:$UENV_PREFIX/libexec:$PATH
-    # - uenv-oras version
-    - imgs=$(./ci/scripts/alps.sh uenv_image_find)
+    - 'imgs=$(./ci/scripts/alps.sh uenv_image_find)'
   script: |
     echo "imgs=$imgs"
     unset UENVA
@@ -64,29 +60,42 @@ reframe:
     - echo "FIRECREST_SYSTEM=$FIRECREST_SYSTEM / F7T_URL=$F7T_URL / CLUSTER_NAME=$CLUSTER_NAME"
     - uname -a
     - pwd
-    # - ./ci/scripts/alps.sh setup_uenv_and_oras &> setup_uenv_and_oras.log
-    # - source ./uenv-5.1.0/bin/activate-uenv
     - uenv --version
     - echo "UENV=$UENV" | tr , "\n"
     # Send data to elastic on main branch only
     - '[ "$CI_COMMIT_REF_NAME" != "main" ] && unset RFM_HTTPJSON_URL'
-  script:
+    - 'git remote add oripr https://github.com/eth-cscs/cscs-reframe-tests || true'
+    - 'echo "it is safe to ignore error: remote already exists"'
+    - git remote -v
     - hostname
+  script:
     - rfm_path=$(./ci/scripts/alps.sh install_reframe)
-    - echo "rfm_path=$rfm_path"
     - export PATH=$rfm_path:$PATH
     - reframe -V
+    # If in a PR, run only the tests modified in the PR, else: in CRONJOB
     - |
-      if [ -z "${BENCHER_API_TOKEN+x}" ]; then
-        # BENCHER_API_TOKEN is UNDEFINED
-        ./ci/scripts/alps.sh launch_reframe_1arg "--mode daily_production"
+      if [ "$CRON_RUN" = "true" ]; then
+        if [ -z "${BENCHER_API_TOKEN+x}" ]; then
+          ./ci/scripts/alps.sh launch_reframe_1arg "--mode daily_production" ;
+        else
+          ./ci/scripts/alps.sh launch_reframe_bencher ;
+        fi
       else
-        # BENCHER_API_TOKEN is defined (even if empty)
-        ./ci/scripts/alps.sh launch_reframe_bencher
+        git fetch oripr main;
+        git diff --name-only oripr/main;
+        tests_pr=$(git diff --name-only oripr/main |grep checks |grep py$ |awk '{printf "-c %s ",$0}');
+        if [ -z "$tests_pr" ]; then
+          echo "no new/modified test(s) found, exiting";
+          exit 0
+        else
+          echo "tests_pr=$tests_pr";
+          ./ci/scripts/alps.sh launch_reframe_1arg "$tests_pr";
+        fi
       fi
   artifacts:
     when: always
     paths:
+      - reframe.out
       - report.xml
       - latest.json
     reports:

@@ -29,6 +29,7 @@ class NodeBurnCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     image_repository = 'jfrog.svc.cscs.ch#reframe-oci/node-burn'
     image_tag = 'cuda-12.4_nb-be4f759'
     valid_prog_environs = ['builtin']
+    maintainers = ['VCUE', 'PA']
     nb_duration = variable(int, value=20)
     flexible = variable(bool, value=False)
     container_image = f'{image_repository}:{image_tag}'
@@ -108,6 +109,7 @@ class NodeBurnStreamCE(NodeBurnCE):
 
 @rfm.simple_test
 class CudaNodeBurnGemmCE(NodeBurnGemmCE):
+    descr = 'GPU Node burn GEMM test for A100/GH200 using CE'
     executable = 'burn-f64'
     ref_nb_gflops = {
         'a100': {'nb_gflops': (9746*2*0.85, -0.1, None, 'GFlops')},
@@ -134,6 +136,7 @@ class CudaNodeBurnGemmCE(NodeBurnGemmCE):
 
 @rfm.simple_test
 class CPUNodeBurnGemmCE(NodeBurnGemmCE):
+    descr = 'CPU Node burn GEMM test for A100/GH200-nodes using CE'
     executable = 'burn-f64-cpu'
     ref_nb_gflops = {
         'gh200': {'nb_gflops': (3150, -0.1, None, 'GFlops')},
@@ -178,6 +181,7 @@ class CPUNodeBurnGemmCE(NodeBurnGemmCE):
 
 @rfm.simple_test
 class CudaNodeBurnStreamCE(NodeBurnStreamCE):
+    descr = 'GPU Node burn Stream test for A100/GH200 using CE'
     executable = 'burn-f64'
     ref_nb_gbps = {
         'a100': {'nb_gbps': (2 * 1000 * 0.95, -0.1, None, 'GB/s')},
@@ -207,6 +211,7 @@ class CudaNodeBurnStreamCE(NodeBurnStreamCE):
 
 @rfm.simple_test
 class CPUNodeBurnStreamCE(NodeBurnStreamCE):
+    descr = 'CPU Node burn Stream test for A100/GH200-nodes using CE'
     executable = 'burn-f64-cpu'
     ref_nb_gbps = {
         'gh200': {'nb_gbps': (450.0, -0.1, None, 'GB/s')},

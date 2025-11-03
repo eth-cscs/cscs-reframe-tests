@@ -74,7 +74,7 @@ class lammps_build_test(rfm.CompileOnlyRegressionTest):
     descr = 'LAMMPS Build Test'
     valid_prog_environs = ['+lammps-kokkos-dev']
     valid_systems = ['+gpu']
-    maintainers = ['SSA']
+    maintainers = ['pkanduri', 'nbrowning', 'romeli', 'SSA']
     sourcesdir = None
     lammps_sources = fixture(lammps_download, scope='environment')
     build_system = 'CMake'
@@ -118,7 +118,7 @@ class lammps_gpu_test(rfm.RunOnlyRegressionTest):
     executable = 'lmp'
     valid_prog_environs = ['+lammps-gpu-prod']
     valid_systems = ['+uenv']
-    maintainers = ['SSA']
+    maintainers = ['pkanduri', 'nbrowning', 'romeli', 'SSA']
     test_name = variable(str, value='lj_gpu')
     energy_reference = -4.620456
     tags = {'uenv', 'production'}
@@ -173,7 +173,7 @@ class lammps_gpu_test(rfm.RunOnlyRegressionTest):
         hh = sn.extractsingle(regex, self.stdout, 'hh', int)
         mm = sn.extractsingle(regex, self.stdout, 'mm', int)
         ss = sn.extractsingle(regex, self.stdout, 'ss', int)
-        return float(hh*3600 + mm*60 + ss)
+        return float(sn.evaluate(hh*3600 + mm*60 + ss))
 
 
 @rfm.simple_test
@@ -252,4 +252,4 @@ class lammps_kokkos_test(rfm.RunOnlyRegressionTest):
         hh = sn.extractsingle(regex, self.stdout, 'hh', int)
         mm = sn.extractsingle(regex, self.stdout, 'mm', int)
         ss = sn.extractsingle(regex, self.stdout, 'ss', int)
-        return float(hh*3600 + mm*60 + ss)
+        return float(sn.evaluate(hh*3600 + mm*60 + ss))

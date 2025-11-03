@@ -43,7 +43,7 @@ slurm_config = {
 @rfm.simple_test
 class VaspCheckUENV(rfm.RunOnlyRegressionTest):
     executable = 'vasp_std'
-    maintainers = ['SSA']
+    maintainers = ['fraschs', 'romeli', 'SSA']
     valid_systems = ['*']
 
     valid_prog_environs = ['+vasp']
@@ -106,7 +106,7 @@ class VaspCheckUENV(rfm.RunOnlyRegressionTest):
 @rfm.simple_test
 class VaspBuildTestUENV(rfm.CompileOnlyRegressionTest):
     '''
-    Test VASP build from source.
+    Test VASP build from source using a modified makefile.
     '''
 
     descr = 'VASP Build Test'
@@ -115,7 +115,7 @@ class VaspBuildTestUENV(rfm.CompileOnlyRegressionTest):
     valid_systems = ['*']
     build_system = 'Make'
     # only build std target
-    maintainers = ['SSA']
+    maintainers = ['fraschs', 'romeli', 'SSA']
     # run on node to load uenv
     build_locally = False
     tags = {'uenv'}
@@ -172,6 +172,7 @@ class VaspBuildTestUENV(rfm.CompileOnlyRegressionTest):
 @rfm.simple_test
 class VaspBuildCheckUENV(VaspCheckUENV):
     valid_prog_environs = ['+vasp-dev']
+
     tags = {'uenv'}
 
     @run_after('init')

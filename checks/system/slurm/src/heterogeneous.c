@@ -11,9 +11,9 @@ int main(int argc, char **argv) {
 
     #pragma omp parallel
     {
-        int tid = omp_get_thread_num();
-	int num_threads = omp_get_num_threads();
-	printf("Hello from rank %d running omp thread %d/%d\n", rank, tid, num_threads);
+    int tid = omp_get_thread_num();
+    int num_threads = omp_get_num_threads();
+    printf("Hello from rank %d running omp thread %d/%d\n", rank, tid, num_threads);
     }
 
     return 0;
