@@ -9,15 +9,14 @@ import reframe.utility.sanity as sn
 from uenv import uarch
 
 
+@rfm.simple_test
 class ICON4PyBenchmarks(rfm.RegressionTest):
-    '''
-    ICON4Py GPU benchmarks.
-    '''
+    descr = 'ICON4Py GPU benchmarks'
     maintainers = ['SSA']
+    valid_systems = ['+uenv +amdgpu', '+uenv +nvgpu']
     valid_prog_environs = ['+uenv +prgenv +rocm', '+uenv +prgenv +cuda']
-    valid_systems = ['+uenv']
     sourcesdir = None
-    prerun_cmds = [
+    prebuild_cmds = [
         'git clone --depth 1 -b main https://github.com/C2SM/icon4py.git',
         'cd icon4py',
         'curl -LsSf https://astral.sh/uv/install.sh | sh ',
@@ -27,9 +26,16 @@ class ICON4PyBenchmarks(rfm.RegressionTest):
     tags = {'production', 'uenv'}
     executable = 'nox'
 
-    @run_after('setup')
+    @run_before('compile')
     def activate_venv(self):
-        self.prerun_cmds.append(
+        self.prebuild_cmds += [
             'uv sync --extra all',
             'source ./venv/bin/activate'
-        )
+        ]
+
+    @run_before('run')
+    def activate_venv(self):
+        self.prerun_cmds += [
+            'nox -s __bencher_baseline_CI-3.10 -- --backend=$BACKEND --grid=$GRID',
+            # TODO
+        ]
