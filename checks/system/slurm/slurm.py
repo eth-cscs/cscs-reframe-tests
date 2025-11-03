@@ -514,6 +514,29 @@ class SlurmParanoidCheck(rfm.RunOnlyRegressionTest):
 
 
 @rfm.simple_test
+class SlurmNoIsolCpus(rfm.RunOnlyRegressionTest):
+    valid_systems = ['+remote +scontrol']
+    valid_prog_environs = ['builtin']
+    maintainers = ['msimberg', 'SSA']
+    descr = '''
+    Check that isolcpus isn\'t enabled as it prevents threads from migrating
+    between cores. This makes e.g. make jobs or OpenMPI threads all be stuck to
+    one core. See e.g.
+    https://www.kernel.org/doc/html/latest/admin-guide/kernel-parameters.html
+    and https://access.redhat.com/solutions/480473 for more details.
+    '''
+    time_limit = '1m'
+    num_tasks_per_node = 1
+    sourcesdir = None
+    executable = 'cat /proc/cmdline'
+    tags = {'production', 'maintenance', 'slurm'}
+
+    @sanity_function
+    def validate(self):
+        return sn.assert_not_found(r'\bisolcpus=', self.stdout),
+
+
+@rfm.simple_test
 class SlurmGPUGresTest(SlurmSimpleBaseCheck):
     descr = '''
        Ensure that the Slurm GRES (Generic REsource Scheduling) of the
