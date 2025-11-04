@@ -6,7 +6,7 @@
 import os
 import reframe as rfm
 import reframe.utility.sanity as sn
-
+from uenv import uarch
 
 @rfm.simple_test
 class CoralGemm(rfm.RegressionTest):
@@ -24,6 +24,10 @@ class CoralGemm(rfm.RegressionTest):
     build_locally = False
     num_tasks_per_node = 1
     tags = {'production', 'uenv', 'benchmark'}
+
+    # Sweep matrix sizes and precisions
+    _sizes = parameter([5120, 10240, 25600, 51200])
+    # _precisions = parameter(['R_32F', 'R_64F'])
 
     # Data precision for matrix A, B, C and computation
     precision_A = variable(str, value='R_64F')
@@ -46,7 +50,7 @@ class CoralGemm(rfm.RegressionTest):
     ldc = variable(int, value=9728)
 
     # Number of batched matrices
-    batch_count = variable(int, value=10)
+    batch_count = variable(int, value=1)
 
     # Duration to run the GEMM operation in seconds
     duration = variable(int, value=45)
@@ -108,6 +112,15 @@ class CoralGemm(rfm.RegressionTest):
     def set_executable(self):
         # Set mandatory arguments of the benchmark
         self.executable = os.path.join(self.build_system.builddir, 'gemm')
+
+        # Adjust matrix sizes based on the current parameter
+        self.M = self._sizes
+        self.N = self._sizes
+        self.K = self._sizes
+        self.lda = self.M
+        self.ldb = self.N
+        self.ldc = self.M
+
         self.executable_opts = [
             f'{self.precision_A} ',
             f'{self.precision_B} ',
@@ -127,43 +140,43 @@ class CoralGemm(rfm.RegressionTest):
 
         # Set optional arguments of the benchmark
         if self.batched:
-            self.executable_opts.append(' batched')
+            self.executable_opts.append('batched')
 
         if self.strided:
-            self.executable_opts.append(' strided')
+            self.executable_opts.append('strided')
 
         if self.ex_api:
-            self.executable_opts.append(' ex')
+            self.executable_opts.append('ex')
 
         if self.hipBLASLt_api:
-            self.executable_opts.append(' lt')
+            self.executable_opts.append('lt')
 
         if self.host_A:
-            self.executable_opts.append(' hostA')
+            self.executable_opts.append('hostA')
 
         if self.host_B:
-            self.executable_opts.append(' hostB')
+            self.executable_opts.append('hostB')
 
         if self.host_C:
-            self.executable_opts.append(' hostC')
+            self.executable_opts.append('hostC')
 
         if self.coherent_A:
-            self.executable_opts.append(' coherentA')
+            self.executable_opts.append('coherentA')
 
         if self.coherent_B:
-            self.executable_opts.append(' coherentB')
+            self.executable_opts.append('coherentB')
 
         if self.coherent_C:
-            self.executable_opts.append(' coherentC')
+            self.executable_opts.append('coherentC')
 
         if self.shared_A:
-            self.executable_opts.append(' sharedA')
+            self.executable_opts.append('sharedA')
 
         if self.shared_B:
-            self.executable_opts.append(' sharedB')
+            self.executable_opts.append('sharedB')
 
         if self.zero_beta:
-            self.executable_opts.append(' zeroBeta')
+            self.executable_opts.append('zeroBeta')
 
         # Set the time limit with a padding of 2 minutes
         self.time_limit = self.duration + 120
@@ -209,14 +222,20 @@ class CoralGemm(rfm.RegressionTest):
             'avg_gflops': make_perf(self.extract_gflops(sn.avg), 'GFlops')
         }
 
-    reference = {
-        'beverin:mi300': {
-            'min_gflops': (67331, -0.10, 0.10, 'GFlops'),
-        },
-        'beverin:mi200': {
-            'min_gflops': (26426, -0.10, 0.10, 'GFlops'),
-        },
-        'daint:normal': {
-            'min_gflops': (40687, -0.10, 0.10, 'GFlops'),
-        }
+    @run_before('performance')
+    def set_references(self):
+        self.uarch = uarch(self.current_partition)
+        ref_flops = self._ref_flops.get(self.uarch, {}).get(self.M)
+        if ref_flops is not None:
+            self.reference = {
+                self.current_partition.fullname: {
+                    'min_gflops': (ref_flops, -0.25, 0.01, 'GFlops')
+                }
+            }
+
+    _ref_flops = {
+        # These are the average GFLOPS observed on the respective systems
+        'mi200': {5120: 26426, 10240: 27403, 25600: 28000, 51200: 28000},
+        'mi300': {5120: 49762, 10240: 63490, 25600: 54607, 51200: 49543},
+        'gh200': {5120: 40687, 10240: 41823, 25600: 42000, 51200: 42000},
     }
