@@ -1,4 +1,4 @@
-# Copyright 2016 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -51,12 +51,11 @@ class EnvironmentVariableCheck(SlurmSimpleBaseCheck):
     descr = 'Test if user env variables are propagated to CN'
     sourcesdir = None
     time_limit = '1m'
-    num_tasks = 2
+    num_tasks = 1
     valid_prog_environs = ['builtin']
     executable = '/bin/echo'
     executable_opts = ['$MY_VAR']
     env_vars = {'MY_VAR': 'TEST123456!'}
-    tags.remove('single-node')
 
     @sanity_function
     def assert_num_tasks(self):
@@ -84,7 +83,8 @@ class RequiredConstraintCheck(SlurmSimpleBaseCheck):
 
 @rfm.simple_test
 class RequestLargeMemoryNodeCheck(SlurmSimpleBaseCheck):
-    descr = 'Check if slurm memory flag works (deprecated, replaced by MemoryOverconsumptionCheck)'
+    descr = '''Check if slurm memory flag works (deprecated,
+        replaced by MemoryOverconsumptionCheck)'''
     sourcesdir = None
     time_limit = '1m'
     valid_systems = []  # use MemoryOverconsumptionCheck instead
@@ -149,7 +149,7 @@ class DefaultRequest(SlurmSimpleBaseCheck):
 
 @rfm.simple_test
 class ConstraintRequestCabinetGrouping(SlurmSimpleBaseCheck):
-    descr = 'Checks if contraint works for requesting specific cabinets (deprecated, needs attention)'
+    descr = 'Checks if constraint works for requesting specific cabinets (deprecated, needs attention)'  # noqa: E501
     valid_systems = []  # will never run, TODO: update
     executable = 'cat /proc/cray_xt/cname'
     cabinets = {
@@ -308,7 +308,8 @@ class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
     reference = {
         '*': {
             'available_nodes': (min_avail_nodes, -0.0001, None, 'nodes'),
-            'available_nodes_percentage': (ratio_minavail_nodes*100, -0.0001, None, '%')
+            'available_nodes_percentage': (ratio_minavail_nodes*100,
+                                           -0.0001, None, '%')
         }
     }
 
@@ -333,9 +334,10 @@ class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
         partition_matches = sn.count(
             sn.findall(fr'^{re.escape(self.slurm_partition)}.*', self.stdout)
         )
-        return sn.assert_gt(partition_matches, 0,
-                            msg=f'{self.slurm_partition!r} not defined for '
-                                f'partition {self.current_partition.fullname!r}')
+        return sn.assert_gt(
+            partition_matches, 0,
+            msg=f'{self.slurm_partition!r} not defined '
+                f'for partition {self.current_partition.fullname!r}')
 
     def assert_percentage_nodes(self):
         matches = sn.extractall(
@@ -451,8 +453,8 @@ class SlurmPrologEpilogCheck(rfm.RunOnlyRegressionTest):
         reason = sn.extractall(r'reason:\s*(.*)', self.stdout, tag=1)
 
         if reason:
-            return sn.assert_not_found('will be drained with reason', self.stdout,
-                                       msg=f'{reason[0]}')
+            return sn.assert_not_found('will be drained with reason',
+                                       self.stdout, msg=f'{reason[0]}')
         else:
             return True
 
@@ -512,15 +514,39 @@ class SlurmParanoidCheck(rfm.RunOnlyRegressionTest):
 
 
 @rfm.simple_test
-class SlurmGPUGresTest(SlurmSimpleBaseCheck):
-    descr = '''Ensure that the Slurm GRES (Gereric REsource Scheduling) of the number
-       of gpus is correctly set on all the nodes of each partition.'''
+class SlurmNoIsolCpus(rfm.RunOnlyRegressionTest):
+    valid_systems = ['+remote +scontrol']
+    valid_prog_environs = ['builtin']
+    maintainers = ['msimberg', 'SSA']
+    descr = '''
+    Check that isolcpus isn\'t enabled as it prevents threads from migrating
+    between cores. This makes e.g. make jobs or OpenMPI threads all be stuck to
+    one core. See e.g.
+    https://www.kernel.org/doc/html/latest/admin-guide/kernel-parameters.html
+    and https://access.redhat.com/solutions/480473 for more details.
+    '''
+    time_limit = '1m'
+    num_tasks_per_node = 1
+    sourcesdir = None
+    executable = 'cat /proc/cmdline'
+    tags = {'production', 'maintenance', 'slurm'}
 
-    '''   For the current partition, the test performs the following steps:
-       1) count the number of nodes (node_count)
-       2) count the number of nodes having Gres=gpu:N (gres_count) where
-          N=num_devices from the configuration
-       3) ensure that 1) and 2) match
+    @sanity_function
+    def validate(self):
+        return sn.assert_not_found(r'\bisolcpus=', self.stdout),
+
+
+@rfm.simple_test
+class SlurmGPUGresTest(SlurmSimpleBaseCheck):
+    descr = '''
+       Ensure that the Slurm GRES (Generic REsource Scheduling) of the
+       number of gpus is correctly set on all the nodes of each partition.
+
+       For the current partition, the test performs the following steps:
+        1) count the number of nodes (node_count)
+        2) count the number of nodes having Gres=gpu:N (gres_count) where
+           N=num_devices from the configuration
+        3) ensure that 1) and 2) match
     '''
     valid_systems = ['+scontrol +gpu']
     valid_prog_environs = ['builtin']

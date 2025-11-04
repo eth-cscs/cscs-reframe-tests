@@ -1,4 +1,4 @@
-# Copyright 2025 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -6,19 +6,20 @@
 import os
 import reframe as rfm
 import reframe.utility.sanity as sn
+from uenv import uarch
 
 
-class AmdGPUBenchmarks(rfm.RegressionTest):
+class GPUBenchmarks(rfm.RegressionTest):
     '''
-    Base class for amd-gpu-benchmarks
+    Base class for GPU microbenchmarks.
     '''
     maintainers = ['SSA']
     sourcesdir = None
-    valid_prog_environs = ['+rocm', '+uenv +cuda']
+    valid_prog_environs = ['+uenv +prgenv +rocm', '+uenv +prgenv +cuda']
     valid_systems = ['+uenv']
     build_system = 'CMake'
     prebuild_cmds = [
-        'git clone --depth 1 -b reframe-ci https://github.com/eth-cscs/amd-gpu-benchmarks.git'
+        'git clone --depth 1 -b reframe-ci https://github.com/eth-cscs/gpu-benchmarks.git'
     ]
     time_limit = '2m'
     build_locally = False
@@ -26,7 +27,7 @@ class AmdGPUBenchmarks(rfm.RegressionTest):
 
 
 @rfm.simple_test
-class rocPRISM(AmdGPUBenchmarks):
+class ParallelAlgos(GPUBenchmarks):
     benchmark = 'rocPRISM'
     algo = parameter(['radix-sort', 'scan', 'reduce'])
     _executable_opts = parameter(['6', '12', '27'])
@@ -64,10 +65,29 @@ class rocPRISM(AmdGPUBenchmarks):
         }
     }
 
+    # bandwidth values in MiB/s
+    _reference_bandwidths = {
+        'scan': {
+            'mi200': {'6': 9.06516, '12': 600.609, '27': 1266670.0},
+            'mi300': {'6': 6.41283, '12': 404.344, '27': 2209560.0},
+            'gh200': {'6': 19.0931, '12': 1101.08, '27': 2362160.0},
+        },
+        'reduce': {
+            'mi200': {'6': 9.06516, '12': 600.609, '27': 1266670.0},
+            'mi300': {'6': 6.41283, '12': 404.344, '27': 2209560.0},
+            'gh200': {'6': 19.0931, '12': 1101.08, '27': 2362160.0},
+        },
+        'radix-sort': {
+            'mi200': {'6': 16.9316, '12': 826.918, '27': 66868.9},
+            'mi300': {'6': 17.1352, '12': 911.252, '27': 23908.8},
+            'gh200': {'6': 34.8331, '12': 997.079, '27': 217461.0},
+        }
+    }
+
     @run_before('compile')
     def prepare_build(self):
         # self.build_system.srcdir is not available in set_executable
-        self._srcdir = f'amd-gpu-benchmarks/{self.benchmark}'
+        self._srcdir = f'gpu-benchmarks/{self.benchmark}'
         self.build_system.srcdir = self._srcdir
         self.build_system.builddir = f'build_{self.benchmark}'
         self.prebuild_cmds += [f'cd {self.build_system.srcdir}']
@@ -115,3 +135,16 @@ class rocPRISM(AmdGPUBenchmarks):
             'bandwidth': make_perf(bandwidth, 'MiB/s'),
             spec['unit_name']: make_perf((items/latency)/1e9, spec['unit']),
         }
+
+    @run_before('performance')
+    def set_references(self):
+        self.uarch = uarch(self.current_partition)
+
+        ref_bw = self._reference_bandwidths.get(self.algo, {}).get(self.uarch, {}).get(self._executable_opts)
+        if ref_bw is not None:
+            self.reference = {
+                self.current_partition.fullname: {
+                    'bandwidth': (ref_bw, -0.6, None, 'MiB/s')
+                    # will pass when: (60% * ref_bw) < bandwidth < +infinity
+                }
+            }

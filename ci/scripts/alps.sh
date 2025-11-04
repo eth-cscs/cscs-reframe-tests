@@ -363,6 +363,8 @@ launch_reframe_1arg() {
 # }}}
 # {{{ launch_reframe_bencher
 launch_reframe_bencher() {
+    set -euo pipefail
+
     export RFM_AUTODETECT_METHODS="cat /etc/xthostname,hostname"
     export RFM_USE_LOGIN_SHELL=1
     # export RFM_AUTODETECT_XTHOSTNAME=1
@@ -380,7 +382,7 @@ launch_reframe_bencher() {
         --report-file latest.json \
         --system=$system$mi \
         --prefix=$SCRATCH/rfm-$CI_JOB_ID \
-        -c ./checks/microbenchmarks/gpu/amd_gpu/amd_gpu.py \
+        -c ./checks/microbenchmarks/gpu/gpu_benchmarks/parallel_algos.py \
         -r
 
     python3 ./utility/bencher_metric_format.py latest.json
