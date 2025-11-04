@@ -28,15 +28,20 @@ class GPUBenchmarks(rfm.RegressionTest):
 
 @rfm.simple_test
 class ParallelAlgos(GPUBenchmarks):
-    benchmark = 'rocPRISM'
+    benchmark = 'parallel_algos'
     algo = parameter(['radix-sort', 'scan', 'reduce'])
     _executable_opts = parameter(['6', '12', '27'])
 
     _algo_specs = {
         'radix-sort': {
-            'sanity_regex': r'radix sort time for.*key-value pairs:.*s, bandwidth:.*MiB/s',
-            'perf_regex': (
-                r'radix sort time for (?P<items>\S+) '
+            'sanity_regex': r'radix sort (normal|with memory tracking) time for.*key-value pairs:.*s, bandwidth:.*MiB/s',
+            'perf_regex_normal': (
+                r'radix sort normal time for (?P<items>\S+) '
+                r'key-value pairs: (?P<latency>\S+) s, '
+                r'bandwidth: (?P<bandwidth>\S+) MiB/s'
+            ),
+            'perf_regex_tracked': (
+                r'radix sort with memory tracking time for (?P<items>\S+) '
                 r'key-value pairs: (?P<latency>\S+) s, '
                 r'bandwidth: (?P<bandwidth>\S+) MiB/s'
             ),
@@ -44,9 +49,14 @@ class ParallelAlgos(GPUBenchmarks):
             'unit': 'Gkeys/s'
         },
         'scan': {
-            'sanity_regex': r'exclusive scan time for.*values:.*s, bandwidth:.*MiB/s',
-            'perf_regex': (
-                r'exclusive scan time for (?P<items>\S+) '
+            'sanity_regex': r'exclusive scan (normal|with memory tracking) time for.*values:.*s, bandwidth:.*MiB/s',
+            'perf_regex_normal': (
+                r'exclusive scan normal time for (?P<items>\S+) '
+                r'values: (?P<latency>\S+) s, '
+                r'bandwidth: (?P<bandwidth>\S+) MiB/s'
+            ),
+            'perf_regex_tracked': (
+                r'exclusive scan with memory tracking time for (?P<items>\S+) '
                 r'values: (?P<latency>\S+) s, '
                 r'bandwidth: (?P<bandwidth>\S+) MiB/s'
             ),
@@ -54,9 +64,14 @@ class ParallelAlgos(GPUBenchmarks):
             'unit': 'Gvalues/s'
         },
         'reduce': {
-            'sanity_regex': r'reduction time for.*values:.*s, bandwidth:.*MiB/s',
-            'perf_regex': (
-                r'reduction time for (?P<items>\S+) '
+            'sanity_regex': r'reduction (normal|with memory tracking) time for.*values:.*s, bandwidth:.*MiB/s',
+            'perf_regex_normal': (
+                r'reduction normal time for (?P<items>\S+) '
+                r'values: (?P<latency>\S+) s, '
+                r'bandwidth: (?P<bandwidth>\S+) MiB/s'
+            ),
+            'perf_regex_tracked': (
+                r'reduction with memory tracking time for (?P<items>\S+) '
                 r'values: (?P<latency>\S+) s, '
                 r'bandwidth: (?P<bandwidth>\S+) MiB/s'
             ),
@@ -64,6 +79,13 @@ class ParallelAlgos(GPUBenchmarks):
             'unit': 'Gvalues/s'
         }
     }
+
+    _memory_regex = (
+        r'Memory statistics:\s+'
+        r'Total allocated: (?P<total_mem>\S+) MiB\s+'
+        r'Peak allocated: (?P<peak_mem>\S+) MiB\s+'
+        r'Number of allocations: (?P<num_allocs>\S+)'
+    )
 
     # bandwidth values in MiB/s
     _reference_bandwidths = {
@@ -86,7 +108,6 @@ class ParallelAlgos(GPUBenchmarks):
 
     @run_before('compile')
     def prepare_build(self):
-        # self.build_system.srcdir is not available in set_executable
         self._srcdir = f'gpu-benchmarks/{self.benchmark}'
         self.build_system.srcdir = self._srcdir
         self.build_system.builddir = f'build_{self.benchmark}'
@@ -126,14 +147,28 @@ class ParallelAlgos(GPUBenchmarks):
         make_perf = sn.make_performance_function
         spec = self._algo_specs[self.algo]
 
-        items = sn.extractsingle(spec['perf_regex'], self.stdout, 'items', float)
-        latency = sn.extractsingle(spec['perf_regex'], self.stdout, 'latency', float)
-        bandwidth = sn.extractsingle(spec['perf_regex'], self.stdout, 'bandwidth', float)
+        items_normal = sn.extractsingle(spec['perf_regex_normal'], self.stdout, 'items', float)
+        latency_normal = sn.extractsingle(spec['perf_regex_normal'], self.stdout, 'latency', float)
+        bandwidth_normal = sn.extractsingle(spec['perf_regex_normal'], self.stdout, 'bandwidth', float)
+
+        items_tracked_memory = sn.extractsingle(spec['perf_regex_tracked'], self.stdout, 'items', float)
+        latency_tracked_memory = sn.extractsingle(spec['perf_regex_tracked'], self.stdout, 'latency', float)
+        bandwidth_tracked_memory = sn.extractsingle(spec['perf_regex_tracked'], self.stdout, 'bandwidth', float)
+
+        total_mem = sn.extractsingle(self._memory_regex, self.stdout, 'total_mem', float)
+        peak_mem = sn.extractsingle(self._memory_regex, self.stdout, 'peak_mem', float)
+        num_allocs = sn.extractsingle(self._memory_regex, self.stdout, 'num_allocs', int)
 
         self.perf_variables = {
-            'latency': make_perf(latency, 's'),
-            'bandwidth': make_perf(bandwidth, 'MiB/s'),
-            spec['unit_name']: make_perf((items/latency)/1e9, spec['unit']),
+            'latency_normal': make_perf(latency_normal, 's'),
+            'bandwidth_normal': make_perf(bandwidth_normal, 'MiB/s'),
+            f'{spec["unit_name"]}_normal': make_perf((items_normal/latency_normal)/1e9, spec['unit']),
+            'latency_tracked_memory': make_perf(latency_tracked_memory, 's'),
+            'bandwidth_tracked_memory': make_perf(bandwidth_tracked_memory, 'MiB/s'),
+            f'{spec["unit_name"]}_tracked_memory': make_perf((items_tracked_memory/latency_tracked_memory)/1e9, spec['unit']),
+            'memory_total': make_perf(total_mem, 'MiB'),
+            'memory_peak': make_perf(peak_mem, 'MiB'),
+            'memory_allocations': make_perf(num_allocs, 'count'),
         }
 
     @run_before('performance')
@@ -144,7 +179,8 @@ class ParallelAlgos(GPUBenchmarks):
         if ref_bw is not None:
             self.reference = {
                 self.current_partition.fullname: {
-                    'bandwidth': (ref_bw, -0.6, None, 'MiB/s')
+                    'bandwidth_normal': (ref_bw, -0.60, None, 'MiB/s'),
+                    'bandwidth_tracked_memory': (ref_bw, -0.60, None, 'MiB/s')
                     # will pass when: (60% * ref_bw) < bandwidth < +infinity
                 }
             }
