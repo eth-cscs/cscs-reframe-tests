@@ -26,8 +26,8 @@ class CoralGemm(rfm.RegressionTest):
     tags = {'production', 'uenv', 'benchmark'}
 
     # Sweep matrix sizes and precisions
-    _sizes = parameter([5120, 10240, 25600, 51200])
-    # _precisions = parameter(['R_32F', 'R_64F'])
+    _size_bytes = parameter([12800, 25600, 51200, 128000])
+    _precisions = parameter(['R_32F', 'R_64F'])
 
     # Data precision for matrix A, B, C and computation
     precision_A = variable(str, value='R_64F')
@@ -113,13 +113,27 @@ class CoralGemm(rfm.RegressionTest):
         # Set mandatory arguments of the benchmark
         self.executable = os.path.join(self.build_system.builddir, 'gemm')
 
-        # Adjust matrix sizes based on the current parameter
-        self.M = self._sizes
-        self.N = self._sizes
-        self.K = self._sizes
+        # Data precision for matrix A, B, C and computation
+        self.precision_A = self._precisions
+        self.precision_B = self._precisions
+        self.precision_C = self._precisions
+        self.compute_precision = self._precisions
+
+        # Adjust matrix sizes based on the current parameters
+        if self.precision_A == 'R_32F':
+            self.M = self._size_bytes // 4
+            self.N = self._size_bytes // 4
+            self.K = self._size_bytes // 4
+        else:  # R_64F  
+            self.M = self._size_bytes // 8
+            self.N = self._size_bytes // 8
+            self.K = self._size_bytes // 8
+            
+        # Leading dimensions of matrix A, B, C
         self.lda = self.M
         self.ldb = self.N
         self.ldc = self.M
+
 
         self.executable_opts = [
             f'{self.precision_A} ',
@@ -204,7 +218,7 @@ class CoralGemm(rfm.RegressionTest):
         regex = r'^'
         # We get one column per GPU and one for the timestamp
         regex += ''.join(r'\s*(\d+.\d+)' for i in range(self.num_gpus + 1))
-        regex += r'\s*$'
+        regex += r'\s*\S+$'
         gflops = func(
             func(
                 sn.extractall(regex, self.stdout, i+1, float)
@@ -225,7 +239,7 @@ class CoralGemm(rfm.RegressionTest):
     @run_before('performance')
     def set_references(self):
         self.uarch = uarch(self.current_partition)
-        ref_flops = self._ref_flops.get(self.uarch, {}).get(self.M)
+        ref_flops = self._ref_flops.get(self.uarch, {}).get(self._precisions, {}).get(self._size_bytes, None)
         if ref_flops is not None:
             self.reference = {
                 self.current_partition.fullname: {
@@ -234,8 +248,18 @@ class CoralGemm(rfm.RegressionTest):
             }
 
     _ref_flops = {
-        # These are the average GFLOPS observed on the respective systems
-        'mi200': {5120: 26426, 10240: 27403, 25600: 22159, 51200: 19947},
-        'mi300': {5120: 49762, 10240: 63490, 25600: 54607, 51200: 49543},
-        'gh200': {5120: 41352, 10240: 42875, 25600: 50411, 51200: 50411},
+        # These are the average GFLOPS observed on the respective systems,
+        # sizes are in bytes.
+        'mi200': {
+            'R_32F': {12800: 63490, 25600: 54607, 51200: 49543, 128000: 46000},
+            'R_64F': {12800: 27403, 25600: 22159, 51200: 19947, 128000: 46000}
+                  },
+        'mi300': {
+            'R_32F': {12800: 64777, 25600: 64777, 51200: 80478, 128000: 67092},
+            'R_64F': {12800: 25702, 25600: 52668, 51200: 60874, 128000: 53913}
+            },
+        'gh200': {
+            'R_32F': {12800: 63490, 25600: 54607, 51200: 49543, 128000: 46000},
+            'R_64F': {12800: 42875, 25600: 50411, 51200: 50411, 128000: 46000}
+            },
     }
