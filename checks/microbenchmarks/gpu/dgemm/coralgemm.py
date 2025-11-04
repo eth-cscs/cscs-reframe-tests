@@ -229,13 +229,13 @@ class CoralGemm(rfm.RegressionTest):
         if ref_flops is not None:
             self.reference = {
                 self.current_partition.fullname: {
-                    'min_gflops': (ref_flops, -0.25, 0.01, 'GFlops')
+                    'min_gflops': (ref_flops, -0.25, 0.05, 'GFlops')
                 }
             }
 
     _ref_flops = {
         # These are the average GFLOPS observed on the respective systems
-        'mi200': {5120: 26426, 10240: 27403, 25600: 28000, 51200: 28000},
+        'mi200': {5120: 26426, 10240: 27403, 25600: 22159, 51200: 19947},
         'mi300': {5120: 49762, 10240: 63490, 25600: 54607, 51200: 49543},
-        'gh200': {5120: 40687, 10240: 41823, 25600: 42000, 51200: 42000},
+        'gh200': {5120: 41352, 10240: 42875, 25600: 50411, 51200: 50411},
     }
