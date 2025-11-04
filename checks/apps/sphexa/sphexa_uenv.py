@@ -97,8 +97,7 @@ class SphExa(rfm.RegressionTest):
             _affinity_script = (
                 "./scripts/mi300-vars.sh"
                 if gpu_arch == "gfx942"
-                else "./scripts/mi300-vars.sh"
-                # else "./scripts/mi200-vars.sh"
+                else "./scripts/mi200-vars.sh"
             )
             _executable = os.path.join(self.build_system.builddir, 'main',
                                        'src', 'sphexa', 'sphexa-hip')
