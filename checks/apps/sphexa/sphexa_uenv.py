@@ -31,7 +31,7 @@ class SphExa(rfm.RegressionTest):
     num_gpus = parameter([4])  # 8
     sph_testcase = parameter(['evrard'])
     sph_steps = parameter([2])
-    sph_side = parameter([50])
+    sph_side = parameter([150])
     ntasks_per_node = variable(int, value=4)
     omp = parameter([64])
     regex_elapsed = (
@@ -58,8 +58,8 @@ class SphExa(rfm.RegressionTest):
         self.build_system.config_opts = [
             # f'-S sphexa.git',
             # f'-B build',
-            f'-DCMAKE_C_COMPILER=mpicc',
-            f'-DCMAKE_CXX_COMPILER=mpicxx',
+            # f'-DCMAKE_C_COMPILER=mpicc',
+            # f'-DCMAKE_CXX_COMPILER=mpicxx',
             f'-DCSTONE_WITH_GPU_AWARE_MPI=ON',
             f'-DBUILD_TESTING={self.sph_testing}',
             f'-DBUILD_ANALYTICAL={self.sph_analytical}',
@@ -150,7 +150,7 @@ class SphExa(rfm.RegressionTest):
         'evrard': {
             'mi200': 5.6,
             'mi300': 5.1,
-            'gh200': 0.6},
+            'gh200': 0.9},
     }
 
     @run_before('performance')
