@@ -243,7 +243,7 @@ class CoralGemm(rfm.RegressionTest):
         if ref_flops is not None:
             self.reference = {
                 self.current_partition.fullname: {
-                    'min_gflops': (ref_flops, -0.25, 0.05, 'GFlops')
+                    'avg_gflops': (ref_flops, -0.1, 0.1, 'GFlops')
                 }
             }
 
