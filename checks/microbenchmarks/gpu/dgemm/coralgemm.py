@@ -8,6 +8,7 @@ import reframe as rfm
 import reframe.utility.sanity as sn
 from uenv import uarch
 
+
 @rfm.simple_test
 class CoralGemm(rfm.RegressionTest):
     descr = 'AMD CoralGemm test'
@@ -124,16 +125,15 @@ class CoralGemm(rfm.RegressionTest):
             self.M = self._size_bytes // 4
             self.N = self._size_bytes // 4
             self.K = self._size_bytes // 4
-        else:  # R_64F  
+        else:  # R_64F
             self.M = self._size_bytes // 8
             self.N = self._size_bytes // 8
             self.K = self._size_bytes // 8
-            
+
         # Leading dimensions of matrix A, B, C
         self.lda = self.M
         self.ldb = self.N
         self.ldc = self.M
-
 
         self.executable_opts = [
             f'{self.precision_A} ',
@@ -229,7 +229,7 @@ class CoralGemm(rfm.RegressionTest):
     @run_before('performance')
     def set_perf_vars(self):
         make_perf = sn.make_performance_function
-        
+
         self.perf_variables = {
             'min_gflops': make_perf(self.extract_gflops(sn.min), 'GFlops'),
             'max_gflops': make_perf(self.extract_gflops(sn.max), 'GFlops'),
@@ -239,7 +239,11 @@ class CoralGemm(rfm.RegressionTest):
     @run_before('performance')
     def set_references(self):
         self.uarch = uarch(self.current_partition)
-        ref_flops = self._ref_flops.get(self.uarch, {}).get(self._precisions, {}).get(self._size_bytes, None)
+        ref_flops = (
+            self._ref_flops.get(self.uarch, {})
+            .get(self._precisions, {})
+            .get(self._size_bytes, None)
+        )        
         if ref_flops is not None:
             self.reference = {
                 self.current_partition.fullname: {
