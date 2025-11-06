@@ -243,7 +243,7 @@ class CoralGemm(rfm.RegressionTest):
             self._ref_flops.get(self.uarch, {})
             .get(self._precisions, {})
             .get(self._size_bytes, None)
-        )        
+        )
         if ref_flops is not None:
             self.reference = {
                 self.current_partition.fullname: {
