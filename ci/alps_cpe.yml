@@ -33,8 +33,8 @@ reframe:
         ./ci/scripts/alps.sh launch_reframe_1arg "--mode daily_production";
       else
         git fetch oripr main;
-        git diff --name-only oripr/main;
-        tests_pr=$(git diff --name-only oripr/main |grep checks |grep py$ |awk '{printf "-c %s ",$0}');
+        git diff --name-only oripr/main...;
+        tests_pr=$(git diff --name-only oripr/main... |grep checks |grep py$ |awk '{printf "-c %s ",$0}');
         if [ -z "$tests_pr" ]; then
           echo "no new/modified test(s) found, exiting";
           exit 0
