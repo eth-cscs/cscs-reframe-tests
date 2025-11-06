@@ -23,21 +23,39 @@ class ICON4PyBenchmarks(rfm.RunOnlyRegressionTest):
         'cd icon4py',
         'pip install --upgrade pip',
         'pip install uv',
-        'rm uv.lock',
-        'export CC=$(which gcc) MPICH_CC=$(which gcc) CXX=$(which g++) MPICH_CXX=$(which g++)',
-        'uv sync --extra all --python $(which python) --active',
-        'uv pip uninstall mpi4py && uv pip install --no-binary mpi4py mpi4py',
-        'export CUPY_INSTALL_USE_HIP=1 HCC_AMDGPU_TARGET=gfx942 ROCM_HOME=/user-environment/env/default',
-        'uv pip install git+https://github.com/cupy/cupy.git',
     ]
     time_limit = '20m'
     build_locally = False
     tags = {'production', 'uenv'}
     executable = 'pytest'
     executable_opts = [
-        "-v -m continuous_benchmarking "
-        "--benchmark-only "
-        "--benchmark-json=TESTING.json "
-        "--backend=gtfn_gpu --grid=icon_benchmark "
-        "model/atmosphere/diffusion/tests/diffusion/integration_tests/test_benchmark_diffusion.py::test_run_diffusion_benchmark[grid0]" 
+        "-v",
+        "-m continuous_benchmarking",
+        "--benchmark-only",
+        "--benchmark-warmup=on",
+        "--benchmark-warmup-iterations=30",
+        "--benchmark-json=TESTING.json",
+        "--backend=dace_gpu --grid=icon_benchmark_regional",
+        "model/atmosphere/diffusion/tests/diffusion/integration_tests/test_benchmark_diffusion.py::test_diffusion_benchmark",
+        "model/atmosphere/dycore/tests/dycore/integration_tests/test_benchmark_solve_nonhydro.py::test_benchmark_solve_nonhydro[True-False]",
     ]
+
+    @run_before('run')
+    def prepare_run(self):
+        if 'rocm' in self.current_environ.features:
+            self.prerun_cmds +=[
+                'rm uv.lock',
+                'export CC=$(which gcc) MPICH_CC=$(which gcc) CXX=$(which g++) MPICH_CXX=$(which g++)',
+                'uv sync --extra all --python $(which python) --active',
+                'uv pip uninstall mpi4py && uv pip install --no-binary mpi4py mpi4py',
+                'export CUPY_INSTALL_USE_HIP=1 HCC_AMDGPU_TARGET=gfx942 ROCM_HOME=/user-environment/env/default',
+                'uv pip install git+https://github.com/cupy/cupy.git',
+            ]
+        else:
+            self.prerun_cmds +=[
+                'uv sync --extra all --extra cuda12 --python $(which python) --active',
+            ]
+
+    @sanity_function
+    def validate_test(self):
+        return sn.assert_found(r'PASSED', self.stdout)
