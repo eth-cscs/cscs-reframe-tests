@@ -28,21 +28,14 @@ class SphExa(rfm.RegressionTest):
     url = variable(
         str, value='https://jfrog.svc.cscs.ch/artifactory/cscs-reframe-tests')
     sph_infile = parameter(['50c.h5'])
-    num_gpus = parameter([4])  # 8
+    num_gpus = parameter([4])
     sph_testcase = parameter(['evrard'])
     sph_steps = parameter([2])
     sph_side = parameter([150])
     ntasks_per_node = variable(int, value=4)
-    omp = parameter([64])
     regex_elapsed = (
         r'Total execution time of (?P<steps>\d+) iterations of \S+ '
         r'up to t = \S+: (?P<sec>\S+)s$')
-
-    @run_before('compile')
-    def skip_test(self):
-        gpu_arch = self.current_partition.select_devices('gpu')[0].arch
-        self.skip_if(gpu_arch == "gfx90a",
-                     'skipping MI200 (numa_sched_setaffinity_v2_int failure)')
 
     @run_before('compile')
     def build_step(self):
@@ -50,8 +43,6 @@ class SphExa(rfm.RegressionTest):
                 f'git clone --depth=1 --branch={self.branch} '
                 f'https://github.com/sphexa-org/sphexa.git sphexa.git',
                 f'cd sphexa.git ; git log -n1 ; cd ..',
-                f'cp main/src/io/CMakeLists.txt '
-                f'sphexa.git/main/src/io/CMakeLists.txt',
         ]
         self.build_system.configuredir = 'sphexa.git'
         self.build_system.builddir = 'build'
@@ -85,11 +76,6 @@ class SphExa(rfm.RegressionTest):
                 f'-DCMAKE_CUDA_ARCHITECTURES="{gpu_arch}"'
             ]
 
-    @run_after('setup')
-    def set_num_gpus(self):
-        curr_part = self.current_partition
-        self.num_gpus = curr_part.select_devices('gpu')[0].num_devices
-
     @run_before('run')
     def set_executable(self):
         gpu_arch = self.current_partition.select_devices('gpu')[0].arch
@@ -115,12 +101,17 @@ class SphExa(rfm.RegressionTest):
         ]
         self.num_tasks = self.num_gpus
         self.num_tasks_per_node = self.ntasks_per_node
-        self.num_cpus_per_task = 7
+        self.skip_if_no_procinfo()
+        self.num_cpus_per_task = (
+            self.current_partition.processor.info["num_cpus"]
+            // self.current_partition.processor.info["num_cpus_per_core"]
+            // self.num_tasks_per_node
+        )
         self.job.options = [
             f'--nodes={int(self.num_gpus / self.num_tasks_per_node)}'
             if self.num_tasks > self.num_tasks_per_node else '--nodes=1',
         ]
-        self.env_vars = {'OMP_NUM_THREADS': f'{self.omp}'}
+        self.env_vars = {'OMP_NUM_THREADS': '$SLURM_CPUS_PER_TASK'}
         self.prerun_cmds = [
             f'echo "# SLURM_JOBID=$SLURM_JOBID"',
             f'wget --quiet {self.url}/sphexa/50c.h5',
