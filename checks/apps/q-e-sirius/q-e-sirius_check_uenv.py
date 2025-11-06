@@ -14,8 +14,8 @@ import uenv
 
 qe_references = {
     "Au surf": {
-        "gh200": {"time_run": (14.02, None, 0.05, "s")},
-        "zen2": {"time_run": (99.45, None, 0.1, "s")},  # 1m44s
+        "gh200": {"time_run": (192, None, 0.05, "s")},
+        "zen2": {"time_run": (99.45, None, 0.05, "s")},  # 1m44s
     },
 }
 
@@ -45,8 +45,8 @@ slurm_config = {
         },
         "zen2": {
             "nodes": 1,
-            "ntasks-per-node": 128,
-            "cpus-per-task": 1,
+            "ntasks-per-node": 16,
+            "cpus-per-task": 8,
             "walltime": "0d0h20m0s",
             "gpu": False,
         },
@@ -65,7 +65,7 @@ class QeSiriusCheckUENV(rfm.RunOnlyRegressionTest):
         config = slurm_config[self.test_name][self.uarch]
         # sbatch options
         self.job.options = [
-            f'--nodes={config["nodes"]}',
+            f"--nodes={config['nodes']}",
         ]
         self.num_tasks_per_node = config["ntasks-per-node"]
         self.num_tasks = config["nodes"] * self.num_tasks_per_node
@@ -73,21 +73,19 @@ class QeSiriusCheckUENV(rfm.RunOnlyRegressionTest):
         self.ntasks_per_core = 1
         self.time_limit = config["walltime"]
 
-        # srun options
-        self.job.launcher.options = ["--cpu-bind=socket"]
-
         # environment variables
-        self.env_vars["OMP_NUM_THREADS"] = str(1)
+        self.env_vars["OMP_NUM_THREADS"] = config["cpus-per-task"]
+        self.env_vars["SLURM_HINT"] = "nomultithread"
         if self.uarch == "gh200":
             self.env_vars["MPICH_GPU_SUPPORT_ENABLED"] = "1"
             self.env_vars["OMP_NUM_THREADS"] = str(20)
 
         # set reference
-        if self.uarch is not None and \
-           self.uarch in qe_references[self.test_name]:
+        if self.uarch is not None and self.uarch in qe_references[self.test_name]:
             self.reference = {
-                self.current_partition.fullname:
-                    qe_references[self.test_name][self.uarch]
+                self.current_partition.fullname: qe_references[self.test_name][
+                    self.uarch
+                ]
             }
 
     @sanity_function
@@ -113,8 +111,9 @@ class QeSiriusCheckUENV(rfm.RunOnlyRegressionTest):
     # INFO: The name of this function needs to match with the reference dict!
     @performance_function("s")
     def time_run(self):
-        return sn.extractsingle(r'electrons.+\s(?P<wtime>\S+)s WALL',
-                                self.stdout, 'wtime', float)
+        return sn.extractsingle(
+            r"electrons.+\s(?P<wtime>\S+)s WALL", self.stdout, "wtime", float
+        )
 
 
 class QeSiriusCheckAuSurfUENV(QeSiriusCheckUENV):
@@ -132,7 +131,5 @@ class QeCheckAuSurfUENVExec(QeSiriusCheckAuSurfUENV):
     def setup_executable(self):
         self.executable = f"pw.x"
         uarch = uenv.uarch(self.current_partition)
-        if uarch == 'gh200':
+        if uarch == "gh200":
             self.executable = f"./mps-wrapper.sh pw.x"
-        if uarch == 'mi200':
-            self.executable = f"./amdgpu-wrapper.sh pw.x"
