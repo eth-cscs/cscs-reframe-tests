@@ -425,19 +425,49 @@ launch_reframe_bencher() {
     testbed="${testbed%.json}"
 
     ./bencher run \
-        --threshold-measure latency \
+        --threshold-measure latency_normal \
         --threshold-test percentage \
         --threshold-max-sample-size 64 \
         --threshold-lower-boundary _ \
         --threshold-upper-boundary 0.1 \
         \
-        --threshold-measure bandwidth \
+        --threshold-measure latency_tracked_memory \
+        --threshold-test percentage \
+        --threshold-max-sample-size 64 \
+        --threshold-lower-boundary _ \
+        --threshold-upper-boundary 0.1 \
+        \
+        --threshold-measure bandwidth_normal \
         --threshold-test percentage \
         --threshold-max-sample-size 64 \
         --threshold-lower-boundary 0.1 \
         --threshold-upper-boundary _ \
         \
-        --threshold-measure keys/second \
+        --threshold-measure bandwidth_tracked_memory \
+        --threshold-test percentage \
+        --threshold-max-sample-size 64 \
+        --threshold-lower-boundary 0.1 \
+        --threshold-upper-boundary _ \
+        \
+        --threshold-measure keys/second_normal \
+        --threshold-test percentage \
+        --threshold-max-sample-size 64 \
+        --threshold-lower-boundary 0.1 \
+        --threshold-upper-boundary _ \
+        \
+        --threshold-measure keys/second_tracked_memory \
+        --threshold-test percentage \
+        --threshold-max-sample-size 64 \
+        --threshold-lower-boundary 0.1 \
+        --threshold-upper-boundary _ \
+        \
+        --threshold-measure values/second_normal \
+        --threshold-test percentage \
+        --threshold-max-sample-size 64 \
+        --threshold-lower-boundary 0.1 \
+        --threshold-upper-boundary _ \
+        \
+        --threshold-measure values/second_tracked_memory \
         --threshold-test percentage \
         --threshold-max-sample-size 64 \
         --threshold-lower-boundary 0.1 \
