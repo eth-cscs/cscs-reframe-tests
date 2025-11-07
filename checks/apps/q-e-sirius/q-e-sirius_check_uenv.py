@@ -39,6 +39,7 @@ slurm_config = {
         "mi300": {
             "nodes": 1,
             "ntasks-per-node": 4,
+            "--gpus-per-task": 1,
             "cpus-per-task": 24,
             "walltime": "0d0h20m0s",
             "gpu": True,
@@ -79,6 +80,12 @@ class QeSiriusCheckUENV(rfm.RunOnlyRegressionTest):
         if self.uarch == "gh200":
             self.env_vars["MPICH_GPU_SUPPORT_ENABLED"] = "1"
             self.env_vars["OMP_NUM_THREADS"] = str(20)
+        if self.uarch == "mi200":
+            self.env_vars["MPICH_GPU_SUPPORT_ENABLED"] = "1"
+            self.env_vars["OMP_NUM_THREADS"] = str(8)
+        if self.uarch == "mi300":
+            self.env_vars["MPICH_GPU_SUPPORT_ENABLED"] = "1"
+            self.env_vars["OMP_NUM_THREADS"] = str(24)
 
         # set reference
         if self.uarch is not None and self.uarch in qe_references[self.test_name]:
@@ -133,5 +140,5 @@ class QeCheckAuSurfUENVExec(QeSiriusCheckAuSurfUENV):
         uarch = uenv.uarch(self.current_partition)
         if uarch == "gh200":
             self.executable = f"./mps-wrapper.sh pw.x"
-        if uarch == "mi200" or uarch == "mi300":
+        if uarch == "mi200":
             self.executable = f"./amdgpu-wrapper.sh pw.x"
