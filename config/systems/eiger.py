@@ -49,6 +49,29 @@ site_configuration = {
                             'name': 'memory',
                             'options': ['--mem={mem_per_node}']
                         },
+                        {
+                            'name': 'cpe_ce_image',
+                            'options': [
+                                '--container-image={image}',
+                             ]
+                        },
+                        {
+                            'name': 'cpe_ce_mount',
+                            'options': [
+                                # Mount both the stagedir and the directory related
+                                # used 3 levels above (the one related to the system)
+                                # to be able to find fixtures
+                                '--container-mounts={stagedir}/../../../,'  # split
+                                '{stagedir}:/rfm_workdir',
+                                '--container-workdir=/rfm_workdir'
+                             ]
+                        },
+                        {
+                            'name': 'cpe_ce_extra_mounts',
+                            'options': [
+                                '--container-mounts={mount}:{mount}',
+                             ]
+                        }
                     ],
                     'access': [f'--account={osext.osgroup()}'],
                     'features': ['ce', 'remote', 'scontrol', 'uenv'],
