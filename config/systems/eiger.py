@@ -86,6 +86,16 @@ site_configuration = {
                 '--timestamp=%F_%H-%M-%S'
             ],
             'target_systems': ['eiger'],
-        }
+        },
+        {
+            'name': 'cpe_ce_production',
+            'options': [
+                '--max-retries=1',
+                '--report-file=$PWD/latest.json',
+                '-c ../cscs-reframe-tests/checks/',
+                '--tag=production',
+                '-p PrgEnv-ce'
+            ],
+        },
     ]
 }
