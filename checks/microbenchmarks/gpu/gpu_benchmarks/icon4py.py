@@ -11,11 +11,14 @@ from uenv import uarch
 
 @rfm.simple_test
 class ICON4PyBenchmarks(rfm.RunOnlyRegressionTest):
-    descr = 'ICON4Py GPU benchmarks'
+    descr = 'ICON4Py GPU benchmarks -Diffusion & DyCore Granules-'
     maintainers = ['SSA']
     valid_systems = ['+uenv +amdgpu', '+uenv +nvgpu']
     valid_prog_environs = ['+uenv +prgenv +rocm', '+uenv +prgenv +cuda']
+    tags = {'production', 'uenv'}
+    time_limit = '60m'
     sourcesdir = None
+    build_locally = False
     prerun_cmds = [
         'python -m venv .venv',
         'source .venv/bin/activate',
@@ -23,10 +26,9 @@ class ICON4PyBenchmarks(rfm.RunOnlyRegressionTest):
         'cd icon4py',
         'pip install --upgrade pip',
         'pip install uv',
+        'rm uv.lock',
+        'export CC=$(which gcc) MPICH_CC=$(which gcc) CXX=$(which g++) MPICH_CXX=$(which g++)',
     ]
-    time_limit = '20m'
-    build_locally = False
-    tags = {'production', 'uenv'}
     executable = 'pytest'
     executable_opts = [
         "-v",
@@ -44,8 +46,6 @@ class ICON4PyBenchmarks(rfm.RunOnlyRegressionTest):
     def prepare_run(self):
         if 'rocm' in self.current_environ.features:
             self.prerun_cmds +=[
-                'rm uv.lock',
-                'export CC=$(which gcc) MPICH_CC=$(which gcc) CXX=$(which g++) MPICH_CXX=$(which g++)',
                 'uv sync --extra all --python $(which python) --active',
                 'uv pip uninstall mpi4py && uv pip install --no-binary mpi4py mpi4py',
                 'export CUPY_INSTALL_USE_HIP=1 HCC_AMDGPU_TARGET=gfx942 ROCM_HOME=/user-environment/env/default',
@@ -54,6 +54,7 @@ class ICON4PyBenchmarks(rfm.RunOnlyRegressionTest):
         else:
             self.prerun_cmds +=[
                 'uv sync --extra all --extra cuda12 --python $(which python) --active',
+                'uv pip uninstall mpi4py && uv pip install --no-binary mpi4py mpi4py',
             ]
 
     @sanity_function
