@@ -76,7 +76,7 @@ class ICON4PyBenchmarks(rfm.RunOnlyRegressionTest):
         diffusion_granule_mean = sn.extractsingle(diffusion_regex, self.stdout, 'mean', float)
 
         dycore_regex = (
-            r'^\s*test_benchmark_solve_nonhydro[True-False]\s+'
+            r'^\s*test_benchmark_solve_nonhydro\[True-False\]\s+'
             r'(?P<min>\d+(?:\.\d+)?)'            # Min
             r'(?:\s+\([^)]+\))?\s+'              # optional "(...)"
             r'(?P<max>\d+(?:\.\d+)?)'            # Max
