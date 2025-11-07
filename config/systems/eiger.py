@@ -38,6 +38,7 @@ site_configuration = {
                     'time_limit': '10m',
                     'environs': [
                         'builtin',
+                        'PrgEnv-ce',
                     ],
                     'max_jobs': 100,
                     'extras': {
