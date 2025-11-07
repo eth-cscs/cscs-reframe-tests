@@ -59,4 +59,34 @@ class ICON4PyBenchmarks(rfm.RunOnlyRegressionTest):
 
     @sanity_function
     def validate_test(self):
-        return sn.assert_found(r'PASSED', self.stdout)
+        diffusion_granule = sn.assert_found(r'^\s*model/atmosphere/diffusion/tests/diffusion/integration_tests/test_benchmark_diffusion\.py::test_diffusion_benchmark\s*PASSED', self.stdout)
+        dycore_granule = sn.assert_found(r'^\s*model/atmosphere/dycore/tests/dycore/integration_tests/test_benchmark_solve_nonhydro\.py::test_benchmark_solve_nonhydro\[True-False\]\s*PASSED', self.stdout)
+        return diffusion_granule and dycore_granule
+
+    @run_before('performance')
+    def set_perf_vars(self):
+        diffusion_regex = (
+            r'^\s*test_diffusion_benchmark\s+'
+            r'(?P<min>\d+(?:\.\d+)?)'            # Min
+            r'(?:\s+\([^)]+\))?\s+'              # optional "(...)"
+            r'(?P<max>\d+(?:\.\d+)?)'            # Max
+            r'(?:\s+\([^)]+\))?\s+'              # optional "(...)"
+            r'(?P<mean>\d+(?:\.\d+)?)'           # Mean
+        )
+        diffusion_granule_mean = sn.extractsingle(diffusion_regex, self.stdout, 'mean', float)
+
+        dycore_regex = (
+            r'^\s*test_benchmark_solve_nonhydro[True-False]\s+'
+            r'(?P<min>\d+(?:\.\d+)?)'            # Min
+            r'(?:\s+\([^)]+\))?\s+'              # optional "(...)"
+            r'(?P<max>\d+(?:\.\d+)?)'            # Max
+            r'(?:\s+\([^)]+\))?\s+'              # optional "(...)"
+            r'(?P<mean>\d+(?:\.\d+)?)'           # Mean
+        )
+        dycore_granule_mean = sn.extractsingle(dycore_regex, self.stdout, 'mean', float)
+
+        self.perf_variables = {
+            'diffusion_granule': sn.make_performance_function(diffusion_granule_mean, 'ms'),
+            #
+            'dycore_granule': sn.make_performance_function(dycore_granule_mean, 'ms'),
+        }

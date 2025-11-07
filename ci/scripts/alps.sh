@@ -383,6 +383,7 @@ launch_reframe_bencher() {
         --system=$system$mi \
         --prefix=$SCRATCH/rfm-$CI_JOB_ID \
         -c ./checks/microbenchmarks/gpu/gpu_benchmarks/parallel_algos.py \
+        -c ./checks/microbenchmarks/gpu/gpu_benchmarks/icon4py.py \
         -r
 
     python3 ./utility/bencher_metric_format.py latest.json
