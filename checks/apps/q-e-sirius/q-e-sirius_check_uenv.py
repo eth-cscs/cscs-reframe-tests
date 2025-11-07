@@ -133,3 +133,5 @@ class QeCheckAuSurfUENVExec(QeSiriusCheckAuSurfUENV):
         uarch = uenv.uarch(self.current_partition)
         if uarch == "gh200":
             self.executable = f"./mps-wrapper.sh pw.x"
+        if uarch == "mi200" or uarch == "mi300":
+            self.executable = f"./amdgpu-wrapper.sh pw.x"
