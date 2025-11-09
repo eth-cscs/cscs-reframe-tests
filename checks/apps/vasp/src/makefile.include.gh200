@@ -63,21 +63,15 @@ CXX_PARS    = nvc++ --no_warnings
 VASP_TARGET_CPU ?= -tp host
 FFLAGS     += $(VASP_TARGET_CPU)
   
-# Specify your NV HPC-SDK installation (mandatory)
-#... first try to set it automatically
-NVROOT      =$(shell which nvfortran | awk -F /compilers/bin/nvfortran '{ print $$1 }')
-  
-# If the above fails, then NVROOT needs to be set manually
-#NVHPC      ?= /opt/nvidia/hpc_sdk
-#NVVERSION   = 21.11
-#NVROOT      = $(NVHPC)/Linux_x86_64/$(NVVERSION)
-  
 ## Improves performance when using NV HPC-SDK >=21.11 and CUDA >11.2
 #OFLAG_IN   = -fast -Mwarperf
 #SOURCE_IN  := nonlr.o
   
 # Software emulation of quadruple precsion (mandatory)
-QD         ?= $(NVROOT)/compilers/extras/qd
+QD         ?= $(shell find /user-environment/ -wholename "*compilers/extras/qd" -not -path "*REDIST*" | head -1)
+ifeq ($(strip $(QD)),)
+$(error QD directory not found! Please ensure that the quadruple precision library is installed in /user-environment/)
+endif
 LLIBS      += -L$(QD)/lib -lqdmod -lqd -Wl,-rpath,$(QD)/lib
 INCS       += -I$(QD)/include/qd
   

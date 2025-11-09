@@ -6,7 +6,29 @@
 # ReFrame CSCS settings
 #
 
+import json
 import os
+
+
+def _format_httpjson(record, extras, ignore_keys):
+    """
+    https://github.com/eth-cscs/cscs-reframe-tests/pull/380
+    """
+    data = {}
+    for attr, val in record.__dict__.items():
+        if attr in ignore_keys or attr.startswith('_'):
+            continue
+
+        if attr == "check_perf_value" and val is not None:
+            data[attr] = float(val)
+        elif attr == "check_perf_ref" and val is not None:
+            data[attr] = float(val)
+        else:
+            data[attr] = val
+
+    data.update(extras)
+
+    return json.dumps(data)
 
 
 site_configuration = {
@@ -75,6 +97,8 @@ site_configuration = {
                         'rfm_ci_pipeline': os.getenv("CI_PIPELINE_URL", "#"),
                         'rfm_ci_project': os.getenv("CI_PROJECT_PATH", "Unknown CI Project")
                     },
+                    # 'debug': True,
+                    "json_formatter": _format_httpjson,
                     'ignore_keys': ['check_perfvalues']
                 }
             ]
@@ -151,9 +175,7 @@ site_configuration = {
            'options': [
                '-Sstrict_check=1',
                '--report-file=$PWD/latest.json',
-               '-c checks/apps',
-               '-c checks/libraries',
-               '-c checks/prgenv',
+               '-c checks',
                "-p '(?!PrgEnv-.*|builtin)'",
            ]
         },

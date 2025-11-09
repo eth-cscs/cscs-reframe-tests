@@ -12,7 +12,7 @@ dlaf_references = {
             "time_run": (24.0, -1.0, 0.1, "s"),
         },
         "zen2": {
-            "time_run": (165.0, -1.0, 0.25, "s"),
+            "time_run": (170.0, -1.0, 0.1, "s"),
         }
     },
     "gen_eigensolver": {
@@ -20,7 +20,7 @@ dlaf_references = {
             "time_run": (26.0, -1.0, 0.1, "s")
         },
         "zen2": {
-            "time_run": (200.0, -1.0, 0.25, "s"),
+            "time_run": (210.0, -1.0, 0.1, "s"),
         }
     },
 }
@@ -64,7 +64,7 @@ slurm_config = {
 class dlaf_base(rfm.RunOnlyRegressionTest):
     valid_systems = ['+uenv']
     valid_prog_environs = ['+dlaf -cp2k -cp2k-dev']
-    maintainers = ["SSA"]
+    maintainers = ['simbergm', 'rasolca', 'SSA']
 
     def _sq_factor(self, n):
         """

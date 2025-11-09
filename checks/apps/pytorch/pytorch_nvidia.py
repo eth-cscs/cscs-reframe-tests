@@ -37,6 +37,7 @@ class PyTorchDdpCeNv(PyTorchTestBase, ContainerEngineMixin):
     descr = ('Check the training throughput using the ContainerEngine and '
              'NVIDIA NGC')
     valid_systems = ['+ce +nvgpu']
+    maintainers = ['ml-team']
     aws_ofi_nccl = parameter([True])
     curated_images = ['nvcr.io#nvidia/pytorch:25.06-py3']
 
@@ -93,6 +94,7 @@ class PyTorchDdpCeNvlarge(PyTorchDdpCeNv):
 class PyTorchDdpMambaNv(PyTorchTestBase):
     descr = 'Check the training throughput on bare-metal'
     valid_systems = []  #DISABLED TEST, change to ['+nvgpu'] to renable it
+    maintainers = ['ml-team']
     time_limit = '30m'
     torch_version = parameter([
          'nccl cuda=12.6', # Latest cu12.6; incompatible driver
