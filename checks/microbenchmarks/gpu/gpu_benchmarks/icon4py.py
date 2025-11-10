@@ -3,10 +3,8 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-import os
 import reframe as rfm
 import reframe.utility.sanity as sn
-from uenv import uarch
 
 
 @rfm.simple_test
@@ -27,40 +25,66 @@ class ICON4PyBenchmarks(rfm.RunOnlyRegressionTest):
         'pip install --upgrade pip',
         'pip install uv',
         'rm uv.lock',
-        'export CC=$(which gcc) MPICH_CC=$(which gcc) CXX=$(which g++) MPICH_CXX=$(which g++)',
+        'export CC=$(which gcc) MPICH_CC=$(which gcc)',
+        'export CXX=$(which g++) MPICH_CXX=$(which g++)',
     ]
     executable = 'pytest'
     executable_opts = [
-        "-v",
-        "-m continuous_benchmarking",
-        "--benchmark-only",
-        "--benchmark-warmup=on",
-        "--benchmark-warmup-iterations=30",
-        "--benchmark-json=TESTING.json",
-        "--backend=dace_gpu --grid=icon_benchmark_regional",
-        "model/atmosphere/diffusion/tests/diffusion/integration_tests/test_benchmark_diffusion.py::test_diffusion_benchmark",
-        "model/atmosphere/dycore/tests/dycore/integration_tests/test_benchmark_solve_nonhydro.py::test_benchmark_solve_nonhydro[True-False]",
+        '-v',
+        '-m continuous_benchmarking',
+        '--benchmark-only',
+        '--benchmark-warmup=on',
+        '--benchmark-warmup-iterations=30',
+        '--benchmark-json=icon4py_benchmarks.json',
+        '--backend=dace_gpu --grid=icon_benchmark_regional',
+        ('model/atmosphere/diffusion/tests/diffusion/integration_tests'
+         '/test_benchmark_diffusion.py'
+         '::test_diffusion_benchmark'
+         ),
+        ('model/atmosphere/dycore/tests/dycore/integration_tests/'
+         'test_benchmark_solve_nonhydro.py'
+         '::test_benchmark_solve_nonhydro[True-False]'
+         ),
     ]
 
     @run_before('run')
     def prepare_run(self):
         if 'rocm' in self.current_environ.features:
-            self.prerun_cmds +=[
+            self.prerun_cmds += [
                 'uv sync --extra all --python $(which python) --active',
-                'uv pip uninstall mpi4py && uv pip install --no-binary mpi4py mpi4py',
-                'export CUPY_INSTALL_USE_HIP=1 HCC_AMDGPU_TARGET=gfx942 ROCM_HOME=/user-environment/env/default',
+                ('uv pip uninstall mpi4py && '
+                 'uv pip install --no-binary mpi4py mpi4py'
+                 ),
+                ('export CUPY_INSTALL_USE_HIP=1 '
+                 'HCC_AMDGPU_TARGET=gfx942 '
+                 'ROCM_HOME=/user-environment/env/default'
+                 ),
                 'uv pip install git+https://github.com/cupy/cupy.git',
             ]
         else:
-            self.prerun_cmds +=[
-                'uv sync --extra all --extra cuda12 --python $(which python) --active',
-                'uv pip uninstall mpi4py && uv pip install --no-binary mpi4py mpi4py',
+            self.prerun_cmds += [
+                ('uv sync --extra all '
+                 '--extra cuda12 --python $(which python) --active'
+                 ),
+                ('uv pip uninstall mpi4py && '
+                 'uv pip install --no-binary mpi4py mpi4py'
+                 ),
             ]
 
     @sanity_function
     def validate_test(self):
-        diffusion_granule = sn.assert_found(r'^\s*model/atmosphere/diffusion/tests/diffusion/integration_tests/test_benchmark_diffusion\.py::test_diffusion_benchmark\s*PASSED', self.stdout)
-        dycore_granule = sn.assert_found(r'^\s*model/atmosphere/dycore/tests/dycore/integration_tests/test_benchmark_solve_nonhydro\.py::test_benchmark_solve_nonhydro\[True-False\]\s*PASSED', self.stdout)
+        diffusion_granule = sn.assert_found(
+            (r'^\s*model/atmosphere/diffusion/tests/'
+             r'diffusion/integration_tests/'
+             r'test_benchmark_diffusion\.py'
+             r'::test_diffusion_benchmark\s*PASSED'
+             ),
+            self.stdout)
+        dycore_granule = sn.assert_found(
+            (r'^\s*model/atmosphere/dycore/tests/'
+             r'dycore/integration_tests/test_benchmark_solve_nonhydro\.py'
+             r'::test_benchmark_solve_nonhydro\[True-False\]\s*PASSED'),
+            self.stdout)
         return diffusion_granule and dycore_granule
 
     @run_before('performance')
@@ -68,25 +92,29 @@ class ICON4PyBenchmarks(rfm.RunOnlyRegressionTest):
         diffusion_regex = (
             r'^\s*test_diffusion_benchmark\s+'
             r'(?P<min>\d+(?:\.\d+)?)'            # Min
-            r'(?:\s+\([^)]+\))?\s+'              # optional "(...)"
+            r'(?:\s+\([^)]+\))?\s+'              # optional '(...)'
             r'(?P<max>\d+(?:\.\d+)?)'            # Max
-            r'(?:\s+\([^)]+\))?\s+'              # optional "(...)"
+            r'(?:\s+\([^)]+\))?\s+'              # optional '(...)'
             r'(?P<mean>\d+(?:\.\d+)?)'           # Mean
         )
-        diffusion_granule_mean = sn.extractsingle(diffusion_regex, self.stdout, 'mean', float)
+        diffusion_granule_mean = sn.extractsingle(
+            diffusion_regex, self.stdout, 'mean', float)
 
         dycore_regex = (
             r'^\s*test_benchmark_solve_nonhydro\[True-False\]\s+'
             r'(?P<min>\d+(?:\.\d+)?)'            # Min
-            r'(?:\s+\([^)]+\))?\s+'              # optional "(...)"
+            r'(?:\s+\([^)]+\))?\s+'              # optional '(...)'
             r'(?P<max>\d+(?:\.\d+)?)'            # Max
-            r'(?:\s+\([^)]+\))?\s+'              # optional "(...)"
+            r'(?:\s+\([^)]+\))?\s+'              # optional '(...)'
             r'(?P<mean>\d+(?:\.\d+)?)'           # Mean
         )
-        dycore_granule_mean = sn.extractsingle(dycore_regex, self.stdout, 'mean', float)
+        dycore_granule_mean = sn.extractsingle(
+            dycore_regex, self.stdout, 'mean', float)
 
         self.perf_variables = {
-            'diffusion_granule': sn.make_performance_function(diffusion_granule_mean, 'ms'),
+            'diffusion_granule':
+                sn.make_performance_function(diffusion_granule_mean, 'ms'),
             #
-            'dycore_granule': sn.make_performance_function(dycore_granule_mean, 'ms'),
+            'dycore_granule':
+                sn.make_performance_function(dycore_granule_mean, 'ms'),
         }
