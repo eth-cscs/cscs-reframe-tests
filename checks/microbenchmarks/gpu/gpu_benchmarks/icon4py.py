@@ -25,6 +25,7 @@ class ICON4PyBenchmarks(rfm.RunOnlyRegressionTest):
         'pip install --upgrade pip',
         'pip install uv',
         'rm uv.lock',
+        'export UV_CACHE_DIR="$SCRATCH/.cache/uv"',
         'export CC=$(which gcc) MPICH_CC=$(which gcc)',
         'export CXX=$(which g++) MPICH_CXX=$(which g++)',
     ]
