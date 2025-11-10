@@ -16,7 +16,7 @@ site_configuration = {
         {
             'name': 'eiger',
             'descr': 'Alps Eiger vcluster',
-            'hostnames': ['eiger'],
+            'hostnames': ['eiger', 'eiger-alps'],
             'modules_system': 'lmod',
             'resourcesdir':
                 '/capstor/store/cscs/cscs/public/reframe/resources',
