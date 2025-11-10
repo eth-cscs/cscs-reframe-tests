@@ -218,7 +218,8 @@ site_configuration = {
             'options': [
                 '--report-junit=report.xml',
                 '--report-file=latest.json',
-                '-c checks/microbenchmarks/gpu/gpu_benchmarks/parallel_algos.py'
+                '-c checks'
+                '--tag=bencher'
             ],
         },
     ],
