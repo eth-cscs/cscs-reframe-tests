@@ -218,7 +218,7 @@ site_configuration = {
             'options': [
                 '--report-junit=report.xml',
                 '--report-file=latest.json',
-                '-c checks'
+                '-c checks',
                 '--tag=bencher'
             ],
         },
