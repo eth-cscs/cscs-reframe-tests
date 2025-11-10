@@ -213,6 +213,14 @@ site_configuration = {
                 '--timestamp=%F_%H-%M-%S'
             ]
         },
+        {
+            'name': 'daily_bencher',
+            'options': [
+                '--report-junit=report.xml',
+                '--report-file=latest.json',
+                '-c checks/microbenchmarks/gpu/gpu_benchmarks/parallel_algos.py'
+            ],
+        },
     ],
     'general': [
         {
