@@ -23,9 +23,8 @@ class ICON4PyBenchmarks(rfm.RunOnlyRegressionTest):
         'MPICH_CC': '$(which gcc)',
         'CXX': '$(which g++)',
         'MPICH_CXX': '$(which g++)',
-        'GT4PY_BUILD_CACHE_LIFETIME': 'persistent',
-        'GT4PY_BUILD_CACHE_DIR':
-            '/users/kotsaloc/cscs-reframe-tests/reframe_icon4py_cache',
+        # 'GT4PY_BUILD_CACHE_LIFETIME': 'persistent',
+        # 'GT4PY_BUILD_CACHE_DIR': '...',
     }
     prerun_cmds = [
         'python -m venv .venv',
