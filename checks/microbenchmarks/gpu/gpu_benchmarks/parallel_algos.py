@@ -23,7 +23,7 @@ class GPUBenchmarks(rfm.RegressionTest):
     ]
     time_limit = '2m'
     build_locally = False
-    tags = {'production', 'uenv'}
+    tags = {'production', 'uenv', 'bencher'}
 
 
 @rfm.simple_test

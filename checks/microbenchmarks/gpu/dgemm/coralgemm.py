@@ -24,7 +24,7 @@ class CoralGemm(rfm.RegressionTest):
     time_limit = '3m'
     build_locally = False
     num_tasks_per_node = 1
-    tags = {'production', 'uenv', 'benchmark'}
+    tags = {'production', 'uenv', 'benchmark', 'bencher'}
 
     # Sweep matrix sizes and precisions
     _size_bytes = parameter([12800, 25600, 51200, 128000])

@@ -378,8 +378,7 @@ launch_reframe_bencher() {
     fi
 
     reframe -C ./config/cscs.py \
-        --report-junit=report.xml \
-        --report-file latest.json \
+        --mode daily_bencher \
         --system=$system$mi \
         --prefix=$SCRATCH/rfm-$CI_JOB_ID \
         -c ./checks/microbenchmarks/gpu/gpu_benchmarks/ \
