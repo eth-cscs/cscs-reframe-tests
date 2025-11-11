@@ -175,9 +175,7 @@ site_configuration = {
            'options': [
                '-Sstrict_check=1',
                '--report-file=$PWD/latest.json',
-               '-c checks/apps',
-               '-c checks/libraries',
-               '-c checks/prgenv',
+               '-c checks',
                "-p '(?!PrgEnv-.*|builtin)'",
            ]
         },
@@ -214,6 +212,15 @@ site_configuration = {
                 '-p \'(?!PrgEnv-ce)\'',
                 '--timestamp=%F_%H-%M-%S'
             ]
+        },
+        {
+            'name': 'daily_bencher',
+            'options': [
+                '--report-junit=report.xml',
+                '--report-file=latest.json',
+                '-c checks',
+                '--tag=bencher'
+            ],
         },
     ],
     'general': [

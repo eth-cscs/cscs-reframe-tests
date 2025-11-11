@@ -1,4 +1,4 @@
-# Copyright 2024 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -10,7 +10,7 @@ import reframe as rfm
 import reframe.utility.sanity as sn
 import json
 
-# --------------------------------------------------------------------------- #
+# ---------------------------------------------------------------------------
 #                READ THE CONFIGURATION FROM THE YAML FILES
 #                This part should be modified for the final
 #                structure of the V-Clusters config files
@@ -45,6 +45,7 @@ if config_yaml_data.get(PROXY_VARS['no_proxy']):
 # --------------------------------------------------------------------------- #
 #                PERFORM INTEGRATION CHECKS
 # --------------------------------------------------------------------------- #
+
 
 @rfm.simple_test
 class MountPointExistsTest(rfm.RunOnlyRegressionTest):
@@ -144,4 +145,3 @@ class EnvVariableConfigTest(rfm.RunOnlyRegressionTest):
     def validate(self):
         return sn.assert_found(self.envs_info[1], self.stdout,
                                msg=f'Environment variable {self.envs_info[0]} is not set up correctly')
-

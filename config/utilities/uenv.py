@@ -21,7 +21,7 @@ def uarch(partition):
 
     partition: reframe partition information
     returns:
-       'a100', 'gh200', 'mi200', 'zen2' or 'zen3'
+       'a100', 'gh200', 'mi200', 'mi300', 'zen2' or 'zen3'
        None -> unable to identify uarch
     """
     gpus = partition.devices
@@ -33,6 +33,8 @@ def uarch(partition):
             return 'a100'
         if device.arch == 'gfx90a':
             return 'mi200'
+        if device.arch == 'gfx942':
+            return 'mi300'
         return None
 
     cpus = partition.processor
