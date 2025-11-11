@@ -110,11 +110,25 @@ class XCCLTestsBaseCE(XCCLTestsBase, ContainerEngineMixin):
 
 class XCCLTestsBaseUENV(XCCLTestsBase):
     @run_before('run')
-    def set_pmix(self):
-        # Some clusters, like clariden, don't use cray_shasta as default.
-        # cray_shasta is required for cray-mpich, which most uenvs use.  This
-        # will need to be updated when uenvs can have OpenMPI in them.
-        self.job.launcher.options += ['--mpi=cray_shasta']
+    def set_mpi(self):
+	# Set --mpi explicitly. Clusters have different default values, and
+	# different uenvs need different values.
+        features = self.current_environ.features
+        if "openmpi" in features:
+            self.job.launcher.options += ['--mpi=pmix']
+
+            # Disable MCA components to avoid warnings
+            self.env_vars.update(
+                {
+                    'PMIX_MCA_psec': '^munge',
+                    'PMIX_MCA_gds': '^shmem2'
+                }
+            )
+        elif "cray-mpich" in features:
+            self.job.launcher.options += ['--mpi=cray_shasta']
+        else:
+            # Assume cray-mpich is used if nothing is specified.
+            self.job.launcher.options += ['--mpi=cray_shasta']
 
 
 def _set_xccl_uenv_env_vars(env_vars):

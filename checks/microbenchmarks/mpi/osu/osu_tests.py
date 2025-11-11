@@ -264,6 +264,25 @@ class osu_build_run(osu_benchmark):
             self.valid_systems = ['+remote']
             self.valid_prog_environs = ['+mpi']
 
+    @run_after('setup')
+    def set_mpi(self):
+        features = self.current_environ.features
+        if "openmpi" in features:
+            self.job.launcher.options += ['--mpi=pmix']
+
+            # Disable MCA components to avoid warnings
+            self.env_vars.update(
+                {
+                    'PMIX_MCA_psec': '^munge',
+                    'PMIX_MCA_gds': '^shmem2'
+                }
+            )
+        elif "cray-mpich" in features:
+            self.job.launcher.options += ['--mpi=cray_shasta']
+        else:
+            # Assume cray-mpich is used if nothing is specified.
+            self.job.launcher.options += ['--mpi=cray_shasta']
+
     @run_before('run')
     def set_environment(self):
         build_type = self.osu_binaries.build_type

@@ -13,7 +13,6 @@ class BaseCheck(rfm.RunOnlyRegressionTest):
     sourcesdir = None
     num_tasks = 2
     num_tasks_per_node = 1
-    pmi = variable(str, value='')
     env_vars = {
         # Disable GPU support for mpich
         'MPIR_CVAR_ENABLE_GPU': 0,
@@ -39,9 +38,23 @@ class BaseCheck(rfm.RunOnlyRegressionTest):
         self.num_cpus_per_task = processor.num_cpus_per_socket
 
     @run_after('setup')
-    def set_launcher_options(self):
-        if self.pmi != '':
-            self.job.launcher.options = [f'--mpi={self.pmi}']
+    def set_mpi(self):
+        features = self.current_environ.features
+        if "openmpi" in features:
+            self.job.launcher.options += ['--mpi=pmix']
+
+            # Disable MCA components to avoid warnings
+            self.env_vars.update(
+                {
+                    'PMIX_MCA_psec': '^munge',
+                    'PMIX_MCA_gds': '^shmem2'
+                }
+            )
+        elif "cray-mpich" in features:
+            self.job.launcher.options += ['--mpi=cray_shasta']
+        else:
+            # Assume cray-mpich is used if nothing is specified.
+            self.job.launcher.options += ['--mpi=cray_shasta']
 
     @sanity_function
     def assert_sanity(self):
