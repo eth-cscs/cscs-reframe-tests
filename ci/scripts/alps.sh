@@ -121,10 +121,10 @@ uenv_image_find() {
         for aa in $uenv_apps ;do
             # keep only the most recent uenv (this will break if uenv output changes):
             uenv image find --no-header $aa > .eff.uenv_date1
-            uenv image find --no-header $aa |awk '{print "date --date="$6" +%s"}' |sh > .eff.uenv_date2
-            paste .eff.uenv_date1 .eff.uenv_date2
+            uenv image find --no-header $aa |awk '{print "date --date=\""$6"\" +%s"}' |sh > .eff.uenv_date2
             uu=$(paste .eff.uenv_date1 .eff.uenv_date2 |sort -nk 7 |tail -n 1 |awk '{print $1}')
             echo "$uu"
+            rm -f .eff.uenv_date1 .eff.uenv_date2
         done
         # echo "MY_UENV is not set, not sure what uenv to test"
         # exit -1
