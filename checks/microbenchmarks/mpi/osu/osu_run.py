@@ -6,8 +6,11 @@
 import reframe as rfm
 import reframe.utility.sanity as sn
 
+sys.path.append(str(pathlib.Path(__file__).parent.parent / 'mixins'))
+from slurm_mpi_options import SlurmMpiOptionsMixin
 
-class BaseCheck(rfm.RunOnlyRegressionTest):
+
+class BaseCheck(rfm.RunOnlyRegressionTest, SlurmMpiOptionsMixin):
     valid_systems = ['+remote']
     valid_prog_environs = ['+osu-micro-benchmarks +uenv']
     sourcesdir = None
@@ -36,25 +39,6 @@ class BaseCheck(rfm.RunOnlyRegressionTest):
         # Use a single socket per node (num_tasks_per_node == 1)
         processor = self.current_partition.processor
         self.num_cpus_per_task = processor.num_cpus_per_socket
-
-    @run_after('setup')
-    def set_mpi(self):
-        features = self.current_environ.features
-        if "openmpi" in features:
-            self.job.launcher.options += ['--mpi=pmix']
-
-            # Disable MCA components to avoid warnings
-            self.env_vars.update(
-                {
-                    'PMIX_MCA_psec': '^munge',
-                    'PMIX_MCA_gds': '^shmem2'
-                }
-            )
-        elif "cray-mpich" in features:
-            self.job.launcher.options += ['--mpi=cray_shasta']
-        else:
-            # Assume cray-mpich is used if nothing is specified.
-            self.job.launcher.options += ['--mpi=cray_shasta']
 
     @sanity_function
     def assert_sanity(self):

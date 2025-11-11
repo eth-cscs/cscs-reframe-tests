@@ -11,10 +11,11 @@ import reframe.utility.sanity as sn
 sys.path.append(str(pathlib.Path(__file__).parent.parent / 'mixins'))
 from extra_launcher_options import ExtraLauncherOptionsMixin
 from container_engine import ContainerEngineCPEMixin
+from slurm_mpi_options import SlurmMpiOptionsMixin
 
 
 class HelloWorldBaseTest(rfm.RegressionTest, ExtraLauncherOptionsMixin,
-                         ContainerEngineCPEMixin):
+                         ContainerEngineCPEMixin, SlurmMpiOptionsMixin):
     linking = parameter(['dynamic'])
     lang = parameter(['c', 'cpp', 'F90'])
     sourcesdir = 'src/hello'
@@ -54,25 +55,6 @@ class HelloWorldBaseTest(rfm.RegressionTest, ExtraLauncherOptionsMixin,
     @run_before('compile')
     def prepare_build(self):
         self.env_vars['CRAYPE_LINK_TYPE'] = self.linking
-
-    @run_after('setup')
-    def set_mpi(self):
-        features = self.current_environ.features
-        if "openmpi" in features:
-            self.job.launcher.options += ['--mpi=pmix']
-
-            # Disable MCA components to avoid warnings
-            self.env_vars.update(
-                {
-                    'PMIX_MCA_psec': '^munge',
-                    'PMIX_MCA_gds': '^shmem2'
-                }
-            )
-        elif "cray-mpich" in features:
-            self.job.launcher.options += ['--mpi=cray_shasta']
-        else:
-            # Assume cray-mpich is used if nothing is specified.
-            self.job.launcher.options += ['--mpi=cray_shasta']
 
     @sanity_function
     def assert_hello_world(self):

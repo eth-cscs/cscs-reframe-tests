@@ -17,6 +17,7 @@ sys.path.append(
 
 from extra_launcher_options import ExtraLauncherOptionsMixin
 from container_engine import ContainerEngineCPEMixin
+from slurm_mpi_options import SlurmMpiOptionsMixin
 
 
 class fetch_osu_benchmarks(rfm.RunOnlyRegressionTest):
@@ -245,7 +246,7 @@ class osu_benchmark(rfm.RunOnlyRegressionTest, ExtraLauncherOptionsMixin,
                                 self.stdout, 1, float)
 
 
-class osu_build_run(osu_benchmark):
+class osu_build_run(osu_benchmark, SlurmMpiOptionsMixin):
     '''OSU benchmark test (build and run)'''
 
     #: The fixture object that builds the OSU binaries
@@ -263,25 +264,6 @@ class osu_build_run(osu_benchmark):
         else:
             self.valid_systems = ['+remote']
             self.valid_prog_environs = ['+mpi']
-
-    @run_after('setup')
-    def set_mpi(self):
-        features = self.current_environ.features
-        if "openmpi" in features:
-            self.job.launcher.options += ['--mpi=pmix']
-
-            # Disable MCA components to avoid warnings
-            self.env_vars.update(
-                {
-                    'PMIX_MCA_psec': '^munge',
-                    'PMIX_MCA_gds': '^shmem2'
-                }
-            )
-        elif "cray-mpich" in features:
-            self.job.launcher.options += ['--mpi=cray_shasta']
-        else:
-            # Assume cray-mpich is used if nothing is specified.
-            self.job.launcher.options += ['--mpi=cray_shasta']
 
     @run_before('run')
     def set_environment(self):
