@@ -17,6 +17,16 @@ class ICON4PyBenchmarks(rfm.RunOnlyRegressionTest):
     time_limit = '60m'
     sourcesdir = None
     build_locally = False
+    env_vars = {
+        'UV_CACHE_DIR': '$SCRATCH/.cache/uv',
+        'CC': '$(which gcc)',
+        'MPICH_CC': '$(which gcc)',
+        'CXX': '$(which g++)',
+        'MPICH_CXX': '$(which g++)',
+        'GT4PY_BUILD_CACHE_LIFETIME': 'persistent',
+        'GT4PY_BUILD_CACHE_DIR':
+            '/users/kotsaloc/cscs-reframe-tests/reframe_icon4py_cache',
+    }
     prerun_cmds = [
         'python -m venv .venv',
         'source .venv/bin/activate',
@@ -25,9 +35,6 @@ class ICON4PyBenchmarks(rfm.RunOnlyRegressionTest):
         'pip install --upgrade pip',
         'pip install uv',
         'rm uv.lock',
-        'export UV_CACHE_DIR="$SCRATCH/.cache/uv"',
-        'export CC=$(which gcc) MPICH_CC=$(which gcc)',
-        'export CXX=$(which g++) MPICH_CXX=$(which g++)',
     ]
     executable = 'pytest'
     executable_opts = [
@@ -51,16 +58,18 @@ class ICON4PyBenchmarks(rfm.RunOnlyRegressionTest):
     @run_before('run')
     def prepare_run(self):
         if 'rocm' in self.current_environ.features:
+            gpu_arch = self.current_partition.select_devices('gpu')[0].arch
+            self.env_vars += {
+                'CUPY_INSTALL_USE_HIP': '1',
+                'HCC_AMDGPU_TARGET': gpu_arch,
+                'ROCM_HOME': '/user-environment/env/default'
+            }
             self.prerun_cmds += [
                 'uv sync --extra all --python $(which python) --active',
                 ('uv pip uninstall mpi4py && '
-                 'uv pip install --no-binary mpi4py mpi4py'
+                 'uv pip install --no-binary mpi4py mpi4py && '
+                 'uv pip install git+https://github.com/cupy/cupy.git'
                  ),
-                ('export CUPY_INSTALL_USE_HIP=1 '
-                 'HCC_AMDGPU_TARGET=gfx942 '
-                 'ROCM_HOME=/user-environment/env/default'
-                 ),
-                'uv pip install git+https://github.com/cupy/cupy.git',
             ]
         else:
             self.prerun_cmds += [
