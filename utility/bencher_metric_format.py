@@ -16,21 +16,19 @@ def reframe_to_bmf(reframe_report):
     with open(reframe_report, "r", encoding="utf-8") as f:
         data = json.load(f)
 
-    # Bencher Metric Format
-    # Bencher can upload JSON files that follow this format
-    bmf = {}
+    # Bencher Metric Format: format used to upload JSON files on bencher.dev
+    # testcases with key (system, partition, environ) to handle multiple partitions
+    bmf_testcase = {}
 
-    environ = set()
-    partition = set()
-    system = set()
     for run in data["runs"]:
         for testcase in run["testcases"]:
             if testcase["result"] != "pass":
                 continue
 
-            environ.add(testcase["environ"])
-            partition.add(testcase["partition"])
-            system.add(testcase["system"])
+            key = (testcase["system"], testcase["partition"], testcase["environ"])
+
+            if key not in bmf_testcase:
+                bmf_testcase[key] = {}
 
             perfvalues = testcase["perfvalues"]
             benchmark_measures = {}
@@ -39,35 +37,27 @@ def reframe_to_bmf(reframe_report):
                 benchmark_measures[measure] = {"value": v[0]}
 
             benchmark_name = testcase["display_name"]
-            if benchmark_name in bmf:
+            if benchmark_name in bmf_testcase[key]:
                 raise ValueError(
                     f"Error: Duplicate benchmark name '{benchmark_name}' "
-                    f"found in the report."
+                    f"found in the report for {key}."
                 )
-            bmf[benchmark_name] = benchmark_measures
+            bmf_testcase[key][benchmark_name] = benchmark_measures
 
-    if not environ or not partition or not system:
+    if not bmf_testcase:
         raise ValueError(
             "Error: No passing testcases found; "
             "cannot determine environment, partition, or system."
         )
 
-    environ_ = environ.pop()
-    partition_ = partition.pop()
-    system_ = system.pop()
-    if len(environ) != 0 or len(partition) != 0 or len(system) != 0:
-        raise ValueError(
-            "Error: A Bencher JSON file must report exactly one "
-            "environment, partition, and system."
-        )
-
     # The bencher file name is used in CI/CD as the testbed option
-    bencher_file_name = f"bencher={system_}={partition_}={environ_}.json"
-    with open(bencher_file_name, "w") as f:
-        json.dump(bmf, f, indent=2)
+    for (system_, partition_, environ_), bmf in bmf_testcase.items():
+        bencher_file_name = f"bencher={system_}={partition_}={environ_}.json"
+        with open(bencher_file_name, "w") as f:
+            json.dump(bmf, f, indent=2)
 
-    print(f"Bencher Metric Format file created: {bencher_file_name}",
-          flush=True)
+        print(f"Bencher Metric Format file created: {bencher_file_name}",
+              flush=True)
 
 
 if __name__ == "__main__":
