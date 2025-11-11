@@ -6,13 +6,16 @@
 import os
 import reframe as rfm
 import reframe.utility.sanity as sn
+import reframe.utility.udeps as udeps
 from uenv import uarch
 
 
-class GPUBenchmarks(rfm.RegressionTest):
+@rfm.simple_test
+class FFTBenchBuild(rfm.CompileOnlyRegressionTest):
     '''
-    Base class for GPU microbenchmarks.
+    Build FFT benchmark
     '''
+    benchmark = 'rocFFT'
     maintainers = ['SSA']
     sourcesdir = None
     valid_prog_environs = ['+uenv +prgenv +rocm', '+uenv +prgenv +cuda']
@@ -25,9 +28,40 @@ class GPUBenchmarks(rfm.RegressionTest):
     build_locally = False
     tags = {'production', 'uenv'}
 
+    @run_before('compile')
+    def prepare_build(self):
+        srcdir = f'gpu-benchmarks/rocFFT'
+        self.build_system.srcdir = srcdir
+        self.build_system.builddir = f'build'
+        self.prebuild_cmds += [f'cd {self.build_system.srcdir}']
+        self.build_system.max_concurrency = 8
+        self.executable = os.path.join(
+            self.stagedir, srcdir, self.build_system.builddir, 'fft_bench'
+        )
+
+        if 'rocm' in self.current_environ.features:
+            self.build_system.config_opts = [
+                '-DFFT_BENCH_GPU_BACKEND=ROCM',
+            ]
+        else:
+            self.build_system.config_opts = [
+                '-DFFT_BENCH_GPU_BACKEND=CUDA',
+            ]
+
+    @sanity_function
+    def validate_test(self):
+        return os.path.isfile(self.executable)
+
+
 
 @rfm.simple_test
-class FFTCheck(GPUBenchmarks):
+class FFTCheck(rfm.RunOnlyRegressionTest):
+    maintainers = ['SSA']
+    valid_prog_environs = ['+uenv +prgenv +rocm', '+uenv +prgenv +cuda']
+    valid_systems = ['+uenv']
+    time_limit = '4m'
+    tags = {'production', 'uenv'}
+
     benchmark = 'rocFFT'
     fft_dim = parameter(['1D', '2D', '3D'])
     fft_size = parameter([128, 256, 512, 1024])
@@ -36,18 +70,18 @@ class FFTCheck(GPUBenchmarks):
     reference_timings = {
         '1D': {
             'mi200': {'128': 0.0413282, '256':  0.0816478, '512': 0.137825, '1024': 0.275295},
-            'mi300': {'128': 0.01458, '256': 0.0484761, '512': 0.0618052, '1024': 0.158051 },
-            'gh200': {'128': 10e-8, '256': 10e-8, '512': 10e-8, '1024': 10e-8},
+            'mi300': {'128': 0.016324, '256': 0.0484761, '512': 0.0618052, '1024': 0.158051 },
+            'gh200': {'128': 0.0112, '256': 0.02696, '512': 0.050016, '1024': 0.0973504},
         },
         '2D': {
             'mi200': {'128': 0.0989124, '256': 0.403151, '512': 1.79282, '1024': 10.8999},
             'mi300': {'128': 0.0419043, '256': 0.195893, '512': 0.817081, '1024': 5.01644},
-            'gh200': {'128': 10e-8, '256': 10e-8, '512': 10e-8, '1024': 10e-8},
+            'gh200': {'128': 0.0314304, '256': 0.127504, '512': 0.476746, '1024': 2.10344},
         },
         '3D': {
-            'mi200': {'128': 10e-8, '256': 10e-8, '512': 16.0939, '1024': 161.762},
+            'mi200': {'128': 0.23045, '256': 1.7439, '512': 16.0939, '1024': 161.762},
             'mi300': {'128': 0.0794162, '256': 0.673843, '512': 5.85871, '1024': 75.8344},
-            'gh200': {'128': 10e-8, '256': 10e-8, '512': 10e-8, '1024': 10e-8},
+            'gh200': {'128': 0.0550848, '256': 0.472509, '512': 3.68538, '1024': 36.0022},
         }
     }
 
@@ -58,26 +92,14 @@ class FFTCheck(GPUBenchmarks):
         '3D': 1,
     }
 
-
-    @run_before('compile')
-    def prepare_build(self):
-        self._srcdir = f'gpu-benchmarks/{self.benchmark}'
-        self.build_system.srcdir = self._srcdir
-        self.build_system.builddir = f'build_{self.benchmark}'
-        self.prebuild_cmds += [f'cd {self.build_system.srcdir}']
-        self.build_system.max_concurrency = 8
-        if 'rocm' in self.current_environ.features:
-            self.build_system.config_opts = [
-                '-DFFT_BENCH_GPU_BACKEND=ROCM',
-            ]
-        else:
-            self.build_system.config_opts = [
-                '-DFFT_BENCH_GPU_BACKEND=CUDA',
-            ]
+    @run_after('init')
+    def setup_dependency(self):
+        self.depends_on('FFTBenchBuild', udeps.fully)
 
     @run_before('run')
     def set_executable(self):
-        self.executable = os.path.join(self._srcdir, self.build_system.builddir, 'fft_bench')
+        parent = self.getdep('FFTBenchBuild')
+        self.executable = parent.executable
         size_arg = f'{self.fft_size}'
         if self.fft_dim == '2D':
             size_arg += f' {self.fft_size}'
@@ -108,5 +130,4 @@ class FFTCheck(GPUBenchmarks):
                 'runtime': (self.reference_timings[self.fft_dim][self.uarch][str(self.fft_size)], None, 0.1, 'ms'),
             }
         }
-
 
