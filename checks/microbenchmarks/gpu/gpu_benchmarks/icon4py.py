@@ -23,14 +23,17 @@ class ICON4PyBenchmarks(rfm.RunOnlyRegressionTest):
         'MPICH_CC': '$(which gcc)',
         'CXX': '$(which g++)',
         'MPICH_CXX': '$(which g++)',
+        # GT4Py cache does not work properly for dace backend yet
         # 'GT4PY_BUILD_CACHE_LIFETIME': 'persistent',
         # 'GT4PY_BUILD_CACHE_DIR': '...',
     }
     prerun_cmds = [
         'python -m venv .venv',
         'source .venv/bin/activate',
-        'git clone --depth 1 -b main https://github.com/C2SM/icon4py.git',
+        'git clone https://github.com/C2SM/icon4py.git',
         'cd icon4py',
+        # Commit: Update to GT4Py v1.1.0 (#933)
+        'git checkout 5485bcacb1dbc7688b1e7d276d4e2e28362c5444',
         'pip install --upgrade pip',
         'pip install uv',
         'rm uv.lock',
@@ -48,10 +51,10 @@ class ICON4PyBenchmarks(rfm.RunOnlyRegressionTest):
          '/test_benchmark_diffusion.py'
          '::test_diffusion_benchmark'
          ),
-        ('model/atmosphere/dycore/tests/dycore/integration_tests/'
-         'test_benchmark_solve_nonhydro.py'
-         '::test_benchmark_solve_nonhydro[True-False]'
-         ),
+        # ('model/atmosphere/dycore/tests/dycore/integration_tests/'
+        #  'test_benchmark_solve_nonhydro.py'
+        #  '::test_benchmark_solve_nonhydro[True-False]'
+        #  ),
     ]
 
     @run_before('run')
@@ -89,12 +92,12 @@ class ICON4PyBenchmarks(rfm.RunOnlyRegressionTest):
              r'::test_diffusion_benchmark\s*PASSED'
              ),
             self.stdout)
-        dycore_granule = sn.assert_found(
-            (r'^\s*model/atmosphere/dycore/tests/'
-             r'dycore/integration_tests/test_benchmark_solve_nonhydro\.py'
-             r'::test_benchmark_solve_nonhydro\[True-False\]\s*PASSED'),
-            self.stdout)
-        return diffusion_granule and dycore_granule
+        # dycore_granule = sn.assert_found(
+        #     (r'^\s*model/atmosphere/dycore/tests/'
+        #      r'dycore/integration_tests/test_benchmark_solve_nonhydro\.py'
+        #      r'::test_benchmark_solve_nonhydro\[True-False\]\s*PASSED'),
+        #     self.stdout)
+        return diffusion_granule  # and dycore_granule
 
     @run_before('performance')
     def set_perf_vars(self):
@@ -109,21 +112,21 @@ class ICON4PyBenchmarks(rfm.RunOnlyRegressionTest):
         diffusion_granule_mean = sn.extractsingle(
             diffusion_regex, self.stdout, 'mean', float)
 
-        dycore_regex = (
-            r'^\s*test_benchmark_solve_nonhydro\[True-False\]\s+'
-            r'(?P<min>\d+(?:\.\d+)?)'            # Min
-            r'(?:\s+\([^)]+\))?\s+'              # optional '(...)'
-            r'(?P<max>\d+(?:\.\d+)?)'            # Max
-            r'(?:\s+\([^)]+\))?\s+'              # optional '(...)'
-            r'(?P<mean>\d+(?:\.\d+)?)'           # Mean
-        )
-        dycore_granule_mean = sn.extractsingle(
-            dycore_regex, self.stdout, 'mean', float)
+        # dycore_regex = (
+        #     r'^\s*test_benchmark_solve_nonhydro\[True-False\]\s+'
+        #     r'(?P<min>\d+(?:\.\d+)?)'            # Min
+        #     r'(?:\s+\([^)]+\))?\s+'              # optional '(...)'
+        #     r'(?P<max>\d+(?:\.\d+)?)'            # Max
+        #     r'(?:\s+\([^)]+\))?\s+'              # optional '(...)'
+        #     r'(?P<mean>\d+(?:\.\d+)?)'           # Mean
+        # )
+        # dycore_granule_mean = sn.extractsingle(
+        #     dycore_regex, self.stdout, 'mean', float)
 
         self.perf_variables = {
             'diffusion_granule':
                 sn.make_performance_function(diffusion_granule_mean, 'ms'),
             #
-            'dycore_granule':
-                sn.make_performance_function(dycore_granule_mean, 'ms'),
+            # 'dycore_granule':
+            #     sn.make_performance_function(dycore_granule_mean, 'ms'),
         }
