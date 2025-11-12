@@ -375,15 +375,9 @@ launch_reframe_bencher() {
     # reframe -V
     echo "# UENV=$UENV"
 
-    if [ "$CLUSTER_NAME" = "beverin" ]; then
-      mi=":mi300"
-    else
-      mi=""
-    fi
-
     reframe -C ./config/cscs.py \
         --mode daily_bencher \
-        --system=$system$mi \
+        --system=$system \
         --prefix=$SCRATCH/rfm-$CI_JOB_ID \
         -r
 
@@ -422,37 +416,40 @@ launch_reframe_bencher() {
     ################################################################################
     # Bencher run
     ################################################################################
-    bmf_file=$(ls bencher=*.json)
-    testbed="${bmf_file#*=}"
-    testbed="${testbed%.json}"
+    for bmf_file in bencher=*.json; do
+        testbed="${bmf_file#*=}"
+        testbed="${testbed%.json}"
 
-    ./bencher run \
-        --threshold-measure latency \
-        --threshold-test percentage \
-        --threshold-max-sample-size 64 \
-        --threshold-lower-boundary _ \
-        --threshold-upper-boundary 0.1 \
-        \
-        --threshold-measure bandwidth \
-        --threshold-test percentage \
-        --threshold-max-sample-size 64 \
-        --threshold-lower-boundary 0.1 \
-        --threshold-upper-boundary _ \
-        \
-        --threshold-measure keys/second \
-        --threshold-test percentage \
-        --threshold-max-sample-size 64 \
-        --threshold-lower-boundary 0.1 \
-        --threshold-upper-boundary _ \
-        \
-        --adapter json \
-        --file bencher=*.json \
-        --testbed $testbed \
-        --thresholds-reset \
-        --branch main \
-        \
-        --token $BENCHER_API_TOKEN \
-        --project $BENCHER_PROJECT
+        echo "Uploading results for testbed: $testbed from file: $bmf_file"
+
+        ./bencher run \
+            --threshold-measure latency \
+            --threshold-test percentage \
+            --threshold-max-sample-size 64 \
+            --threshold-lower-boundary _ \
+            --threshold-upper-boundary 0.1 \
+            \
+            --threshold-measure bandwidth \
+            --threshold-test percentage \
+            --threshold-max-sample-size 64 \
+            --threshold-lower-boundary 0.1 \
+            --threshold-upper-boundary _ \
+            \
+            --threshold-measure keys/second \
+            --threshold-test percentage \
+            --threshold-max-sample-size 64 \
+            --threshold-lower-boundary 0.1 \
+            --threshold-upper-boundary _ \
+            \
+            --adapter json \
+            --file "$bmf_file" \
+            --testbed "$testbed" \
+            --thresholds-reset \
+            --branch main \
+            \
+            --token $BENCHER_API_TOKEN \
+            --project $BENCHER_PROJECT
+    done
 }
 # }}}
 # {{{ oneuptime
