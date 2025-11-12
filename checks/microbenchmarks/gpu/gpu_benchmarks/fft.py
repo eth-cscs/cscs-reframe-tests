@@ -20,6 +20,7 @@ class FFTBenchBuild(rfm.CompileOnlyRegressionTest):
     valid_prog_environs = ['+uenv +prgenv +rocm', '+uenv +prgenv +cuda']
     valid_systems = ['+uenv']
     build_system = 'CMake'
+    # TODO: change to original repo once PR is merged
     prebuild_cmds = [
         'git clone --depth 1 -b rocfft https://github.com/AdhocMan/gpu-benchmarks.git'
     ]
