@@ -120,9 +120,13 @@ uenv_image_find() {
         uenv_apps=$(uenv image find |tail -n +2 |egrep -v "$ignore_list" |cut -d/ -f1 |sort -u)
         for aa in $uenv_apps ;do
             # keep only the most recent uenv (this will break if uenv output changes):
-            uu=$(uenv image find $aa |sort -nk 6 |tail -1 |awk '{print $1}')
+            tmp_date1=$(mktemp)
+            tmp_date2=$(mktemp)
+            uenv image find --no-header $aa > "$tmp_date1"
+            uenv image find --no-header $aa |awk '{print "date --date=\""$6"\" +%s"}' |sh > "$tmp_date2"
+            uu=$(paste "$tmp_date1" "$tmp_date2" |sort -nk 7 |tail -n 1 |awk '{print $1}')
             echo "$uu"
-        done
+            rm -f "$tmp_date1" "$tmp_date2"
         # echo "MY_UENV is not set, not sure what uenv to test"
         # exit -1
     else
@@ -371,15 +375,9 @@ launch_reframe_bencher() {
     # reframe -V
     echo "# UENV=$UENV"
 
-    if [ "$CLUSTER_NAME" = "beverin" ]; then
-      mi=":mi300"
-    else
-      mi=""
-    fi
-
     reframe -C ./config/cscs.py \
         --mode daily_bencher \
-        --system=$system$mi \
+        --system=$system \
         --prefix=$SCRATCH/rfm-$CI_JOB_ID \
         -c ./checks/microbenchmarks/gpu/gpu_benchmarks/ \
         -r
@@ -419,18 +417,21 @@ launch_reframe_bencher() {
     ################################################################################
     # Bencher run
     ################################################################################
-    bmf_file=$(ls bencher=*.json)
-    testbed="${bmf_file#*=}"
-    testbed="${testbed%.json}"
+    for bmf_file in bencher=*.json; do
+        testbed="${bmf_file#*=}"
+        testbed="${testbed%.json}"
 
-    ./bencher run \
-        --adapter json \
-        --file bencher=*.json \
-        --testbed $testbed \
-        --thresholds-reset \
-        --branch main \
-        --token $BENCHER_API_TOKEN \
-        --project $BENCHER_PROJECT
+        echo "Uploading results for testbed: $testbed from file: $bmf_file"
+
+        ./bencher run \
+            --adapter json \
+            --file "$bmf_file" \
+            --testbed "$testbed" \
+            --thresholds-reset \
+            --branch main \
+            --token $BENCHER_API_TOKEN \
+            --project $BENCHER_PROJECT
+    done
 }
 # }}}
 # {{{ oneuptime
