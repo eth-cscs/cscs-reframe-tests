@@ -37,6 +37,11 @@ class ICON4PyBenchmarks(rfm.RunOnlyRegressionTest):
         'pip install --upgrade pip',
         'pip install uv',
         'rm uv.lock',
+        'uv sync --extra all --python $(which python) --active',
+        ('uv pip uninstall mpi4py && '
+         'uv pip install --no-binary mpi4py mpi4py && '
+         'uv pip install git+https://github.com/cupy/cupy.git'
+         ),
     ]
     executable = 'pytest'
     executable_opts = [
@@ -66,22 +71,6 @@ class ICON4PyBenchmarks(rfm.RunOnlyRegressionTest):
                 'HCC_AMDGPU_TARGET': gpu_arch,
                 'ROCM_HOME': '/user-environment/env/default'
             }
-            self.prerun_cmds += [
-                'uv sync --extra all --python $(which python) --active',
-                ('uv pip uninstall mpi4py && '
-                 'uv pip install --no-binary mpi4py mpi4py && '
-                 'uv pip install git+https://github.com/cupy/cupy.git'
-                 ),
-            ]
-        else:
-            self.prerun_cmds += [
-                ('uv sync --extra all '
-                 '--extra cuda12 --python $(which python) --active'
-                 ),
-                ('uv pip uninstall mpi4py && '
-                 'uv pip install --no-binary mpi4py mpi4py'
-                 ),
-            ]
 
     @sanity_function
     def validate_test(self):
