@@ -71,6 +71,10 @@ slurm_config = {
 }
 
 
+def version_from_uenv():
+    return os.environ['UENV'].split('/')[1].split(':')[0]
+
+
 class cp2k_download(rfm.RunOnlyRegressionTest):
     '''
     Download CP2K source code.
@@ -84,9 +88,8 @@ class cp2k_download(rfm.RunOnlyRegressionTest):
 
     @run_before('run')
     def set_version(self):
-        uenv_version = os.environ['UENV'].split('/')[1].split('.')[0]
-        uenv_src_d = {'2024': 'v2024.3', '2025': 'v2025.1'}
-        self.version = uenv_src_d[uenv_version] if self.version == '' else self.version
+        uenv_version = version_from_uenv()
+        self.version = f'v{uenv_version}' if self.version == '' else self.version
 
         url = 'https://jfrog.svc.cscs.ch/artifactory/cscs-reframe-tests'
 
@@ -133,10 +136,7 @@ class Cp2kBuildTestUENV(rfm.CompileOnlyRegressionTest):
             f'tar --strip-components=1 -xzf {tarsource} -C {self.stagedir}'
         ]
 
-        # TODO: Use Ninja generator
         self.build_system.config_opts = [
-            # Puts executables under exe/local_cuda/
-            '-DCP2K_ENABLE_REGTESTS=ON',
             '-DCP2K_USE_LIBXC=ON',
             '-DCP2K_USE_LIBINT2=ON',
             '-DCP2K_USE_SPGLIB=ON',
@@ -147,18 +147,39 @@ class Cp2kBuildTestUENV(rfm.CompileOnlyRegressionTest):
             '-DCP2K_USE_PLUMED=ON',
         ]
 
+        # CP2K CMake changed default values from 2025.2 onwards
+        # CMake options below are chosen depending on the version of CP2K
+        version = float(version_from_uenv())
+
+        if version > 2025.1:
+            self.build_system.config_opts += [
+                '-DCP2K_USE_MPI=ON',
+                #'-DCP2K_USE_DLAF=ON',
+            ]
+      
+
         if self.uarch == 'gh200':
             self.build_system.config_opts += [
                 '-DCP2K_USE_ACCEL=CUDA',
-                '-DCP2K_WITH_GPU=H100',
             ]
+            if version > 2025.1:
+                self.build_system.config_opts += [
+		    '-DCMAKE_CUDA_ARCHITECTURES=90',
+                    '-DCMAKE_CUDA_HOST_COMPILER=mpicc',
+		]
+            else:
+                self.build_system.config_opts += [
+		    '-DCP2K_WITH_GPU=H100',
+		]
 
     @sanity_function
     def validate_test(self):
         # INFO: Executables are in exe/FOLDER because -DCP2K_ENABLE_REGTEST=ON
         # INFO: With -DCP2K_ENABLE_REGTEST=OFF, executables are in build/bin/
-        folder = 'local_cuda' if self.uarch == 'gh200' else 'local'
-        self.cp2k_executable = os.path.join(self.stagedir, 'exe', folder,
+        #folder = 'local_cuda' if self.uarch == 'gh200' else 'local'
+        #self.cp2k_executable = os.path.join(self.stagedir, 'exe', folder,
+        #                                    'cp2k.psmp')
+        self.cp2k_executable = os.path.join(self.stagedir, 'build', 'bin',
                                             'cp2k.psmp')
         return os.path.isfile(self.cp2k_executable)
 
