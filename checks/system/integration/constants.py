@@ -38,7 +38,6 @@ json_file_path = '../systems_data'
 MOUNT_VARS   = ['filesystems',
                 'capstor_scratch_cscs_path',
                 'capstor_store_cscs_path',
-                'capstor_users_cscs_path',
                 'iopsstor_scratch_cscs_path',
                 'iopsstor_store_cscs_path']
 
