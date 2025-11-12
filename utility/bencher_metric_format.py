@@ -17,7 +17,8 @@ def reframe_to_bmf(reframe_report):
         data = json.load(f)
 
     # Bencher Metric Format: format used to upload JSON files on bencher.dev
-    # testcases with key (system, partition, environ) to handle multiple partitions
+    # testcases with key (system, partition, environ) to handle multiple
+    # partitions    
     bmf_testcase = {}
 
     for run in data["runs"]:
@@ -25,7 +26,9 @@ def reframe_to_bmf(reframe_report):
             if testcase["result"] != "pass":
                 continue
 
-            key = (testcase["system"], testcase["partition"], testcase["environ"])
+            key = (testcase["system"],
+                   testcase["partition"],
+                   testcase["environ"])
 
             if key not in bmf_testcase:
                 bmf_testcase[key] = {}
