@@ -129,6 +129,7 @@ uenv_image_find() {
             rm -f "$tmp_date1" "$tmp_date2"
         # echo "MY_UENV is not set, not sure what uenv to test"
         # exit -1
+        done
     else
         echo "$MY_UENV" | tr , "\n"
     fi
