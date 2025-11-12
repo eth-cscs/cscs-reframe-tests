@@ -10,7 +10,7 @@ import reframe.utility.sanity as sn
 @rfm.simple_test
 class paraview_colored_sphere(rfm.RunOnlyRegressionTest):
     """
-    daint:
+    --- daint:
     ParaView Version  (5, 13, 2)
     rank= 0 / 12
     Vendor:   NVIDIA Corporation
@@ -18,12 +18,16 @@ class paraview_colored_sphere(rfm.RunOnlyRegressionTest):
     Renderer: NVIDIA GH200 120GB/PCIe
     writing  coloredSphere_v5.13.2.EGL.png
 
-    eiger:
+    --- eiger:
     ParaView Version  (5, 13, 2)
     rank= 0 / 12
-    Vendor:   Mesa
+    Vendor:   Mesa/X.org
     Version:  3.3 (Core Profile) Mesa 23.3.6
     Renderer: softpipe
+        or
+    Version:  4.5 (Compatibility Profile) Mesa 22.3.5
+    Renderer: llvmpipe (LLVM 15.0.7, 256 bits)
+
     writing  coloredSphere_v5.13.2.OSMESA.png
     """
     descr = 'ParaView pvbatch coloredSphere.py test'
@@ -46,7 +50,7 @@ class paraview_colored_sphere(rfm.RunOnlyRegressionTest):
         arch = self.current_partition.processor.arch
         regex_vendor = {'zen2': 'Mesa', 'neoverse_v2': 'NVIDIA Corporation'}
         regex_render = {
-            'zen2': 'Renderer: softpipe',
+            'zen2': 'Renderer: (softpipe|llvmpipe)',
             'neoverse_v2': 'Renderer: NVIDIA GH200'
         }
         regex_png = 'PNG image data,'  # 1024 x 1024, 8-bit/color RGB
@@ -61,7 +65,7 @@ class paraview_colored_sphere(rfm.RunOnlyRegressionTest):
 @rfm.simple_test
 class paraview_catalyst_clipping(rfm.RegressionTest):
     descr = 'ParaView Catalyst DummySPH test'
-    valid_systems = ['+uenv +nvgpu', '+uenv -nvgpu -amdgpu']
+    valid_systems = ['+uenv +nvgpu']
     valid_prog_environs = ['+uenv +paraview-python']
     sourcesdir = 'https://github.com/jfavre/DummySPH.git'
     build_system = 'CMake'
