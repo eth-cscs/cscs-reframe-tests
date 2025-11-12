@@ -15,7 +15,6 @@ class FFTBenchBuild(rfm.CompileOnlyRegressionTest):
     '''
     Build FFT benchmark
     '''
-    benchmark = 'rocFFT'
     maintainers = ['SSA']
     sourcesdir = None
     valid_prog_environs = ['+uenv +prgenv +rocm', '+uenv +prgenv +cuda']
@@ -30,7 +29,7 @@ class FFTBenchBuild(rfm.CompileOnlyRegressionTest):
 
     @run_before('compile')
     def prepare_build(self):
-        srcdir = f'gpu-benchmarks/rocFFT'
+        srcdir = f'gpu-benchmarks/fft'
         self.build_system.srcdir = srcdir
         self.build_system.builddir = f'build'
         self.prebuild_cmds += [f'cd {self.build_system.srcdir}']
@@ -62,7 +61,6 @@ class FFTCheck(rfm.RunOnlyRegressionTest):
     time_limit = '4m'
     tags = {'production', 'uenv'}
 
-    benchmark = 'rocFFT'
     fft_dim = parameter(['1D', '2D', '3D'])
     fft_size = parameter([128, 256, 512, 1024])
 
