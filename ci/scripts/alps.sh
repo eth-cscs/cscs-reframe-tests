@@ -120,9 +120,13 @@ uenv_image_find() {
         uenv_apps=$(uenv image find |tail -n +2 |egrep -v "$ignore_list" |cut -d/ -f1 |sort -u)
         for aa in $uenv_apps ;do
             # keep only the most recent uenv (this will break if uenv output changes):
-            uu=$(uenv image find $aa |sort -nk 6 |tail -1 |awk '{print $1}')
+            tmp_date1=$(mktemp)
+            tmp_date2=$(mktemp)
+            uenv image find --no-header $aa > "$tmp_date1"
+            uenv image find --no-header $aa |awk '{print "date --date=\""$6"\" +%s"}' |sh > "$tmp_date2"
+            uu=$(paste "$tmp_date1" "$tmp_date2" |sort -nk 7 |tail -n 1 |awk '{print $1}')
             echo "$uu"
-        done
+            rm -f "$tmp_date1" "$tmp_date2"
         # echo "MY_UENV is not set, not sure what uenv to test"
         # exit -1
     else
