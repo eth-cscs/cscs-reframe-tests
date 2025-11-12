@@ -94,7 +94,7 @@ class paraview_catalyst_clipping(rfm.RegressionTest):
         self.postrun_cmds = [
             '',
             'head -1 datasets/dataset_000001.vtpd',
-            'head -1 head datasets/dataset_000001/dataset_000001_0.vtp',
+            'head -1 datasets/dataset_000001/dataset_000001_0.vtp',
             'file datasets/RenderView1_000001.png'
         ]
 
