@@ -18,7 +18,7 @@ def reframe_to_bmf(reframe_report):
 
     # Bencher Metric Format: format used to upload JSON files on bencher.dev
     # testcases with key (system, partition, environ) to handle multiple
-    # partitions    
+    # partitions
     bmf_testcase = {}
 
     for run in data["runs"]:
