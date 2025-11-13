@@ -17,7 +17,7 @@ cp2k_references = {
         'zen2': {'time_run': (90, None, 0.05, 's')}
     },
     'pbe': {
-        'gh200': {'time_run': (55, None, 0.05, 's')},
+        'gh200': {'time_run': (64, None, 0.05, 's')},
         'zen2': {'time_run': (51, None, 0.05, 's')}
     },
     'rpa': {
