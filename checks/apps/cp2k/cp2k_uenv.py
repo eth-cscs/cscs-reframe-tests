@@ -142,6 +142,7 @@ class Cp2kBuildTestUENV(rfm.CompileOnlyRegressionTest):
         ]
 
         self.build_system.config_opts = [
+            '-DCMAKE_BUILD_TYPE=Release',
             '-DCP2K_USE_LIBXC=ON',
             '-DCP2K_USE_LIBINT2=ON',
             '-DCP2K_USE_SPGLIB=ON',
@@ -159,17 +160,17 @@ class Cp2kBuildTestUENV(rfm.CompileOnlyRegressionTest):
         if version > 2025.1:
             self.build_system.config_opts += [
                 '-DCP2K_USE_MPI=ON',
+                '-DCP2K_USE_LIBVORI=ON',
             ]
-      
 
         if self.uarch == 'gh200':
             self.build_system.config_opts += [
                 '-DCP2K_USE_ACCEL=CUDA',
+                '-DCMAKE_CUDA_HOST_COMPILER=mpicc',
             ]
             if version > 2025.1:
                 self.build_system.config_opts += [
 		    '-DCMAKE_CUDA_ARCHITECTURES=90',
-                    '-DCMAKE_CUDA_HOST_COMPILER=mpicc',
 		]
             else:
                 self.build_system.config_opts += [
@@ -316,13 +317,13 @@ class Cp2kCheckPBE_UENV(Cp2kCheck_UENV):
     def setup_input_and_wf(self):
         # Define input file depending on version
         # CP2K 2025.2 counts SCF steps differently
-        # Since this CP2K benchmark does not run to convergence
+        # Since this first inner SCF step does converge
         # a different count means a different runtime with the same input file
         # See https://github.com/cp2k/cp2k/pull/4141
         version = float(version_from_uenv())
         if version > 2025.1:
             # Refuce max_scf to 16 to reproduce previous behaviour
-            self.executable_opts = ['-i', 'H2O-128-PBE-TZ-max_scf_16.inp']
+            self.executable_opts = ['-i', 'H2O-128-PBE-TZ-max_scf_15.inp']
         else:
             self.executable_opts = ['-i', 'H2O-128-PBE-TZ.inp']
 
