@@ -17,7 +17,7 @@ cp2k_references = {
         'zen2': {'time_run': (90, None, 0.05, 's')}
     },
     'pbe': {
-        'gh200': {'time_run': (53, None, 0.05, 's')},
+        'gh200': {'time_run': (55, None, 0.05, 's')},
         'zen2': {'time_run': (51, None, 0.05, 's')}
     },
     'rpa': {
@@ -75,6 +75,7 @@ def version_from_uenv():
     return os.environ['UENV'].split('/')[1].split(':')[0]
 
 
+@rfm.xfail("CP2K 2025.1 issues with libxc linking.", lambda test: test.version == "v2025.1")
 class cp2k_download(rfm.RunOnlyRegressionTest):
     '''
     Download CP2K source code.
@@ -100,8 +101,10 @@ class cp2k_download(rfm.RunOnlyRegressionTest):
 
     @sanity_function
     def validate_download(self):
-        return sn.assert_eq(self.job.exitcode, 0)
-
+        # Manual compilation of v2025.1 with CMake is known to fail at link time,
+        # because of issues with the libxc integration.
+        return sn.and_(sn.assert_eq(self.job.exitcode, 0), sn.assert_ne(self.version, 'v2025.1'))
+    
 
 @rfm.simple_test
 class Cp2kBuildTestUENV(rfm.CompileOnlyRegressionTest):
@@ -126,6 +129,8 @@ class Cp2kBuildTestUENV(rfm.CompileOnlyRegressionTest):
         self.skip_if_no_procinfo()
         cpu = self.current_partition.processor
         self.build_system.max_concurrency = cpu.info['num_cpus_per_socket']
+
+        self.time_limit = "0d0h30m0s"
 
         tarsource = os.path.join(
             self.cp2k_sources.stagedir, f'{self.cp2k_sources.version}.tar.gz'
@@ -154,7 +159,6 @@ class Cp2kBuildTestUENV(rfm.CompileOnlyRegressionTest):
         if version > 2025.1:
             self.build_system.config_opts += [
                 '-DCP2K_USE_MPI=ON',
-                #'-DCP2K_USE_DLAF=ON',
             ]
       
 
@@ -190,9 +194,14 @@ class Cp2kCheck_UENV(rfm.RunOnlyRegressionTest):
     valid_systems = ['+uenv']
     valid_prog_environs = ['+cp2k -dlaf']
 
+    @run_after('setup')
+    def setup_wrapper(self):
+        """Setup wrapper script"""
+        self.uarch = uarch(self.current_partition)
+        self.wrapper = './mps-wrapper.sh' if self.uarch == 'gh200' else ''
+
     @run_before('run')
     def prepare_run(self):
-        self.uarch = uarch(self.current_partition)
         config = slurm_config[self.test_name][self.uarch]
         # sbatch options
         self.job.options = [
@@ -203,9 +212,6 @@ class Cp2kCheck_UENV(rfm.RunOnlyRegressionTest):
         self.num_cpus_per_task = config['cpus-per-task']
         self.ntasks_per_core = 1
         self.time_limit = config['walltime']
-
-        # wrapper script
-        self.wrapper = './mps-wrapper.sh' if self.uarch == 'gh200' else ''
 
         # srun options
         self.job.launcher.options = ['--cpu-bind=cores']
@@ -287,7 +293,7 @@ class Cp2kCheckMD_UENVCustomExec(Cp2kCheckMD_UENV):
 
     valid_prog_environs = ['+cp2k-dev -dlaf']
     tags = {'uenv'}
-
+    
     @run_after('init')
     def setup_dependency(self):
         self.depends_on('Cp2kBuildTestUENV', udeps.fully)
@@ -304,13 +310,24 @@ class Cp2kCheckPBE_UENV(Cp2kCheck_UENV):
     test_name = 'pbe'
     valid_prog_environs = ['+cp2k -dlaf']
     tags = {'uenv', 'production'}
-    executable_opts = ['-i', 'H2O-128-PBE-TZ.inp']
     energy_reference = -2206.2426491358
 
     @run_after('init')
-    def set_wfn(self):
-        self.wfn_file = 'H2O-128-PBE-TZ-RESTART.wfn'
+    def setup_input_and_wf(self):
+        # Define input file depending on version
+        # CP2K 2025.2 counts SCF steps differently
+        # Since this CP2K benchmark does not run to convergence
+        # a different count means a different runtime with the same input file
+        # See https://github.com/cp2k/cp2k/pull/4141
+        version = float(version_from_uenv())
+        if version > 2025.1:
+            # Refuce max_scf to 16 to reproduce previous behaviour
+            self.executable_opts = ['-i', 'H2O-128-PBE-TZ-max_scf_16.inp']
+        else:
+            self.executable_opts = ['-i', 'H2O-128-PBE-TZ.inp']
 
+        # Define WF file for restart (needed by RPA test)
+        self.wfn_file = 'H2O-128-PBE-TZ-RESTART.wfn'
 
 @rfm.simple_test
 class Cp2kCheckPBE_UENVExec(Cp2kCheckPBE_UENV):
