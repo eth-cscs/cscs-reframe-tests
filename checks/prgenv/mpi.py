@@ -10,7 +10,7 @@ import reframe as rfm
 import reframe.utility.sanity as sn
 
 sys.path.append(str(pathlib.Path(__file__).parent.parent / 'mixins'))
-from container_engine import ContainerEngineCPEMixin
+from container_engine import ContainerEngineCPEMixin  # noqa: E402
 
 
 @rfm.simple_test
@@ -19,7 +19,7 @@ class MpiInitTest(rfm.RegressionTest, ContainerEngineCPEMixin):
     This test checks the value returned by calling MPI_Init_thread.
     '''
     required_threads = ['funneled', 'serialized', 'multiple']
-    valid_prog_environs = ['+mpi']
+    valid_prog_environs = ['+mpi +prgenv']
     valid_systems = ['+remote']
     build_system = 'Make'
     sourcesdir = 'src/mpi_thread'
@@ -28,6 +28,10 @@ class MpiInitTest(rfm.RegressionTest, ContainerEngineCPEMixin):
     build_locally = False
     env_vars = {'MPICH_GPU_SUPPORT_ENABLED': 0}
     tags = {'production', 'craype', 'uenv'}
+
+    @run_after('setup')
+    def skip_mi200(self):
+        self.skip_if('-pmi200' in self.current_partition.access, 'skip MI200')
 
     @run_before('run')
     def set_job_parameters(self):
@@ -118,3 +122,81 @@ class MpiInitTest(rfm.RegressionTest, ContainerEngineCPEMixin):
                                                [sn.evaluate(req_thread_m)],
                          msg='sanity_eq: {0} != {1}'),
         ])
+
+
+@rfm.simple_test
+class MpiGpuDirectOOM(rfm.RegressionTest, ContainerEngineCPEMixin):
+    '''
+    This test checks the issue reported in:
+    https://github.com/eth-cscs/alps-gh200-reproducers/tree/main/gpudirect-oom
+
+    - with MPICH_GPU_IPC_ENABLED=1 (or default), GPU0 will run out of memory
+      (that is a bug),
+    - with MPICH_GPU_IPC_ENABLED=0, GPU0 will not run out of memory,
+      and gpu_free should remain ~constant but this is only a workaround,
+      (i.e slower performance)
+
+    man intro_mpi:
+        - By default, MPICH_GPU_IPC_ENABLED is set to 1.
+        - Setting MPICH_GPU_IPC_ENABLED to 1 enables GPU IPC support for
+          intra-node GPU-GPU communication operations.
+        - Setting MPICH_GPU_IPC_ENABLED to 0 disables GPU IPC support, it can
+        also have a noticeable impact on intra-node MPI performance.
+        - If MPICH_GPU_SUPPORT_ENABLED is set to 1, MPICH_GPU_IPC_ENABLED is
+        automatically set to 1. MPICH_GPU_IPC_ENABLED has no effect if
+        MPICH_GPU_SUPPORT_ENABLED is set to 0.
+    '''
+    maintainers = ['SSA']
+    gh = 'https://github.com/eth-cscs/alps-gh200-reproducers'
+    ipc = parameter(['0', '1'])
+    valid_systems = ['+remote +nvgpu', '+remote +amdgpu']
+    valid_prog_environs = [
+        '+mpi +cuda +prgenv -cpe',
+        '+mpi +rocm +prgenv -cpe']
+    build_system = 'SingleSource'
+    sourcesdir = 'src/alps-gh200-reproducers'
+    sourcepath = 'gpudirect_oom.cpp'
+    time_limit = '1m'
+    build_locally = False
+    env_vars = {'MPICH_GPU_SUPPORT_ENABLED': 1}
+    regex = r'rank: \d, gpu_free: (?P<bytes>\d+), gpu_total:'
+    tags = {'production', 'uenv', 'craype'}
+
+    @run_after('setup')
+    def skip_mi200(self):
+        self.skip_if('-pmi200' in self.current_partition.access, 'skip MI200')
+
+    @run_before('compile')
+    def set_gpu_flags(self):
+        flags_d = {
+            'sm_90': '-I ${CUDATOOLKIT_HOME:-$CUDA_HOME}/include',   # GH200
+            'gfx942': '-D__HIP_PLATFORM_AMD__ -DGPUDIRECT_OOM_HIP',  # MI300
+            'gfx90a': '-D__HIP_PLATFORM_AMD__ -DGPUDIRECT_OOM_HIP',  # MI200
+        }
+        ldflags_d = {
+            'sm_90': '-L ${CUDATOOLKIT_HOME:-$CUDA_HOME}/lib64 -lcudart',
+            'gfx942': '-lamdhip64',
+            'gfx90a': '-lamdhip64',
+        }
+        gpu_arch = self.current_partition.select_devices('gpu')[0].arch
+        self.build_system.cxxflags = [flags_d[gpu_arch]]
+        self.build_system.ldflags = [ldflags_d[gpu_arch]]
+
+    @run_before('run')
+    def use_hpe_workaround(self):
+        self.num_tasks = 2
+        if self.ipc == '0':
+            self.env_vars['MPICH_GPU_IPC_ENABLED'] = '0'
+
+        self.prerun_cmds += [
+            f'# {self.gh}/blob/main/gpudirect-oom/README.md',
+            f'echo MPICH_GPU_IPC_ENABLED=$MPICH_GPU_IPC_ENABLED'
+        ]
+
+    @sanity_function
+    def set_sanity(self):
+        return sn.assert_found(self.regex, self.stderr)
+
+    @performance_function('bytes')
+    def gpu_free(self):
+        return sn.min(sn.extractall(self.regex, self.stderr, 'bytes', float))

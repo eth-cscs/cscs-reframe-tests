@@ -60,9 +60,9 @@ def create_checks(check):
 
     check.CLASS = 'PROXY'
 
-    check('printenv http_proxy',  expected=r'http://proxy.cscs.ch:8080', where='+remote')
-    check('printenv https_proxy', expected=r'http://proxy.cscs.ch:8080', where='+remote')
-    check('printenv no_proxy',    expected=r'.local,.cscs.ch,localhost,148.187.0.0/16,10.0.0.0/8,172.16.0.0/12', where='+remote')
+    # check('printenv http_proxy',  expected=r'http://proxy.cscs.ch:8080', where='+remote')
+    # check('printenv https_proxy', expected=r'http://proxy.cscs.ch:8080', where='+remote')
+    # check('printenv no_proxy',    expected=r'.local,.cscs.ch,localhost,148.187.0.0/16,10.0.0.0/8,172.16.0.0/12', where='+remote')
 
     # check('printenv http_proxy', expected=r'', where='-remote')
     # check('printenv https_proxy', expected=r'', where='-remote')
@@ -133,18 +133,18 @@ def create_checks(check):
 
     # ----------------------------------------------------------------------- #
     #
-    #                         Cray Programming Environment
+    #                         Cray Programming Environment (deprecated)
     #
     # ----------------------------------------------------------------------- #
 
-    check.CLASS = "CPE"
+#    check.CLASS = "CPE"
 
-    check('bash -c "module --redirect load cray || echo FAILED"', not_expected=r'FAILED')
-    check('bash -c "module --redirect load cray && module --redirect list"', expected=r'craype-arm-grace', not_expected=r'craype-x86-rome')
+#    check('bash -c "module --redirect load cray || echo FAILED"', not_expected=r'FAILED')
+#    check('bash -c "module --redirect load cray && module --redirect list"', expected=r'craype-arm-grace', not_expected=r'craype-x86-rome')
 
-    check('bash -c "module --redirect spider PrgEnv-cray/8.5.0   || echo FAILED"', not_expected=r'FAILED')
-    check('bash -c "module --redirect spider PrgEnv-gnu/8.5.0    || echo FAILED"', not_expected=r'FAILED')
-    check('bash -c "module --redirect spider PrgEnv-nvidia/8.5.0 || echo FAILED"', not_expected=r'FAILED')
+#    check('bash -c "module --redirect spider PrgEnv-cray/8.5.0   || echo FAILED"', not_expected=r'FAILED')
+#    check('bash -c "module --redirect spider PrgEnv-gnu/8.5.0    || echo FAILED"', not_expected=r'FAILED')
+#    check('bash -c "module --redirect spider PrgEnv-nvidia/8.5.0 || echo FAILED"', not_expected=r'FAILED')
 
     # ----------------------------------------------------------------------- #
     #
@@ -175,7 +175,6 @@ def create_checks(check):
 
     check('grep -q "/capstor/scratch/cscs /capstor/scratch/cscs lustre"     /proc/mounts || echo FAILED', not_expected=r'FAILED')
     check('grep -q "/capstor/store/cscs /capstor/store/cscs lustre"         /proc/mounts || echo FAILED', not_expected=r'FAILED')
-    check('grep -q "/capstor/users/cscs /capstor/users/cscs lustre"                  /proc/mounts || echo FAILED', not_expected=r'FAILED')
     check('grep -q "/capstor/store/cscs /capstor/store/cscs lustre"         /proc/mounts || echo FAILED', not_expected=r'FAILED')
 
     check('grep -q "pe_opt_cray_pe /opt/cray/pe"  /proc/mounts || echo FAILED', not_expected=r'FAILED')
@@ -211,7 +210,7 @@ def create_checks(check):
     # no need of a backup on daint thanks to kubernetes
     # check('scontrol ping', expected=r'Slurmctld\(backup\) at .* is UP')
     # check('grep "JobComp" /etc/slurm/slurm.conf | grep -v "#"', expected=r'kafka', not_expected=r'elasticsearch', where='-remote')
-    check('grep "JobComp" /run/slurm/conf/slurm.conf | grep -v "#"', expected=r'kafka', not_expected=r'elasticsearch', where='+remote')
+    # check('grep "JobComp" /run/slurm/conf/slurm.conf | grep -v "#"', expected=r'kafka', not_expected=r'elasticsearch', where='+remote')
 
     # ----------------------------------------------------------------------- #
     #

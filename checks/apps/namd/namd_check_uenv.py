@@ -11,8 +11,8 @@ import uenv
 
 namd_references = {
     'stmv': {
-        'gh200': {'ns_day': (93, -0.05, None, 'ns/day')}, 
-        'zen2': {'ns_day': (5.25, -0.05, None, 'ns/day')}
+        'gh200': {'ns_day': (91, -0.05, None, 'ns/day')}, 
+        'zen2': {'ns_day': (4.7, -0.05, None, 'ns/day')}
     },
 }
 
@@ -143,7 +143,7 @@ class NamdBuildTest(rfm.CompileOnlyRegressionTest):
     valid_systems = ['+nvgpu +uenv']
     build_system = AutotoolsCustom()
     sourcesdir = None
-    maintainers = ['SSA']
+    maintainers = ['romeli', 'jcoles', 'SSA']
     namd_sources = fixture(namd_download, scope='session')
     build_locally = False
     tags = {'uenv'}

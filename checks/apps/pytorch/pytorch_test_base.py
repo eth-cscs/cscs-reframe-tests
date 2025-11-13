@@ -6,6 +6,7 @@ class PyTorchTestBase(rfm.RunOnlyRegressionTest):
     descr = 'Check the training throughput of a cnn with torch.distributed'
     valid_systems = ['+gpu']
     valid_prog_environs = ['builtin']
+    maintainers = ['ml-team']
     num_nodes = parameter([1])
     sourcesdir = 'src'
     throughput_per_gpu = 980

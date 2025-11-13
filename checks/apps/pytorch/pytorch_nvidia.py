@@ -1,4 +1,4 @@
-import re
+import re  # noqa: F401
 import sys
 import pathlib
 import reframe as rfm
@@ -37,8 +37,9 @@ class PyTorchDdpCeNv(PyTorchTestBase, ContainerEngineMixin):
     descr = ('Check the training throughput using the ContainerEngine and '
              'NVIDIA NGC')
     valid_systems = ['+ce +nvgpu']
+    maintainers = ['ml-team']
     aws_ofi_nccl = parameter([True])
-    curated_images = ['nvcr.io#nvidia/pytorch:24.01-py3']
+    curated_images = ['nvcr.io#nvidia/pytorch:25.06-py3']
 
     # NOTE: only the "-py3" image is supported by the test
     supported_flavors = ["-py3"] 
@@ -46,15 +47,18 @@ class PyTorchDdpCeNv(PyTorchTestBase, ContainerEngineMixin):
     pytorch_tags = nvidia_image_tags('pytorch')
     latest_tags = []
 
-    for flavor in supported_flavors:
-        versions = []
-        for tag in pytorch_tags:
-            if re.match(rf'^\d+\.\d+{flavor}$', tag):
-                versions.append(tag[:-len(flavor)])
+    # FIXME: 25.08-py3 version and above use Cuda 13 see:
+    # https://jira.cscs.ch/browse/VCUE-1039
 
-        if versions:
-            latest_version = max(versions)
-            latest_tags += [f'{latest_version}{flavor}']
+    # for flavor in supported_flavors:
+    #     versions = []
+    #     for tag in pytorch_tags:
+    #         if re.match(rf'^\d+\.\d+{flavor}$', tag):
+    #             versions.append(tag[:-len(flavor)])
+
+    #     if versions:
+    #         latest_version = max(versions)
+    #         latest_tags += [f'{latest_version}{flavor}']
 
     latest_images = [f'nvcr.io#nvidia/pytorch:{tag}' for tag in latest_tags]
     image = parameter(curated_images + latest_images)
@@ -90,6 +94,7 @@ class PyTorchDdpCeNvlarge(PyTorchDdpCeNv):
 class PyTorchDdpMambaNv(PyTorchTestBase):
     descr = 'Check the training throughput on bare-metal'
     valid_systems = []  #DISABLED TEST, change to ['+nvgpu'] to renable it
+    maintainers = ['ml-team']
     time_limit = '30m'
     torch_version = parameter([
          'nccl cuda=12.6', # Latest cu12.6; incompatible driver

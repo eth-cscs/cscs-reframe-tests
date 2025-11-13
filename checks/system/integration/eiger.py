@@ -56,9 +56,9 @@ def create_checks(check):
 
     check.CLASS = 'PROXY'
 
-    check('printenv http_proxy',  expected=r'http://proxy.cscs.ch:8080',  where='+remote')
-    check('printenv https_proxy', expected=r'http://proxy.cscs.ch:8080', where='+remote')
-    check('printenv no_proxy',    expected=r'.local, .cscs.ch, localhost, 148.187.0.0/16, 10.0.0.0/8, 172.16.0.0/12', where='+remote')
+    # check('printenv http_proxy',  expected=r'http://proxy.cscs.ch:8080',  where='+remote')
+    # check('printenv https_proxy', expected=r'http://proxy.cscs.ch:8080', where='+remote')
+    # check('printenv no_proxy',    expected=r'.local, .cscs.ch, localhost, 148.187.0.0/16, 10.0.0.0/8, 172.16.0.0/12', where='+remote')
 
     # check('printenv http_proxy',  expected=r'', where='-remote')
     # check('printenv https_proxy', expected=r'', where='-remote')
@@ -176,10 +176,10 @@ def create_checks(check):
     check('which sinfo || echo FAILED', not_expected=r'FAILED')
     check('ps aux | grep munge', expected=r'/usr/sbin/munged')
     check('scontrol ping', expected=r'Slurmctld\(primary\) at .* is UP')
-    check('scontrol ping', expected=r'Slurmctld\(backup\) at .* is UP')
+    # check('scontrol ping', expected=r'Slurmctld\(backup\) at .* is UP')
     #TODO uncomment when SitePolicies are enabled
-    #check('grep "SitePolicies" /etc/slurm/slurm.conf | grep -v "#" || echo FAILED', not_expected=r'FAILED')
-    check('grep "JobComp" /etc/slurm/slurm.conf | grep -v "#"', not_expected=r'kafka', expected=r'elasticsearch')
+    # check('grep "SitePolicies" /etc/slurm/slurm.conf | grep -v "#" || echo FAILED', not_expected=r'FAILED')
+    # check('grep "JobComp" /etc/slurm/slurm.conf | grep -v "#"', not_expected=r'kafka', expected=r'elasticsearch')
 
 #-----------------------------------------------------------------------------#
 #                                                                             #

@@ -117,7 +117,7 @@ class Cp2kBuildTestUENV(rfm.CompileOnlyRegressionTest):
     valid_systems = ['+uenv']
     build_system = 'CMake'
     sourcesdir = None
-    maintainers = ['SSA']
+    maintainers = ['tmathieu', 'romeli', 'abussy', 'simbergm',  'SSA']
     cp2k_sources = fixture(cp2k_download, scope='session')
     build_locally = False
     tags = {'uenv'}
@@ -213,6 +213,9 @@ class Cp2kCheck_UENV(rfm.RunOnlyRegressionTest):
         self.num_cpus_per_task = config['cpus-per-task']
         self.ntasks_per_core = 1
         self.time_limit = config['walltime']
+
+        # wrapper script
+        self.wrapper = './mps-wrapper.sh' if self.uarch == 'gh200' else ''
 
         # srun options
         self.job.launcher.options = ['--cpu-bind=cores']

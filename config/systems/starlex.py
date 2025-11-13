@@ -1,4 +1,4 @@
-# Copyright 2025 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -6,17 +6,15 @@
 # ReFrame CSCS settings
 #
 
-
-import reframe.utility.osext as osext
-
-
 site_configuration = {
     'systems': [
         {
-            'name': 'alps-eiger',
-            'descr': 'Alps Eiger vcluster',
-            'hostnames': ['alps-eiger'],
-            'modules_system': 'nomod',
+            'name': 'starlex',
+            'descr': 'starlex vcluster',
+            'hostnames': ['starlex'],
+            'modules_system': 'lmod',
+            'resourcesdir':
+                '/capstor/store/cscs/cscs/public/reframe/resources',
             'partitions': [
                 {
                     'name': 'login',
@@ -30,7 +28,7 @@ site_configuration = {
                     'launcher': 'local'
                 },
                 {
-                    'name': 'mc',
+                    'name': 'normal',
                     'scheduler': 'slurm',
                     'time_limit': '10m',
                     'environs': [
@@ -38,16 +36,27 @@ site_configuration = {
                     ],
                     'max_jobs': 100,
                     'extras': {
-                        'cn_memory': 256,
+                        'cn_memory': 850,
                     },
                     'resources': [
                         {
                             'name': 'memory',
                             'options': ['--mem={mem_per_node}']
                         },
+                        {
+                            'name': 'gres',
+                            'options': ['--gres={gres}']
+                        },
                     ],
-                    'access': ['-Cmc', f'--account={osext.osgroup()}'],
-                    'features': ['ce', 'remote', 'scontrol', 'uenv'],
+                    'features': ['ce', 'gpu', 'nvgpu', 'remote', 'scontrol',
+                                 'uenv', 'hugepages_slurm'],
+                    'devices': [
+                        {
+                            'type': 'gpu',
+                            'arch': 'sm_90',
+                            'num_devices': 4
+                        }
+                    ],
                     'launcher': 'srun'
                 },
             ]
@@ -57,6 +66,7 @@ site_configuration = {
         {
             'name': 'production',
             'options': [
+                '--unload-module=reframe',
                 '--exec-policy=async',
                 '-Sstrict_check=1',
                 '--prefix=$SCRATCH/regression/production',
@@ -65,7 +75,7 @@ site_configuration = {
                 '--tag=production',
                 '--timestamp=%F_%H-%M-%S'
             ],
-            'target_systems': ['alps-eiger'],
+            'target_systems': ['starlex'],
         }
     ]
 }

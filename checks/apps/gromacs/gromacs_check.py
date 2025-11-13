@@ -12,8 +12,12 @@ gromacs_references = {
     'STMV': {
         'gh200': {
             'perf': (117, -0.02, None, 'ns/day'),
-            'bondenergy': (164780, -0.01, None, 'kJ/mol'),
-        }
+            'totalenergy': (-1.17527e+07, -0.01, None, 'kJ/mol'),
+        },
+        'zen2': {
+            'perf': (3.6, -0.02, None, 'ns/day'),
+            'totalenergy': (-1.43595e+07, -0.01, None, 'kJ/mol'),
+        },
     },
  }
 
@@ -25,6 +29,13 @@ slurm_config = {
             'cpus-per-task': 32,
             'walltime': '0d0h5m0s',
             'gpu': True,
+        },
+        'zen2': {
+            'nodes': 4,
+            'ntasks-per-node': 16,
+            'cpus-per-task': 8,
+            'walltime': '0d0h5m0s',
+            'gpu': False,
         }
     },
     'hEGFRDimerPair': {
@@ -34,14 +45,14 @@ slurm_config = {
             'cpus-per-task': 32,
             'walltime': '0d0h5m0s',
             'gpu': True,
-        }
+        },
     },
 }
 
 
 class gromacs_download(rfm.RunOnlyRegressionTest):
     descr = 'Fetch GROMACS source code'
-    maintainers = ['SSA']
+    maintainers = ['pkanduri', 'sebkelle', 'romeli', 'SSA']
     version = variable(str, value='2024.3')
     sourcesdir = None
     executable = 'wget'
@@ -65,13 +76,13 @@ class gromacs_build_test(rfm.CompileOnlyRegressionTest):
     """
     descr = 'GROMACS Build Test'
     valid_prog_environs = ['+gromacs-dev']
-    valid_systems = ['*']
+    valid_systems = ['+uenv']
     build_system = 'CMake'
     maintainers = ['SSA']
     sourcesdir = None
     gromacs_sources = fixture(gromacs_download, scope='session')
     build_locally = False
-    tags = {'uenv', 'production'}
+    tags = {'uenv'}
 
     @run_before('compile')
     def prepare_build(self):
@@ -104,10 +115,10 @@ class gromacs_build_test(rfm.CompileOnlyRegressionTest):
 
 @rfm.simple_test
 class gromacs_run_test(rfm.RunOnlyRegressionTest):
-    executable = './mps-wrapper.sh -- gmx_mpi mdrun -s topol.tpr'
-    executable_opts = ['-dlb no', '-ntomp 32', '-pme gpu', '-npme 1',
-                       '-bonded gpu', '-nb gpu', '-nsteps 10000', '-update gpu',
-                       '-pin off', '-v', '-noconfout', '-nstlist 300']
+    executable = './mps-wrapper.sh -- gmx_mpi mdrun -s stmv2.tpr'
+    executable_opts = [
+        '-dlb no', '-npme 1', '-pin off', '-v', '-noconfout', '-nstlist 300'
+    ]
     maintainers = ['SSA']
     valid_systems = ['*']
     test_name = variable(str, value='STMV')
@@ -128,12 +139,21 @@ class gromacs_run_test(rfm.RunOnlyRegressionTest):
         # environment variables
         self.env_vars['OMP_NUM_THREADS'] = str(self.num_cpus_per_task)
         self.env_vars['FI_CXI_RX_MATCH_MODE'] = 'software'
+
+        self.executable_opts.append(f'-ntomp {self.num_cpus_per_task}')
+
         if self.uarch == 'gh200':
+            self.executable_opts += [
+                '-pme gpu', '-nb gpu', '-update gpu', '-nsteps 10000'
+            ]
+
             self.env_vars['MPICH_GPU_SUPPORT_ENABLED'] = '1'
             self.env_vars['GMX_GPU_DD_COMMS'] = 'true'
             self.env_vars['GMX_GPU_PME_PP_COMMS'] = 'true'
             self.env_vars['GMX_ENABLE_DIRECT_GPU_COMM'] = '1'
             self.env_vars['GMX_FORCE_GPU_AWARE_MPI'] = '1'
+        else:
+            self.executable_opts += ['-nsteps 1000']
 
         # set reference
         if self.uarch is not None and \
@@ -146,23 +166,23 @@ class gromacs_run_test(rfm.RunOnlyRegressionTest):
         # set input files
         if self.test_name == 'STMV':
             jfrog = 'https://jfrog.svc.cscs.ch/artifactory/cscs-reframe-tests/'
-            self.prerun_cmds = [f'wget {jfrog}/gromacs/STMV/topol.tpr --quiet']
+            self.prerun_cmds = [f'wget {jfrog}/gromacs/STMV/stmv2.tpr --quiet']
 
     @run_after('setup')
     def postproc_run(self):
         """
-        Extract Bond Energy from the binary .edr file and write it to a
+        Extract Total Energy from the binary .edr file and write it to a
         readable .xvg file and then write it to stdout
         """
         self.postrun_cmds = [
-            'echo -e "1\\n" |'
+            'echo -e "12\\n" |'
             'gmx_mpi energy -f ener.edr -o ener.xvg',
             'cat ener.xvg'
         ]
 
     @sanity_function
     def validate_job(self):
-        regex1 = r'^Bond\s+\S+\s+'
+        regex1 = r'^Total Energy\s+\S+\s+'
         regex2 = r'^Performance:\s+\S+\s+'
         self.sanity_patterns = sn.all([
             sn.assert_found(regex1, self.stdout, msg='regex1 failed'),
@@ -176,6 +196,6 @@ class gromacs_run_test(rfm.RunOnlyRegressionTest):
         return sn.extractsingle(regex, self.stderr, 'ns_day', float)
 
     @performance_function('kJ/mol')
-    def bondenergy(self):
-        regex = r'^Bond\s+(?P<bond_energy>\S+)\s+'
-        return sn.extractsingle(regex, self.stdout, 'bond_energy', int)
+    def totalenergy(self):
+        regex = r'^Total Energy\s+(?P<total_energy>\S+)\s+'
+        return sn.extractsingle(regex, self.stdout, 'total_energy', float)

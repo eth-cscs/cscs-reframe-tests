@@ -13,7 +13,7 @@ if [ $DEBUG = "y" ] ; then
     jfrog=jfrog.svc.cscs.ch/uenv/deploy/$system/$uarch
     jfrog_u="piccinal"
 else
-# {{{ input parameters <--- 
+# {{{ input parameters <---
 # oras="$UENV_PREFIX/libexec/uenv-oras"  # /users/piccinal/.local/ on eiger
 # oras_tmp=`mktemp -d`
 oras_tmp=$PWD
@@ -37,7 +37,7 @@ jfrog_u="piccinal"
  # }}}
 fi
 
-# {{{ setup_jq 
+# {{{ setup_jq
 setup_jq() {
   if [ ! -x /usr/bin/jq ] ;then
     wget --quiet https://github.com/jqlang/jq/releases/download/jq-1.6/jq-linux64
@@ -47,17 +47,18 @@ setup_jq() {
   fi
 }
 # }}}
-# {{{ setup_uenv_and_oras 
+# {{{ setup_uenv_and_oras
 setup_uenv_and_oras() {
-  uenv_repo=https://github.com/eth-cscs/uenv
-  uenv_version=5.1.0
-  (wget --quiet $uenv_repo/archive/refs/tags/v$uenv_version.tar.gz && \
-  tar xf v$uenv_version.tar.gz && cd uenv-$uenv_version/ && \
-  echo N | ./install --prefix=$PWD --local && \
-  rm -f v$uenv_version.tar.gz uenv-$uenv_version)
+  # uenv is installed as a vservice now
+  echo
+  # uenv_version=8.1.0
+  # (wget --quiet https://github.com/eth-cscs/uenv2/archive/refs/tags/v$uenv_version.tar.gz && \
+  # tar xf v$uenv_version.tar.gz && cd uenv2-$uenv_version/ && \
+  # echo N | ./install --prefix=$PWD --local && \
+  # rm -f v$uenv_version.tar.gz uenv-$uenv_version)
 }
 # }}}
-# {{{ setup_oras_without_uenv 
+# {{{ setup_oras_without_uenv
 setup_oras_without_uenv() {
   case "$(uname -m)" in
     aarch64)
@@ -78,7 +79,7 @@ setup_oras_without_uenv() {
   ./oras version
 }
 # }}}
-# {{{ check_uenv_oras 
+# {{{ check_uenv_oras
 check_uenv_oras() {
     # [[ -x $UENV_PREFIX ]] || { echo "UENV_PREFIX=$UENV_PREFIX is not set, exiting"; exit 1; }
     # [[ -x $UENV_PREFIX/libexec/uenv-oras ]] || { echo "uenv-oras not found, exiting"; exit 1; }
@@ -86,7 +87,7 @@ check_uenv_oras() {
     [[ -x $oras ]] || { echo "oras=$oras not found, exiting"; exit 1; }
 }
 # }}}
-# {{{ jfrog_login 
+# {{{ jfrog_login
 jfrog_login() {
     creds_json=$(curl --retry 5 --retry-connrefused --fail --silent "$jfrog_request")
     oras_creds="$(echo ${creds_json} | jq --join-output '"--username " + .container_registry.username + " --password " +.container_registry.password')"
@@ -108,18 +109,44 @@ jfrog_login() {
     #  oras discover -v --output json --artifact-type 'uenv/meta' jfrog.svc.cscs.ch/uenv/deploy/santis/gh200/linaro-forge/23.1.2:latest
 }
 # }}}
-# {{{ uenv_image_find 
+# {{{ uenv_image_find
 uenv_image_find() {
-    uenv --no-color image find | grep -v "uenv/version:tag" | awk '{print $1}'
+# uf |egrep -v "scorep|prgenv|paraview|netcdf-tools|linaro-forge|linalg|jupyterlab|julia|editors" \
+# |grep -v 'size(MB)' |cut -d/ -f1 |sort -u
+    ignore_list="scorep|paraview|netcdf-tools|linaro-forge|jupyterlab|julia|editors"
+    if [ -z $MY_UENV ] ;then
+        # -z MY_UENV means 
+        # get the list of deployed supported apps (skip header line):
+        uenv_apps=$(uenv image find |tail -n +2 |egrep -v "$ignore_list" |cut -d/ -f1 |sort -u)
+        for aa in $uenv_apps ;do
+            # keep only the most recent uenv (this will break if uenv output changes):
+            tmp_date1=$(mktemp)
+            tmp_date2=$(mktemp)
+            uenv image find --no-header $aa > "$tmp_date1"
+            uenv image find --no-header $aa |awk '{print "date --date=\""$6"\" +%s"}' |sh > "$tmp_date2"
+            uu=$(paste "$tmp_date1" "$tmp_date2" |sort -nk 7 |tail -n 1 |awk '{print $1}')
+            echo "$uu"
+            rm -f "$tmp_date1" "$tmp_date2"
+        # echo "MY_UENV is not set, not sure what uenv to test"
+        # exit -1
+        done
+    else
+        echo "$MY_UENV" | tr , "\n"
+    fi
 }
 # }}}
 # {{{ uenv_pull_meta_dir
 uenv_pull_meta_dir() {
     img=$1
     echo "--- Pulling metadata from $img"
-    uenv image pull --only-meta $img &> uenv_pull_meta_dir.log
-}    
-# }}}    
+    is_vasp=`echo $img |cut -d/ -f1`
+    if [ "$is_vasp" == "vasp" ] ;then
+        vasp_flag="--token /users/reframe/vasp6 --username=vasp6"
+    fi
+    uenv image pull --only-meta $vasp_flag $img &> uenv_pull_meta_dir.log
+    # TODO: https://github.com/eth-cscs/uenv2/issues/81
+}
+# }}}
 # {{{ oras_pull_meta_dir
 oras_pull_meta_dir() {
     img=$1
@@ -139,42 +166,34 @@ oras_pull_meta_dir() {
 meta_has_reframe_yaml() {
     img=$1
     echo "# --- Checking img=$img for meta/extra/reframe.yaml"
-    meta_path=`uenv image inspect --format {meta} $img`
+    meta_path=`uenv image inspect --format={meta} $img`
     echo "meta_path=$meta_path"
-    rfm_yaml="${meta_path}/extra/reframe.yaml" 
+    rfm_yaml="${meta_path}/extra/reframe.yaml"
     test -f $rfm_yaml ; rc=$?
-    
-    # --- VASP
-    is_vasp=`echo $img |cut -d/ -f1`
-    if [ "$is_vasp" == "vasp" ] ;then
-        echo "# ---- no: vasp is a special case: "todi/gh200/vasp/v6.4.2/manifests/v1": response status code 403: Forbidden"
-    else
 
+    # continue if the uenv has an extra/reframe.yaml file
     if [ $rc -eq 0 ] ;then
         rctools=$(grep -q user-tools $rfm_yaml ; echo $?)
         echo "rc=$rc rctools=$rctools"
         if [ $rctools -ne 0 ] ;then
             echo "# ---- reframe.yaml has been found --> pulling $img"
-            uenv image pull $img
+
+            is_vasp=`echo $img |cut -d/ -f1`
+            if [ "$is_vasp" == "vasp" ] ;then
+                vasp_flag="--token /users/reframe/vasp6 --username=vasp6"
+            fi
+             uenv image pull $vasp_flag $img
             echo
             # meta/extra/reframe.yaml
             # echo "# ---- reframe.yaml has been found --> adding it as store.yaml"
             # imgpath=`uenv image inspect $img --format {path}`
             # cp $rfm_yaml $imgpath/store.yaml
 
-            # TODO: https://github.com/eth-cscs/alps-uenv/issues/127 <-------------
-            if [ "$img" == "prgenv-gnu/24.7:v1" ] ;then
-                sed -i 's-default/activate.sh-develop/activate.sh-' \
-                    $imgpath/store.yaml
-            fi
-            # TODO: https://github.com/eth-cscs/alps-uenv/issues/127 <-------------
-
             echo "# ---- OK $rfm_yaml found in $img :-)"
             ls $rfm_yaml
         fi
     else
         echo "# ---- no $rfm_yaml file found, skipping $img :-("
-    fi
     fi
 }
 # }}}
@@ -202,7 +221,7 @@ oras_pull_meta_dir_old() {
     $oras pull --output "${oras_tmp}" "$jfrog/$name@$meta_digest" &> oras-pull.log
     rc1=$?
     # echo "rc1=$rc1"
-    rfm_yaml="${oras_tmp}/meta/extra/reframe.yaml" 
+    rfm_yaml="${oras_tmp}/meta/extra/reframe.yaml"
     if [ $rc1 -eq 0 ] ;then
         # find "${oras_tmp}" -name reframe.yaml
         test -f $rfm_yaml
@@ -223,7 +242,7 @@ oras_pull_meta_dir_old() {
     fi
 }
 # }}}
-# {{{ oras_pull_sqfs 
+# {{{ oras_pull_sqfs
 oras_pull_sqfs() {
     name=$1
     tag=$2
@@ -239,9 +258,9 @@ oras_pull_sqfs() {
     #
     squashfs_path="${artifact_path}/store.squashfs"
     echo "$squashfs_path"
-}   
+}
 # }}}
-# {{{ uenv_pull_sqfs 
+# {{{ uenv_pull_sqfs
 uenv_pull_sqfs() {
 # image 1e2d418fe383f793449e61e64c3700de4a07822ee16a89573d78f5e59a781519 is already available locally
 # updating local reference prgenv-gnu/23.11:latest
@@ -258,9 +277,9 @@ uenv_pull_sqfs() {
     squashfs_path=`uenv image inspect $img --format {path}`
     cp $rfm_meta_yaml $squashfs_path/store.yaml
     ls -l $squashfs_path/
-}   
+}
 # }}}
-# {{{ install_reframe 
+# {{{ install_reframe
 install_reframe() {
     # all must be quiet because of last echo
     rm -fr rfm_venv reframe
@@ -269,10 +288,12 @@ install_reframe() {
     # pip install --upgrade reframe-hpc
     # git clone --depth 1 https://github.com/reframe-hpc/reframe.git
     # multi-uenv support only in reframe > v4.5.2:
-    (wget --quiet "https://github.com/reframe-hpc/reframe/archive/refs/heads/develop.zip" && \
-    unzip -qq "develop.zip" && cd reframe-develop && ./bootstrap.sh &> /dev/null)
-    export PATH="$(pwd)/reframe-develop/bin:$PATH"
-    echo "$(pwd)/reframe-develop/bin"
+
+    # FIXME: This is temporary until this PR is merged: https://github.com/reframe-hpc/reframe/pull/3516
+    (wget --quiet "https://github.com/ekouts/reframe/archive/refs/heads/feat/sanity_logging.zip" && \
+    unzip -qq "sanity_logging.zip" && cd reframe-feat-sanity_logging && ./bootstrap.sh &> /dev/null)
+    export PATH="$(pwd)/reframe-feat-sanity_logging/bin:$PATH"
+    echo "$(pwd)/reframe-feat-sanity_logging/bin"
     # deps for cscs-reframe-tests.git:
     pip install python-hostlist requests &> .deps.cscs-reframe-tests
     # (wget --quiet "https://github.com/reframe-hpc/reframe/archive/refs/tags/v4.5.2.tar.gz" && \
@@ -281,13 +302,13 @@ install_reframe() {
     # ./bootstrap.sh)
     # echo "$PWD/reframe-4.5.2/bin"
     # export PATH="$(pwd)/reframe/bin:$PATH"
-}    
+}
 # }}}
-# {{{ install_reframe_tests (alps branch) 
+# {{{ install_reframe_tests (alps branch)
 install_reframe_tests() {
     rm -fr cscs-reframe-tests
     git clone -b alps https://github.com/eth-cscs/cscs-reframe-tests.git
-    # TODO: pyfirecrest requires python>=3.7    
+    # TODO: pyfirecrest requires python>=3.7
     # cscs-reframe-tests/config/utilities/requirements.txt
 }
 # }}}
@@ -295,9 +316,9 @@ install_reframe_tests() {
 uenv_sqfs_fullpath() {
     img="$1"
     uenv image inspect $img --format {sqfs}
-}   
+}
 # }}}
-# {{{ launch_reframe_1img 
+# {{{ launch_reframe_1img
 launch_reframe_1img() {
     img=$1
     # export UENV="${squashfs_path}:${mount}"
@@ -312,7 +333,7 @@ launch_reframe_1img() {
     # -n HelloWorldTestMPIOpenMP
 }
 # }}}
-# {{{ launch_reframe 
+# {{{ launch_reframe
 launch_reframe() {
     export RFM_AUTODETECT_METHODS="cat /etc/xthostname,hostname"
     export RFM_USE_LOGIN_SHELL=1
@@ -335,14 +356,101 @@ launch_reframe_1arg() {
     export RFM_USE_LOGIN_SHELL=1
     # export RFM_AUTODETECT_XTHOSTNAME=1
     # reframe -V
-    echo "UENV=$UENV"
-    echo "# img=$img"
+    echo "# UENV=$UENV"
+    echo "# args=$@"
     reframe -C ./config/cscs.py \
         --report-junit=report.xml \
-        $img \
+        $@ \
         --system=$system \
         --prefix=$SCRATCH/rfm-$CI_JOB_ID \
         -r
+}
+# }}}
+# {{{ launch_reframe_bencher
+launch_reframe_bencher() {
+    set -euo pipefail
+
+    export RFM_AUTODETECT_METHODS="cat /etc/xthostname,hostname"
+    export RFM_USE_LOGIN_SHELL=1
+    # export RFM_AUTODETECT_XTHOSTNAME=1
+    # reframe -V
+    echo "# UENV=$UENV"
+
+    reframe -C ./config/cscs.py \
+        --mode daily_bencher \
+        --system=$system \
+        --prefix=$SCRATCH/rfm-$CI_JOB_ID \
+        -r
+
+    python3 ./utility/bencher_metric_format.py latest.json
+
+    ################################################################################
+    # Setup Bencher
+    ################################################################################
+    arch=$(uname -m | tr '[:upper:]' '[:lower:]')
+    case "$arch" in
+        aarch64|arm64)
+            ARCH="linux-arm-64"
+            ;;
+        x86_64|amd64)
+            ARCH="linux-x86-64"
+            ;;
+        *)
+            echo "Unknown architecture: $arch" >&2
+            exit 1
+            ;;
+    esac
+    echo "Detected architecture (Bencher installation): $ARCH"
+
+    REPO="bencherdev/bencher"
+    TAG=$(curl -s https://api.github.com/repos/$REPO/releases/latest | grep tag_name | cut -d '"' -f4)
+    FILENAME="bencher-${TAG}-${ARCH}"
+    URL="https://github.com/${REPO}/releases/download/${TAG}/${FILENAME}"
+
+    echo "Downloading $FILENAME from $URL"
+    curl -LO "$URL"
+    mv "$FILENAME" bencher
+
+    chmod +x bencher
+    echo "Testing ./bencher --version -> $(./bencher --version)"
+
+    ################################################################################
+    # Bencher run
+    ################################################################################
+    for bmf_file in bencher=*.json; do
+        testbed="${bmf_file#*=}"
+        testbed="${testbed%.json}"
+
+        echo "Uploading results for testbed: $testbed from file: $bmf_file"
+
+        ./bencher run \
+            --threshold-measure latency \
+            --threshold-test percentage \
+            --threshold-max-sample-size 64 \
+            --threshold-lower-boundary _ \
+            --threshold-upper-boundary 0.1 \
+            \
+            --threshold-measure bandwidth \
+            --threshold-test percentage \
+            --threshold-max-sample-size 64 \
+            --threshold-lower-boundary 0.1 \
+            --threshold-upper-boundary _ \
+            \
+            --threshold-measure keys/second \
+            --threshold-test percentage \
+            --threshold-max-sample-size 64 \
+            --threshold-lower-boundary 0.1 \
+            --threshold-upper-boundary _ \
+            \
+            --adapter json \
+            --file "$bmf_file" \
+            --testbed "$testbed" \
+            --thresholds-reset \
+            --branch main \
+            \
+            --token $BENCHER_API_TOKEN \
+            --project $BENCHER_PROJECT
+    done
 }
 # }}}
 # {{{ oneuptime
@@ -364,7 +472,7 @@ oneuptime() {
 }
 # }}}
 
-# {{{ main 
+# {{{ main
 in="$1"
 img="$2"
 pe="$3"
@@ -387,8 +495,9 @@ case $in in
     launch_reframe_1img) launch_reframe_1img "$img";;
     launch_reframe) launch_reframe;;
     launch_reframe_1arg) launch_reframe_1arg "$img";;
+    launch_reframe_bencher) launch_reframe_bencher;;
     oneuptime) oneuptime "$img" "$pe";;
     *) echo "unknown arg=$in";;
 esac
 #old [[ -d $oras_tmp ]] && { echo "cleaning $oras_tmp"; rm -fr $oras_tmp; }
-# }}} 
+# }}}
