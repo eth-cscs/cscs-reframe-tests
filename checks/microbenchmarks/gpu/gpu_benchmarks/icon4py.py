@@ -28,6 +28,7 @@ class ICON4PyBenchmarks(rfm.RunOnlyRegressionTest):
         # 'GT4PY_BUILD_CACHE_DIR': '...',
     }
     prerun_cmds = [
+        'echo "# SLURM_JOBID=$SLURM_JOBID"', 'date',
         'python -m venv .venv',
         'source .venv/bin/activate',
         'git clone https://github.com/C2SM/icon4py.git',
@@ -40,9 +41,10 @@ class ICON4PyBenchmarks(rfm.RunOnlyRegressionTest):
         'uv sync --extra all --python $(which python) --active',
         ('uv pip uninstall mpi4py && '
          'uv pip install --no-binary mpi4py mpi4py && '
-         'uv pip install git+https://github.com/cupy/cupy.git'
-         ),
+         'uv pip install git+https://github.com/cupy/cupy.git'),
+        'date',
     ]
+    postrun_cmds = ['date']
     executable = 'pytest'
     executable_opts = [
         '-v',
@@ -66,11 +68,9 @@ class ICON4PyBenchmarks(rfm.RunOnlyRegressionTest):
     def prepare_run(self):
         if 'rocm' in self.current_environ.features:
             gpu_arch = self.current_partition.select_devices('gpu')[0].arch
-            self.env_vars += {
-                'CUPY_INSTALL_USE_HIP': '1',
-                'HCC_AMDGPU_TARGET': gpu_arch,
-                'ROCM_HOME': '/user-environment/env/default'
-            }
+            self.env_vars['CUPY_INSTALL_USE_HIP'] = '1'
+            self.env_vars['HCC_AMDGPU_TARGET'] = gpu_arch
+            self.env_vars['ROCM_HOME'] = '/user-environment/env/default'
 
     @sanity_function
     def validate_test(self):
@@ -119,3 +119,5 @@ class ICON4PyBenchmarks(rfm.RunOnlyRegressionTest):
             # 'dycore_granule':
             #     sn.make_performance_function(dycore_granule_mean, 'ms'),
         }
+
+    # TODO: add ref. (https://github.com/eth-cscs/cscs-reframe-tests/pull/440)
