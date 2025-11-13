@@ -13,12 +13,12 @@ from uenv import uarch
 
 cp2k_references = {
     'md': {
-        'gh200': {'time_run': (68, None, 0.05, 's')},
-        'zen2': {'time_run': (90, None, 0.05, 's')}
+        'gh200': {'time_run': (52, None, 0.05, 's')},
+        'zen2': {'time_run': (91, None, 0.05, 's')}
     },
     'pbe': {
         'gh200': {'time_run': (64, None, 0.05, 's')},
-        'zen2': {'time_run': (51, None, 0.05, 's')}
+        'zen2': {'time_run': (53, None, 0.05, 's')}
     },
     'rpa': {
         'gh200': {'time_run': (575, None, 0.05, 's')}
@@ -170,12 +170,12 @@ class Cp2kBuildTestUENV(rfm.CompileOnlyRegressionTest):
             ]
             if version > 2025.1:
                 self.build_system.config_opts += [
-		    '-DCMAKE_CUDA_ARCHITECTURES=90',
-		]
+                    '-DCMAKE_CUDA_ARCHITECTURES=90',
+                ]
             else:
                 self.build_system.config_opts += [
-		    '-DCP2K_WITH_GPU=H100',
-		]
+                    '-DCP2K_WITH_GPU=H100',
+                ]
 
     @sanity_function
     def validate_test(self):
@@ -297,7 +297,7 @@ class Cp2kCheckMD_UENVCustomExec(Cp2kCheckMD_UENV):
 
     valid_prog_environs = ['+cp2k-dev -dlaf']
     tags = {'uenv'}
-    
+ 
     @run_after('init')
     def setup_dependency(self):
         self.depends_on('Cp2kBuildTestUENV', udeps.fully)
