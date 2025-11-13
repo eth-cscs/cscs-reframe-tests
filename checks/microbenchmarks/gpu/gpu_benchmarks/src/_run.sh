@@ -19,6 +19,8 @@ else
 
     date
     source .venv/bin/activate
+    cd icon4py
+
     pytest -v \
         -m continuous_benchmarking \
         --benchmark-only \

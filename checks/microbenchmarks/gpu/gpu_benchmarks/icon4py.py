@@ -18,7 +18,6 @@ class ICON4PyBenchmarks(rfm.RunOnlyRegressionTest):
     valid_prog_environs = ['+uenv +prgenv +rocm', '+uenv +prgenv +cuda']
     tags = {'production', 'uenv'}
     time_limit = '20m'
-    # sourcesdir = None
     build_locally = False
     env_vars = {
         'UV_CACHE_DIR': '$SCRATCH/.cache/uv',
@@ -32,55 +31,10 @@ class ICON4PyBenchmarks(rfm.RunOnlyRegressionTest):
     }
     executable = './_run.sh'
     executable_opts = ['2>&1']
-#del     executable = 'pytest'
-#del     executable_opts = [
-#del         '-v',
-#del         '-m continuous_benchmarking',
-#del         '--benchmark-only',
-#del         '--benchmark-warmup=on',
-#del         '--benchmark-warmup-iterations=30',
-#del         '--benchmark-json=icon4py_benchmarks.json',
-#del         '--backend=dace_gpu --grid=icon_benchmark_regional',
-#del         ('model/atmosphere/diffusion/tests/diffusion/integration_tests'
-#del          '/test_benchmark_diffusion.py'
-#del          '::test_diffusion_benchmark'
-#del          ),
-#del         # ('model/atmosphere/dycore/tests/dycore/integration_tests/'
-#del         #  'test_benchmark_solve_nonhydro.py'
-#del         #  '::test_benchmark_solve_nonhydro[True-False]'
-#del         #  ),
-#del     ]
-
-#del     # @run_after('init')
-#del     @run_before('run')
-#del     def check_python_version(self):
-#del         # sys.version_info(major=3, minor=11, micro=10, releaselevel='final', serial=0)
-#del         hh = os.getenv('HOME') ;print(hh)
-#del         print(sys.version_info)
-#del         self.skip_if(sys.version_info.minor >= 14,
-#del                      f'incompatible python version ({sys.version_info.minor})')
 
     @run_before('run')
     def install_deps(self):
         self.prerun_cmds = ['./_install.sh &> _install.sh.log 2>&1']
-#del         self.prerun_cmds = [
-#del             'echo "# SLURM_JOBID=$SLURM_JOBID"', 'date',
-#del             'python -m venv .venv',
-#del             'source .venv/bin/activate',
-#del             'git clone https://github.com/C2SM/icon4py.git',
-#del             'cd icon4py',
-#del             # Commit: Update to GT4Py v1.1.0 (#933)
-#del             'git checkout 5485bcacb1dbc7688b1e7d276d4e2e28362c5444',
-#del             'pip install --upgrade pip',
-#del             'pip install uv',
-#del             'rm uv.lock',
-#del             'uv sync --extra all --python $(which python) --active',
-#del             ('uv pip uninstall mpi4py && '
-#del              'uv pip install --no-binary mpi4py mpi4py && '
-#del              'uv pip install git+https://github.com/cupy/cupy.git'),
-#del             'date', '',
-#del         ]
-#del         self.postrun_cmds = ['', 'date']
 
     @run_before('run')
     def prepare_run(self):
@@ -109,11 +63,6 @@ class ICON4PyBenchmarks(rfm.RunOnlyRegressionTest):
         #     self.stdout)
 
         return diffusion_granule  # and dycore_granule
-
-#del Legend:
-#del   Outliers: 1 Standard Deviation from Mean; 1.5 IQR (InterQuartile Range) from 1st Quartile and 3rd Quartile.
-#del   OPS: Operations Per Second, computed as 1 / Mean
-#del ================== 1 passed, 62 warnings in 494.14s (0:08:14) ==================
 
     @run_before('performance')
     def set_perf_vars(self):
