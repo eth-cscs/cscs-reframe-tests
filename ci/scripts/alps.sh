@@ -281,27 +281,15 @@ uenv_pull_sqfs() {
 # }}}
 # {{{ install_reframe
 install_reframe() {
-    # all must be quiet because of last echo
     rm -fr rfm_venv reframe
-    python3 -m venv rfm_venv
+    python3.11 -m venv --system-site-packages rfm_venv
     source rfm_venv/bin/activate
-    # pip install --upgrade reframe-hpc
+    pip install --upgrade pip
+    pip install --upgrade ReFrame-HPC
     # git clone --depth 1 https://github.com/reframe-hpc/reframe.git
-    # multi-uenv support only in reframe > v4.5.2:
-
-    # FIXME: This is temporary until this PR is merged: https://github.com/reframe-hpc/reframe/pull/3516
-    (wget --quiet "https://github.com/ekouts/reframe/archive/refs/heads/feat/sanity_logging.zip" && \
-    unzip -qq "sanity_logging.zip" && cd reframe-feat-sanity_logging && ./bootstrap.sh &> /dev/null)
-    export PATH="$(pwd)/reframe-feat-sanity_logging/bin:$PATH"
-    echo "$(pwd)/reframe-feat-sanity_logging/bin"
-    # deps for cscs-reframe-tests.git:
-    pip install python-hostlist requests &> .deps.cscs-reframe-tests
-    # (wget --quiet "https://github.com/reframe-hpc/reframe/archive/refs/tags/v4.5.2.tar.gz" && \
-    # tar xf v4.5.2.tar.gz && \
-    # cd reframe-4.5.2 && \
-    # ./bootstrap.sh)
-    # echo "$PWD/reframe-4.5.2/bin"
-    # export PATH="$(pwd)/reframe/bin:$PATH"
+    pip install -r ./config/utilities/requirements.txt
+    # return the PATH to the calling function:
+    echo "$PWD/rfm_venv/bin"
 }
 # }}}
 # {{{ install_reframe_tests (alps branch)
