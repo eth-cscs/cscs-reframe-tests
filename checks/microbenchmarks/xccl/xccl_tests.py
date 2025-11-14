@@ -89,24 +89,12 @@ class XCCLTestsBase(rfm.RunOnlyRegressionTest):
         }
 
 
-class XCCLTestsBaseCE(XCCLTestsBase, ContainerEngineMixin):
+class XCCLTestsBaseCE(XCCLTestsBase, ContainerEngineMixin, SlurmMpiOptionsMixin):
     container_env_table = {
         'annotations.com.hooks': {
             'aws_ofi_nccl.enabled': 'true'
         }
     }
-
-    @run_before('run')
-    def set_pmix(self):
-        self.job.launcher.options += ['--mpi=pmix']
-
-        # Disable MCA components to avoid warnings
-        self.env_vars.update(
-            {
-                'PMIX_MCA_psec': '^munge',
-                'PMIX_MCA_gds': '^shmem2'
-            }
-        )
 
 
 class XCCLTestsBaseUENV(XCCLTestsBase, SlurmMpiOptionsMixin):
