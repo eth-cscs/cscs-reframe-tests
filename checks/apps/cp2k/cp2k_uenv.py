@@ -13,11 +13,11 @@ from uenv import uarch
 
 cp2k_references = {
     'md': {
-        'gh200': {'time_run': (52, None, 0.05, 's')},
+        'gh200': {'time_run': (69, None, 0.05, 's')},
         'zen2': {'time_run': (91, None, 0.05, 's')}
     },
     'pbe': {
-        'gh200': {'time_run': (64, None, 0.05, 's')},
+        'gh200': {'time_run': (67, None, 0.05, 's')},
         'zen2': {'time_run': (53, None, 0.05, 's')}
     },
     'rpa': {
@@ -145,6 +145,7 @@ class Cp2kBuildTestUENV(rfm.CompileOnlyRegressionTest):
             '-DCMAKE_BUILD_TYPE=Release',
             '-DCP2K_USE_LIBXC=ON',
             '-DCP2K_USE_LIBINT2=ON',
+            '-DCP2K_USE_FFTW3=ON',
             '-DCP2K_USE_SPGLIB=ON',
             '-DCP2K_USE_ELPA=ON',
             '-DCP2K_USE_SPLA=ON',
@@ -166,6 +167,7 @@ class Cp2kBuildTestUENV(rfm.CompileOnlyRegressionTest):
         if self.uarch == 'gh200':
             self.build_system.config_opts += [
                 '-DCP2K_USE_ACCEL=CUDA',
+                '-DCP2K_USE_SPLA_GEMM_OFFLOADING=ON',
                 '-DCMAKE_CUDA_HOST_COMPILER=mpicc',
             ]
             if version > 2025.1:
@@ -190,7 +192,6 @@ class Cp2kBuildTestUENV(rfm.CompileOnlyRegressionTest):
 
 
 class Cp2kCheck_UENV(rfm.RunOnlyRegressionTest):
-    executable = './pika-bind.sh cp2k.psmp'
     maintainers = ['SSA']
     valid_systems = ['+uenv']
     valid_prog_environs = ['+cp2k -dlaf']
@@ -200,7 +201,7 @@ class Cp2kCheck_UENV(rfm.RunOnlyRegressionTest):
         """Setup wrapper script"""
         self.uarch = uarch(self.current_partition)
         self.wrapper = './mps-wrapper.sh' if self.uarch == 'gh200' else ''
-
+    
     @run_before('run')
     def prepare_run(self):
         config = slurm_config[self.test_name][self.uarch]
@@ -213,9 +214,6 @@ class Cp2kCheck_UENV(rfm.RunOnlyRegressionTest):
         self.num_cpus_per_task = config['cpus-per-task']
         self.ntasks_per_core = 1
         self.time_limit = config['walltime']
-
-        # wrapper script
-        self.wrapper = './mps-wrapper.sh' if self.uarch == 'gh200' else ''
 
         # srun options
         self.job.launcher.options = ['--cpu-bind=cores']
@@ -250,6 +248,10 @@ class Cp2kCheck_UENV(rfm.RunOnlyRegressionTest):
                 self.current_partition.fullname:
                     cp2k_references[self.test_name][self.uarch]
             }
+
+    @run_before('run')
+    def setup_executable(self):
+        self.executable = f'{self.wrapper} ./pika-bind.sh cp2k.psmp'
 
     @sanity_function
     def assert_energy_diff(self):
@@ -302,7 +304,7 @@ class Cp2kCheckMD_UENVCustomExec(Cp2kCheckMD_UENV):
     def setup_dependency(self):
         self.depends_on('Cp2kBuildTestUENV', udeps.fully)
 
-    @run_after('setup')
+    @run_before('run')
     def setup_executable(self):
         parent = self.getdep('Cp2kBuildTestUENV')
         self.executable = f'{self.wrapper} ./pika-bind.sh {parent.cp2k_executable}'
@@ -326,7 +328,7 @@ class Cp2kCheckPBE_UENV(Cp2kCheck_UENV):
         version = float(version_from_uenv())
         if version > 2025.1:
             # Refuce max_scf to 16 to reproduce previous behaviour
-            self.executable_opts = ['-i', 'H2O-128-PBE-TZ-max_scf_15.inp']
+            self.executable_opts = ['-i', 'H2O-128-PBE-TZ-max_scf_16.inp']
         else:
             self.executable_opts = ['-i', 'H2O-128-PBE-TZ.inp']
 
@@ -352,7 +354,7 @@ class Cp2kCheckPBE_UENVCustomExec(Cp2kCheckPBE_UENV):
     def setup_dependency(self):
         self.depends_on('Cp2kBuildTestUENV', udeps.fully)
 
-    @run_after('setup')
+    @run_before('run')
     def setup_executable(self):
         parent = self.getdep('Cp2kBuildTestUENV')
         self.executable = f'{self.wrapper} ./pika-bind.sh {parent.cp2k_executable}'
