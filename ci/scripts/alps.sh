@@ -380,6 +380,7 @@ launch_reframe_bencher() {
         --mode daily_bencher \
         --system=$system \
         --prefix=$SCRATCH/rfm-$CI_JOB_ID \
+        -c ./checks/microbenchmarks/gpu/gpu_benchmarks/ \
         -r
 
     python3 ./utility/bencher_metric_format.py latest.json
@@ -424,30 +425,11 @@ launch_reframe_bencher() {
         echo "Uploading results for testbed: $testbed from file: $bmf_file"
 
         ./bencher run \
-            --threshold-measure latency \
-            --threshold-test percentage \
-            --threshold-max-sample-size 64 \
-            --threshold-lower-boundary _ \
-            --threshold-upper-boundary 0.1 \
-            \
-            --threshold-measure bandwidth \
-            --threshold-test percentage \
-            --threshold-max-sample-size 64 \
-            --threshold-lower-boundary 0.1 \
-            --threshold-upper-boundary _ \
-            \
-            --threshold-measure keys/second \
-            --threshold-test percentage \
-            --threshold-max-sample-size 64 \
-            --threshold-lower-boundary 0.1 \
-            --threshold-upper-boundary _ \
-            \
             --adapter json \
             --file "$bmf_file" \
             --testbed "$testbed" \
             --thresholds-reset \
             --branch main \
-            \
             --token $BENCHER_API_TOKEN \
             --project $BENCHER_PROJECT
     done
