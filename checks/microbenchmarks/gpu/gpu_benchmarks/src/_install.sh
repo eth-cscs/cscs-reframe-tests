@@ -29,7 +29,7 @@ else
     uv sync --extra all --python $(which python) --active
     uv pip uninstall mpi4py && \
     uv pip install --no-binary mpi4py mpi4py && \
-    uv pip install git+https://github.com/cupy/cupy.git
+    uv --no-cache pip install git+https://github.com/cupy/cupy.git
 
     echo "# install done"
     date
