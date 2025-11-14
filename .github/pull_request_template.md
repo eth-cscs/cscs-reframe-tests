@@ -22,7 +22,7 @@ cscs-ci run alps-beverin-uenv;MY_UENV=prgenv-gnu/25.07-6.3.3:v9
 
 ```shell
 UENV=prgenv-gnu/25.07-6.3.3:v8 \
-    reframe -C 
+    reframe -C \
     -C ./cscs-reframe-tests.git/config/cscs.py \
     --keep-stage-files \
     -c checks/microbenchmarks/gpu/gpu_benchmarks/icon4py.py \
