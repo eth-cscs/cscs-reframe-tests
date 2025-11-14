@@ -11,10 +11,11 @@ import reframe.utility.sanity as sn
 sys.path.append(str(pathlib.Path(__file__).parent.parent / 'mixins'))
 from extra_launcher_options import ExtraLauncherOptionsMixin
 from container_engine import ContainerEngineCPEMixin
+from slurm_mpi_options import SlurmMpiOptionsMixin
 
 
 class HelloWorldBaseTest(rfm.RegressionTest, ExtraLauncherOptionsMixin,
-                         ContainerEngineCPEMixin):
+                         ContainerEngineCPEMixin, SlurmMpiOptionsMixin):
     linking = parameter(['dynamic'])
     lang = parameter(['c', 'cpp', 'F90'])
     sourcesdir = 'src/hello'

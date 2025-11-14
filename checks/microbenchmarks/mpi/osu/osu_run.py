@@ -6,14 +6,16 @@
 import reframe as rfm
 import reframe.utility.sanity as sn
 
+sys.path.append(str(pathlib.Path(__file__).parent.parent / 'mixins'))
+from slurm_mpi_options import SlurmMpiOptionsMixin
 
-class BaseCheck(rfm.RunOnlyRegressionTest):
+
+class BaseCheck(rfm.RunOnlyRegressionTest, SlurmMpiOptionsMixin):
     valid_systems = ['+remote']
     valid_prog_environs = ['+osu-micro-benchmarks +uenv']
     sourcesdir = None
     num_tasks = 2
     num_tasks_per_node = 1
-    pmi = variable(str, value='')
     env_vars = {
         # Disable GPU support for mpich
         'MPIR_CVAR_ENABLE_GPU': 0,
@@ -37,11 +39,6 @@ class BaseCheck(rfm.RunOnlyRegressionTest):
         # Use a single socket per node (num_tasks_per_node == 1)
         processor = self.current_partition.processor
         self.num_cpus_per_task = processor.num_cpus_per_socket
-
-    @run_after('setup')
-    def set_launcher_options(self):
-        if self.pmi != '':
-            self.job.launcher.options = [f'--mpi={self.pmi}']
 
     @sanity_function
     def assert_sanity(self):
