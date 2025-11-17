@@ -60,7 +60,7 @@ class FFTCheck(rfm.RunOnlyRegressionTest):
     valid_prog_environs = ['+uenv +prgenv +rocm', '+uenv +prgenv +cuda']
     valid_systems = ['+uenv']
     time_limit = '4m'
-    tags = {'production', 'uenv'}
+    tags = {'production', 'uenv', 'bencher'}
 
 
     fft_dim = parameter(['1D', '2D', '3D'])
