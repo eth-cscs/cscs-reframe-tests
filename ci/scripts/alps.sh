@@ -368,7 +368,6 @@ launch_reframe_bencher() {
         --mode daily_bencher \
         --system=$system \
         --prefix=$SCRATCH/rfm-$CI_JOB_ID \
-        -c ./checks/microbenchmarks/gpu/gpu_benchmarks/ \
         -r
 
     python3 ./utility/bencher_metric_format.py latest.json
