@@ -76,6 +76,8 @@ class QeSiriusCheckUENV(rfm.RunOnlyRegressionTest):
 
         # environment variables
         self.env_vars["OMP_NUM_THREADS"] = config["cpus-per-task"]
+        self.env_vars["SIRIUS_PRINT_TIMING"] = "1"
+        self.env_vars["SIRIUS_PRINT_MPI_LAYOUT"] = "1"
         self.env_vars["SLURM_HINT"] = "nomultithread"
         if self.uarch == "gh200":
             self.env_vars["MPICH_GPU_SUPPORT_ENABLED"] = "1"
