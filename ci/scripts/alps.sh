@@ -289,7 +289,7 @@ install_reframe() {
     # git clone --depth 1 https://github.com/reframe-hpc/reframe.git
     pip install -r ./config/utilities/requirements.txt
     # return the PATH to the calling function:
-    echo "$PWD/rfm_venv/bin"
+    echo "$PWD/rfm_venv/bin # HERE"
 }
 # }}}
 # {{{ install_reframe_tests (alps branch)
