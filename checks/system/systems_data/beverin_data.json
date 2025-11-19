@@ -45,7 +45,7 @@
         },
         {
             "env_var": "SCRATCH",
-            "env_value": "/capstor/scratch/cscs/"
+            "env_value": "/capstor/scratch/cscs"
         }
     ]
 }
