@@ -45,7 +45,7 @@ slurm_config = {
             "cpus-per-task": 72,
             "walltime": "0d0h5m0s",
             "gpu": True,
-            "extra_job_options": [""],
+            "extra_job_options": [],
         },
         "mi300": {
             "nodes": 2,
@@ -61,7 +61,7 @@ slurm_config = {
             "cpus-per-task": 16,
             "walltime": "0d0h10m0s",
             "gpu": True,
-            "extra_job_options": [""],
+            "extra_job_options": [],
         },
         "zen2": {
             "nodes": 2,
@@ -69,7 +69,7 @@ slurm_config = {
             "cpus-per-task": 16,
             "walltime": "0d0h10m0s",
             "gpu": True,
-            "extra_job_options": [""],
+            "extra_job_options": [],
         }
     },
     "gen_eigensolver": {
