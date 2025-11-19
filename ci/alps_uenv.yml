@@ -55,7 +55,7 @@ reframe:
         SLURM_TIMELIMIT: '02:00:00'
     - if: '$BENCHER_API_TOKEN'
       variables:
-        SLURM_TIMELIMIT: '00:20:00'
+        SLURM_TIMELIMIT: '01:00:00'
   before_script:
     - echo "FIRECREST_SYSTEM=$FIRECREST_SYSTEM / F7T_URL=$F7T_URL / CLUSTER_NAME=$CLUSTER_NAME"
     - uname -a
@@ -69,7 +69,7 @@ reframe:
     - git remote -v
     - hostname
   script:
-    - rfm_path=$(./ci/scripts/alps.sh install_reframe)
+    - rfm_path=$(./ci/scripts/alps.sh install_reframe|grep HERE |awk '{print $1}')
     - export PATH=$rfm_path:$PATH
     - reframe -V
     # If in a PR, run only the tests modified in the PR, else: in CRONJOB
