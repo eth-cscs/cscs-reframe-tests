@@ -113,7 +113,7 @@ jfrog_login() {
 uenv_image_find() {
 # uf |egrep -v "scorep|prgenv|paraview|netcdf-tools|linaro-forge|linalg|jupyterlab|julia|editors" \
 # |grep -v 'size(MB)' |cut -d/ -f1 |sort -u
-    ignore_list="scorep|paraview|netcdf-tools|linaro-forge|jupyterlab|julia|editors"
+    ignore_list="scorep|netcdf-tools|linaro-forge|jupyterlab|julia|editors"
     if [ -z $MY_UENV ] ;then
         # -z MY_UENV means 
         # get the list of deployed supported apps (skip header line):
