@@ -15,18 +15,6 @@ class linaro_ddt(rfm.RunOnlyRegressionTest):
     sourcesdir = None
     executable = 'ddt'
     rpt = variable(str, value='rpt.txt')
-    env_vars = {
-        # As explained in the documentation:
-        # https://eth-cscs.github.io/alps-uenv/uenv-linaro-forge/
-        # -> launch-the-code-with-the-debugger -> Warning note
-        # in order to avoid "proxy type is invalid for this operation", we need
-        'http_proxy': '"proxy.cscs.ch:8080"',
-        'https_proxy': '"proxy.cscs.ch:8080"',
-        'no_proxy': (
-            r'".local, .cscs.ch, localhost, 148.187.0.0/16, 10.0.0.0/8, '
-            r'172.16.0.0/12"'
-        )
-    }
 
     @run_before('run')
     def setup_ddt_flags(self):
