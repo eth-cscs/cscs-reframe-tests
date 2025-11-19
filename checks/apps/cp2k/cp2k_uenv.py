@@ -327,7 +327,7 @@ class Cp2kCheckPBE_UENV(Cp2kCheck_UENV):
         # See https://github.com/cp2k/cp2k/pull/4141
         version = float(version_from_uenv())
         if version > 2025.1:
-            # Refuce max_scf to 16 to reproduce previous behaviour
+            # Reduce max_scf to 16 to reproduce previous behaviour
             self.executable_opts = ['-i', 'H2O-128-PBE-TZ-max_scf_16.inp']
         else:
             self.executable_opts = ['-i', 'H2O-128-PBE-TZ.inp']
