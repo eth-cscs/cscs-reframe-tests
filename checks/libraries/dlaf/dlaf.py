@@ -143,6 +143,8 @@ class dlaf_base(rfm.RunOnlyRegressionTest):
 
         if self.uarch in ("mi300", "mi200"):
             self.wrapper = "./rocr_wrapper.sh"
+        else:
+            self.wrapper = ""
 
         # environment variables
         if self.uarch in ("mi300", "mi200", "zen2"):
