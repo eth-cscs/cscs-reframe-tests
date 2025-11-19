@@ -17,7 +17,6 @@ sys.path.append(
 
 from extra_launcher_options import ExtraLauncherOptionsMixin
 from container_engine import ContainerEngineCPEMixin
-from slurm_mpi_options import SlurmMpiOptionsMixin
 
 
 class fetch_osu_benchmarks(rfm.RunOnlyRegressionTest):
@@ -246,7 +245,7 @@ class osu_benchmark(rfm.RunOnlyRegressionTest, ExtraLauncherOptionsMixin,
                                 self.stdout, 1, float)
 
 
-class osu_build_run(osu_benchmark, SlurmMpiOptionsMixin):
+class osu_build_run(osu_benchmark):
     '''OSU benchmark test (build and run)'''
 
     #: The fixture object that builds the OSU binaries

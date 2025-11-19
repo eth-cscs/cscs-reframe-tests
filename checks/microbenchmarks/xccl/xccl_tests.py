@@ -12,7 +12,8 @@ import reframe.utility.sanity as sn
 sys.path.append(str(pathlib.Path(__file__).parent.parent.parent / 'mixins'))
 
 from container_engine import ContainerEngineMixin  # noqa: E402
-from slurm_mpi_options import SlurmMpiOptionsMixin
+from slurm_mpi_pmix import SlurmMpiPmixMixin
+from uenv_slurm_mpi_options import UenvSlurmMpiOptionsMixin
 
 
 class XCCLTestsBase(rfm.RunOnlyRegressionTest):
@@ -89,7 +90,7 @@ class XCCLTestsBase(rfm.RunOnlyRegressionTest):
         }
 
 
-class XCCLTestsBaseCE(XCCLTestsBase, ContainerEngineMixin, SlurmMpiOptionsMixin):
+class XCCLTestsBaseCE(XCCLTestsBase, ContainerEngineMixin, SlurmMpiPmixMixin):
     container_env_table = {
         'annotations.com.hooks': {
             'aws_ofi_nccl.enabled': 'true'
@@ -97,7 +98,7 @@ class XCCLTestsBaseCE(XCCLTestsBase, ContainerEngineMixin, SlurmMpiOptionsMixin)
     }
 
 
-class XCCLTestsBaseUENV(XCCLTestsBase, SlurmMpiOptionsMixin):
+class XCCLTestsBaseUENV(XCCLTestsBase, UenvSlurmMpiOptionsMixin):
     pass
 
 

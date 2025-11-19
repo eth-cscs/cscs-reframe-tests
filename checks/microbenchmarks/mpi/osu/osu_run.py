@@ -10,10 +10,10 @@ import reframe as rfm
 import reframe.utility.sanity as sn
 
 sys.path.append(str(pathlib.Path(__file__).parent.parent / 'mixins'))
-from slurm_mpi_options import SlurmMpiOptionsMixin
+from uenv_slurm_mpi_options import UenvSlurmMpiOptionsMixin
 
 
-class BaseCheck(rfm.RunOnlyRegressionTest, SlurmMpiOptionsMixin):
+class BaseCheck(rfm.RunOnlyRegressionTest, UenvSlurmMpiOptionsMixin):
     valid_systems = ['+remote']
     valid_prog_environs = ['+osu-micro-benchmarks +uenv']
     sourcesdir = None

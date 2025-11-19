@@ -6,9 +6,19 @@
 import reframe as rfm
 
 
-class SlurmMpiOptionsMixin(rfm.RegressionMixin):
+class UenvSlurmMpiOptionsMixin(rfm.RegressionMixin):
+    """
+    Set slurm --mpi flags based on uenv features.
+
+    For uenvs that announce that they use OpenMPI, --mpi=pmix needs to be used.
+    For uenvs that advertise Cray MPICH, or uenvs that don't specify, we assume
+    that --mpi=cray_shasta is required.
+
+    Additionally for OpenMPI we silence some warnings.
+    """
+
     @run_after('setup')
-    def set_slurm_mpi_options(self):
+    def set_uenv_slurm_mpi_options(self):
         features = self.current_environ.features
         if "openmpi" in features:
             self.job.launcher.options += ['--mpi=pmix']
