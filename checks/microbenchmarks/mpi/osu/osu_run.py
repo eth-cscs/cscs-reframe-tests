@@ -9,7 +9,7 @@ import sys
 import reframe as rfm
 import reframe.utility.sanity as sn
 
-sys.path.append(str(pathlib.Path(__file__).parent.parent / 'mixins'))
+sys.path.append(str(pathlib.Path(__file__).parent.parent.parent.parent / 'mixins'))
 from uenv_slurm_mpi_options import UenvSlurmMpiOptionsMixin
 
 
