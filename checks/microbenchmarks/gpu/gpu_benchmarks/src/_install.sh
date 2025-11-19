@@ -1,37 +1,24 @@
 #!/bin/bash
 
-py_version=$(python3 --version 2>&1 |awk '{print $2}')
-minor_version=$(echo "$py_version" |cut -d \. -f2)
-# echo "$py_version $minor_version"
+date
+echo "# SLURM_JOBID=$SLURM_JOBID"
 
-if [ "$minor_version" -gt "13" ] ;then export RFM_ICON4PY_STOP='Y' ; else export RFM_ICON4PY_STOP='N' ; fi
+git clone https://github.com/C2SM/icon4py.git && cd icon4py
+git checkout 5485bcacb1dbc7688b1e7d276d4e2e28362c5444
+rm uv.lock
 
-if [ "$RFM_ICON4PY_STOP" == "Y" ] ;then
-    echo "# INFO: $0: python/$py_version is incompatible with this test (try python/3.13), exiting..."
-    exit 0
+curl -LsSf https://astral.sh/uv/install.sh | UV_INSTALL_DIR="$PWD/bin" sh
+export PATH="$PWD/bin:$PATH"
+export UV_NO_CACHE=1
 
-else
+HOME="$PWD/_home" uv python install $ICON4PY_PYTHON_VERSION
 
-    date
-    echo "# SLURM_JOBID=$SLURM_JOBID"
+uv sync --no-cache --extra all --python $PWD/_home/.local/bin/python$ICON4PY_PYTHON_VERSION
+source .venv/bin/activate
 
-    python -m venv .venv
-    source .venv/bin/activate
-    
-    git clone https://github.com/C2SM/icon4py.git
-    cd icon4py
-    git checkout 5485bcacb1dbc7688b1e7d276d4e2e28362c5444
-    # Commit: Update to GT4Py v1.1.0 (#933)
-    pip install --upgrade pip
-    
-    pip install uv
-    rm uv.lock
-    uv sync --extra all --python $(which python) --active
-    uv pip uninstall mpi4py && \
-    uv pip install --no-binary mpi4py mpi4py && \
-    uv --no-cache pip install git+https://github.com/cupy/cupy.git
+uv --no-cache pip uninstall mpi4py && \
+uv --no-cache pip install --no-binary mpi4py mpi4py && \
+uv --no-cache pip install git+https://github.com/cupy/cupy.git
 
-    echo "# install done"
-    date
-
-fi
+echo "# install done"
+date

@@ -3,8 +3,6 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-import os
-
 import reframe as rfm
 import reframe.utility.sanity as sn
 
@@ -19,6 +17,7 @@ class ICON4PyBenchmarks(rfm.RunOnlyRegressionTest):
     time_limit = '30m'
     build_locally = False
     env_vars = {
+        'ICON4PY_PYTHON_VERSION': '3.13',
         'UV_CACHE_DIR': '$SCRATCH/.cache/uv',
         'CC': '$(which gcc)',
         'MPICH_CC': '$(which gcc)',
@@ -45,16 +44,12 @@ class ICON4PyBenchmarks(rfm.RunOnlyRegressionTest):
 
     @sanity_function
     def validate_test(self):
-        rfm_stop = os.getenv('RFM_ICON4PY_STOP')
-        if rfm_stop == 'Y':
-            diffusion_granule = sn.assert_found('# INFO:', self.stdout)
-        else:
-            diffusion_granule = sn.assert_found(
-                (r'^\s*model/atmosphere/diffusion/tests/'
-                 r'diffusion/integration_tests/'
-                 r'test_benchmark_diffusion\.py'
-                 r'::test_diffusion_benchmark\s*PASSED'
-                 ), self.stdout)
+        diffusion_granule = sn.assert_found(
+            (r'^\s*model/atmosphere/diffusion/tests/'
+             r'diffusion/integration_tests/'
+             r'test_benchmark_diffusion\.py'
+             r'::test_diffusion_benchmark\s*PASSED'),
+            self.stdout)
         # dycore_granule = sn.assert_found(
         #     (r'^\s*model/atmosphere/dycore/tests/'
         #      r'dycore/integration_tests/test_benchmark_solve_nonhydro\.py'
