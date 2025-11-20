@@ -220,4 +220,4 @@ class dlaf_check_uenv(dlaf_base):
         if uarch(self.current_partition) in ("mi300", "mi200"):
             self.executable = f"./rocr_wrapper.sh miniapp_{self.test_name}"
         else:
-            self.executable = "miniapp_{self.test_name}"
+            self.executable = f"miniapp_{self.test_name}"
