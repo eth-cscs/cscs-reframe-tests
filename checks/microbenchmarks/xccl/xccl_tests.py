@@ -99,7 +99,7 @@ class XCCLTestsBaseCE(XCCLTestsBase, ContainerEngineMixin, SlurmMpiPmixMixin):
 
 
 class XCCLTestsBaseUENV(XCCLTestsBase, UenvSlurmMpiOptionsMixin):
-    pass
+    tags.add('bencher')
 
 
 def _set_xccl_uenv_env_vars(env_vars):
