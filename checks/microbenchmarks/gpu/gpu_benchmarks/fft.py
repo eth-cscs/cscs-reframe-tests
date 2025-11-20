@@ -92,6 +92,20 @@ class FFTCheck(rfm.RunOnlyRegressionTest):
         '3D': 1,
     }
 
+    # convert time in ms to bandwith in TB/s
+    def runtime_to_bandwidth(self, time):
+        # estimate total size with 16 bytes per element and
+        # 1 / 2 / 3 reads per element depending on dimension
+        read_bytes = self.fft_size * 16.0
+        if self.fft_dim == '2D':
+            read_bytes *= self.fft_size * 2.0
+        if self.fft_dim == '3D':
+            read_bytes *= self.fft_size * self.fft_size * 3.0
+
+        read_bytes *= self.batch_sizes[self.fft_dim]
+
+        return read_bytes / (time * 1e-3) / 1e12
+
     @run_after('init')
     def setup_dependency(self):
         self.depends_on('FFTBenchBuild', udeps.fully)
@@ -115,19 +129,24 @@ class FFTCheck(rfm.RunOnlyRegressionTest):
     def set_perf_vars(self):
         make_perf = sn.make_performance_function
         runtime = sn.extractsingle('Mean time \[ms\]: (?P<time>\S+)', self.stdout, 'time', float)
+        bandwidth = self.runtime_to_bandwidth(runtime)
 
         self.perf_variables = {
-            'runtime': make_perf(runtime, 'ms'),
+            'bandwidth': make_perf(bandwidth, 'TB/s'),
         }
 
     @run_before('performance')
     def set_references(self):
         self.uarch = uarch(self.current_partition)
 
-        self.reference = {
-            self.current_partition.fullname:
-            {
-                'runtime': (self.reference_timings[self.fft_dim][self.uarch][str(self.fft_size)], None, 0.2, 'ms'),
+        runtime = self.reference_timings.get(self.fft_dim, {}).get(self.uarch, {}).get(str(self.fft_size))
+
+        if runtime is not None:
+            bandwidth = self.runtime_to_bandwidth(runtime)
+            self.reference = {
+                self.current_partition.fullname:
+                {
+                    'bandwidth': (bandwidth, -0.2, None, 'TB/s'),
+                }
             }
-        }
 
