@@ -39,7 +39,7 @@ slurm_config = {
         "mi300": {
             "nodes": 1,
             "ntasks-per-node": 4,
-            "--gpus-per-task": 1,
+            "gpus-per-task": 1,
             "cpus-per-task": 24,
             "walltime": "0d0h20m0s",
             "gpu": True,
