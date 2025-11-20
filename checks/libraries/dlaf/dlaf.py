@@ -162,11 +162,11 @@ class dlaf_base(rfm.RunOnlyRegressionTest):
                 str(2**21)
 
         if self.uarch in ("mi300", "mi200"):
-           self.env_vars["PIKA_MPI_ENABLE_POOL"] = "1"
-           self.env_vars["PIKA_MPI_COMPLETION_MODE"] = "28"
-           self.env_vars["DLAF_BAND_TO_TRIDIAG_1D_BLOCK_SIZE_BASE"] = "2048"
-           self.env_vars["DLAF_NUM_NP_GPU_STREAMS"] = "4"
-           self.env_vars["DLAF_NUM_HP_GPU_STREAMS"] = "4"
+            self.env_vars["PIKA_MPI_ENABLE_POOL"] = "1"
+            self.env_vars["PIKA_MPI_COMPLETION_MODE"] = "28"
+            self.env_vars["DLAF_BAND_TO_TRIDIAG_1D_BLOCK_SIZE_BASE"] = "2048"
+            self.env_vars["DLAF_NUM_NP_GPU_STREAMS"] = "4"
+            self.env_vars["DLAF_NUM_HP_GPU_STREAMS"] = "4"
 
         # executable options
         grid_cols, grid_rows = self._sq_factor(self.num_tasks)
