@@ -150,6 +150,6 @@ class QeCheckAuSurfUENVExec(QeSiriusCheckAuSurfUENV):
         if uarch == "gh200":
             self.executable = f"./mps-wrapper.sh pw.x"
         if uarch == "mi200":
-            self.executable = f"./amdgpu-wrapper.sh pw.x -sirius_cfg=sirius-amd.json"
+            self.executable = f"./amdgpu-wrapper.sh pw.x -sirius_cf =sirius-amd.json"
         if uarch == "mi300":
-            self.executable = f"pw.x -sirius_cfg=sirius-amd.json"
+            self.executable = f"pw.x -sirius_cfg sirius-amd.json"
