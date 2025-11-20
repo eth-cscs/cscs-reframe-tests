@@ -131,7 +131,7 @@ class dlaf_base(rfm.RunOnlyRegressionTest):
         # slurm configuration
         config = slurm_config[self.test_name][self.uarch]
         self.job.options = [f'--nodes={config["nodes"]}']
-        self.job.options = config["extra_job_options"]
+        self.job.options += config["extra_job_options"]
         self.num_tasks_per_node = config["ntasks-per-node"]
         self.num_tasks = config["nodes"] * self.num_tasks_per_node
         self.num_cpus_per_task = config["cpus-per-task"]
