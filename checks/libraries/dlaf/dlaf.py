@@ -141,11 +141,6 @@ class dlaf_base(rfm.RunOnlyRegressionTest):
         if self.uarch == "gh200":
             self.job.launcher.options += ["--gpus-per-task=1"]
 
-        if self.uarch in ("mi300", "mi200"):
-            self.wrapper = "./rocr_wrapper.sh"
-        else:
-            self.wrapper = ""
-
         # environment variables
         if self.uarch in ("mi300", "mi200", "zen2"):
             self.env_vars["PIKA_THREADS"] = str((self.num_cpus_per_task // 2) - 1)
@@ -222,4 +217,7 @@ class dlaf_check_uenv(dlaf_base):
 
     @run_before("run")
     def set_executable(self):
-        self.executable = f"{self.wrapper} miniapp_{self.test_name}"
+        if uarch(self.current_partition) in ("mi300", "mi200"):
+            self.executable = f"./rocr_wrapper.sh miniapp_{self.test_name}"
+        else:
+            self.executable = "miniapp_{self.test_name}"
