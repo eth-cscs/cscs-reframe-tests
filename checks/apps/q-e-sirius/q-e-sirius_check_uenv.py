@@ -141,7 +141,7 @@ class QeSiriusCheckAuSurfUENV(QeSiriusCheckUENV):
 @rfm.simple_test
 class QeCheckAuSurfUENVExec(QeSiriusCheckAuSurfUENV):
     valid_prog_environs = ["+q-e-sirius"]
-    tags = {"uenv", "production"}
+    tags = {"uenv", "production", "bencher"}
 
     @run_after("setup")
     def setup_executable(self):
