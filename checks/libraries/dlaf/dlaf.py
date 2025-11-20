@@ -143,7 +143,8 @@ class dlaf_base(rfm.RunOnlyRegressionTest):
 
         # environment variables
         if self.uarch in ("mi300", "mi200", "zen2"):
-            self.env_vars["PIKA_THREADS"] = str((self.num_cpus_per_task // 2) - 1)
+            self.env_vars["PIKA_THREADS"] = \
+                str((self.num_cpus_per_task // 2) - 1)
         else:
             self.env_vars["PIKA_THREADS"] = str(self.num_cpus_per_task - 1)
         self.env_vars["MIMALLOC_ALLOW_LARGE_OS_PAGES"] = "1"
