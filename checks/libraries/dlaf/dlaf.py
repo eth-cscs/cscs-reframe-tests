@@ -149,7 +149,7 @@ class dlaf_base(rfm.RunOnlyRegressionTest):
 
 @rfm.simple_test
 class dlaf_check_uenv(dlaf_base):
-    tags = {"uenv", "production"}
+    tags = {"uenv", "production", "bencher"}
     test_name = parameter(["gen_eigensolver", "eigensolver"])
     executable_opts = [
         "--type=d",
