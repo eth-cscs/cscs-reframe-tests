@@ -3,22 +3,21 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-import os
-
 import reframe as rfm
 import reframe.utility.sanity as sn
 
 
 @rfm.simple_test
 class ICON4PyBenchmarks(rfm.RunOnlyRegressionTest):
-    descr = 'ICON4Py GPU benchmarks -Diffusion & DyCore Granules-'
+    descr = 'ICON4Py Check -Diffusion & DyCore Granules-'
     maintainers = ['SSA']
     valid_systems = ['+uenv +amdgpu', '+uenv +nvgpu']
     valid_prog_environs = ['+uenv +prgenv +rocm', '+uenv +prgenv +cuda']
     tags = {'production', 'uenv', 'bencher'}
-    time_limit = '30m'
+    time_limit = '60m'
     build_locally = False
     env_vars = {
+        'UV_NO_CACHE': '1',
         'UV_CACHE_DIR': '$SCRATCH/.cache/uv',
         'CC': '$(which gcc)',
         'MPICH_CC': '$(which gcc)',
@@ -36,7 +35,7 @@ class ICON4PyBenchmarks(rfm.RunOnlyRegressionTest):
         self.prerun_cmds = ['./_install.sh &> _install.sh.log 2>&1']
 
     @run_before('run')
-    def prepare_run(self):
+    def prepare_env(self):
         if 'rocm' in self.current_environ.features:
             gpu_arch = self.current_partition.select_devices('gpu')[0].arch
             self.env_vars['CUPY_INSTALL_USE_HIP'] = '1'
@@ -55,11 +54,11 @@ class ICON4PyBenchmarks(rfm.RunOnlyRegressionTest):
                  r'test_benchmark_diffusion\.py'
                  r'::test_diffusion_benchmark\s*PASSED'
                  ), self.stdout)
-        # dycore_granule = sn.assert_found(
-        #     (r'^\s*model/atmosphere/dycore/tests/'
-        #      r'dycore/integration_tests/test_benchmark_solve_nonhydro\.py'
-        #      r'::test_benchmark_solve_nonhydro\[True-False\]\s*PASSED'),
-        #     self.stdout)
+            # dycore_granule = sn.assert_found(
+            #     (r'^\s*model/atmosphere/dycore/tests/'
+            #      r'dycore/integration_tests/test_benchmark_solve_nonhydro\.py'
+            #      r'::test_benchmark_solve_nonhydro\[True-False\]\s*PASSED'),
+            #     self.stdout)
 
         return diffusion_granule  # and dycore_granule
 
