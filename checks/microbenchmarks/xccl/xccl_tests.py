@@ -109,6 +109,8 @@ class XCCLTestsBaseCE(XCCLTestsBase, ContainerEngineMixin):
 
 
 class XCCLTestsBaseUENV(XCCLTestsBase):
+    tags.add('bencher')
+
     @run_before('run')
     def set_pmix(self):
         # Some clusters, like clariden, don't use cray_shasta as default.
