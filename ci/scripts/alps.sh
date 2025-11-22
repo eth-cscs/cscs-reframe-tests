@@ -25,13 +25,10 @@ jfrog_request="$CSCS_CI_MW_URL/credentials?token=$CI_JOB_TOKEN&job_id=$CI_JOB_ID
 # system="santis" ; uarch="gh200"
 # FIRECREST_SYSTEM=santis UARCH=gh200
 system="$FIRECREST_SYSTEM" ; uarch="$UARCH"
-#del name=`echo $in |cut -d: -f1`
-#del tag=`echo $in |cut -d: -f2`
-#del jfrog=jfrog.svc.cscs.ch/uenv/deploy/$system/$uarch/$name
 jfrog=jfrog.svc.cscs.ch/uenv/deploy/$system/$uarch
 jfrog_u="piccinal"
 [[ -z "${SLURM_PARTITION}" ]] && RFM_SYSTEM="${system}" || RFM_SYSTEM="${system}:${SLURM_PARTITION}"
- # }}}
+# }}}
 fi
 
 # {{{ setup_jq
@@ -137,7 +134,7 @@ uenv_pull_meta_dir() {
     img=$1
     # --- can the uenv be pulled ?
     is_vasp=`echo $img |cut -d/ -f1`
-    if [ "$is_vasp" == "vasp" ] ;then
+    if [ "$is_vasp" = "vasp" ] ;then
         vasp_flag="--token /users/reframe/vasp6 --username=vasp6"
     fi
     /usr/bin/time -p uenv image pull $vasp_flag $img &> uenv_pull_meta_dir.log
@@ -152,8 +149,8 @@ uenv_pull_meta_dir() {
         # sha=$(uenv image inspect --format='{sha}' $img)
         rc1=$(uenv run $img -- test -f /user-environment/meta/extra/reframe.yaml ;echo $?)
         rc2=$(uenv run $img -- test -f /user-tools/meta/extra/reframe.yaml ;echo $?)
-        rc=$(expr $rc1 \* $rc2)
-        if [ $rc ] ; then 
+        rc3=$(expr $rc1 \* $rc2)
+        if [ $rc3 -eq 0 ] ; then 
             echo "OK $img"
         fi
     else
