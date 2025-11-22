@@ -7,16 +7,6 @@ if [ $DEBUG = "y" ] ; then
     rfm_meta_yaml="$oras_tmp/meta/extra/reframe.yaml"
     jfrog_creds_path="${oras_tmp}/docker/config.json"
     system="$CLUSTER_NAME" ;
-#DEL     if [ $system = "eiger" ] ;then uarch="zen2" ;fi
-#DEL     case $system in
-#DEL         "daint") uarch="gh200";;
-#DEL         "santis") uarch="gh200";;
-#DEL         "clariden") uarch="gh200";;
-#DEL         "starlex") uarch="gh200";;
-#DEL         "beverin") uarch="";;
-#DEL         "eiger") uarch="zen2";;
-#DEL         *) uarch="";;
-#DEL     esac
     jfrog=jfrog.svc.cscs.ch/uenv/deploy/ #$system/$uarch
     jfrog_u="piccinal"
 else
@@ -172,22 +162,6 @@ uenv_pull_meta_dir() {
         exit 0
     fi
     # echo "--- Pulling (+metadata) from $jfrog/uenv/deploy/$system/$uarch/$name/$version@sha256:$sha"
-    # uenv image pull --only-meta $vasp_flag $img &> uenv_pull_meta_dir.log
-    # TODO: https://github.com/eth-cscs/uenv2/issues/81
-}
-# }}}
-# {{{ uenv_pull_meta_dir_broken
-uenv_pull_meta_dir_broken() {
-    echo "to be fixed"
-    exit 0
-    img=$1
-    echo "--- Pulling metadata from $img"
-    is_vasp=`echo $img |cut -d/ -f1`
-    if [ "$is_vasp" == "vasp" ] ;then
-        vasp_flag="--token /users/reframe/vasp6 --username=vasp6"
-    fi
-    uenv image pull --only-meta $vasp_flag $img &> uenv_pull_meta_dir.log
-
     # uenv image pull --only-meta $vasp_flag $img &> uenv_pull_meta_dir.log
     # TODO: https://github.com/eth-cscs/uenv2/issues/81
 }
