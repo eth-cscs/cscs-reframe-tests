@@ -46,7 +46,7 @@ reframe:
         fi;
       done;
     - UENVA=${UENVA%?}
-    - UENV=`echo ${UENVA} | sed 's-,,-,-g' | sort -u`
+    - export UENV=`echo ${UENVA} | sed 's-,,-,-g' | sort -u`
     - echo "UENV=$UENV"
     # ----------------------
     - rfm_path=$(./ci/scripts/alps.sh install_reframe |grep HERE |awk '{print $1}')
