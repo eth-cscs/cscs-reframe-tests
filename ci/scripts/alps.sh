@@ -133,11 +133,11 @@ uenv_image_find() {
 uenv_pull_meta_dir() {
     img=$1
     # --- can the uenv be pulled ?
-    is_vasp=`echo $img |cut -d/ -f1`
+    is_vasp=`echo "$img" |cut -d/ -f1`
     if [ "$is_vasp" = "vasp" ] ;then
         vasp_flag="--token /users/reframe/vasp6 --username=vasp6"
     fi
-    /usr/bin/time -p uenv image pull $vasp_flag $img &> uenv_pull_meta_dir.log
+    /usr/bin/time -p uenv image pull $vasp_flag $img &> .uenv_pull_meta_dir.log
     rc=$?
     if [ $rc ] ; then 
         # --- is reframe.yaml missing from the uenv ?
@@ -155,7 +155,7 @@ uenv_pull_meta_dir() {
         fi
     else
         echo "--- uenv_pull_meta_dir failed: rc=$rc"
-        cat uenv_pull_meta_dir.log
+        cat .uenv_pull_meta_dir.log
         exit 0
     fi
     # echo "--- Pulling (+metadata) from $jfrog/uenv/deploy/$system/$uarch/$name/$version@sha256:$sha"
@@ -379,7 +379,7 @@ launch_reframe_bencher() {
     export RFM_USE_LOGIN_SHELL=1
     # export RFM_AUTODETECT_XTHOSTNAME=1
     # reframe -V
-    echo "# UENV=$UENV"
+    # echo "# UENV=$UENV"
 
     reframe -C ./config/cscs.py \
         --mode daily_bencher \
