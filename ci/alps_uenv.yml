@@ -22,7 +22,7 @@ reframe:
     - uname -a
     - pwd
     - uenv --version
-    - echo "UENV=$UENV" | tr , "\n"
+    # - echo "UENV=$UENV" | tr , "\n"
     # Send data to elastic on main branch only
     - '[ "$CI_COMMIT_REF_NAME" != "main" ] && unset RFM_HTTPJSON_URL'
     - 'git remote add oripr https://github.com/eth-cscs/cscs-reframe-tests || true'
@@ -36,15 +36,15 @@ reframe:
     - unset UENVA
     - uenv repo status
     - for img in $imgs; do
-        ./ci/scripts/alps.sh uenv_pull_meta_dir "$img" &> .rc
-        cat .rc
-        rc=$(grep -q OK .rc ; echo $?)
-        echo "rc=$rc"
+        ./ci/scripts/alps.sh uenv_pull_meta_dir "$img" &> .rc;
+        cat .rc;
+        rc=$(grep -q OK .rc ; echo $?);
+        echo "rc=$rc";
         if [ $rc -eq 0 ] ; then
-          UENVA+="$img,"
-          echo "UENVA=$UENVA"
-        fi
-      done
+          UENVA+="$img,";
+          echo "UENVA=$UENVA";
+        fi;
+      done;
     - UENVA=${UENVA%?}
     - UENV=`echo ${UENVA} | sed 's-,,-,-g' | sort -u`
     - echo "UENV=$UENV"
