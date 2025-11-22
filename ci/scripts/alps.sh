@@ -137,9 +137,18 @@ uenv_pull_meta_dir() {
     if [ "$is_vasp" = "vasp" ] ;then
         vasp_flag="--token /users/reframe/vasp6 --username=vasp6"
     fi
-    /usr/bin/time -p uenv image pull $vasp_flag $img &> .uenv_pull_meta_dir.log
-    rc=$?
-    if [ $rc ] ; then 
+
+    rc=$(uenv image inspect --format='{sqfs}' "$img" 2>&1 |grep -q error: ;echo $?)
+    if [ $rc -eq 0 ] ; then
+        echo "# --- pulling $img"
+        /usr/bin/time -p uenv image pull $vasp_flag $img &> .uenv_pull_meta_dir.log
+        rc=$?
+    else
+        echo "# --- $img already pulled, rc=$rc"
+        rc=$?
+    fi
+
+    if [ $rc ] ; then
         # --- is reframe.yaml missing from the uenv ?
         # name=$(uenv image inspect --format='{name}' $img)
         # version=$(uenv image inspect --format='{version}' $img)

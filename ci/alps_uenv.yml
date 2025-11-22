@@ -54,7 +54,6 @@ reframe:
     - reframe -V
     # ----------------------
     # If in a PR, run only the tests modified in the PR, else: in CRONJOB
-
     - |
       if [ "$CRON_RUN" = "true" ]; then
         if [ -z "${BENCHER_API_TOKEN+x}" ]; then
