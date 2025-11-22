@@ -308,14 +308,21 @@ uenv_pull_sqfs() {
 # {{{ install_reframe
 install_reframe() {
     rm -fr rfm_venv reframe
-    python3.11 -m venv --system-site-packages rfm_venv
-    source rfm_venv/bin/activate
-    pip install --upgrade pip
-    pip install --upgrade ReFrame-HPC
-    # git clone --depth 1 https://github.com/reframe-hpc/reframe.git
-    pip install -r ./config/utilities/requirements.txt
+
+    vname=$CLUSTER_NAME
+    varch=$(uname -m)
+    vdir=rfmvenv.$vname.$varch
+    source $vdir/bin/activate
+    echo "$PWD/$vdir/bin # HERE"
+
+    # python3.11 -m venv --system-site-packages rfm_venv
+    # source rfm_venv/bin/activate
+    # pip install --upgrade pip
+    # pip install --upgrade ReFrame-HPC
+    # # git clone --depth 1 https://github.com/reframe-hpc/reframe.git
+    # pip install -r ./config/utilities/requirements.txt
     # return the PATH to the calling function:
-    echo "$PWD/rfm_venv/bin # HERE"
+    # echo "$PWD/rfm_venv/bin # HERE"
 }
 # }}}
 # {{{ install_reframe_tests (alps branch)
