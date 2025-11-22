@@ -311,9 +311,9 @@ install_reframe() {
 
     vname=$CLUSTER_NAME
     varch=$(uname -m)
-    vdir=rfmvenv.$vname.$varch
-    source $HOME/$vdir/bin/activate
-    echo "$HOME/$vdir/bin # HERE"
+    vdir="$HOME/ci/rfmvenv.$vname.$varch"
+    source "$vdir/bin/activate"
+    echo "$vdir/bin # HERE"
 
     # python3.11 -m venv --system-site-packages rfm_venv
     # source rfm_venv/bin/activate
