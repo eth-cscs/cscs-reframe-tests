@@ -132,40 +132,45 @@ uenv_image_find() {
 # {{{ uenv_pull_meta_dir
 uenv_pull_meta_dir() {
     img=$1
-    # --- can the uenv be pulled ?
+    # --- is the uenv/sqfs missing ?
     is_vasp=`echo "$img" |cut -d/ -f1`
     if [ "$is_vasp" = "vasp" ] ;then
         vasp_flag="--token /users/reframe/vasp6 --username=vasp6"
-    fi
-
-    rc=$(uenv image inspect --format='{sqfs}' "$img" 2>&1 |grep -q error: ;echo $?)
-    if [ $rc -eq 0 ] ; then
-        echo "# --- pulling $img"
-        /usr/bin/time -p uenv image pull $vasp_flag $img &> .uenv_pull_meta_dir.log
-        rc=$?
     else
-        echo "# --- $img already pulled, rc=$rc"
-        rc=$?
+        vasp_flag=""
     fi
-
-    if [ $rc ] ; then
-        # --- is reframe.yaml missing from the uenv ?
-        # name=$(uenv image inspect --format='{name}' $img)
-        # version=$(uenv image inspect --format='{version}' $img)
-        # tag=$(uenv image inspect --format='{tag}' $img)
-        # system=$(uenv image inspect --format='{system}' $img)
-        # uarch=$(uenv image inspect --format='{uarch}' $img)
-        # sha=$(uenv image inspect --format='{sha}' $img)
-        rc1=$(uenv run $img -- test -f /user-environment/meta/extra/reframe.yaml ;echo $?)
-        rc2=$(uenv run $img -- test -f /user-tools/meta/extra/reframe.yaml ;echo $?)
-        rc3=$(expr $rc1 \* $rc2)
-        if [ $rc3 -eq 0 ] ; then 
-            echo "OK $img"
+    uenv image inspect --format='{sqfs}' "$img" 2>&1 |grep -q "error:" ;sqfs_missing=$?
+    if [ $sqfs_missing -eq 0 ] ; then
+        # 0=missing, !0=not missing
+        echo "# WARNING: $img not found, pulling it..."
+        /usr/bin/time -p uenv image pull $vasp_flag $img &> .uenv_pull_meta_dir.log
+        uenv image inspect --format='{sqfs}' "$img" 2>&1 |grep -q "error:" ;sqfs_missing=$?
+        if [ $sqfs_missing -eq 0 ] ; then
+            echo "# WARNING: failed pulling $img (sqfs_missing=$sqfs_missing)"
+            cat .uenv_pull_meta_dir.log
+            exit 1
+        else
+            echo "# OK: --- $img pulled"
         fi
     else
-        echo "--- uenv_pull_meta_dir failed: rc=$rc"
-        cat .uenv_pull_meta_dir.log
-        exit 0
+        echo "# OK: --- $img found"
+    fi
+
+    # --- is reframe.yaml missing from the uenv ?
+    # name=$(uenv image inspect --format='{name}' $img)
+    # version=$(uenv image inspect --format='{version}' $img)
+    # tag=$(uenv image inspect --format='{tag}' $img)
+    # system=$(uenv image inspect --format='{system}' $img)
+    # uarch=$(uenv image inspect --format='{uarch}' $img)
+    # sha=$(uenv image inspect --format='{sha}' $img)
+    uenv run $img -- test -f /user-environment/meta/extra/reframe.yaml ;rc1=$?
+    uenv run $img -- test -f /user-tools/meta/extra/reframe.yaml ;rc2=$?
+    rc3=$(expr $rc1 \* $rc2)
+    if [ $rc3 -eq 0 ] ; then 
+        echo "# OK: reframe.yaml found in $img"
+    else
+        echo "# WARNING: reframe.yaml not found in $img"
+        exit 1
     fi
     # echo "--- Pulling (+metadata) from $jfrog/uenv/deploy/$system/$uarch/$name/$version@sha256:$sha"
     # uenv image pull --only-meta $vasp_flag $img &> uenv_pull_meta_dir.log
@@ -307,10 +312,10 @@ uenv_pull_sqfs() {
 # }}}
 # {{{ install_reframe
 install_reframe() {
-    rm -fr rfm_venv reframe
-
+    # rm -fr rfm_venv reframe
     vname=$CLUSTER_NAME
     varch=$(uname -m)
+    [[ -d "$vdir" ]] || { echo "Virtual environment directory $vdir not found"; exit 1; }
     vdir="$HOME/ci/rfmvenv.$vname.$varch"
     source "$vdir/bin/activate"
     echo "$vdir/bin # HERE"
