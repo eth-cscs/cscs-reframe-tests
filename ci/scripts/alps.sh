@@ -150,10 +150,10 @@ uenv_pull_meta_dir() {
             cat .uenv_pull_meta_dir.log
             exit 1
         else
-            echo "# OK: --- $img pulled"
+            echo "# OK: $img pulled"
         fi
     else
-        echo "# OK: --- $img found"
+        echo "# OK: $img found"
     fi
 
     # --- is reframe.yaml missing from the uenv ?
@@ -314,8 +314,8 @@ install_reframe() {
     # rm -fr rfm_venv reframe
     vname=$CLUSTER_NAME
     varch=$(uname -m)
-    [[ -d "$vdir" ]] || { echo "Virtual environment directory $vdir not found"; exit 1; }
     vdir="$HOME/ci/rfmvenv.$vname.$varch"
+    [[ -d "$vdir" ]] || { echo "Virtual environment directory $vdir not found"; exit 1; }
     source "$vdir/bin/activate"
     echo "$vdir/bin # HERE"
 
