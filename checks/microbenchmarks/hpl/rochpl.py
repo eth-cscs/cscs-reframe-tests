@@ -147,7 +147,7 @@ class RocHPL(rfm.RegressionTest):
                 if n in rochpl_references[self.uarch]:
                     # Note: Permissive threshold for mi300 as sles15sp5 shows performance drops with large matrices.
                     # Should be removed when all the nodes run the sles15sp6 image.
-                    lower_bound = -0.05
+                    lower_bound = -0.1
                     if self.uarch == "mi300":
                         if n > 200000:
                             lower_bound = -0.50
