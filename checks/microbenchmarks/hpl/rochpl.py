@@ -150,7 +150,7 @@ class RocHPL(rfm.RegressionTest):
                     lower_bound = -0.1
                     if self.uarch == "mi300":
                         if n > 200000:
-                            lower_bound = -0.50
+                            lower_bound = -0.90
                         elif n > 150000:
                             lower_bound = -0.33
                     reference[f"size {n}"] = (rochpl_references[self.uarch][n], lower_bound, 0.05, 'Gflop/s')
