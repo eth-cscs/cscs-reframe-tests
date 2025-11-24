@@ -456,6 +456,35 @@ launch_reframe_bencher() {
             --branch main \
             --token $BENCHER_API_TOKEN \
             --project $BENCHER_PROJECT
+
+        # ------------------------------------------------------------
+        # Second upload: shortened testbed with only name + version
+        # ------------------------------------------------------------
+
+        # Extract everything after "bencher="
+        rest="${bmf_file%.json}"
+        rest="${rest#bencher=}"  # system=partition=environ
+
+        # Split by "=" → system, partition, environ
+        IFS='=' read -r system partition environ <<< "$rest"
+
+        # environ="name_version_tag_..."
+        IFS='_' read -r uenv_name uenv_version _ <<< "$environ"
+        short_environ="${uenv_name}_${uenv_version}"
+
+        short_testbed="${system}=${partition}=${short_environ}"
+
+        echo "Re-uploading results for SHORT testbed: $short_testbed from file: $bmf_file"
+
+        ./bencher run \
+            --adapter json \
+            --file "$bmf_file" \
+            --testbed "$short_testbed" \
+            --thresholds-reset \
+            --branch main \
+            --token $BENCHER_API_TOKEN \
+            --project $BENCHER_PROJECT
+
     done
 }
 # }}}
