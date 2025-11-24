@@ -18,10 +18,43 @@ else
     git clone https://github.com/C2SM/icon4py.git
     cd icon4py
     git checkout 5485bcacb1dbc7688b1e7d276d4e2e28362c5444  # Commit: Update to GT4Py v1.1.0 (#933)
-    rm uv.lock
+    rm -f uv.lock
 
     python -m venv .venv
+    mkdir -p .venv/bin/activate.d  # Create activation.d for persistent env tweaks
+
+    # --- NVHPC runtime auto-discovery for serialbox (libnvhpcatm.so) ---
+    nvhpc_lib="$(find /user-environment -type f -name 'libnvhpcatm.so' 2>/dev/null | head -n1 || true)"
+    if [ -n "$nvhpc_lib" ]; then
+        nvhpc_dir="$(dirname "$nvhpc_lib")"
+
+        # Export for the current script run (dedupe-safe)
+        case ":$LD_LIBRARY_PATH:" in
+            *":$nvhpc_dir:"*) : ;;
+            *) export LD_LIBRARY_PATH="${nvhpc_dir}${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" ;;
+        esac
+
+        echo "# Found libnvhpcatm.so at: $nvhpc_lib"
+        echo "# Adding NVHPC lib dir to LD_LIBRARY_PATH: $nvhpc_dir"
+
+        # Persist it for future `source .venv/bin/activate`
+        cat > .venv/bin/activate.d/nvhpc.sh <<EOF
+# Added automatically to make serialbox work (needs libnvhpcatm.so)
+if [ -d "$nvhpc_dir" ]; then
+    case ":\$LD_LIBRARY_PATH:" in
+        *:"$nvhpc_dir":*) : ;;
+        *) export LD_LIBRARY_PATH="$nvhpc_dir\${LD_LIBRARY_PATH:+:\$LD_LIBRARY_PATH}" ;;
+    esac
+fi
+EOF
+        chmod +x .venv/bin/activate.d/nvhpc.sh
+    else
+        echo "# WARNING: libnvhpcatm.so not found under /user-environment; serialbox may fail to import."
+    fi
+    # -------------------------------------------------------------------
+
     source .venv/bin/activate
+
     pip install --upgrade pip
     pip install uv
 
