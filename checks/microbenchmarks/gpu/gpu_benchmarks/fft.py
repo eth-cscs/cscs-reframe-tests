@@ -22,7 +22,7 @@ class FFTBenchBuild(rfm.CompileOnlyRegressionTest):
     build_system = 'CMake'
     # TODO: change to original repo once PR is merged
     prebuild_cmds = [
-        'git clone --depth 1 -b main https://github.com/eth-cscs/gpu-benchmarks.git'
+        'git clone --depth 1 -b reframe-ci https://github.com/eth-cscs/gpu-benchmarks.git'
     ]
     time_limit = '4m'
     build_locally = False
