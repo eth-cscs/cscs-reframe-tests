@@ -145,7 +145,15 @@ class RocHPL(rfm.RegressionTest):
 
             for n in self.matrix_sizes:
                 if n in rochpl_references[self.uarch]:
-                    reference[f"size {n}"] = (rochpl_references[self.uarch][n], -0.05, 0.05, 'Gflop/s')
+                    # Note: Permissive threshold for mi300 as sles15sp5 shows performance drops with large matrices.
+                    # Should be removed when all the nodes run the sles15sp6 image.
+                    lower_bound = -0.05
+                    if self.uarch == "mi300":
+                        if n > 200000:
+                            lower_bound = -0.50
+                        elif n > 150000:
+                            lower_bound = -0.33
+                    reference[f"size {n}"] = (rochpl_references[self.uarch][n], lower_bound, 0.05, 'Gflop/s')
 
             self.reference = {self.current_partition.fullname: reference}
 
