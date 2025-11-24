@@ -11,7 +11,7 @@ import uenv
 qe_references = {
     "Au surf": {
         "gh200": {"time_run": (50, None, 0.05, "s")},
-        "mi300": {"time_run": (130, None, 0.05, "s")},
+        "mi300": {"time_run": (112, None, 0.05, "s")},
         "mi200": {"time_run": (78, None, 0.05, "s")},
     },
 }
@@ -35,9 +35,10 @@ slurm_config = {
         },
         "mi300": {
             "nodes": 1,
-            "ntasks-per-node": 4,
+            "ntasks-per-node": 12,
             "gpus-per-task": 1,
-            "cpus-per-task": 24,
+            "cpus-per-task": 8,
+            "extra_job_options": ["--constraint=amdgpu_tpx"],
             "walltime": "0d0h20m0s",
             "gpu": True,
         },
@@ -85,7 +86,7 @@ class QeSiriusCheckUENV(rfm.RunOnlyRegressionTest):
             self.env_vars["OMP_NUM_THREADS"] = str(8)
         if self.uarch == "mi300":
             self.env_vars["MPICH_GPU_SUPPORT_ENABLED"] = "1"
-            self.env_vars["OMP_NUM_THREADS"] = str(24)
+            self.env_vars["OMP_NUM_THREADS"] = str(8)
         if self.uarch in ("mi300", "mi200"):
             self.env_vars["PIKA_MPI_ENABLE_POOL"] = "1"
             self.env_vars["PIKA_MPI_COMPLETION_MODE"] = "28"
@@ -149,4 +150,4 @@ class QeCheckAuSurfUENVExec(QeSiriusCheckAuSurfUENV):
         if uarch == "mi200":
             self.executable = f"./amdgpu-wrapper.sh pw.x -sirius_cf =sirius-amd.json"
         if uarch == "mi300":
-            self.executable = f"pw.x -sirius_cfg sirius-amd.json"
+            self.executable = f"./tpx-wrapper.sh pw.x -sirius_cfg sirius-amd.json"
