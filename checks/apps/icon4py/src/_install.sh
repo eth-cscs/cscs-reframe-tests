@@ -21,7 +21,6 @@ else
     rm -f uv.lock
 
     python -m venv .venv
-    mkdir -p .venv/bin/activate.d  # Create activation.d for persistent env tweaks
 
     # --- NVHPC runtime auto-discovery for serialbox (libnvhpcatm.so) ---
     nvhpc_lib="$(find /user-environment -type f -name 'libnvhpcatm.so' 2>/dev/null | head -n1 || true)"
@@ -38,18 +37,20 @@ else
         echo "# Adding NVHPC lib dir to LD_LIBRARY_PATH: $nvhpc_dir"
 
         # Persist it for future `source .venv/bin/activate`
-        cat > .venv/bin/activate.d/nvhpc.sh <<EOF
+        cat >> .venv/bin/activate <<EOF
+
 # Added automatically to make serialbox work (needs libnvhpcatm.so)
-if [ -d "$nvhpc_dir" ]; then
+nvhpc_dir="$nvhpc_dir"
+if [ -d "\$nvhpc_dir" ]; then
     case ":\$LD_LIBRARY_PATH:" in
-        *:"$nvhpc_dir":*) : ;;
-        *) export LD_LIBRARY_PATH="$nvhpc_dir\${LD_LIBRARY_PATH:+:\$LD_LIBRARY_PATH}" ;;
+        *:"\$nvhpc_dir":*) : ;;
+        *) export LD_LIBRARY_PATH="\$nvhpc_dir\${LD_LIBRARY_PATH:+:\$LD_LIBRARY_PATH}" ;;
     esac
 fi
+
 EOF
-        chmod +x .venv/bin/activate.d/nvhpc.sh
     else
-        echo "# WARNING: libnvhpcatm.so not found under /user-environment; serialbox may fail to import."
+        echo "LD_LIBRARY_PATH not modified. Is this expected?"
     fi
     # -------------------------------------------------------------------
 
