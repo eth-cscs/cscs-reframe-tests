@@ -191,8 +191,10 @@ class RocHPL_small(RocHPL):
 @rfm.simple_test
 class RocHPL_medium(RocHPL):
     matrix_sizes = [192000]
+    tags = {'bencher'}
 
 
 @rfm.simple_test
 class RocHPL_large(RocHPL):
     matrix_sizes = [218880]
+    tags = {'bencher'}
