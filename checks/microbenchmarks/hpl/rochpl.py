@@ -57,11 +57,12 @@ HPL.out      output file name (if any)
 8            memory alignment in double (> 0)
 """
 
+
 class RocHPL(rfm.RegressionTest):
     descr = 'AMD HPL (rocHPL) test'
     valid_systems = ['+amdgpu +uenv']
     valid_prog_environs = ['+uenv +prgenv +rocm']
-    maintainers = ['rasolca']
+    maintainers = ['rasolca', 'SSA']
     sourcesdir = "scripts"
     build_system = 'CMake'
     # This branch contains fixes for cmake.
@@ -77,13 +78,14 @@ class RocHPL(rfm.RegressionTest):
     def set_build_options(self):
         self.build_system.configuredir = 'rocHPL'
         self.build_system.builddir = 'build'
+        self.build_system.max_concurrency = 10
 
         gpu_arch = self.current_partition.select_devices('gpu')[0].arch
         self.build_system.config_opts = [
-            '-DHPL_VERBOSE_PRINT=ON'
-            '-DHPL_PROGRESS_REPORT=ON'
-            '-DHPL_DETAILED_TIMING=ON'
-            '-DCMAKE_BUILD_TYPE=Release'
+            '-DHPL_VERBOSE_PRINT=ON',
+            '-DHPL_PROGRESS_REPORT=ON',
+            '-DHPL_DETAILED_TIMING=ON',
+            '-DCMAKE_BUILD_TYPE=Release',
             f'-DCMAKE_HIP_ARCHITECTURES="{gpu_arch}"'
         ]
 
@@ -96,7 +98,7 @@ class RocHPL(rfm.RegressionTest):
     def set_executable(self):
         self.uarch = uarch(self.current_partition)
 
-        pre_script = os.path.join(self.stagedir, f"{self.uarch}-wrapper.sh")
+        pre_script = f"./{self.uarch}-wrapper.sh"
         binary = os.path.join(self.build_system.builddir, "bin", "rochpl")
         self.executable = f"{pre_script} {binary}"
 
@@ -145,8 +147,7 @@ class RocHPL(rfm.RegressionTest):
                 if n in rochpl_references[self.uarch]:
                     reference[f"size {n}"] = (rochpl_references[self.uarch][n], -0.05, 0.05, 'Gflop/s')
 
-            self.reference = { self.current_partition.fullname: reference }
-
+            self.reference = {self.current_partition.fullname: reference}
 
     @sanity_function
     def assert_results(self):
@@ -158,7 +159,7 @@ class RocHPL(rfm.RegressionTest):
 
         regex1 = r'^WC15R2R8\s+([0-9]+)\s+384\s+[0-9]+\s+[0-9]+\s+[0-9\.]+\s+([0-9\.]+e\+[0-9]+)$'
         regex2 = r'^\|\|Ax-b\|\|_oo\/\(eps\*\(\|\|A\|\|_oo\*\|\|x\|\|_oo\+\|\|b\|\|_oo\)\*N\)=\s+([\.0-9]+)\s+\.+\s+PASSED$'
-        self.perf_ = sn.extractall(regex1, out_file, tag=(1,2), conv=(int, float))
+        self.perf_ = sn.extractall(regex1, out_file, tag=(1, 2), conv=(int, float))
         self.accuracy_ = sn.extractall(regex2, out_file, tag=1, conv=float)
 
         sanity_patterns = [
@@ -181,14 +182,17 @@ class RocHPL(rfm.RegressionTest):
         for perf in self.perf_:
             self.perf_variables[f"size {perf[0]}"] = make_perf(sn.getitem(perf, 1), 'Gflop/s')
 
+
 @rfm.simple_test
 class RocHPL_small(RocHPL):
-    matrix_sizes = [ 38400 ]
+    matrix_sizes = [38400]
+
 
 @rfm.simple_test
 class RocHPL_medium(RocHPL):
-    matrix_sizes = [ 192000 ]
+    matrix_sizes = [192000]
+
 
 @rfm.simple_test
 class RocHPL_large(RocHPL):
-    matrix_sizes = [ 218880 ]
+    matrix_sizes = [218880]
