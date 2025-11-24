@@ -1,6 +1,7 @@
 import reframe as rfm
 import reframe.utility.sanity as sn
 
+
 @rfm.simple_test
 class cpi_build_test(rfm.RegressionTest):
     descr = 'Simple mpi test'
