@@ -56,7 +56,7 @@ slurm_config = {
 class QeSiriusCheckUENV(rfm.RunOnlyRegressionTest):
     pwx_executable = 'pw.x'
     maintainers = ['simonpintarelli', 'SSA']
-    valid_systems = ['+uenv +amdgpu', '+uenv +nvgpu']    
+    valid_systems = ['+uenv +amdgpu', '+uenv +nvgpu']
 
     @run_before('run')
     def prepare_run(self):
