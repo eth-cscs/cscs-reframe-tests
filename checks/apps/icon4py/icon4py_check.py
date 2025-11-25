@@ -38,8 +38,8 @@ class ICON4PyBenchmarks(rfm.RunOnlyRegressionTest):
 
     @run_before('run')
     def prepare_env(self):
-        if 'rocm' in self.current_environ.features:
-            gpu_arch = self.current_partition.select_devices('gpu')[0].arch
+        gpu_arch = self.current_partition.select_devices('gpu')[0].arch
+        if 'gfx' in gpu_arch:
             self.env_vars['CUPY_INSTALL_USE_HIP'] = '1'
             self.env_vars['HCC_AMDGPU_TARGET'] = gpu_arch
             self.env_vars['ROCM_HOME'] = '/user-environment/env/default'
