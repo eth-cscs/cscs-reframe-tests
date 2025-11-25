@@ -103,7 +103,6 @@ class QeSiriusCheckUENV(rfm.RunOnlyRegressionTest):
 
     @sanity_function
     def assert_energy_diff(self):
-        # TODO, update for QE
         energy = sn.extractsingle(
             r'^!\s+total energy\s+=\s+(?P<energy>\S+)',
             self.stdout,
