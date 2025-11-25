@@ -17,6 +17,7 @@ else
 
     git clone https://github.com/C2SM/icon4py.git
     cd icon4py
+    git checkout 5485bcacb1dbc7688b1e7d276d4e2e28362c5444  # Commit: Update to GT4Py v1.1.0 (#933)
     rm -f uv.lock
 
     python -m venv .venv
@@ -60,8 +61,8 @@ EOF
 
     uv sync --extra all --python $(which python) --active
 
-    uv pip uninstall mpi4py && \
-    uv pip install --no-binary mpi4py mpi4py && \
+    uv pip uninstall networkx && uv pip install 'networkx<=3.5'
+    uv pip uninstall mpi4py && uv pip install --no-binary mpi4py mpi4py
     uv pip install git+https://github.com/cupy/cupy.git
 
     echo "# install done"
