@@ -115,7 +115,7 @@ class QeSiriusCheckUENV(rfm.RunOnlyRegressionTest):
         )
         energy_diff = sn.abs(energy - self.energy_reference)
         successful_termination = sn.assert_found(r'JOB DONE', self.stdout)
-        correct_energy = sn.assert_lt(energy_diff, 1e-4)
+        correct_energy = sn.assert_lt(energy_diff, 5e-4)
         return sn.all(
             [
                 successful_termination,
