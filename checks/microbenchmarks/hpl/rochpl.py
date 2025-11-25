@@ -15,12 +15,12 @@ rochpl_references = {
 
 slurm_config = {
     'mi200': {
-        "ntasks-per-node": 8,
-        "cpus-per-task": 16,
+        'ntasks-per-node': 8,
+        'cpus-per-task': 16,
     },
     'mi300': {
-        "ntasks-per-node": 4,
-        "cpus-per-task": 48,
+        'ntasks-per-node': 4,
+        'cpus-per-task': 48,
     }
 }
 
@@ -63,7 +63,7 @@ class RocHPL(rfm.RegressionTest):
     valid_systems = ['+amdgpu +uenv']
     valid_prog_environs = ['+uenv +prgenv +rocm']
     maintainers = ['rasolca', 'SSA']
-    sourcesdir = "scripts"
+    sourcesdir = 'scripts'
     build_system = 'CMake'
     # This branch contains fixes for cmake.
     # https://github.com/ROCm/rocHPL/pull/28
@@ -98,45 +98,55 @@ class RocHPL(rfm.RegressionTest):
     def set_executable(self):
         self.uarch = uarch(self.current_partition)
 
-        pre_script = f"./{self.uarch}-wrapper.sh"
-        binary = os.path.join(self.build_system.builddir, "bin", "rochpl")
-        self.executable = f"{pre_script} {binary}"
+        pre_script = f'./{self.uarch}-wrapper.sh'
+        binary = os.path.join(self.build_system.builddir, 'bin', 'rochpl')
+        self.executable = f'{pre_script} {binary}'
 
         # slurm configuration
         config = slurm_config[self.uarch]
         self.job.options = [f'--nodes=1']
-        self.num_tasks_per_node = config["ntasks-per-node"]
+        self.num_tasks_per_node = config['ntasks-per-node']
         self.num_tasks = self.num_tasks_per_node
-        self.num_cpus_per_task = config["cpus-per-task"]
+        self.num_cpus_per_task = config['cpus-per-task']
         self.ntasks_per_core = 2
-        if self.uarch == "mi200":
-            self.job.launcher.options = ["--cpu-bind=mask_cpu:ff00000000000000ff000000000000,ff00000000000000ff00000000000000,ff00000000000000ff0000,ff00000000000000ff000000,ff00000000000000ff,ff00000000000000ff00,ff00000000000000ff00000000,ff00000000000000ff0000000000"]
+        if self.uarch == 'mi200':
+            self.job.launcher.options = [(
+                '--cpu-bind=mask_cpu:'
+                'ff00000000000000ff000000000000,'
+                'ff00000000000000ff00000000000000,'
+                'ff00000000000000ff0000,'
+                'ff00000000000000ff000000,'
+                'ff00000000000000ff,'
+                'ff00000000000000ff00,'
+                'ff00000000000000ff00000000,'
+                'ff00000000000000ff0000000000')]
         else:
-            self.job.launcher.options = ["--cpu-bind=cores"]
+            self.job.launcher.options = ['--cpu-bind=cores']
 
         # env variables
-        self.env_vars["MPICH_GPU_SUPPORT_ENABLED"] = "1"
-        self.env_vars["OMP_PROC_BIND"] = "true"
-        self.env_vars["OMP_NUM_THREADS"] = f"{self.num_cpus_per_task / self.ntasks_per_core}"
+        self.env_vars['MPICH_GPU_SUPPORT_ENABLED'] = '1'
+        self.env_vars['OMP_PROC_BIND'] = 'true'
+        self.env_vars['OMP_NUM_THREADS'] = \
+            f'{self.num_cpus_per_task / self.ntasks_per_core}'
 
         # executable options
-        if self.uarch == "mi200":
+        if self.uarch == 'mi200':
             prows = 2
             pcols = 4
-        if self.uarch == "mi300":
+        if self.uarch == 'mi300':
             prows = 2
             pcols = 2
 
-        input_file = os.path.join(self.stagedir, "HPL.dat")
+        input_file = os.path.join(self.stagedir, 'HPL.dat')
         with open(input_file, 'w') as file:
-            file.write(HPLdat.format(count = len(self.matrix_sizes), sizes = " ".join(str(n) for n in self.matrix_sizes), p = prows, q = pcols))
+            file.write(HPLdat.format(count=len(self.matrix_sizes), sizes=' '.join(str(n) for n in self.matrix_sizes), p=prows, q=pcols))  # noqa: E501
 
         self.executable_opts += [
-            f"-p {prows}",
-            f"-q {pcols}",
-            f"-P {prows}",
-            f"-Q {pcols}",
-            f"-i {input_file}"
+            f'-p {prows}',
+            f'-q {pcols}',
+            f'-P {prows}',
+            f'-Q {pcols}',
+            f'-i {input_file}'
         ]
 
         # set performance reference
@@ -145,15 +155,19 @@ class RocHPL(rfm.RegressionTest):
 
             for n in self.matrix_sizes:
                 if n in rochpl_references[self.uarch]:
-                    # Note: Permissive threshold for mi300 as sles15sp5 shows performance drops with large matrices.
-                    # Should be removed when all the nodes run the sles15sp6 image.
+                    # Note: Permissive threshold for mi300 as sles15sp5 shows
+                    # performance drops with large matrices. Should be removed
+                    # when all the nodes run the sles15sp6 image.
                     lower_bound = -0.1
-                    if self.uarch == "mi300":
+                    if self.uarch == 'mi300':
                         if n > 200000:
                             lower_bound = -0.90
                         elif n > 150000:
                             lower_bound = -0.33
-                    reference[f"size {n}"] = (rochpl_references[self.uarch][n], lower_bound, 0.05, 'Gflop/s')
+
+                    reference[f'size {n}'] = \
+                        (rochpl_references[self.uarch][n],
+                         lower_bound, 0.05, 'Gflop/s')
 
             self.reference = {self.current_partition.fullname: reference}
 
@@ -163,7 +177,7 @@ class RocHPL(rfm.RegressionTest):
         WC15R2R8      218880   384     2     2             102.52              6.819e+04
         ||Ax-b||_oo/(eps*(||A||_oo*||x||_oo+||b||_oo)*N)=        0.0000524 ...... PASSED
         """
-        out_file = os.path.join(self.stagedir, "HPL.out")
+        out_file = os.path.join(self.stagedir, 'HPL.out')
 
         regex1 = r'^WC15R2R8\s+([0-9]+)\s+384\s+[0-9]+\s+[0-9]+\s+[0-9\.]+\s+([0-9\.]+e\+[0-9]+)$'
         regex2 = r'^\|\|Ax-b\|\|_oo\/\(eps\*\(\|\|A\|\|_oo\*\|\|x\|\|_oo\+\|\|b\|\|_oo\)\*N\)=\s+([\.0-9]+)\s+\.+\s+PASSED$'
@@ -171,12 +185,12 @@ class RocHPL(rfm.RegressionTest):
         self.accuracy_ = sn.extractall(regex2, out_file, tag=1, conv=float)
 
         sanity_patterns = [
-            sn.assert_eq(sn.len(self.perf_), sn.len(self.matrix_sizes), "Number of results do not match with number of runs"),
-            sn.assert_eq(sn.len(self.accuracy_), sn.len(self.matrix_sizes), "Number of PASSED accuracy results do not match with number of runs")
+            sn.assert_eq(sn.len(self.perf_), sn.len(self.matrix_sizes), 'Number of results do not match with number of runs'),
+            sn.assert_eq(sn.len(self.accuracy_), sn.len(self.matrix_sizes), 'Number of PASSED accuracy results do not match with number of runs')
             ]
 
         for (perf, n) in sn.zip(self.perf_, self.matrix_sizes):
-            sanity_patterns.append(sn.assert_eq(perf[0], n, "Matrix size doesn't match"))
+            sanity_patterns.append(sn.assert_eq(perf[0], n, 'Matrix size does not match'))
 
         self.sanity_patterns = sn.all(sanity_patterns)
 
@@ -188,7 +202,7 @@ class RocHPL(rfm.RegressionTest):
 
         self.perf_variables = {}
         for perf in self.perf_:
-            self.perf_variables[f"size {perf[0]}"] = make_perf(sn.getitem(perf, 1), 'Gflop/s')
+            self.perf_variables[f'size {perf[0]}'] = make_perf(sn.getitem(perf, 1), 'Gflop/s')
 
 
 @rfm.simple_test
@@ -199,10 +213,10 @@ class RocHPL_small(RocHPL):
 @rfm.simple_test
 class RocHPL_medium(RocHPL):
     matrix_sizes = [192000]
-    tags = {'bencher'}
+    tags = {'production', 'uenv', 'bencher'}
 
 
 @rfm.simple_test
 class RocHPL_large(RocHPL):
     matrix_sizes = [218880]
-    tags = {'bencher'}
+    tags = {'production', 'uenv', 'bencher'}
