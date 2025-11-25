@@ -14,7 +14,7 @@ class ICON4PyBenchmarks(rfm.RunOnlyRegressionTest):
     descr = 'ICON4Py Check -Diffusion & DyCore Granules-'
     maintainers = ['SSA']
     valid_systems = ['+uenv +amdgpu', '+uenv +nvgpu']
-    valid_prog_environs = ['+uenv +prgenv +rocm', '+uenv +prgenv +cuda']
+    valid_prog_environs = ['+uenv +rocm', '+uenv +cuda']
     tags = {'production', 'uenv', 'bencher'}
     time_limit = '60m'
     build_locally = False
