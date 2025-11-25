@@ -97,8 +97,7 @@ class QeSiriusCheckUENV(rfm.RunOnlyRegressionTest):
             self.env_vars['DLAF_NUM_HP_GPU_STREAMS'] = '4'
 
         # set reference
-        if self.uarch is not None and self.uarch in
-        qe_references[self.test_name]:
+        if self.uarch is not None and self.uarch in qe_references[self.test_name]:
             self.reference = {
                 self.current_partition.fullname:
                 qe_references[self.test_name][self.uarch]
