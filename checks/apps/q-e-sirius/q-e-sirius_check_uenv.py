@@ -24,6 +24,7 @@ slurm_config = {
             'ntasks-per-node': 4,
             'cpus-per-task': 72,
             'walltime': '0d0h20m0s',
+            'extra_job_options': [],
             'gpu': True,
         },
         'mi200': {
@@ -31,6 +32,7 @@ slurm_config = {
             'ntasks-per-node': 8,
             'cpus-per-task': 8,
             'walltime': '0d0h20m0s',
+            'extra_job_options': [],
             'gpu': True,
         },
         'mi300': {
@@ -47,6 +49,7 @@ slurm_config = {
             'ntasks-per-node': 16,
             'cpus-per-task': 8,
             'walltime': '0d0h20m0s',
+            'extra_job_options': [],
             'gpu': False,
         },
     },
@@ -66,6 +69,8 @@ class QeSiriusCheckUENV(rfm.RunOnlyRegressionTest):
         self.job.options = [
             f'--nodes={config["nodes"]}',
         ]
+        self.job.options += config['extra_job_options']
+
         self.num_tasks_per_node = config['ntasks-per-node']
         self.num_tasks = config['nodes'] * self.num_tasks_per_node
         self.num_cpus_per_task = config['cpus-per-task']
@@ -87,7 +92,6 @@ class QeSiriusCheckUENV(rfm.RunOnlyRegressionTest):
         if self.uarch == 'mi300':
             self.env_vars['MPICH_GPU_SUPPORT_ENABLED'] = '1'
             self.env_vars['OMP_NUM_THREADS'] = str(8)
-            self.job.options += config['extra_job_options']
         if self.uarch in ('mi300', 'mi200'):
             self.env_vars['PIKA_MPI_ENABLE_POOL'] = '1'
             self.env_vars['PIKA_MPI_COMPLETION_MODE'] = '28'
