@@ -11,6 +11,12 @@ dlaf_references = {
         "gh200": {
             "time_run": (24.0, -1.0, 0.1, "s"),
         },
+        "mi300": {
+            "time_run": (51.0, -1.0, 0.1, "s"),
+        },
+        "mi200": {
+            "time_run": (41.0, -1.0, 0.1, "s"),
+        },
         "zen2": {
             "time_run": (170.0, -1.0, 0.1, "s"),
         }
@@ -18,6 +24,12 @@ dlaf_references = {
     "gen_eigensolver": {
         "gh200": {
             "time_run": (26.0, -1.0, 0.1, "s")
+        },
+        "mi300": {
+            "time_run": (61.0, -1.0, 0.1, "s")
+        },
+        "mi200": {
+            "time_run": (54.0, -1.0, 0.1, "s")
         },
         "zen2": {
             "time_run": (210.0, -1.0, 0.1, "s"),
@@ -33,6 +45,23 @@ slurm_config = {
             "cpus-per-task": 72,
             "walltime": "0d0h5m0s",
             "gpu": True,
+            "extra_job_options": [],
+        },
+        "mi300": {
+            "nodes": 2,
+            "ntasks-per-node": 12,
+            "cpus-per-task": 16,
+            "walltime": "0d0h10m0s",
+            "gpu": True,
+            "extra_job_options": ["--constraint=amdgpu_tpx"],
+        },
+        "mi200": {
+            "nodes": 2,
+            "ntasks-per-node": 8,
+            "cpus-per-task": 16,
+            "walltime": "0d0h10m0s",
+            "gpu": True,
+            "extra_job_options": [],
         },
         "zen2": {
             "nodes": 2,
@@ -40,6 +69,7 @@ slurm_config = {
             "cpus-per-task": 16,
             "walltime": "0d0h10m0s",
             "gpu": True,
+            "extra_job_options": [],
         }
     },
     "gen_eigensolver": {
@@ -49,6 +79,23 @@ slurm_config = {
             "cpus-per-task": 72,
             "walltime": "0d0h5m0s",
             "gpu": True,
+            "extra_job_options": [],
+        },
+        "mi300": {
+            "nodes": 2,
+            "ntasks-per-node": 12,
+            "cpus-per-task": 16,
+            "walltime": "0d0h10m0s",
+            "gpu": True,
+            "extra_job_options": ["--constraint=amdgpu_tpx"],
+        },
+        "mi200": {
+            "nodes": 2,
+            "ntasks-per-node": 8,
+            "cpus-per-task": 16,
+            "walltime": "0d0h10m0s",
+            "gpu": True,
+            "extra_job_options": [],
         },
         "zen2": {
             "nodes": 2,
@@ -56,6 +103,7 @@ slurm_config = {
             "cpus-per-task": 16,
             "walltime": "0d0h10m0s",
             "gpu": True,
+            "extra_job_options": [],
         }
     },
 }
@@ -83,6 +131,7 @@ class dlaf_base(rfm.RunOnlyRegressionTest):
         # slurm configuration
         config = slurm_config[self.test_name][self.uarch]
         self.job.options = [f'--nodes={config["nodes"]}']
+        self.job.options += config["extra_job_options"]
         self.num_tasks_per_node = config["ntasks-per-node"]
         self.num_tasks = config["nodes"] * self.num_tasks_per_node
         self.num_cpus_per_task = config["cpus-per-task"]
@@ -93,13 +142,14 @@ class dlaf_base(rfm.RunOnlyRegressionTest):
             self.job.launcher.options += ["--gpus-per-task=1"]
 
         # environment variables
-        if self.uarch == "zen2":
-            self.env_vars["PIKA_THREADS"] = str((self.num_cpus_per_task // 2) - 1)
+        if self.uarch in ("mi300", "mi200", "zen2"):
+            self.env_vars["PIKA_THREADS"] = \
+                str((self.num_cpus_per_task // 2) - 1)
         else:
             self.env_vars["PIKA_THREADS"] = str(self.num_cpus_per_task - 1)
         self.env_vars["MIMALLOC_ALLOW_LARGE_OS_PAGES"] = "1"
         self.env_vars["MIMALLOC_EAGER_COMMIT_DELAY"] = "0"
-        if self.uarch == "gh200":
+        if self.uarch in ("gh200", "mi300", "mi200"):
             self.env_vars["FI_MR_CACHE_MONITOR"] = "disabled"
             self.env_vars["MPICH_GPU_SUPPORT_ENABLED"] = "1"
             self.env_vars["DLAF_BT_BAND_TO_TRIDIAG_HH_APPLY_GROUP_SIZE"] = \
@@ -107,13 +157,20 @@ class dlaf_base(rfm.RunOnlyRegressionTest):
             self.env_vars["DLAF_UMPIRE_DEVICE_MEMORY_POOL_ALIGNMENT_BYTES"] = \
                 str(2**21)
 
+        if self.uarch in ("mi300", "mi200"):
+            self.env_vars["PIKA_MPI_ENABLE_POOL"] = "1"
+            self.env_vars["PIKA_MPI_COMPLETION_MODE"] = "28"
+            self.env_vars["DLAF_BAND_TO_TRIDIAG_1D_BLOCK_SIZE_BASE"] = "2048"
+            self.env_vars["DLAF_NUM_NP_GPU_STREAMS"] = "4"
+            self.env_vars["DLAF_NUM_HP_GPU_STREAMS"] = "4"
+
         # executable options
         grid_cols, grid_rows = self._sq_factor(self.num_tasks)
         self.executable_opts += [
             f"--grid-cols={grid_cols}",
             f"--grid-rows={grid_rows}"
         ]
-        if self.uarch == "gh200":
+        if self.uarch in ("gh200", "mi300", "mi200"):
             self.executable_opts.append("--block-size=1024")
         else:
             self.executable_opts.append("--block-size=512")
@@ -149,7 +206,7 @@ class dlaf_base(rfm.RunOnlyRegressionTest):
 
 @rfm.simple_test
 class dlaf_check_uenv(dlaf_base):
-    tags = {"uenv", "production"}
+    tags = {"uenv", "production", "bencher"}
     test_name = parameter(["gen_eigensolver", "eigensolver"])
     executable_opts = [
         "--type=d",
@@ -161,7 +218,7 @@ class dlaf_check_uenv(dlaf_base):
 
     @run_before("run")
     def set_executable(self):
-        self.executable = (
-            "miniapp_gen_eigensolver" if self.test_name == "gen_eigensolver"
-            else "miniapp_eigensolver"
-        )
+        if uarch(self.current_partition) in ("mi300", "mi200"):
+            self.executable = f"./rocr_wrapper.sh miniapp_{self.test_name}"
+        else:
+            self.executable = f"miniapp_{self.test_name}"

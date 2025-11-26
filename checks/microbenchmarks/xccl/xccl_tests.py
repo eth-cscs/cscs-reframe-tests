@@ -12,6 +12,8 @@ import reframe.utility.sanity as sn
 sys.path.append(str(pathlib.Path(__file__).parent.parent.parent / 'mixins'))
 
 from container_engine import ContainerEngineMixin  # noqa: E402
+from slurm_mpi_pmix import SlurmMpiPmixMixin
+from uenv_slurm_mpi_options import UenvSlurmMpiOptionsMixin
 
 
 class XCCLTestsBase(rfm.RunOnlyRegressionTest):
@@ -88,33 +90,16 @@ class XCCLTestsBase(rfm.RunOnlyRegressionTest):
         }
 
 
-class XCCLTestsBaseCE(XCCLTestsBase, ContainerEngineMixin):
+class XCCLTestsBaseCE(XCCLTestsBase, ContainerEngineMixin, SlurmMpiPmixMixin):
     container_env_table = {
         'annotations.com.hooks': {
             'aws_ofi_nccl.enabled': 'true'
         }
     }
 
-    @run_before('run')
-    def set_pmix(self):
-        self.job.launcher.options += ['--mpi=pmix']
 
-        # Disable MCA components to avoid warnings
-        self.env_vars.update(
-            {
-                'PMIX_MCA_psec': '^munge',
-                'PMIX_MCA_gds': '^shmem2'
-            }
-        )
-
-
-class XCCLTestsBaseUENV(XCCLTestsBase):
-    @run_before('run')
-    def set_pmix(self):
-        # Some clusters, like clariden, don't use cray_shasta as default.
-        # cray_shasta is required for cray-mpich, which most uenvs use.  This
-        # will need to be updated when uenvs can have OpenMPI in them.
-        self.job.launcher.options += ['--mpi=cray_shasta']
+class XCCLTestsBaseUENV(XCCLTestsBase, UenvSlurmMpiOptionsMixin):
+    tags.add('bencher')
 
 
 def _set_xccl_uenv_env_vars(env_vars):
