@@ -14,7 +14,7 @@ from container_engine import ContainerEngineMixin  # noqa: E402
 
 
 @rfm.simple_test
-class dcgmi_rpm_bin_and_lib_installed(rfm.RunOnlyRegressionTest):
+class DcgmRpmCheck(rfm.RunOnlyRegressionTest):
     descr = 'Check DCGM executable and libraries are installed'
     maintainers = ['VCUE', 'PA']
     tags = {'maintenance', 'vs-node-validator'}
