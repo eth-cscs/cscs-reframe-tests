@@ -78,7 +78,7 @@ class lammps_build_test(rfm.CompileOnlyRegressionTest):
     sourcesdir = None
     lammps_sources = fixture(lammps_download, scope='environment')
     build_system = 'CMake'
-    tags = {'uenv', 'production'}
+    tags = {'uenv'}
     build_locally = False
 
     @run_before('compile')
