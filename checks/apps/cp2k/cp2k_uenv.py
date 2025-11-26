@@ -72,7 +72,13 @@ slurm_config = {
 
 
 def version_from_uenv():
-    return os.environ['UENV'].split('/')[1].split(':')[0]
+    try:
+        # Looks for version provided by reframe.yaml
+        version = os.environ['UENV_CP2K_VERSION']
+    except KeyError:
+        # Extract version from deployed UENV
+        version = os.environ['UENV'].split('/')[-1].split(':')[0]
+    return version
 
 
 @rfm.xfail(
