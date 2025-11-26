@@ -79,7 +79,7 @@ class QeSiriusCheckUENV(rfm.RunOnlyRegressionTest):
 
         # environment variables
         self.env_vars['OMP_NUM_THREADS'] = config['cpus-per-task']
-        self.env_vars['SIRIUS_PRINT_TIMING'] = '1'
+        self.env_vars['SIRIUS_PRINT_TIMING'] = '5'
         self.env_vars['SIRIUS_PRINT_MPI_LAYOUT'] = '1'
         self.env_vars['SIRIUS_VERBOSITY'] = '2'
         self.env_vars['SLURM_HINT'] = 'nomultithread'
