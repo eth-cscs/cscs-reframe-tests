@@ -10,8 +10,10 @@ if [ "$RFM_ICON4PY_STOP" == "Y" ] ;then
     echo "# INFO: $0: python/$py_version is incompatible with this test (try python/3.13), exiting..."
     # for sanity:
     echo "model/atmosphere/diffusion/tests/diffusion/integration_tests/test_benchmark_diffusion.py::test_diffusion_benchmark PASSED [100%] # FAKE"
-    # for performance:                 Min     Max     Mean    StdDev
-    echo "test_diffusion_benchmark     0.0000  0.0000  0.0000  0.0000  # FAKE"
+    echo "model/atmosphere/dycore/tests/dycore/integration_tests/test_benchmark_solve_nonhydro.py::test_benchmark_solve_nonhydro[True-False] PASSED [100%] # FAKE"
+    # for performance:                                  Min     Max     Mean    StdDev
+    echo "test_diffusion_benchmark                      0.0000  0.0000  0.0000  0.0000  # FAKE"
+    echo "test_benchmark_solve_nonhydro[True-False]     0.0000  0.0000  0.0000  0.0000  # FAKE"
     sleep 4
     exit 0
 
@@ -30,9 +32,8 @@ else
         --backend=dace_gpu \
         --grid=icon_benchmark_regional \
         --benchmark-time-unit=ms \
-        model/atmosphere/diffusion/tests/diffusion/integration_tests/test_benchmark_diffusion.py::test_diffusion_benchmark
-    # TODO: Add this test once gt4py cache works as expected
-    # model/atmosphere/dycore/tests/dycore/integration_tests/test_benchmark_solve_nonhydro.py::test_benchmark_solve_nonhydro[True-False]
+        model/atmosphere/diffusion/tests/diffusion/integration_tests/test_benchmark_diffusion.py::test_diffusion_benchmark \
+        model/atmosphere/dycore/tests/dycore/integration_tests/test_benchmark_solve_nonhydro.py::test_benchmark_solve_nonhydro[True-False]
     echo
 
     echo "# run done"

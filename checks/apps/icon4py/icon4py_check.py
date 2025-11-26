@@ -49,6 +49,7 @@ class ICON4PyBenchmarks(rfm.RunOnlyRegressionTest):
         rfm_stop = os.getenv('RFM_ICON4PY_STOP')
         if rfm_stop == 'Y':
             diffusion_granule = sn.assert_found('# INFO:', self.stdout)
+            dycore_granule = True
         else:
             diffusion_granule = sn.assert_found(
                 (r'^\s*model/atmosphere/diffusion/tests/'
@@ -56,13 +57,13 @@ class ICON4PyBenchmarks(rfm.RunOnlyRegressionTest):
                  r'test_benchmark_diffusion\.py'
                  r'::test_diffusion_benchmark\s*PASSED'
                  ), self.stdout)
-            # dycore_granule = sn.assert_found(
-            #     (r'^\s*model/atmosphere/dycore/tests/'
-            #      r'dycore/integration_tests/test_benchmark_solve_nonhydro\.py'
-            #      r'::test_benchmark_solve_nonhydro\[True-False\]\s*PASSED'),
-            #     self.stdout)
+            dycore_granule = sn.assert_found(
+                (r'^\s*model/atmosphere/dycore/tests/'
+                 r'dycore/integration_tests/test_benchmark_solve_nonhydro\.py'
+                 r'::test_benchmark_solve_nonhydro\[True-False\]\s*PASSED'),
+                self.stdout)
 
-        return diffusion_granule  # and dycore_granule
+        return diffusion_granule and dycore_granule
 
     @run_before('performance')
     def set_perf_vars(self):
@@ -77,23 +78,23 @@ class ICON4PyBenchmarks(rfm.RunOnlyRegressionTest):
         diffusion_granule_mean = sn.extractsingle(
             diffusion_regex, self.stdout, 'mean', float)
 
-        # dycore_regex = (
-        #     r'^\s*test_benchmark_solve_nonhydro\[True-False\]\s+'
-        #     r'(?P<min>\d+(?:\.\d+)?)'            # Min
-        #     r'(?:\s+\([^)]+\))?\s+'              # optional '(...)'
-        #     r'(?P<max>\d+(?:\.\d+)?)'            # Max
-        #     r'(?:\s+\([^)]+\))?\s+'              # optional '(...)'
-        #     r'(?P<mean>\d+(?:\.\d+)?)'           # Mean
-        # )
-        # dycore_granule_mean = sn.extractsingle(
-        #     dycore_regex, self.stdout, 'mean', float)
+        dycore_regex = (
+            r'^\s*test_benchmark_solve_nonhydro\[True-False\]\s+'
+            r'(?P<min>\d+(?:\.\d+)?)'            # Min
+            r'(?:\s+\([^)]+\))?\s+'              # optional '(...)'
+            r'(?P<max>\d+(?:\.\d+)?)'            # Max
+            r'(?:\s+\([^)]+\))?\s+'              # optional '(...)'
+            r'(?P<mean>\d+(?:\.\d+)?)'           # Mean
+        )
+        dycore_granule_mean = sn.extractsingle(
+            dycore_regex, self.stdout, 'mean', float)
 
         self.perf_variables = {
             'diffusion_granule':
                 sn.make_performance_function(diffusion_granule_mean, 'ms'),
             #
-            # 'dycore_granule':
-            #     sn.make_performance_function(dycore_granule_mean, 'ms'),
+            'dycore_granule':
+                sn.make_performance_function(dycore_granule_mean, 'ms'),
         }
 
     # TODO: add ref. (https://github.com/eth-cscs/cscs-reframe-tests/pull/440)
