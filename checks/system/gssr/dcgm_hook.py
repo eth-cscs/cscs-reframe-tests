@@ -33,7 +33,7 @@ class DcgmRpmCheck(rfm.RunOnlyRegressionTest):
 
 
 @rfm.simple_test
-class gssr_ce_hook_avail(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
+class GssrCeHookCheck(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     descr = 'Check DCGM CE hook is working with gssr'
     maintainers = ['VCUE', 'PA']
     tags = {'ce', 'maintenance', 'vs-node-validator'}
