@@ -87,6 +87,7 @@ class QeSiriusCheckUENV(rfm.RunOnlyRegressionTest):
         if self.uarch == 'mi300':
             self.env_vars['MPICH_GPU_SUPPORT_ENABLED'] = '1'
             self.env_vars['OMP_NUM_THREADS'] = str(8)
+            self.job.options += config['extra_job_options']
         if self.uarch in ('mi300', 'mi200'):
             self.env_vars['PIKA_MPI_ENABLE_POOL'] = '1'
             self.env_vars['PIKA_MPI_COMPLETION_MODE'] = '28'
