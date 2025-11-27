@@ -56,6 +56,14 @@ slurm_config = {
 }
 
 
+def uenv_uarch():
+    uenv_name = os.environ.get("UENV", None)
+    if not uenv_name:
+        return uenv_name
+    uenv_inspect_cmd = f"uenv image inspect --format={{uarch}} {uenv_name}"
+    return osext.run_command(uenv_inspect_cmd, shell=True).stdout.strip()
+
+
 class QeSiriusCheckUENV(rfm.RunOnlyRegressionTest):
     pwx_executable = 'pw.x'
     maintainers = ['simonpintarelli', 'SSA']
@@ -64,8 +72,9 @@ class QeSiriusCheckUENV(rfm.RunOnlyRegressionTest):
     @run_before('run')
     def skip_(self):
         _uarch = uenv.uarch(self.current_partition)
-        self.skip_if(_uarch not in self.current_environ.features,
+        self.skip_if(_uarch != uenv_uarch(),
                      f'this uenv does not support {_uarch}')
+
     @run_before('run')
     def prepare_run(self):
         self.uarch = uenv.uarch(self.current_partition)
