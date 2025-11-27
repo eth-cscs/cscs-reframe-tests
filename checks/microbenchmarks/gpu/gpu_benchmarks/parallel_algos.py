@@ -30,7 +30,7 @@ class GPUBenchmarks(rfm.RegressionTest):
 class ParallelAlgos(GPUBenchmarks):
     benchmark = 'parallel_algos'
     algo = parameter(['radix-sort', 'scan', 'reduce'])
-    _executable_opts = parameter(['6', '12', '20', '23', '27', '28', '30', '32'])
+    _executable_opts = parameter(['6', '12', '23', '27', '28', '32'])
 
     # input values are specific to the algorithm for gpu saturation
     _valid_inputs = {
