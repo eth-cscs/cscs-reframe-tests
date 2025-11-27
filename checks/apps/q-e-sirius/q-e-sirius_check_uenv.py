@@ -63,7 +63,7 @@ class QeSiriusCheckUENV(rfm.RunOnlyRegressionTest):
 
     @run_before('run')
     def skip_(self):
-        _uarch = uarch(self.current_partition)
+        _uarch = uenv.uarch(self.current_partition)
         self.skip_if(_uarch not in self.current_environ.features,
                      f'this uenv does not support {_uarch}')
     @run_before('run')
