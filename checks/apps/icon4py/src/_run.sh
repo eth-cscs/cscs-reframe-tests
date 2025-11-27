@@ -20,5 +20,10 @@ pytest -v \
     model/atmosphere/dycore/tests/dycore/integration_tests/test_benchmark_solve_nonhydro.py::test_benchmark_solve_nonhydro[True-False]
 echo
 
+# Cleanup
+deactivate
+cd ..
+rm -rf icon4py
+
 echo "# run done"
 date

@@ -10,7 +10,7 @@ cd icon4py
 git checkout 5485bcacb1dbc7688b1e7d276d4e2e28362c5444  # Commit: Update to GT4Py v1.1.0 (#933)
 
 # Install uv locally
-curl -LsSf https://astral.sh/uv/install.sh | UV_INSTALL_DIR="$PWD/bin" sh
+curl -LsSf https://astral.sh/uv/install.sh | UV_UNMANAGED_INSTALL="$PWD/bin" sh
 export PATH="$PWD/bin:$PATH"
 
 # Install ICON4Py
