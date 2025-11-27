@@ -26,6 +26,8 @@ class ICON4PyBenchmarks(rfm.RunOnlyRegressionTest):
         'MPICH_CXX': '$(which g++)',
         'HUGETLB_ELFMAP': 'no',
         'HUGETLB_MORECORE': 'no',
+        'GT4PY_UNSTRUCTURED_HORIZONTAL_HAS_UNIT_STRIDE': '1',
+        'PYTHONOPTIMIZE': '2',
         # GT4Py cache does not work properly for dace backend yet
         # 'GT4PY_BUILD_CACHE_LIFETIME': 'persistent',
         # 'GT4PY_BUILD_CACHE_DIR': '...',
