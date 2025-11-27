@@ -401,11 +401,13 @@ launch_reframe_bencher() {
     # reframe -V
     # echo "# UENV=$UENV"
 
+    set +e
     reframe -C ./config/cscs.py \
         --mode daily_bencher \
         --system=$system \
         --prefix=$SCRATCH/rfm-$CI_JOB_ID \
         -r
+    set -e
 
     python3 ./utility/bencher_metric_format.py latest.json
 
