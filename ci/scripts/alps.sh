@@ -401,12 +401,16 @@ launch_reframe_bencher() {
     # reframe -V
     # echo "# UENV=$UENV"
 
+    # ---------------------------------------------------------------------
+    # Run reframe but DO NOT exit on failure, capture the exit code
+    # ---------------------------------------------------------------------
     set +e
     reframe -C ./config/cscs.py \
         --mode daily_bencher \
         --system=$system \
         --prefix=$SCRATCH/rfm-$CI_JOB_ID \
         -r
+    reframe_status=$?
     set -e
 
     python3 ./utility/bencher_metric_format.py latest.json
@@ -488,6 +492,19 @@ launch_reframe_bencher() {
             --project $BENCHER_PROJECT
 
     done
+
+    # ---------------------------------------------------------------------
+    # Report ReFrame status
+    # ---------------------------------------------------------------------
+    echo "------------------------------------------------------------"
+    if [ "$reframe_status" -eq 0 ]; then
+        echo "# ReFrame finished successfully (exit code 0)"
+    else
+        echo "# ReFrame FAILED (exit code $reframe_status)"
+    fi
+    echo "------------------------------------------------------------"
+
+    return "$reframe_status"
 }
 # }}}
 # {{{ oneuptime
