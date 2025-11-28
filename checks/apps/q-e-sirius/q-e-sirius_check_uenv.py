@@ -71,8 +71,8 @@ class QeSiriusCheckUENV(rfm.RunOnlyRegressionTest):
     maintainers = ['simonpintarelli', 'SSA']
     valid_systems = ['+uenv +amdgpu', '+uenv +nvgpu']
 
-    @run_before('run')
-    def skip_(self):
+    @run_after('setup')
+    def skip_unsupported_uenv(self):
         _uarch = uenv.uarch(self.current_partition)
         self.skip_if(_uarch != uenv_uarch(),
                      f'this uenv does not support {_uarch}')
