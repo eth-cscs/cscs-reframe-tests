@@ -8,6 +8,7 @@ import sys
 
 import reframe as rfm
 import reframe.utility.sanity as sn
+from uenv import uarch
 
 sys.path.append(str(pathlib.Path(__file__).parent.parent.parent / 'mixins'))
 
@@ -32,13 +33,25 @@ class XCCLTestsBase(rfm.RunOnlyRegressionTest):
 
     reference_per_test = {
         'sendrecv': {
-            '*': {
+            'gh200': {
                 'GB/s': (24.0, -0.05, 0.05, 'GB/s')
+            },
+            'mi300': {
+                'GB/s': (24.0, -0.05, 0.05, 'GB/s')
+            },
+            'mi200': {
+                'GB/s': (15.0, -0.05, 0.05, 'GB/s')
             }
          },
         'all_reduce': {
-            '*': {
+            'gh200': {
                 'GB/s': (150.0, -0.10, 0.10, 'GB/s')
+            },
+            'mi300': {
+                'GB/s': (140.0, -0.05, 0.05, 'GB/s')
+            },
+            'mi200': {
+                'GB/s': (105.0, -0.05, 0.05, 'GB/s')
             }
         }
     }
@@ -79,7 +92,13 @@ class XCCLTestsBase(rfm.RunOnlyRegressionTest):
 
     @run_before('performance')
     def set_reference(self):
-        self.reference = self.reference_per_test[self.test_name]
+        self.uarch = uarch(self.current_partition)
+        if self.uarch is not None and \
+           self.uarch in self.reference_per_test[self.test_name]:
+            self.reference = {
+                self.current_partition.fullname:
+                    self.reference_per_test[self.test_name][self.uarch]
+            }
 
     @run_before('performance')
     def set_perf(self):
