@@ -401,11 +401,17 @@ launch_reframe_bencher() {
     # reframe -V
     # echo "# UENV=$UENV"
 
+    # ---------------------------------------------------------------------
+    # Run reframe but DO NOT exit on failure, capture the exit code
+    # ---------------------------------------------------------------------
+    set +e
     reframe -C ./config/cscs.py \
         --mode daily_bencher \
         --system=$system \
         --prefix=$SCRATCH/rfm-$CI_JOB_ID \
         -r
+    reframe_status=$?
+    set -e
 
     python3 ./utility/bencher_metric_format.py latest.json
 
@@ -456,7 +462,49 @@ launch_reframe_bencher() {
             --branch main \
             --token $BENCHER_API_TOKEN \
             --project $BENCHER_PROJECT
+
+        # ------------------------------------------------------------
+        # Second upload: shortened testbed with only name + version
+        # ------------------------------------------------------------
+
+        # Extract everything after "bencher="
+        rest="${bmf_file%.json}"
+        rest="${rest#bencher=}"  # system=partition=environ
+
+        # Split by "=" → system, partition, environ
+        IFS='=' read -r system partition environ <<< "$rest"
+
+        # environ="name_version_tag_..."
+        IFS='_' read -r uenv_name uenv_version _ <<< "$environ"
+        short_environ="${uenv_name}_${uenv_version}"
+
+        short_testbed="${system}=${partition}=${short_environ}"
+
+        echo "Re-uploading results for SHORT testbed: $short_testbed from file: $bmf_file"
+
+        ./bencher run \
+            --adapter json \
+            --file "$bmf_file" \
+            --testbed "$short_testbed" \
+            --thresholds-reset \
+            --branch main \
+            --token $BENCHER_API_TOKEN \
+            --project $BENCHER_PROJECT
+
     done
+
+    # ---------------------------------------------------------------------
+    # Report ReFrame status
+    # ---------------------------------------------------------------------
+    echo "------------------------------------------------------------"
+    if [ "$reframe_status" -eq 0 ]; then
+        echo "# ReFrame finished successfully (exit code 0)"
+    else
+        echo "# ReFrame FAILED (exit code $reframe_status)"
+    fi
+    echo "------------------------------------------------------------"
+
+    return "$reframe_status"
 }
 # }}}
 # {{{ oneuptime
