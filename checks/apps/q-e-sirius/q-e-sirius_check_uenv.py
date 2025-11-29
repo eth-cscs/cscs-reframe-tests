@@ -64,6 +64,7 @@ def uenv_uarch():
         return uenv_name
     uenv_inspect_cmd = f"uenv image inspect --format={{uarch}} {uenv_name}"
     return osext.run_command(uenv_inspect_cmd, shell=True).stdout.strip()
+    # TODO: move to config/utilities/uenv.py + support UENV=./file.sqfs
 
 
 class QeSiriusCheckUENV(rfm.RunOnlyRegressionTest):
