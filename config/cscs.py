@@ -17,6 +17,7 @@ sys.path.append(utilities_path)
 import uenv
 
 
+# TODO: uenv build:: support ?
 def is_var_true(var):
     if var is None:
         return False
