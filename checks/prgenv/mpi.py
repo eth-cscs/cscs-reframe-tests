@@ -128,7 +128,7 @@ class MpiInitTest(rfm.RegressionTest, ContainerEngineCPEMixin, UenvSlurmMpiOptio
 
 
 @rfm.simple_test
-class MpiGpuDirectOOM(rfm.RegressionTest, ContainerEngineCPEMixin):
+class MpiGpuDirectOOM(rfm.RegressionTest, ContainerEngineCPEMixin, UenvSlurmMpiOptionsMixin):
     '''
     This test checks the issue reported in:
     https://github.com/eth-cscs/alps-gh200-reproducers/tree/main/gpudirect-oom
