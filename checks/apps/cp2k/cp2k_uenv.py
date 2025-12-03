@@ -5,6 +5,8 @@
 
 import os
 import shutil
+from packaging.version import Version
+import re
 
 import reframe as rfm
 import reframe.utility.sanity as sn
@@ -72,37 +74,38 @@ slurm_config = {
 
 
 def version_from_uenv():
-    try:
-        # Looks for version provided by reframe.yaml
-        version = os.environ['UENV_CP2K_VERSION']
-    except KeyError:
-        # Extract version from deployed UENV
-        version = os.environ['UENV'].split('/')[-1].split(':')[0]
-    return version
-
+    uenv_var = os.environ['UENV']
+    match = re.search(r'/(\d+\.\d+)', uenv_var)
+    if match: # Return version (YYYY.VV)
+        return match.group(1)
+    else:
+        return None
 
 @rfm.xfail(
     'CP2K 2025.1 issues with libxc linking.',
-    lambda test: test.version == "v2025.1"
+    lambda test: test.version == "2025.1"
 )
 class cp2k_download(rfm.RunOnlyRegressionTest):
     version = variable(str, value='')
     descr = 'Download CP2K source code'
     sourcesdir = None
     executable = 'wget'
-    local = True
+    local = False
 
     @run_before('run')
     def set_version(self):
-        uenv_version = version_from_uenv()
-        self.version = f'v{uenv_version}' if self.version == '' \
-            else self.version
+        try:
+            uenv_version = self.current_environ.extras['version'][1:]
+        except KeyError:
+            uenv_version = version_from_uenv()
+
+        self.version = uenv_version if self.version == '' else self.version
 
         url = 'https://jfrog.svc.cscs.ch/artifactory/cscs-reframe-tests'
 
         self.executable_opts = [
             '--quiet',
-            f'{url}/cp2k/{self.version}.tar.gz'
+            f'{url}/cp2k/v{self.version}.tar.gz'
         ]
 
     @sanity_function
@@ -121,7 +124,7 @@ class Cp2kBuildTestUENV(rfm.CompileOnlyRegressionTest):
     build_system = 'CMake'
     sourcesdir = None
     maintainers = ['tmathieu', 'romeli', 'abussy', 'simbergm', 'SSA']
-    cp2k_sources = fixture(cp2k_download, scope='session')
+    cp2k_sources = fixture(cp2k_download, scope='test')
     build_locally = False
     tags = {'uenv'}
 
@@ -136,7 +139,7 @@ class Cp2kBuildTestUENV(rfm.CompileOnlyRegressionTest):
         self.time_limit = '0d0h30m0s'
 
         tarsource = os.path.join(
-            self.cp2k_sources.stagedir, f'{self.cp2k_sources.version}.tar.gz'
+            self.cp2k_sources.stagedir, f'v{self.cp2k_sources.version}.tar.gz'
         )
 
         # Extract source code
@@ -157,11 +160,9 @@ class Cp2kBuildTestUENV(rfm.CompileOnlyRegressionTest):
             '-DCP2K_USE_PLUMED=ON',
         ]
 
-        # CP2K CMake changed default values from 2025.2 onwards
-        # CMake options below are chosen depending on the version of CP2K
-        version = float(version_from_uenv())
+        version = Version(self.cp2k_sources.version)
 
-        if version > 2025.1:
+        if version > Version('2025.1'):
             self.build_system.config_opts += [
                 '-DCP2K_USE_MPI=ON',
                 '-DCP2K_USE_LIBVORI=ON',
@@ -173,7 +174,7 @@ class Cp2kBuildTestUENV(rfm.CompileOnlyRegressionTest):
                 '-DCP2K_USE_SPLA_GEMM_OFFLOADING=ON',
                 '-DCMAKE_CUDA_HOST_COMPILER=mpicc',
             ]
-            if version > 2025.1:
+            if version > Version('2025.1'):
                 self.build_system.config_opts += [
                     '-DCMAKE_CUDA_ARCHITECTURES=90',
                 ]
@@ -329,8 +330,12 @@ class Cp2kCheckPBE_UENV(Cp2kCheck_UENV):
         # Since this first inner SCF step does converge
         # a different count means a different runtime with the same input file
         # See https://github.com/cp2k/cp2k/pull/4141
-        version = float(version_from_uenv())
-        if version > 2025.1:
+        try:
+            uenv_version = self.current_environ.extras['version'][1:]
+        except KeyError:
+            uenv_version = version_from_uenv()
+
+        if Version(version) > Version('2025.1'):
             # Reduce max_scf to 16 to reproduce previous behaviour
             self.executable_opts = ['-i', 'H2O-128-PBE-TZ-max_scf_16.inp']
         else:
