@@ -113,7 +113,7 @@ class cp2k_download(rfm.RunOnlyRegressionTest):
         # Manual compilation of v2025.1 with CMake is known to fail at link
         # time, because of issues with the libxc integration.
         return sn.and_(sn.assert_eq(self.job.exitcode, 0),
-                       sn.assert_ne(self.version, 'v2025.1'))
+                       sn.assert_ne(self.version, '2025.1'))
 
 
 @rfm.simple_test
