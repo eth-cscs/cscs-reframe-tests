@@ -13,8 +13,8 @@ class ICON4PyBenchmarks(rfm.RunOnlyRegressionTest):
     maintainers = ['SSA']
     valid_systems = ['+uenv +amdgpu', '+uenv +nvgpu']
     valid_prog_environs = ['+uenv +rocm', '+uenv +cuda']
-    tags = {'production', 'uenv', 'bencher'}
-    time_limit = '90m'
+    tags = {'uenv', 'bencher'}
+    time_limit = '60m'
     build_locally = False
     env_vars = {
         'ICON4PY_PYTHON_VERSION': '3.11',
