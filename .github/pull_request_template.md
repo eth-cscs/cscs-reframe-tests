@@ -16,7 +16,7 @@ cscs-ci run alps-starlex-uenv;MY_UENV=prgenv-gnu/25.11:rc1
 cscs-ci run alps-beverin-uenv;MY_UENV=prgenv-gnu/25.07-6.3.3:v9
 ```
 
-- You can also test from your terminal, for example, on beverin:
+- You can also test from your terminal:
     - install: https://confluence.cscs.ch/spaces/reframe/pages/886276110/Installing+ReFrame
     - run test: for example, cp2k on beverin:
 
@@ -31,3 +31,4 @@ UENV=prgenv-gnu/25.07-6.3.3:v8 \
 ```
 
 Thank you for taking the time to contribute to `cscs-reframe-tests` !
+- CSCS staff: More info in https://confluence.cscs.ch/spaces/reframe --> Contributing+Pull+Requests
