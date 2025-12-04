@@ -197,7 +197,7 @@ class QeCheckAuSurfUENV(QeCheckUENV):
 @rfm.simple_test
 class QeCheckAuSurfUENVExec(QeCheckAuSurfUENV):
     valid_prog_environs = ["+qe"]
-    tags = {"uenv", "production"}
+    tags = {"uenv", "production", "maintenance"}
 
     @run_after("setup")
     def setup_executable(self):
