@@ -1,4 +1,4 @@
-# Copyright 2016-2025 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -23,7 +23,8 @@ class UenvFixincludes(rfm.RunOnlyRegressionTest):
     num_tasks_per_node = 1
     sourcesdir = None
     executable = 'find'
-    executable_opts = ["/user-environment", "/user-tools", "-type", "f", "-name", "pthread.h"]
+    executable_opts = ["/user-environment", "/user-tools", "-type", "f",
+                       "-name", "pthread.h"]
     tags = {'production', 'maintenance', 'uenv'}
 
     @sanity_function
