@@ -4,12 +4,17 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import os
+import pathlib
 import re
+import sys
 
 import reframe as rfm
 import reframe.core.runtime as rt
 import reframe.utility.osext as osext
 import reframe.utility.sanity as sn
+
+sys.path.append(str(pathlib.Path(__file__).parent / 'mixins'))
+from uenv_slurm_mpi_options import UenvSlurmMpiOptionsMixin  # noqa: E402
 
 
 class SlurmSimpleBaseCheck(rfm.RunOnlyRegressionTest):
@@ -192,7 +197,7 @@ class MemoryOverconsumptionCheck(SlurmCompiledBaseCheck):
 
 
 @rfm.simple_test
-class MemoryOverconsumptionCheckMPI(SlurmCompiledBaseCheck):
+class MemoryOverconsumptionCheckMPI(SlurmCompiledBaseCheck, UenvSlurmMpiOptionsMixin):
     # TODO: maintainers = ['@jgphpc', '@ekouts']
     descr = 'Tests for max allocatable memory'
     valid_systems = ['+remote']
@@ -207,8 +212,11 @@ class MemoryOverconsumptionCheckMPI(SlurmCompiledBaseCheck):
     def set_num_tasks(self):
         self.skip_if_no_procinfo()
         cpu = self.current_partition.processor
-        self.num_tasks_per_node = int(
-            cpu.info['num_cpus'] / cpu.info['num_cpus_per_core'])
+        # Limit number of tasks because PMIx/OpenMPI can take very long to
+        # initialize with e.g. 288 ranks on one GH200 node. The test still
+        # fails in a reasonable time with a limited number of ranks.
+        self.num_tasks_per_node = min(16, int(
+            cpu.info['num_cpus'] / cpu.info['num_cpus_per_core']))
         self.num_tasks = self.num_tasks_per_node
         self.job.launcher.options += ['-u']
 

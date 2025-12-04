@@ -11,10 +11,11 @@ import reframe.utility.sanity as sn
 
 sys.path.append(str(pathlib.Path(__file__).parent.parent / 'mixins'))
 from container_engine import ContainerEngineCPEMixin  # noqa: E402
+from uenv_slurm_mpi_options import UenvSlurmMpiOptionsMixin  # noqa: E402
 
 
 @rfm.simple_test
-class MpiInitTest(rfm.RegressionTest, ContainerEngineCPEMixin):
+class MpiInitTest(rfm.RegressionTest, ContainerEngineCPEMixin, UenvSlurmMpiOptionsMixin):
     '''
     This test checks the value returned by calling MPI_Init_thread.
     '''
@@ -55,9 +56,11 @@ class MpiInitTest(rfm.RegressionTest, ContainerEngineCPEMixin):
         # - 7.7.15 (ANL base 3.2)
         # - 8.0.16.17 (ANL base 3.3)
         # - 8.1.4.31,8.1.5.32,8.1.18.4,8.1.21.11,8.1.25.17 (ANL base 3.4a2)
-        regex = r'= MPI VERSION\s+: CRAY MPICH version \S+ \(ANL base (\S+)\)'
+        # OpenMPI version:
+        # - MPI-3.1 = Open MPI v5.0.9
+        regex = r'= (MPI VERSION\s+: CRAY MPICH version \S+ \(ANL base |Open MPI v)([\S^\)]+)'
         stdout = os.path.join(self.stagedir, sn.evaluate(self.stdout))
-        mpich_version = sn.extractsingle(regex, stdout, 1)
+        mpich_version = sn.extractsingle(regex, stdout, 2)
         self.mpithread_version = {
             '3.2': {
                 'MPI_THREAD_SINGLE': 0,
@@ -125,7 +128,7 @@ class MpiInitTest(rfm.RegressionTest, ContainerEngineCPEMixin):
 
 
 @rfm.simple_test
-class MpiGpuDirectOOM(rfm.RegressionTest, ContainerEngineCPEMixin):
+class MpiGpuDirectOOM(rfm.RegressionTest, ContainerEngineCPEMixin, UenvSlurmMpiOptionsMixin):
     '''
     This test checks the issue reported in:
     https://github.com/eth-cscs/alps-gh200-reproducers/tree/main/gpudirect-oom
