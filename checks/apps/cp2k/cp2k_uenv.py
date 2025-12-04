@@ -163,12 +163,6 @@ class Cp2kBuildTestUENV(rfm.CompileOnlyRegressionTest):
                 '-DCP2K_USE_PLUMED=ON',
              ]
 
-#        if version > Version('2025.1'):
-#            self.build_system.config_opts += [
-#                '-DCP2K_USE_MPI=ON',
-#                '-DCP2K_USE_LIBVORI=ON',
-#            ]
-
             if self.uarch == 'gh200':
                 self.build_system.config_opts += [
                     '-DCP2K_USE_ACCEL=CUDA',
@@ -176,13 +170,6 @@ class Cp2kBuildTestUENV(rfm.CompileOnlyRegressionTest):
                     '-DCMAKE_CUDA_HOST_COMPILER=mpicc',
                     '-DCP2K_WITH_GPU=H100',
                 ]
-#            if version > Version('2025.1'):
-#                self.build_system.config_opts += [
-#                    '-DCMAKE_CUDA_ARCHITECTURES=90',
-#                ]
-#            else:
-#                self.build_system.config_opts += [
-#                ]
 
     @sanity_function
     def validate_test(self):
@@ -293,7 +280,7 @@ class Cp2kCheckMD_UENV(Cp2kCheck_UENV):
 @rfm.simple_test
 class Cp2kCheckMD_UENVExec(Cp2kCheckMD_UENV):
     valid_prog_environs = ['+cp2k -dlaf']
-    tags = {'uenv', 'production', 'bencher'}
+    tags = {'uenv', 'production', 'maintenance', 'bencher'}
 
 
 @rfm.simple_test
@@ -321,7 +308,6 @@ class Cp2kCheckMD_UENVCustomExec(Cp2kCheckMD_UENV):
 class Cp2kCheckPBE_UENV(Cp2kCheck_UENV):
     test_name = 'pbe'
     valid_prog_environs = ['+cp2k -dlaf']
-    tags = {'uenv', 'production', 'bencher'}
     energy_reference = -2206.2426491358
 
     @run_after('init')
@@ -349,7 +335,7 @@ class Cp2kCheckPBE_UENV(Cp2kCheck_UENV):
 @rfm.simple_test
 class Cp2kCheckPBE_UENVExec(Cp2kCheckPBE_UENV):
     valid_prog_environs = ['+cp2k -dlaf']
-    tags = {'uenv', 'production'}
+    tags = {'uenv', 'production', 'maintenance', 'bencher'}
 
 
 @rfm.simple_test
