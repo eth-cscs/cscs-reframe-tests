@@ -533,7 +533,7 @@ class SlurmNoIsolCpus(rfm.RunOnlyRegressionTest):
 
     @sanity_function
     def validate(self):
-        return sn.assert_not_found(r'\bisolcpus=', self.stdout),
+        return sn.assert_not_found(r'\bisolcpus=', self.stdout)
 
 
 @rfm.simple_test
