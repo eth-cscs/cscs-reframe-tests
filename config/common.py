@@ -116,7 +116,7 @@ site_configuration = {
                 '--report-file=$SCRATCH/regression/maintenance/reports/maint_report_{sessionid}.json',
                 '--save-log-files',
                 '-p \'(?!PrgEnv-ce)\'',
-                '--tag=maintenance',
+                '--tag=(maintenance|production)',
                 '--timestamp=%F_%H-%M-%S',
             ]
         },
