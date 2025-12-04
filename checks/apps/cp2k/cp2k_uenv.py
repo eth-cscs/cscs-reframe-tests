@@ -96,7 +96,7 @@ class cp2k_download(rfm.RunOnlyRegressionTest):
     def set_version(self):
         try:
             uenv_version = self.current_environ.extras['version'][1:]
-        except KeyError:
+        except (KeyError, AttributeError):
             uenv_version = version_from_uenv()
 
         self.version = uenv_version if self.version == '' else self.version
@@ -147,41 +147,42 @@ class Cp2kBuildTestUENV(rfm.CompileOnlyRegressionTest):
             f'tar --strip-components=1 -xzf {tarsource} -C {self.stagedir}'
         ]
 
-        self.build_system.config_opts = [
-            '-DCMAKE_BUILD_TYPE=Release',
-            '-DCP2K_USE_LIBXC=ON',
-            '-DCP2K_USE_LIBINT2=ON',
-            '-DCP2K_USE_FFTW3=ON',
-            '-DCP2K_USE_SPGLIB=ON',
-            '-DCP2K_USE_ELPA=ON',
-            '-DCP2K_USE_SPLA=ON',
-            '-DCP2K_USE_SIRIUS=ON',
-            '-DCP2K_USE_COSMA=ON',
-            '-DCP2K_USE_PLUMED=ON',
-        ]
+        try:
+            self.build_system.config_opts = self.current_environ.extras['cmake'].split()
+        except (KeyError, AttributeError):
+            self.build_system.config_opts = [
+                '-DCMAKE_BUILD_TYPE=Release',
+                '-DCP2K_USE_LIBXC=ON',
+                '-DCP2K_USE_LIBINT2=ON',
+                '-DCP2K_USE_FFTW3=ON',
+                '-DCP2K_USE_SPGLIB=ON',
+                '-DCP2K_USE_ELPA=ON',
+                '-DCP2K_USE_SPLA=ON',
+                '-DCP2K_USE_SIRIUS=ON',
+                '-DCP2K_USE_COSMA=ON',
+                '-DCP2K_USE_PLUMED=ON',
+             ]
 
-        version = Version(self.cp2k_sources.version)
+#        if version > Version('2025.1'):
+#            self.build_system.config_opts += [
+#                '-DCP2K_USE_MPI=ON',
+#                '-DCP2K_USE_LIBVORI=ON',
+#            ]
 
-        if version > Version('2025.1'):
-            self.build_system.config_opts += [
-                '-DCP2K_USE_MPI=ON',
-                '-DCP2K_USE_LIBVORI=ON',
-            ]
-
-        if self.uarch == 'gh200':
-            self.build_system.config_opts += [
-                '-DCP2K_USE_ACCEL=CUDA',
-                '-DCP2K_USE_SPLA_GEMM_OFFLOADING=ON',
-                '-DCMAKE_CUDA_HOST_COMPILER=mpicc',
-            ]
-            if version > Version('2025.1'):
+            if self.uarch == 'gh200':
                 self.build_system.config_opts += [
-                    '-DCMAKE_CUDA_ARCHITECTURES=90',
-                ]
-            else:
-                self.build_system.config_opts += [
+                    '-DCP2K_USE_ACCEL=CUDA',
+                    '-DCP2K_USE_SPLA_GEMM_OFFLOADING=ON',
+                    '-DCMAKE_CUDA_HOST_COMPILER=mpicc',
                     '-DCP2K_WITH_GPU=H100',
                 ]
+#            if version > Version('2025.1'):
+#                self.build_system.config_opts += [
+#                    '-DCMAKE_CUDA_ARCHITECTURES=90',
+#                ]
+#            else:
+#                self.build_system.config_opts += [
+#                ]
 
     @sanity_function
     def validate_test(self):
@@ -292,7 +293,7 @@ class Cp2kCheckMD_UENV(Cp2kCheck_UENV):
 @rfm.simple_test
 class Cp2kCheckMD_UENVExec(Cp2kCheckMD_UENV):
     valid_prog_environs = ['+cp2k -dlaf']
-    tags = {'uenv', 'production'}
+    tags = {'uenv', 'production', 'bencher'}
 
 
 @rfm.simple_test
@@ -320,7 +321,7 @@ class Cp2kCheckMD_UENVCustomExec(Cp2kCheckMD_UENV):
 class Cp2kCheckPBE_UENV(Cp2kCheck_UENV):
     test_name = 'pbe'
     valid_prog_environs = ['+cp2k -dlaf']
-    tags = {'uenv', 'production'}
+    tags = {'uenv', 'production', 'bencher'}
     energy_reference = -2206.2426491358
 
     @run_after('init')
@@ -332,10 +333,10 @@ class Cp2kCheckPBE_UENV(Cp2kCheck_UENV):
         # See https://github.com/cp2k/cp2k/pull/4141
         try:
             uenv_version = self.current_environ.extras['version'][1:]
-        except KeyError:
+        except (KeyError, AttributeError):
             uenv_version = version_from_uenv()
 
-        if Version(version) > Version('2025.1'):
+        if Version(uenv_version) > Version('2025.1'):
             # Reduce max_scf to 16 to reproduce previous behaviour
             self.executable_opts = ['-i', 'H2O-128-PBE-TZ-max_scf_16.inp']
         else:
