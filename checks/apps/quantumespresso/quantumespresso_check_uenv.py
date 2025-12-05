@@ -4,7 +4,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import os
-import shutil
 
 import reframe as rfm
 import reframe.utility.sanity as sn
@@ -197,7 +196,7 @@ class QeCheckAuSurfUENV(QeCheckUENV):
 @rfm.simple_test
 class QeCheckAuSurfUENVExec(QeCheckAuSurfUENV):
     valid_prog_environs = ["+qe"]
-    tags = {"uenv", "production"}
+    tags = {"uenv", "production", "maintenance"}
 
     @run_after("setup")
     def setup_executable(self):

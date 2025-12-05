@@ -300,7 +300,7 @@ class NamdCheckUENV(rfm.RunOnlyRegressionTest):
 @rfm.simple_test
 class NamdCheckUENVExec(NamdCheckUENV):
     valid_prog_environs = ['+namd-single-node', '+namd']
-    tags = {'uenv', 'production'}
+    tags = {'uenv', 'production', 'maintenance'}
 
 
 @rfm.simple_test
