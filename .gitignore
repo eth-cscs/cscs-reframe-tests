@@ -7,3 +7,10 @@ __pycache__/
 *.out
 *.swp
 .venv
+
+# sciapps
+*.wfn*
+*.tpr
+
+output/
+stage/
