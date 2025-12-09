@@ -4,20 +4,17 @@ if [ -z $DEBUG ] ; then export DEBUG="n" ;fi
 if [ $DEBUG = "y" ] ; then
     echo DEBUG=$DEBUG
     oras_tmp="$PWD"
-    oras="uenv-oras"
     rfm_meta_yaml="$oras_tmp/meta/extra/reframe.yaml"
     jfrog_creds_path="${oras_tmp}/docker/config.json"
     system="$CLUSTER_NAME" ;
-    if [ $system = "todi" ] ;then uarch="gh200" ;fi
-    if [ $system = "eiger" ] ;then uarch="zen2" ;fi
-    jfrog=jfrog.svc.cscs.ch/uenv/deploy/$system/$uarch
+    jfrog=jfrog.svc.cscs.ch/uenv/deploy/ #$system/$uarch
     jfrog_u="piccinal"
 else
 # {{{ input parameters <---
 # oras="$UENV_PREFIX/libexec/uenv-oras"  # /users/piccinal/.local/ on eiger
 # oras_tmp=`mktemp -d`
 oras_tmp=$PWD
-oras="uenv-oras"
+oras="/usr/libexec/oras"
 # oras_path=`mktemp -d`
 rfm_meta_yaml="$oras_tmp/meta/extra/reframe.yaml"
 # artifact_path=$PWD  # "$oras_tmp"
@@ -28,13 +25,10 @@ jfrog_request="$CSCS_CI_MW_URL/credentials?token=$CI_JOB_TOKEN&job_id=$CI_JOB_ID
 # system="santis" ; uarch="gh200"
 # FIRECREST_SYSTEM=santis UARCH=gh200
 system="$FIRECREST_SYSTEM" ; uarch="$UARCH"
-#del name=`echo $in |cut -d: -f1`
-#del tag=`echo $in |cut -d: -f2`
-#del jfrog=jfrog.svc.cscs.ch/uenv/deploy/$system/$uarch/$name
 jfrog=jfrog.svc.cscs.ch/uenv/deploy/$system/$uarch
 jfrog_u="piccinal"
 [[ -z "${SLURM_PARTITION}" ]] && RFM_SYSTEM="${system}" || RFM_SYSTEM="${system}:${SLURM_PARTITION}"
- # }}}
+# }}}
 fi
 
 # {{{ setup_jq
@@ -138,28 +132,64 @@ uenv_image_find() {
 # {{{ uenv_pull_meta_dir
 uenv_pull_meta_dir() {
     img=$1
-    echo "--- Pulling metadata from $img"
-    is_vasp=`echo $img |cut -d/ -f1`
-    if [ "$is_vasp" == "vasp" ] ;then
+    # --- is the uenv/sqfs missing ?
+    is_vasp=`echo "$img" |cut -d/ -f1`
+    if [ "$is_vasp" = "vasp" ] ;then
         vasp_flag="--token /users/reframe/vasp6 --username=vasp6"
+    else
+        vasp_flag=""
     fi
-    uenv image pull --only-meta $vasp_flag $img &> uenv_pull_meta_dir.log
+    uenv image inspect --format='{sqfs}' "$img" 2>&1 |grep -q "error:" ;sqfs_missing=$?
+    if [ $sqfs_missing -eq 0 ] ; then
+        # 0=missing, !0=not missing
+        echo "# WARNING: $img not found, pulling it..."
+        /usr/bin/time -p uenv image pull $vasp_flag $img &> .uenv_pull_meta_dir.log
+        uenv image inspect --format='{sqfs}' "$img" 2>&1 |grep -q "error:" ;sqfs_missing=$?
+        if [ $sqfs_missing -eq 0 ] ; then
+            echo "# WARNING: failed pulling $img (sqfs_missing=$sqfs_missing)"
+            cat .uenv_pull_meta_dir.log
+            exit 1
+        else
+            echo "# OK: $img pulled"
+        fi
+    else
+        echo "# OK: $img found"
+    fi
+
+    # --- is reframe.yaml missing from the uenv ?
+    # name=$(uenv image inspect --format='{name}' $img)
+    # version=$(uenv image inspect --format='{version}' $img)
+    # tag=$(uenv image inspect --format='{tag}' $img)
+    # system=$(uenv image inspect --format='{system}' $img)
+    # uarch=$(uenv image inspect --format='{uarch}' $img)
+    # sha=$(uenv image inspect --format='{sha}' $img)
+    uenv run $img -- test -f /user-environment/meta/extra/reframe.yaml ;rc1=$?
+    uenv run $img -- test -f /user-tools/meta/extra/reframe.yaml ;rc2=$?
+    if [ $rc1 -eq 0 ] || [ $rc2 -eq 0 ] ; then
+        echo "# OK: reframe.yaml found in $img"
+    else
+        echo "# WARNING: reframe.yaml not found in $img"
+        exit 1
+    fi
+    # echo "--- Pulling (+metadata) from $jfrog/uenv/deploy/$system/$uarch/$name/$version@sha256:$sha"
+    # uenv image pull --only-meta $vasp_flag $img &> uenv_pull_meta_dir.log
     # TODO: https://github.com/eth-cscs/uenv2/issues/81
 }
 # }}}
 # {{{ oras_pull_meta_dir
 oras_pull_meta_dir() {
     img=$1
-    name=`echo "$img" |cut -d: -f1`
-    tag=`echo "$img" |cut -d: -f2`
-    echo "--- Pulling metadata from $jfrog/$name:$tag"
+    # name=`echo "$img" |cut -d: -f1`
+    # tag=`echo "$img" |cut -d: -f2`
     # meta_digest=`$oras --registry-config $jfrog_creds_path \
-    rm -fr meta # remove dir from previous image
-    meta_digest=`$oras discover --output json --artifact-type 'uenv/meta' $jfrog/$name:$tag \
-        | jq -r '.manifests[0].digest'`
+    # uenv image inspect --format='{uarch}' icon/25.2:v3
+    # rm -fr meta # remove dir from previous image
+    # meta_digest=`$oras discover --output json --artifact-type 'uenv/meta' $jfrog/$name:$tag \
+    #     | jq -r '.manifests[0].digest'`
+    # oras::pull_digest: jfrog.svc.cscs.ch/uenv/deploy/daint/gh200/icon/25.2@sha256:3dbb3ff531ea7de82a0c3fc9a8a1bdff757b70caddb1af7bb904044750d9a96f
     # $oras --registry-config $jfrog_creds_path \
-    echo "---- $jfrog/$name@$meta_digest"
-    $oras pull --output "${oras_tmp}" "$jfrog/$name@$meta_digest" &> oras-pull.log
+    # echo "---- $jfrog/$name@$meta_digest"
+    # $oras pull --output "${oras_tmp}" "$jfrog/$name@$meta_digest" &> oras-pull.log
 }
 # }}}
 # {{{ meta_has_reframe_yaml
@@ -281,15 +311,22 @@ uenv_pull_sqfs() {
 # }}}
 # {{{ install_reframe
 install_reframe() {
-    rm -fr rfm_venv reframe
-    python3.11 -m venv --system-site-packages rfm_venv
-    source rfm_venv/bin/activate
-    pip install --upgrade pip
-    pip install --upgrade ReFrame-HPC
-    # git clone --depth 1 https://github.com/reframe-hpc/reframe.git
-    pip install -r ./config/utilities/requirements.txt
+    # rm -fr rfm_venv reframe
+    vname=$CLUSTER_NAME
+    varch=$(uname -m)
+    vdir="$HOME/ci/rfmvenv.$vname.$varch"
+    [[ -d "$vdir" ]] || { echo "Virtual environment directory $vdir not found"; exit 1; }
+    source "$vdir/bin/activate"
+    echo "$vdir/bin # HERE"
+
+    # python3.11 -m venv --system-site-packages rfm_venv
+    # source rfm_venv/bin/activate
+    # pip install --upgrade pip
+    # pip install --upgrade ReFrame-HPC
+    # # git clone --depth 1 https://github.com/reframe-hpc/reframe.git
+    # pip install -r ./config/utilities/requirements.txt
     # return the PATH to the calling function:
-    echo "$PWD/rfm_venv/bin # HERE"
+    # echo "$PWD/rfm_venv/bin # HERE"
 }
 # }}}
 # {{{ install_reframe_tests (alps branch)
@@ -362,13 +399,19 @@ launch_reframe_bencher() {
     export RFM_USE_LOGIN_SHELL=1
     # export RFM_AUTODETECT_XTHOSTNAME=1
     # reframe -V
-    echo "# UENV=$UENV"
+    # echo "# UENV=$UENV"
 
+    # ---------------------------------------------------------------------
+    # Run reframe but DO NOT exit on failure, capture the exit code
+    # ---------------------------------------------------------------------
+    set +e
     reframe -C ./config/cscs.py \
         --mode daily_bencher \
         --system=$system \
         --prefix=$SCRATCH/rfm-$CI_JOB_ID \
         -r
+    reframe_status=$?
+    set -e
 
     python3 ./utility/bencher_metric_format.py latest.json
 
@@ -419,7 +462,49 @@ launch_reframe_bencher() {
             --branch main \
             --token $BENCHER_API_TOKEN \
             --project $BENCHER_PROJECT
+
+        # ------------------------------------------------------------
+        # Second upload: shortened testbed with only name + version
+        # ------------------------------------------------------------
+
+        # Extract everything after "bencher="
+        rest="${bmf_file%.json}"
+        rest="${rest#bencher=}"  # system=partition=environ
+
+        # Split by "=" → system, partition, environ
+        IFS='=' read -r system partition environ <<< "$rest"
+
+        # environ="name_version_tag_..."
+        IFS='_' read -r uenv_name uenv_version _ <<< "$environ"
+        short_environ="${uenv_name}_${uenv_version}"
+
+        short_testbed="${system}=${partition}=${short_environ}"
+
+        echo "Re-uploading results for SHORT testbed: $short_testbed from file: $bmf_file"
+
+        ./bencher run \
+            --adapter json \
+            --file "$bmf_file" \
+            --testbed "$short_testbed" \
+            --thresholds-reset \
+            --branch main \
+            --token $BENCHER_API_TOKEN \
+            --project $BENCHER_PROJECT
+
     done
+
+    # ---------------------------------------------------------------------
+    # Report ReFrame status
+    # ---------------------------------------------------------------------
+    echo "------------------------------------------------------------"
+    if [ "$reframe_status" -eq 0 ]; then
+        echo "# ReFrame finished successfully (exit code 0)"
+    else
+        echo "# ReFrame FAILED (exit code $reframe_status)"
+    fi
+    echo "------------------------------------------------------------"
+
+    return "$reframe_status"
 }
 # }}}
 # {{{ oneuptime

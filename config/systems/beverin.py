@@ -32,6 +32,9 @@ base_config = {
                 'builtin',
             ],
             'max_jobs': 100,
+            'extras': {
+                'cn_memory': 500,
+            },
             'features': ['ce', 'gpu', 'amdgpu', 'remote', 'scontrol', 'uenv'],
             'access': ['-pmi300'],
             'resources': [
@@ -68,6 +71,9 @@ base_config = {
                 'builtin',
             ],
             'max_jobs': 100,
+            'extras': {
+                'cn_memory': 500,
+            },
             'features': ['ce', 'gpu', 'amdgpu', 'remote', 'scontrol', 'uenv'],
             'access': ['-pmi200'],
             'resources': [

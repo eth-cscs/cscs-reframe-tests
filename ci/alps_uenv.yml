@@ -2,66 +2,22 @@ include:
   - remote: 'https://gitlab.com/cscs-ci/recipes/-/raw/master/templates/v2/.ci-ext.yml'
 
 stages:
-  - pull
   - run
   - notify
-  # - status
-
-setup and pull:
-  stage: pull
-  extends: .f7t-baremetal-runner
-  timeout: 8 hours
-  variables:
-    SLURM_TIMELIMIT: '00:10:00'
-    # Valid MODE=('container-runner', 'baremetal', 'f7t-controller')
-  before_script:
-    - echo "FIRECREST_SYSTEM=$FIRECREST_SYSTEM / F7T_URL=$F7T_URL / CLUSTER_NAME=$CLUSTER_NAME"
-    - pwd
-    - uname -a
-    - uenv --version
-    - 'imgs=$(./ci/scripts/alps.sh uenv_image_find)'
-  script: |
-    echo "imgs=$imgs"
-    unset UENVA
-    # uenv repo create
-    uenv repo status
-    for img in $imgs; do
-      ./ci/scripts/alps.sh uenv_pull_meta_dir "$img" &> .rc
-      ./ci/scripts/alps.sh meta_has_reframe_yaml "$img" &> .rc
-      cat .rc
-      rc=$(grep -q OK .rc ; echo $?)
-      echo "rc=$rc"
-      if [ $rc -eq 0 ] ; then
-        UENVA+="$img,"
-        echo "UENVA=$UENVA"
-      fi
-    done
-    UENVA=${UENVA%?}
-    UENV=`echo ${UENVA} | sed 's-,,-,-g' | sort -u`
-    echo "UENV=$UENV" > rfm_uenv.env
-    cat rfm_uenv.env | tr , "\n"
-  artifacts:
-    reports:
-      dotenv: rfm_uenv.env
 
 reframe:
   stage: run
   extends: .f7t-baremetal-runner
   timeout: 8 hours
-  needs: ['setup and pull']
-  rules:
-    - if: '$BENCHER_API_TOKEN == null'
-      variables:
-        SLURM_TIMELIMIT: '02:00:00'
-    - if: '$BENCHER_API_TOKEN'
-      variables:
-        SLURM_TIMELIMIT: '01:00:00'
+  # needs: ['setup and pull']
+  variables:
+    SLURM_TIMELIMIT: '02:00:00'
   before_script:
     - echo "FIRECREST_SYSTEM=$FIRECREST_SYSTEM / F7T_URL=$F7T_URL / CLUSTER_NAME=$CLUSTER_NAME"
     - uname -a
     - pwd
     - uenv --version
-    - echo "UENV=$UENV" | tr , "\n"
+    # - echo "UENV=$UENV" | tr , "\n"
     # Send data to elastic on main branch only
     - '[ "$CI_COMMIT_REF_NAME" != "main" ] && unset RFM_HTTPJSON_URL'
     - 'git remote add oripr https://github.com/eth-cscs/cscs-reframe-tests || true'
@@ -69,9 +25,29 @@ reframe:
     - git remote -v
     - hostname
   script:
-    - rfm_path=$(./ci/scripts/alps.sh install_reframe|grep HERE |awk '{print $1}')
+    - 'imgs=$(./ci/scripts/alps.sh uenv_image_find)'
+    - echo "imgs=$imgs"
+    # ----------------------
+    - unset UENVA
+    - uenv repo status
+    - for img in $imgs; do
+        ./ci/scripts/alps.sh uenv_pull_meta_dir "$img" &> .rc;
+        cat .rc;
+        rc=$(grep -q OK .rc ; echo $?);
+        echo "rc=$rc";
+        if [ $rc -eq 0 ] ; then
+          UENVA+="$img,";
+          echo "UENVA=$UENVA";
+        fi;
+      done;
+    - UENVA=${UENVA%?}
+    - export UENV=`echo ${UENVA} | sed 's-,,-,-g' | sort -u`
+    - echo "UENV=$UENV"
+    # ----------------------
+    - rfm_path=$(./ci/scripts/alps.sh install_reframe |grep HERE |awk '{print $1}')
     - export PATH=$rfm_path:$PATH
     - reframe -V
+    # ----------------------
     # If in a PR, run only the tests modified in the PR, else: in CRONJOB
     - |
       if [ "$CRON_RUN" = "true" ]; then
