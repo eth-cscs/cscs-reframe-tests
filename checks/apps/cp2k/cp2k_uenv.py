@@ -1,10 +1,12 @@
-# Copyright 2016-2024 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
 import os
 import shutil
+from packaging.version import Version
+import re
 
 import reframe as rfm
 import reframe.utility.sanity as sn
@@ -13,12 +15,12 @@ from uenv import uarch
 
 cp2k_references = {
     'md': {
-        'gh200': {'time_run': (52, None, 0.05, 's')},
+        'gh200': {'time_run': (69, None, 0.05, 's')},
         'zen2': {'time_run': (91, None, 0.05, 's')}
     },
     'pbe': {
-        'gh200': {'time_run': (44, None, 0.05, 's')},
-        'zen2': {'time_run': (53, None, 0.05, 's')}
+        'gh200': {'time_run': (67, None, 0.05, 's')},
+        'zen2': {'time_run': (68, None, 0.05, 's')}
     },
     'rpa': {
         'gh200': {'time_run': (575, None, 0.05, 's')}
@@ -71,48 +73,58 @@ slurm_config = {
 }
 
 
-class cp2k_download(rfm.RunOnlyRegressionTest):
-    '''
-    Download CP2K source code.
-    '''
+def version_from_uenv():
+    uenv_var = os.environ['UENV']
+    match = re.search(r'/(\d+\.\d+)', uenv_var)
+    if match: # Return version (YYYY.VV)
+        return match.group(1)
+    else:
+        return None
 
+@rfm.xfail(
+    'CP2K 2025.1 issues with libxc linking.',
+    lambda test: test.version == "2025.1"
+)
+class cp2k_download(rfm.RunOnlyRegressionTest):
     version = variable(str, value='')
-    descr = 'Fetch CP2K source code'
+    descr = 'Download CP2K source code'
     sourcesdir = None
     executable = 'wget'
-    local = True
+    local = False
 
     @run_before('run')
     def set_version(self):
-        uenv_version = os.environ['UENV'].split('/')[1].split('.')[0]
-        uenv_src_d = {'2024': 'v2024.3', '2025': 'v2025.1'}
-        self.version = uenv_src_d[uenv_version] if self.version == '' else self.version
+        try:
+            uenv_version = self.current_environ.extras['version'][1:]
+        except (KeyError, AttributeError):
+            uenv_version = version_from_uenv()
+
+        self.version = uenv_version if self.version == '' else self.version
 
         url = 'https://jfrog.svc.cscs.ch/artifactory/cscs-reframe-tests'
 
         self.executable_opts = [
             '--quiet',
-            f'{url}/cp2k/{self.version}.tar.gz'
+            f'{url}/cp2k/v{self.version}.tar.gz'
         ]
 
     @sanity_function
     def validate_download(self):
-        return sn.assert_eq(self.job.exitcode, 0)
+        # Manual compilation of v2025.1 with CMake is known to fail at link
+        # time, because of issues with the libxc integration.
+        return sn.and_(sn.assert_eq(self.job.exitcode, 0),
+                       sn.assert_ne(self.version, '2025.1'))
 
 
 @rfm.simple_test
 class Cp2kBuildTestUENV(rfm.CompileOnlyRegressionTest):
-    '''
-    Test CP2K build from source.
-    '''
-
     descr = 'CP2K Build Test'
     valid_prog_environs = ['+cp2k-dev -dlaf']
     valid_systems = ['+uenv']
     build_system = 'CMake'
     sourcesdir = None
-    maintainers = ['tmathieu', 'romeli', 'abussy', 'simbergm',  'SSA']
-    cp2k_sources = fixture(cp2k_download, scope='session')
+    maintainers = ['tmathieu', 'romeli', 'abussy', 'simbergm', 'SSA']
+    cp2k_sources = fixture(cp2k_download, scope='test')
     build_locally = False
     tags = {'uenv'}
 
@@ -124,8 +136,10 @@ class Cp2kBuildTestUENV(rfm.CompileOnlyRegressionTest):
         cpu = self.current_partition.processor
         self.build_system.max_concurrency = cpu.info['num_cpus_per_socket']
 
+        self.time_limit = '0d0h30m0s'
+
         tarsource = os.path.join(
-            self.cp2k_sources.stagedir, f'{self.cp2k_sources.version}.tar.gz'
+            self.cp2k_sources.stagedir, f'v{self.cp2k_sources.version}.tar.gz'
         )
 
         # Extract source code
@@ -133,45 +147,54 @@ class Cp2kBuildTestUENV(rfm.CompileOnlyRegressionTest):
             f'tar --strip-components=1 -xzf {tarsource} -C {self.stagedir}'
         ]
 
-        # TODO: Use Ninja generator
-        self.build_system.config_opts = [
-            # Puts executables under exe/local_cuda/
-            '-DCP2K_ENABLE_REGTESTS=ON',
-            '-DCP2K_USE_LIBXC=ON',
-            '-DCP2K_USE_LIBINT2=ON',
-            '-DCP2K_USE_SPGLIB=ON',
-            '-DCP2K_USE_ELPA=ON',
-            '-DCP2K_USE_SPLA=ON',
-            '-DCP2K_USE_SIRIUS=ON',
-            '-DCP2K_USE_COSMA=ON',
-            '-DCP2K_USE_PLUMED=ON',
-        ]
+        try:
+            self.build_system.config_opts = self.current_environ.extras['cmake'].split()
+        except (KeyError, AttributeError):
+            self.build_system.config_opts = [
+                '-DCMAKE_BUILD_TYPE=Release',
+                '-DCP2K_USE_LIBXC=ON',
+                '-DCP2K_USE_LIBINT2=ON',
+                '-DCP2K_USE_FFTW3=ON',
+                '-DCP2K_USE_SPGLIB=ON',
+                '-DCP2K_USE_ELPA=ON',
+                '-DCP2K_USE_SPLA=ON',
+                '-DCP2K_USE_SIRIUS=ON',
+                '-DCP2K_USE_COSMA=ON',
+                '-DCP2K_USE_PLUMED=ON',
+             ]
 
-        if self.uarch == 'gh200':
-            self.build_system.config_opts += [
-                '-DCP2K_USE_ACCEL=CUDA',
-                '-DCP2K_WITH_GPU=H100',
-            ]
+            if self.uarch == 'gh200':
+                self.build_system.config_opts += [
+                    '-DCP2K_USE_ACCEL=CUDA',
+                    '-DCP2K_USE_SPLA_GEMM_OFFLOADING=ON',
+                    '-DCMAKE_CUDA_HOST_COMPILER=mpicc',
+                    '-DCP2K_WITH_GPU=H100',
+                ]
 
     @sanity_function
     def validate_test(self):
         # INFO: Executables are in exe/FOLDER because -DCP2K_ENABLE_REGTEST=ON
         # INFO: With -DCP2K_ENABLE_REGTEST=OFF, executables are in build/bin/
-        folder = 'local_cuda' if self.uarch == 'gh200' else 'local'
-        self.cp2k_executable = os.path.join(self.stagedir, 'exe', folder,
+        # folder = 'local_cuda' if self.uarch == 'gh200' else 'local'
+        # self.cp2k_executable = os.path.join(self.stagedir, 'exe', folder,
+        #                                    'cp2k.psmp')
+        self.cp2k_executable = os.path.join(self.stagedir, 'build', 'bin',
                                             'cp2k.psmp')
         return os.path.isfile(self.cp2k_executable)
 
 
 class Cp2kCheck_UENV(rfm.RunOnlyRegressionTest):
-    executable = './pika-bind.sh cp2k.psmp'
     maintainers = ['SSA']
     valid_systems = ['+uenv']
     valid_prog_environs = ['+cp2k -dlaf']
 
+    @run_after('setup')
+    def setup_wrapper(self):
+        self.uarch = uarch(self.current_partition)
+        self.wrapper = './mps-wrapper.sh' if self.uarch == 'gh200' else ''
+
     @run_before('run')
     def prepare_run(self):
-        self.uarch = uarch(self.current_partition)
         config = slurm_config[self.test_name][self.uarch]
         # sbatch options
         self.job.options = [
@@ -183,9 +206,6 @@ class Cp2kCheck_UENV(rfm.RunOnlyRegressionTest):
         self.ntasks_per_core = 1
         self.time_limit = config['walltime']
 
-        # wrapper script
-        self.wrapper = './mps-wrapper.sh' if self.uarch == 'gh200' else ''
-
         # srun options
         self.job.launcher.options = ['--cpu-bind=cores']
 
@@ -196,20 +216,21 @@ class Cp2kCheck_UENV(rfm.RunOnlyRegressionTest):
         self.env_vars['OMP_PLACES'] = 'cores'
         self.env_vars['OMP_PROC_BIND'] = 'close'
 
-        self.env_vars["MIMALLOC_ALLOW_LARGE_OS_PAGES"] = "1"
-        self.env_vars["MIMALLOC_EAGER_COMMIT_DELAY"] = "0"
+        self.env_vars['MIMALLOC_ALLOW_LARGE_OS_PAGES'] = '1'
+        self.env_vars['MIMALLOC_EAGER_COMMIT_DELAY'] = '0'
 
-        if self.uarch == "zen2":
-            self.env_vars["PIKA_THREADS"] = str((self.num_cpus_per_task // 2) - 1)
+        if self.uarch == 'zen2':
+            self.env_vars['PIKA_THREADS'] = \
+                str((self.num_cpus_per_task // 2) - 1)
         else:
-            self.env_vars["PIKA_THREADS"] = str(self.num_cpus_per_task - 1)
+            self.env_vars['PIKA_THREADS'] = str(self.num_cpus_per_task - 1)
 
         if self.uarch == 'gh200':
             self.env_vars['MPICH_GPU_SUPPORT_ENABLED'] = '1'
             self.env_vars['CUDA_CACHE_DISABLE'] = '1'
-            self.env_vars["DLAF_BT_BAND_TO_TRIDIAG_HH_APPLY_GROUP_SIZE"] = \
-                "128"
-            self.env_vars["DLAF_UMPIRE_DEVICE_MEMORY_POOL_ALIGNMENT_BYTES"] = \
+            self.env_vars['DLAF_BT_BAND_TO_TRIDIAG_HH_APPLY_GROUP_SIZE'] = \
+                '128'
+            self.env_vars['DLAF_UMPIRE_DEVICE_MEMORY_POOL_ALIGNMENT_BYTES'] = \
                 str(2**21)
 
         # set reference
@@ -219,6 +240,10 @@ class Cp2kCheck_UENV(rfm.RunOnlyRegressionTest):
                 self.current_partition.fullname:
                     cp2k_references[self.test_name][self.uarch]
             }
+
+    @run_before('run')
+    def setup_executable(self):
+        self.executable = f'{self.wrapper} ./pika-bind.sh cp2k.psmp'
 
     @sanity_function
     def assert_energy_diff(self):
@@ -255,7 +280,7 @@ class Cp2kCheckMD_UENV(Cp2kCheck_UENV):
 @rfm.simple_test
 class Cp2kCheckMD_UENVExec(Cp2kCheckMD_UENV):
     valid_prog_environs = ['+cp2k -dlaf']
-    tags = {'uenv', 'production'}
+    tags = {'uenv', 'production', 'maintenance', 'bencher'}
 
 
 @rfm.simple_test
@@ -271,10 +296,11 @@ class Cp2kCheckMD_UENVCustomExec(Cp2kCheckMD_UENV):
     def setup_dependency(self):
         self.depends_on('Cp2kBuildTestUENV', udeps.fully)
 
-    @run_after('setup')
+    @run_before('run')
     def setup_executable(self):
         parent = self.getdep('Cp2kBuildTestUENV')
-        self.executable = f'{self.wrapper} ./pika-bind.sh {parent.cp2k_executable}'
+        self.executable = (
+            f'{self.wrapper} ./pika-bind.sh {parent.cp2k_executable}')
 
 
 # }}}
@@ -282,19 +308,34 @@ class Cp2kCheckMD_UENVCustomExec(Cp2kCheckMD_UENV):
 class Cp2kCheckPBE_UENV(Cp2kCheck_UENV):
     test_name = 'pbe'
     valid_prog_environs = ['+cp2k -dlaf']
-    tags = {'uenv', 'production'}
-    executable_opts = ['-i', 'H2O-128-PBE-TZ.inp']
     energy_reference = -2206.2426491358
 
     @run_after('init')
-    def set_wfn(self):
+    def setup_input_and_wf(self):
+        # Define input file depending on version
+        # CP2K 2025.2 counts SCF steps differently
+        # Since this first inner SCF step does converge
+        # a different count means a different runtime with the same input file
+        # See https://github.com/cp2k/cp2k/pull/4141
+        try:
+            uenv_version = self.current_environ.extras['version'][1:]
+        except (KeyError, AttributeError):
+            uenv_version = version_from_uenv()
+
+        if Version(uenv_version) > Version('2025.1'):
+            # Reduce max_scf to 16 to reproduce previous behaviour
+            self.executable_opts = ['-i', 'H2O-128-PBE-TZ-max_scf_16.inp']
+        else:
+            self.executable_opts = ['-i', 'H2O-128-PBE-TZ.inp']
+
+        # Define WF file for restart (needed by RPA test)
         self.wfn_file = 'H2O-128-PBE-TZ-RESTART.wfn'
 
 
 @rfm.simple_test
 class Cp2kCheckPBE_UENVExec(Cp2kCheckPBE_UENV):
     valid_prog_environs = ['+cp2k -dlaf']
-    tags = {'uenv', 'production'}
+    tags = {'uenv', 'production', 'maintenance', 'bencher'}
 
 
 @rfm.simple_test
@@ -310,10 +351,11 @@ class Cp2kCheckPBE_UENVCustomExec(Cp2kCheckPBE_UENV):
     def setup_dependency(self):
         self.depends_on('Cp2kBuildTestUENV', udeps.fully)
 
-    @run_after('setup')
+    @run_before('run')
     def setup_executable(self):
         parent = self.getdep('Cp2kBuildTestUENV')
-        self.executable = f'{self.wrapper} ./pika-bind.sh {parent.cp2k_executable}'
+        self.executable = (
+            f'{self.wrapper} ./pika-bind.sh {parent.cp2k_executable}')
 
 
 # }}}

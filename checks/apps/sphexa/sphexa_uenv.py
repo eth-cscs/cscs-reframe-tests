@@ -15,7 +15,7 @@ class SphExa(rfm.RegressionTest):
     valid_systems = ['+amdgpu +uenv', '+nvgpu +uenv']
     valid_prog_environs = ['+uenv +prgenv +rocm', '+uenv +prgenv +cuda']
     maintainers = ['SSA']
-    tags = {'production', 'uenv', 'benchmark'}
+    tags = {'production', 'uenv', 'benchmark', 'maintenance'}
 
     branch = variable(str, value='develop')
     build_system = 'CMake'
