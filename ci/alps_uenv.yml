@@ -10,13 +10,8 @@ reframe:
   extends: .f7t-baremetal-runner
   timeout: 8 hours
   # needs: ['setup and pull']
-  rules:
-    - if: '$BENCHER_API_TOKEN == null'
-      variables:
-        SLURM_TIMELIMIT: '02:00:00'
-    - if: '$BENCHER_API_TOKEN'
-      variables:
-        SLURM_TIMELIMIT: '01:00:00'
+  variables:
+    SLURM_TIMELIMIT: '02:00:00'
   before_script:
     - echo "FIRECREST_SYSTEM=$FIRECREST_SYSTEM / F7T_URL=$F7T_URL / CLUSTER_NAME=$CLUSTER_NAME"
     - uname -a
