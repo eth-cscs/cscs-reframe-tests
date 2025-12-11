@@ -224,7 +224,7 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
     sourcesdir = None
     executable = 'bash'
 
-    tags = {'maintenance', 'production', 'ml'}
+    tags = {'maintenance', 'production', 'ml', 'bencher'}
 
     @run_after('setup')
     def setup_test(self):
