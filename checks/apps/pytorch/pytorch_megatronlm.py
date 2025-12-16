@@ -47,7 +47,7 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
     checkpoint_steps = variable(int, value=10)
 
     hf_home = variable(
-        str, value=str(pathlib.Path.home() / '.cache' / 'huggingface')
+        str, value=str(pathlib.Path(os.environ['SCRATCH']) / '.cache' / 'huggingface')
     )
 
     # The number of training steps
@@ -505,7 +505,7 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
 class PyTorchMegatronLM_CE(PyTorchMegatronLM, ContainerEngineMixin):
     valid_systems = ['+nvgpu +ce']
     valid_prog_environs = ['builtin']
-    maintainers = ['ml-team']
+    maintainers = ['VCUE', 'SSA']
     container_image = 'docker://jfrog.svc.cscs.ch#reframe-oci/pytorch:25.01-py3_nvrtc-12.9'
 
     @run_after('setup')

@@ -46,7 +46,7 @@ class PyTorchMegatronLM_AMD(rfm.RunOnlyRegressionTest):
     batch_size_per_node = variable(int, value=256)
     checkpoint_steps = variable(int, value=10)
     hf_home = variable(
-        str, value=str(pathlib.Path.home() / '.cache' / 'huggingface')
+        str, value=str(pathlib.Path(os.environ['SCRATCH']) / '.cache' / 'huggingface')
     )
     training_steps = variable(int, value=10)
     wandb_logging = variable(bool, value=False)
@@ -88,7 +88,7 @@ class PyTorchMegatronLM_AMD(rfm.RunOnlyRegressionTest):
     sourcesdir = None
     executable = 'bash'
 
-    maintainers = ['VCUE']
+    maintainers = ['VCUE', 'SSA']
     tags = {'ml'}
 
     @run_after('setup')
