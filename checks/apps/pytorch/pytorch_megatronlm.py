@@ -543,7 +543,7 @@ class PyTorchMegatronLM_CE(PyTorchMegatronLM, ContainerEngineMixin):
 class PyTorchMegatronLM_UENV(PyTorchMegatronLM):
     valid_systems = ['+nvgpu +uenv']
     valid_prog_environs = ['+pytorch']
-    maintainers = ['ml-team']
+    maintainers = ['VCUE', 'SSA']
 
     @run_after('setup')
     def patch_numpy(self):
