@@ -27,7 +27,7 @@ class CompileAffinityTool(rfm.CompileOnlyRegressionTest,
     env_vars = {'MPICH_GPU_SUPPORT_ENABLED': 0}
 
     sourcesdir = 'https://github.com/vkarak/affinity'
-    tags = {'production', 'scs', 'maintenance', 'craype'}
+    tags = {'scs', 'craype'}
 
     @run_before('compile')
     def set_build_opts(self):
@@ -76,7 +76,7 @@ class AffinityTestBase(rfm.RunOnlyRegressionTest,
         '+openmp +prgenv'
     ]
 
-    tags = {'production', 'scs', 'maintenance', 'craype'}
+    tags = {'scs', 'craype'}
 
     @run_after('setup')
     def skip_cpe_2312(self):
