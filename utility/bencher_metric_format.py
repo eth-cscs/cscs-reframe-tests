@@ -24,7 +24,8 @@ def reframe_to_bmf(reframe_report):
     for run in data["runs"]:
         for testcase in run["testcases"]:
             if testcase["result"] != "pass":
-                continue
+                if testcase["fail_phase"] != "performance":
+                    continue
 
             key = (testcase["system"],
                    testcase["partition"],
