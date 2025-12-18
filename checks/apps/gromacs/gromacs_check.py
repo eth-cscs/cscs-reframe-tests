@@ -99,7 +99,6 @@ class gromacs_build_test(rfm.CompileOnlyRegressionTest):
             '-DREGRESSIONTEST_DOWNLOAD=ON',
             '-DGMX_MPI=on',
             '-DGMX_BUILD_OWN_FFTW=ON',
-            '-DCP2K_USE_SPGLIB=ON',
             '-DGMX_HWLOC=ON',
             '-DGMX_SIMD=ARM_NEON_ASIMD',
             '-DGMX_INSTALL_NBLIB_API=ON',
