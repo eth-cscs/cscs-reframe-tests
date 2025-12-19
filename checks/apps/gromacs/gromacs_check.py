@@ -96,15 +96,21 @@ class gromacs_build_test(rfm.CompileOnlyRegressionTest):
         )
         self.prebuild_cmds = [f'tar --strip-components=1 -xzf {tarsource}']
         self.build_system.config_opts = [
-            '-DREGRESSIONTEST_DOWNLOAD=ON',
-            '-DGMX_MPI=on',
-            '-DGMX_BUILD_OWN_FFTW=ON',
+            '-DREGRESSIONTEST_DOWNLOAD=OFF',
+            '-DGMX_MPI=ON',
+            '-DGMX_BUILD_OWN_FFTW=OFF',
             '-DGMX_HWLOC=ON',
-            '-DGMX_SIMD=ARM_NEON_ASIMD',
             '-DGMX_INSTALL_NBLIB_API=ON',
         ]
         if self.uarch == 'gh200':
-            self.build_system.config_opts += ['-DGMX_GPU=CUDA']
+            self.build_system.config_opts += [
+                '-DGMX_SIMD=ARM_NEON_ASIMD',
+                '-DGMX_GPU=CUDA'
+            ]
+        elif self.uarch == 'zen2':
+            self.build_system.config_opts += [
+                '-DGMX_SIMD=AUTO',
+            ]
 
     @sanity_function
     def validate_test(self):
@@ -114,7 +120,7 @@ class gromacs_build_test(rfm.CompileOnlyRegressionTest):
 
 @rfm.simple_test
 class gromacs_run_test(rfm.RunOnlyRegressionTest):
-    executable = './mps-wrapper.sh -- gmx_mpi mdrun -s stmv2.tpr'
+    executable = 'gmx_mpi mdrun -s stmv2.tpr'
     executable_opts = [
         '-dlb no', '-npme 1', '-pin off', '-v', '-noconfout', '-nstlist 300'
     ]
@@ -142,6 +148,8 @@ class gromacs_run_test(rfm.RunOnlyRegressionTest):
         self.executable_opts.append(f'-ntomp {self.num_cpus_per_task}')
 
         if self.uarch == 'gh200':
+            self.executable = './mps-wrapper.sh -- ' + self.executable
+
             self.executable_opts += [
                 '-pme gpu', '-nb gpu', '-update gpu', '-nsteps 10000'
             ]
