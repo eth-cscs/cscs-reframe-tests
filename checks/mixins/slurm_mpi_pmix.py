@@ -6,7 +6,7 @@
 import reframe as rfm
 
 
-class SlurmMpiPmixMixin(rfm.RegressionMixin):
+class SlurmMpiPmixMixin(rfm.RegressionTestPlugin):
     """
     Set slurm --mpi flags for containers that require PMIx.
 

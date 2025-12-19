@@ -92,7 +92,7 @@ class OSUBandwidth(BaseCheck):
         }
 
 
-class OSUCuda(rfm.RegressionMixin):
+class OSUCuda(rfm.RegressionTestPlugin):
     @run_after('init')
     def setup_test(self):
         self.valid_systems = ['+remote +nvgpu']

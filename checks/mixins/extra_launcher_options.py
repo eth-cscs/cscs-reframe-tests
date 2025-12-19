@@ -6,7 +6,7 @@
 import reframe as rfm
 
 
-class ExtraLauncherOptionsMixin(rfm.RegressionMixin):
+class ExtraLauncherOptionsMixin(rfm.RegressionTestPlugin):
     @run_before('run')
     def set_launcher_options(self):
         self.job.launcher.options += (

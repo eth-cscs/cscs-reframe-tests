@@ -6,7 +6,7 @@
 import reframe as rfm
 
 
-class SarusExtraLauncherOptionsMixin(rfm.RegressionMixin):
+class SarusExtraLauncherOptionsMixin(rfm.RegressionTestPlugin):
     @run_before('run')
     def set_launcher_options(self):
         if self.current_system.name in {'hohgant'}:
