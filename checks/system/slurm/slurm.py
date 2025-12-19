@@ -441,13 +441,19 @@ class SlurmPrologEpilogCheck(rfm.RunOnlyRegressionTest):
     epilog_dir = '/etc/slurm/node_epilog.d/'
     prerun_cmds = [f'ln -s {kafka_logger} ./kafka_logger']
     test_files = []
-    for file in os.listdir(epilog_dir):
-        if os.path.isfile(os.path.join(epilog_dir, file)):
-            test_files.append(os.path.join(epilog_dir, file))
+    try:
+        for file in os.listdir(epilog_dir):
+            if os.path.isfile(os.path.join(epilog_dir, file)):
+                test_files.append(os.path.join(epilog_dir, file))
+    except PermissionError:
+        pass
 
-    for file in os.listdir(prolog_dir):
-        if os.path.isfile(os.path.join(prolog_dir, file)):
-            test_files.append(os.path.join(prolog_dir, file))
+    try:
+        for file in os.listdir(prolog_dir):
+            if os.path.isfile(os.path.join(prolog_dir, file)):
+                test_files.append(os.path.join(prolog_dir, file))
+    except PermissionError:
+        pass
 
     test_file = parameter(test_files)
     tags = {'vs-node-validator'}
