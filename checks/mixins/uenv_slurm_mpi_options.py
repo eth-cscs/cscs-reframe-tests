@@ -6,7 +6,7 @@
 import reframe as rfm
 
 
-class UenvSlurmMpiOptionsMixin(rfm.RegressionMixin):
+class UenvSlurmMpiOptionsMixin(rfm.RegressionTestPlugin):
     """
     Set slurm --mpi flags based on uenv features.
 
