@@ -3,6 +3,8 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
+import os
+import re
 import reframe as rfm
 import reframe.utility.sanity as sn
 
@@ -28,9 +30,7 @@ class ICON4PyBenchmarks(rfm.RunOnlyRegressionTest):
         'HUGETLB_MORECORE': 'no',
         'GT4PY_UNSTRUCTURED_HORIZONTAL_HAS_UNIT_STRIDE': '1',
         'PYTHONOPTIMIZE': '2',
-        # GT4Py cache does not work properly for dace backend yet
-        # 'GT4PY_BUILD_CACHE_LIFETIME': 'persistent',
-        # 'GT4PY_BUILD_CACHE_DIR': '...',
+        'GT4PY_BUILD_CACHE_LIFETIME': 'persistent',
     }
     executable = './_run.sh'
     executable_opts = ['2>&1']
@@ -38,6 +38,20 @@ class ICON4PyBenchmarks(rfm.RunOnlyRegressionTest):
     @run_before('run')
     def prepare_env(self):
         gpu_arch = self.current_partition.select_devices('gpu')[0].arch
+
+        cache_folder = (
+            f"{os.environ.get('SCRATCH')}/"
+            f".cache/reframe_bencher_icon4py/"
+        )
+        sub_folder = (
+            f"{self.current_system.name}="
+            f"{gpu_arch}="
+            f"{self.current_environ}"
+        )
+        sub_folder = re.sub(r'[^a-zA-Z0-9=]', '', sub_folder)
+        cache_folder = os.path.join(cache_folder, sub_folder)
+        self.env_vars['GT4PY_BUILD_CACHE_DIR'] = cache_folder
+
         if 'gfx' in gpu_arch:  # AMD GPU
             self.env_vars['CUPY_INSTALL_USE_HIP'] = '1'
             self.env_vars['HCC_AMDGPU_TARGET'] = gpu_arch
@@ -54,12 +68,12 @@ class ICON4PyBenchmarks(rfm.RunOnlyRegressionTest):
             (r'^\s*model/atmosphere/diffusion/tests/'
              r'diffusion/integration_tests/'
              r'test_benchmark_diffusion\.py'
-             r'::test_diffusion_benchmark\s*PASSED'
+             r'::test_diffusion_benchmark[\s\S]*?PASSED'
              ), self.stdout)
         dycore_granule = sn.assert_found(
             (r'^\s*model/atmosphere/dycore/tests/'
              r'dycore/integration_tests/test_benchmark_solve_nonhydro\.py'
-             r'::test_benchmark_solve_nonhydro\[True-False\]\s*PASSED'
+             r'::test_benchmark_solve_nonhydro\[True-False\][\s\S]*?PASSED'
              ), self.stdout)
 
         return diffusion_granule and dycore_granule
