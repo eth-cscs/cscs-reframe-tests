@@ -575,7 +575,7 @@ class SlurmGPUGresTest(SlurmSimpleBaseCheck):
     @sanity_function
     def assert_gres_valid(self):
         partition_name = self.current_partition.name
-        gpu_count = self.current_partition.select_devices('gpu')[0].num_devices + 1
+        gpu_count = self.current_partition.select_devices('gpu')[0].num_devices
         part_re = rf'Partitions=\S*{partition_name}'
         gres_re = rf'gres/gpu={gpu_count} '
         node_re = r'NodeName=(\S+)'
