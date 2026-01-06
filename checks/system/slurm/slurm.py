@@ -580,12 +580,18 @@ class SlurmGPUGresTest(SlurmSimpleBaseCheck):
         gres_re = rf'gres/gpu={gpu_count} '
         node_re = r'NodeName=(\S+)'
 
-        all_nodes = sn.evaluate(sn.extractall(rf'{node_re}.*{part_re}', self.stdout, 1))
-        good_nodes = sn.evaluate(sn.extractall(rf'{node_re}.*{part_re}.*{gres_re}', self.stdout, 1))
+        all_nodes = sn.evaluate(
+            sn.extractall(rf'{node_re}.*{part_re}', self.stdout, 1)
+        )
+        good_nodes = sn.evaluate(
+            sn.extractall(rf'{node_re}.*{part_re}.*{gres_re}',
+            self.stdout, 1)
+        )
         bad_nodes = ','.join(sorted(set(all_nodes) - set(good_nodes)))
 
         return sn.assert_true(
             len(bad_nodes) == 0,
             msg=(f'{len(good_nodes)}/{len(all_nodes)} of '
-            f'{partition_name} nodes satisfy {gres_re}. Bad nodes: {bad_nodes}')
+            f'{partition_name} nodes satisfy {gres_re}. Bad nodes: '
+            f'{bad_nodes}')
         )
