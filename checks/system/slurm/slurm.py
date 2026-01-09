@@ -551,6 +551,26 @@ class SlurmNoIsolCpus(rfm.RunOnlyRegressionTest):
 
 
 @rfm.simple_test
+class SlurmNoUvmPerfAccessCounterMigration(rfm.RunOnlyRegressionTest):
+    valid_systems = ['+remote +scontrol']
+    valid_prog_environs = ['builtin']
+    maintainers = ['msimberg', 'SSA']
+    descr = '''
+    Check that uvm_perf_access_counter_migration_enable is 0 as it's buggy in
+    older drivers.
+    '''
+    time_limit = '1m'
+    num_tasks_per_node = 1
+    sourcesdir = None
+    executable = 'cat /sys/module/nvidia_uvm/parameters/uvm_perf_access_counter_mimc_migration_enable'
+    tags = {'production', 'maintenance', 'slurm'}
+
+    @sanity_function
+    def validate(self):
+        return sn.assert_found(r'0', self.stdout)
+
+
+@rfm.simple_test
 class SlurmGPUGresTest(SlurmSimpleBaseCheck):
     descr = '''
        Ensure that the Slurm GRES (Generic REsource Scheduling) of the
