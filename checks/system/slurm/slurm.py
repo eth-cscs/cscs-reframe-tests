@@ -13,7 +13,7 @@ import reframe.core.runtime as rt
 import reframe.utility.osext as osext
 import reframe.utility.sanity as sn
 
-sys.path.append(str(pathlib.Path(__file__).parent / 'mixins'))
+sys.path.append(str(pathlib.Path(__file__).parent.parent.parent / 'mixins'))
 from uenv_slurm_mpi_options import UenvSlurmMpiOptionsMixin  # noqa: E402
 
 
