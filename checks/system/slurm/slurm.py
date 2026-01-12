@@ -564,8 +564,8 @@ class SlurmNoUvmPerfAccessCounterMigration(rfm.RunOnlyRegressionTest):
     num_tasks_per_node = 1
     sourcesdir = None
     executable = 'cat'
-    executable_opts = ('/sys/module/nvidia_uvm/parameters/'
-                       'uvm_perf_access_counter_mimc_migration_enable')
+    executable_opts = [('/sys/module/nvidia_uvm/parameters/'
+                        'uvm_perf_access_counter_mimc_migration_enable')]    
     tags = {'production', 'maintenance', 'slurm'}
 
     @sanity_function
