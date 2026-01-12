@@ -13,7 +13,7 @@ import reframe.core.runtime as rt
 import reframe.utility.osext as osext
 import reframe.utility.sanity as sn
 
-sys.path.append(str(pathlib.Path(__file__).parent / 'mixins'))
+sys.path.append(str(pathlib.Path(__file__).parent.parent.parent / 'mixins'))
 from uenv_slurm_mpi_options import UenvSlurmMpiOptionsMixin  # noqa: E402
 
 
@@ -197,7 +197,8 @@ class MemoryOverconsumptionCheck(SlurmCompiledBaseCheck):
 
 
 @rfm.simple_test
-class MemoryOverconsumptionCheckMPI(SlurmCompiledBaseCheck, UenvSlurmMpiOptionsMixin):
+class MemoryOverconsumptionCheckMPI(SlurmCompiledBaseCheck,
+                                    UenvSlurmMpiOptionsMixin):
     # TODO: maintainers = ['@jgphpc', '@ekouts']
     descr = 'Tests for max allocatable memory'
     valid_systems = ['+remote']
@@ -551,6 +552,28 @@ class SlurmNoIsolCpus(rfm.RunOnlyRegressionTest):
 
 
 @rfm.simple_test
+class SlurmNoUvmPerfAccessCounterMigration(rfm.RunOnlyRegressionTest):
+    valid_systems = ['+remote +scontrol +nvgpu']
+    valid_prog_environs = ['builtin']
+    maintainers = ['msimberg', 'SSA']
+    descr = '''
+    Check that uvm_perf_access_counter_mimc_migration_enable is set to 0
+    as it is buggy in older drivers.
+    '''
+    time_limit = '1m'
+    num_tasks_per_node = 1
+    sourcesdir = None
+    executable = 'cat'
+    executable_opts = [('/sys/module/nvidia_uvm/parameters/'
+                        'uvm_perf_access_counter_mimc_migration_enable')]    
+    tags = {'production', 'maintenance', 'slurm'}
+
+    @sanity_function
+    def validate(self):
+        return sn.assert_found(r'0', self.stdout)
+
+
+@rfm.simple_test
 class SlurmGPUGresTest(SlurmSimpleBaseCheck):
     descr = '''
        Ensure that the Slurm GRES (Generic REsource Scheduling) of the
@@ -585,13 +608,13 @@ class SlurmGPUGresTest(SlurmSimpleBaseCheck):
         )
         good_nodes = sn.evaluate(
             sn.extractall(rf'{node_re}.*{part_re}.*{gres_re}',
-            self.stdout, 1)
+                          self.stdout, 1)
         )
         bad_nodes = ','.join(sorted(set(all_nodes) - set(good_nodes)))
 
         return sn.assert_true(
             len(bad_nodes) == 0,
             msg=(f'{len(good_nodes)}/{len(all_nodes)} of '
-            f'{partition_name} nodes satisfy {gres_re}. Bad nodes: '
-            f'{bad_nodes}')
+                 f'{partition_name} nodes satisfy {gres_re}. Bad nodes: '
+                 f'{bad_nodes}')
         )
