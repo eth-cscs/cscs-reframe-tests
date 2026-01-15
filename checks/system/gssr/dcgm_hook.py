@@ -44,7 +44,7 @@ class GssrCeHookCheck(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     pytorch_image_tag = parameter(['25.01-py3_nvrtc-12.9'])
     container_env_table = {'annotations.com.hooks': {'dcgm.enabled': 'true'}}
     executable = './dcgm_hook.sh'
-    time_limit = '5m'
+    time_limit = '3m'
 
     @run_after('init')
     def setup_ce(self):
