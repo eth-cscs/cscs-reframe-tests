@@ -310,7 +310,7 @@ class Cp2kCheckPBE_UENV(Cp2kCheck_UENV):
     valid_prog_environs = ['+cp2k -dlaf']
     energy_reference = -2206.2426491358
 
-    @run_after('init')
+    @run_before('run')
     def setup_input_and_wf(self):
         # Define input file depending on version
         # CP2K 2025.2 counts SCF steps differently
