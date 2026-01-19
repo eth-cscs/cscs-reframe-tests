@@ -7,7 +7,7 @@ unset PYTHONPATH
 cd icon4py
 source .venv/bin/activate
 
-pytest -v \
+pytest -sv \
     -m continuous_benchmarking \
     --benchmark-only \
     --benchmark-warmup=on \
@@ -16,8 +16,8 @@ pytest -v \
     --backend=dace_gpu \
     --grid=icon_benchmark_regional \
     --benchmark-time-unit=ms \
-    model/atmosphere/diffusion/tests/diffusion/integration_tests/test_benchmark_diffusion.py::test_diffusion_benchmark \
-    model/atmosphere/dycore/tests/dycore/integration_tests/test_benchmark_solve_nonhydro.py::test_benchmark_solve_nonhydro[True-False]
+    "model/atmosphere/diffusion/tests/diffusion/integration_tests/test_benchmark_diffusion.py::test_diffusion_benchmark" \
+    "model/atmosphere/dycore/tests/dycore/integration_tests/test_benchmark_solve_nonhydro.py::test_benchmark_solve_nonhydro[True-False]"
 echo
 
 # Cleanup
