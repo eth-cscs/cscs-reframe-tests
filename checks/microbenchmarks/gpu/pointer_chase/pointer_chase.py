@@ -14,7 +14,7 @@ sys.path.append(os.path.abspath(os.path.join(__file__, '../../../..')))
 import microbenchmarks.gpu.hooks as hooks
 
 
-class SystemConfigCSCS(rfm.RegressionMixin):
+class SystemConfigCSCS(rfm.RegressionTestPlugin):
     '''CSCS system settings shared across all pointer chase tests.'''
 
     single_device_systems = variable(
