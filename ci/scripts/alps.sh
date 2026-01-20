@@ -170,8 +170,8 @@ uenv_pull_meta_dir() {
     # system=$(uenv image inspect --format='{system}' $img)
     # uarch=$(uenv image inspect --format='{uarch}' $img)
     # sha=$(uenv image inspect --format='{sha}' $img)
-    uenv run $img -- test -f /user-environment/meta/extra/reframe.yaml ;rc1=$?
-    uenv run $img -- test -f /user-tools/meta/extra/reframe.yaml ;rc2=$?
+    uenv run $img_name -- test -f /user-environment/meta/extra/reframe.yaml ;rc1=$?
+    uenv run $img_name -- test -f /user-tools/meta/extra/reframe.yaml ;rc2=$?
     if [ $rc1 -eq 0 ] || [ $rc2 -eq 0 ] ; then
         echo "# OK: reframe.yaml found in $img"
     else
