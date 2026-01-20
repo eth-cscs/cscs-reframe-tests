@@ -31,7 +31,14 @@ def _format_httpjson(record, extras, ignore_keys):
     return json.dumps(data)
 
 
-reframe_dir = os.getenv("REFRAME_DIR", "/capstor/store/cscs/cscs/public/reframe/reframe-stable/$CLUSTER_NAME")
+reframe_dir = os.getenv(
+    'REFRAME_DIR',
+    '/capstor/store/cscs/cscs/public/reframe/reframe-stable/$CLUSTER_NAME'
+)
+target_dir = os.getenv(
+    'TARGET_DIR',
+    '$SCRATCH/reframe/$CLUSTER_NAME/maint'
+)
 
 
 site_configuration = {
@@ -131,17 +138,9 @@ site_configuration = {
                 '--failure-stats',
                 '--tag=production',
                 '-p \'(?!PrgEnv-ce)\'',
-                '--prefix=$TARGET_DIR',
-                '--output=$TARGET_DIR',
+                f'--prefix={target_dir}',
+                f'--output={target_dir}',
                 '--timestamp=%F_%H-%M-%S'
-
-
-                # '--output=$SCRATCH/regression/production',
-                # '--perflogdir=$SCRATCH/regression/production/logs',
-                # '--stage=$SCRATCH/regression/production/stage',
-                # '--report-file=$SCRATCH/regression/production/reports/prod_report_{sessionid}.json',
-                # '--save-log-files',
-                # '--tag=production',
             ]
         },
         {
