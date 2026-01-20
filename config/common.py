@@ -127,7 +127,6 @@ site_configuration = {
             'name': 'production',
             'options': [
                 '-Sstrict_check=1',
-                f'-C {reframe_dir}/cscs-reframe-tests.git/config/cscs.py',
                 f'-c {reframe_dir}/cscs-reframe-tests.git/checks',
                 '--failure-stats',
                 '--tag=maintenance',
