@@ -144,7 +144,7 @@ uenv_pull_meta_dir() {
     # # error: no matching uenv
     # uenv image inspect --format='{sqfs}' build::prgenv-gnu/next:2078663062
     # # error: invalid search term: found unexpected ':'
-    img_name=`echo img |sed -e "s/build:://" -e "s/service:://"`
+    img_name=`echo "$img" |sed -e "s/build:://" -e "s/service:://"`
     uenv image inspect --format='{sqfs}' "$img_name" 2>&1 |grep -q "error:" ;sqfs_missing=$?
 
     if [ $sqfs_missing -eq 0 ] ; then
