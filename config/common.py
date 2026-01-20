@@ -37,7 +37,7 @@ reframe_dir = os.getenv(
 )
 target_dir = os.getenv(
     'TARGET_DIR',
-    '$SCRATCH/reframe/$CLUSTER_NAME/maint'
+    '$SCRATCH/reframe/$CLUSTER_NAME'
 )
 
 
@@ -118,16 +118,14 @@ site_configuration = {
         {
             'name': 'maintenance',
             'options': [
-                '--unload-module=reframe',
                 '-Sstrict_check=1',
-                '--output=$SCRATCH/regression/maintenance',
-                '--perflogdir=$SCRATCH/regression/maintenance/logs',
-                '--stage=$SCRATCH/regression/maintenance/stage',
-                '--report-file=$SCRATCH/regression/maintenance/reports/maint_report_{sessionid}.json',
-                '--save-log-files',
-                '-p \'(?!PrgEnv-ce)\'',
+                f'-c {reframe_dir}/cscs-reframe-tests.git/checks',
+                '--failure-stats',
                 '--tag=maintenance',
-                '--timestamp=%F_%H-%M-%S',
+                '-p \'(?!PrgEnv-ce)\'',
+                f'--prefix={target_dir}/maint',
+                f'--output={target_dir}/maint',
+                '--timestamp=%F_%H-%M-%S'
             ]
         },
         {
@@ -138,8 +136,8 @@ site_configuration = {
                 '--failure-stats',
                 '--tag=production',
                 '-p \'(?!PrgEnv-ce)\'',
-                f'--prefix={target_dir}',
-                f'--output={target_dir}',
+                f'--prefix={target_dir}/prod',
+                f'--output={target_dir}/prod',
                 '--timestamp=%F_%H-%M-%S'
             ]
         },
