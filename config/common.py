@@ -31,6 +31,9 @@ def _format_httpjson(record, extras, ignore_keys):
     return json.dumps(data)
 
 
+reframe_dir = os.getenv("REFRAME_DIR", "/capstor/store/cscs/cscs/public/reframe/reframe-stable/$CLUSTER_NAME")
+
+
 site_configuration = {
     'environments': [
         {
@@ -123,16 +126,23 @@ site_configuration = {
         {
             'name': 'production',
             'options': [
-                '--unload-module=reframe',
                 '-Sstrict_check=1',
-                '--output=$SCRATCH/regression/production',
-                '--perflogdir=$SCRATCH/regression/production/logs',
-                '--stage=$SCRATCH/regression/production/stage',
-                '--report-file=$SCRATCH/regression/production/reports/prod_report_{sessionid}.json',
-                '--save-log-files',
+                f'-C {reframe_dir}/cscs-reframe-tests.git/config/cscs.py',
+                f'-c {reframe_dir}/cscs-reframe-tests.git/checks',
+                '--failure-stats',
+                '--tag=maintenance'
                 '-p \'(?!PrgEnv-ce)\'',
-                '--tag=production',
+                '--prefix=$TARGET_DIR',
+                '--output=$TARGET_DIR',
                 '--timestamp=%F_%H-%M-%S'
+
+
+                # '--output=$SCRATCH/regression/production',
+                # '--perflogdir=$SCRATCH/regression/production/logs',
+                # '--stage=$SCRATCH/regression/production/stage',
+                # '--report-file=$SCRATCH/regression/production/reports/prod_report_{sessionid}.json',
+                # '--save-log-files',
+                # '--tag=production',
             ]
         },
         {
