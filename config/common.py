@@ -129,7 +129,7 @@ site_configuration = {
                 '-Sstrict_check=1',
                 f'-c {reframe_dir}/cscs-reframe-tests.git/checks',
                 '--failure-stats',
-                '--tag=maintenance',
+                '--tag=production',
                 '-p \'(?!PrgEnv-ce)\'',
                 '--prefix=$TARGET_DIR',
                 '--output=$TARGET_DIR',
