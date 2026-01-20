@@ -6,7 +6,16 @@
 # ReFrame CSCS settings
 #
 
-reframe_dir = '/capstor/store/cscs/cscs/public/reframe/reframe-stable/$CLUSTER_NAME'
+import os
+
+reframe_dir = os.getenv(
+    'REFRAME_DIR',
+    '/capstor/store/cscs/cscs/public/reframe/reframe-stable/$CLUSTER_NAME'
+)
+target_dir = os.getenv(
+    'TARGET_DIR',
+    '$SCRATCH/reframe/$CLUSTER_NAME'
+)
 
 site_configuration = {
     'systems': [
@@ -75,25 +84,9 @@ site_configuration = {
                 '--failure-stats',
                 '--tag=production',
                 '-p \'(?!PrgEnv-ce)\'',
-                f'--prefix={target_dir}',
-                f'--output={target_dir}',
+                f'--prefix={target_dir}/prod',
+                f'--output={target_dir}/prod',
                 '--timestamp=%F_%H-%M-%S'
-            ],
-            'target_systems': ['starlex'],
-        },
-        {
-            'name': 'maintenance',
-            'options': [
-                f'-C {reframe_dir}/cscs-reframe-tests.git/config/cscs.py',
-                f'-c {reframe_dir}/cscs-reframe-tests.git/checks',
-                '--report-junit=report.xml',
-                '--report-file=latest.json',
-                '--tag=maintenance',
-                '--failure-stats',
-                '--max-retries=2',
-                '--prefix=/capstor/store/cscs/cscs/public/reframe/reframe-stable/$CLUSTER_NAME',
-                '--timestamp=%F_%H-%M-%S',
-                '-Sstrict_check=1',
             ],
             'target_systems': ['starlex'],
         },
