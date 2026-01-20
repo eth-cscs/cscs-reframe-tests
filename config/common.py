@@ -35,9 +35,9 @@ reframe_dir = os.getenv(
     'REFRAME_DIR',
     '/capstor/store/cscs/cscs/public/reframe/reframe-stable/$CLUSTER_NAME'
 )
-target_dir = os.getenv(
-    'TARGET_DIR',
-    '$SCRATCH/reframe/$CLUSTER_NAME'
+target_dir_var_exists = bool(os.getenv('TARGET_DIR'))
+target_dir_base = (
+    '$SCRATCH/reframe/$CLUSTER_NAME' if not target_dir_var_exists else ''
 )
 
 
@@ -123,8 +123,8 @@ site_configuration = {
                 '--failure-stats',
                 '--tag=maintenance',
                 '-p \'(?!PrgEnv-ce)\'',
-                f'--prefix={target_dir}/maint',
-                f'--output={target_dir}/maint',
+                f'--prefix={os.getenv("TARGET_DIR") if target_dir_var_exists else target_dir_base + "/maint"}',  # noqa: E501
+                f'--output={os.getenv("TARGET_DIR") if target_dir_var_exists else target_dir_base + "/maint"}',  # noqa: E501
                 '--timestamp=%F_%H-%M-%S'
             ]
         },
@@ -136,8 +136,20 @@ site_configuration = {
                 '--failure-stats',
                 '--tag=production',
                 '-p \'(?!PrgEnv-ce)\'',
-                f'--prefix={target_dir}/prod',
-                f'--output={target_dir}/prod',
+                f'--prefix={os.getenv("TARGET_DIR") if target_dir_var_exists else target_dir_base + "/prod"}',  # noqa: E501
+                f'--output={os.getenv("TARGET_DIR") if target_dir_var_exists else target_dir_base + "/prod"}',  # noqa: E501
+                '--timestamp=%F_%H-%M-%S'
+            ]
+        },
+        {
+            'name': 'veto',
+            'options': [
+                '-Sstrict_check=1',
+                f'-c {reframe_dir}/cscs-reframe-tests.git/checks/microbenchmarks/cpu_gpu/node_burn/node-burn-ce.py',  # noqa: E501
+                '-S nb_duration=300',
+                '--distribute=all',
+                f'--prefix={os.getenv("TARGET_DIR") if target_dir_var_exists else target_dir_base + "/veto"}',  # noqa: E501
+                f'--output={os.getenv("TARGET_DIR") if target_dir_var_exists else target_dir_base + "/veto"}',  # noqa: E501
                 '--timestamp=%F_%H-%M-%S'
             ]
         },
