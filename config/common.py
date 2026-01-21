@@ -31,6 +31,16 @@ def _format_httpjson(record, extras, ignore_keys):
     return json.dumps(data)
 
 
+reframe_dir = os.getenv(
+    'REFRAME_DIR',
+    '/capstor/store/cscs/cscs/public/reframe/reframe-stable/$CLUSTER_NAME'
+)
+target_dir_var_exists = bool(os.getenv('TARGET_DIR'))
+target_dir_base = (
+    '$SCRATCH/reframe/$CLUSTER_NAME' if not target_dir_var_exists else ''
+)
+
+
 site_configuration = {
     'environments': [
         {
@@ -108,30 +118,38 @@ site_configuration = {
         {
             'name': 'maintenance',
             'options': [
-                '--unload-module=reframe',
                 '-Sstrict_check=1',
-                '--output=$SCRATCH/regression/maintenance',
-                '--perflogdir=$SCRATCH/regression/maintenance/logs',
-                '--stage=$SCRATCH/regression/maintenance/stage',
-                '--report-file=$SCRATCH/regression/maintenance/reports/maint_report_{sessionid}.json',
-                '--save-log-files',
-                '-p \'(?!PrgEnv-ce)\'',
+                f'-c {reframe_dir}/cscs-reframe-tests.git/checks',
+                '--failure-stats',
                 '--tag=maintenance',
-                '--timestamp=%F_%H-%M-%S',
+                '-p \'(?!PrgEnv-ce)\'',
+                f'--prefix={os.getenv("TARGET_DIR") if target_dir_var_exists else target_dir_base + "/maint"}',  # noqa: E501
+                f'--output={os.getenv("TARGET_DIR") if target_dir_var_exists else target_dir_base + "/maint"}',  # noqa: E501
+                '--timestamp=%F_%H-%M-%S'
             ]
         },
         {
             'name': 'production',
             'options': [
-                '--unload-module=reframe',
                 '-Sstrict_check=1',
-                '--output=$SCRATCH/regression/production',
-                '--perflogdir=$SCRATCH/regression/production/logs',
-                '--stage=$SCRATCH/regression/production/stage',
-                '--report-file=$SCRATCH/regression/production/reports/prod_report_{sessionid}.json',
-                '--save-log-files',
-                '-p \'(?!PrgEnv-ce)\'',
+                f'-c {reframe_dir}/cscs-reframe-tests.git/checks',
+                '--failure-stats',
                 '--tag=production',
+                '-p \'(?!PrgEnv-ce)\'',
+                f'--prefix={os.getenv("TARGET_DIR") if target_dir_var_exists else target_dir_base + "/prod"}',  # noqa: E501
+                f'--output={os.getenv("TARGET_DIR") if target_dir_var_exists else target_dir_base + "/prod"}',  # noqa: E501
+                '--timestamp=%F_%H-%M-%S'
+            ]
+        },
+        {
+            'name': 'veto',
+            'options': [
+                '-Sstrict_check=1',
+                f'-c {reframe_dir}/cscs-reframe-tests.git/checks/microbenchmarks/cpu_gpu/node_burn/node-burn-ce.py',  # noqa: E501
+                '-S nb_duration=300',
+                '--distribute=all',
+                f'--prefix={os.getenv("TARGET_DIR") if target_dir_var_exists else target_dir_base + "/veto"}',  # noqa: E501
+                f'--output={os.getenv("TARGET_DIR") if target_dir_var_exists else target_dir_base + "/veto"}',  # noqa: E501
                 '--timestamp=%F_%H-%M-%S'
             ]
         },

@@ -6,7 +6,16 @@
 # ReFrame CSCS settings
 #
 
-reframe_dir = '/capstor/store/cscs/cscs/public/reframe/reframe-stable/$CLUSTER_NAME'
+import os
+
+reframe_dir = os.getenv(
+    'REFRAME_DIR',
+    '/capstor/store/cscs/cscs/public/reframe/reframe-stable/$CLUSTER_NAME'
+)
+target_dir_var_exists = bool(os.getenv('TARGET_DIR'))
+target_dir_base = (
+    '$SCRATCH/reframe/$CLUSTER_NAME' if not target_dir_var_exists else ''
+)
 
 site_configuration = {
     'systems': [
@@ -68,51 +77,16 @@ site_configuration = {
         {
             'name': 'production',
             'options': [
-                f'-C {reframe_dir}/cscs-reframe-tests.git/config/cscs.py',
+                '-Sstrict_check=1',
                 f'-c {reframe_dir}/cscs-reframe-tests.git/checks/apps/quantumespresso',
                 f'-c {reframe_dir}/cscs-reframe-tests.git/checks/apps/cp2k',
                 f'-c {reframe_dir}/cscs-reframe-tests.git/checks/apps/namd',
-                '--report-junit=report.xml',
-                '--report-file=latest.json',
+                '--failure-stats',
                 '--tag=production',
-                '--failure-stats',
-                '--max-retries=2',
-                '--prefix=/capstor/store/cscs/cscs/public/reframe/reframe-stable/$CLUSTER_NAME',
-                '--timestamp=%F_%H-%M-%S',
-                '-Sstrict_check=1',
-            ],
-            'target_systems': ['starlex'],
-        },
-        {
-            'name': 'maintenance',
-            'options': [
-                f'-C {reframe_dir}/cscs-reframe-tests.git/config/cscs.py',
-                f'-c {reframe_dir}/cscs-reframe-tests.git/checks',
-                '--report-junit=report.xml',
-                '--report-file=latest.json',
-                '--tag=maintenance',
-                '--failure-stats',
-                '--max-retries=2',
-                '--prefix=/capstor/store/cscs/cscs/public/reframe/reframe-stable/$CLUSTER_NAME',
-                '--timestamp=%F_%H-%M-%S',
-                '-Sstrict_check=1',
-            ],
-            'target_systems': ['starlex'],
-        },
-        {
-            'name': 'veto',
-            'options': [
-                f'-C {reframe_dir}/cscs-reframe-tests.git/config/cscs.py',
-                f'-c {reframe_dir}/cscs-reframe-tests.git/checks/microbenchmarks/cpu_gpu/node_burn/node-burn-ce.py',
-                '--report-junit=report.xml',
-                '--report-file=latest.json',
-                '-S nb_duration=300',
-                '--distribute=all',
-                '--failure-stats',
-                '--max-retries=2',
-                '--prefix=/capstor/store/cscs/cscs/public/reframe/reframe-stable/$CLUSTER_NAME',
-                '--timestamp=%F_%H-%M-%S',
-                '-Sstrict_check=1',
+                '-p \'(?!PrgEnv-ce)\'',
+                f'--prefix={os.getenv("TARGET_DIR") if target_dir_var_exists else target_dir_base + "/prod"}',  # noqa: E501
+                f'--output={os.getenv("TARGET_DIR") if target_dir_var_exists else target_dir_base + "/prod"}',  # noqa: E501
+                '--timestamp=%F_%H-%M-%S'
             ],
             'target_systems': ['starlex'],
         }
