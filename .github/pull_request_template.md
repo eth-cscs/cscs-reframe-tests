@@ -7,13 +7,13 @@ $ reframe -r ...
 - You can manually trigger 1 (or more) CI pipelines from github by writing a comment in this Pull Request:
 
 ```shell
-cscs-ci run alps-eiger-uenv;MY_UENV=prgenv-gnu/24.11:v2
+cscs-ci run alps-eiger-uenv;MY_UENV=[build::|service::]prgenv-gnu/25.11:v1
 
-cscs-ci run alps-daint-uenv;MY_UENV=prgenv-gnu/25.11:rc1
-cscs-ci run alps-santis-uenv;MY_UENV=prgenv-gnu/25.11:rc1
+cscs-ci run alps-daint-uenv;MY_UENV=prgenv-gnu/25.11:v1
+cscs-ci run alps-santis-uenv;MY_UENV=prgenv-gnu/25.11:v1
+cscs-ci run alps-starlex-uenv;MY_UENV=prgenv-gnu/25.11:v1
 
-cscs-ci run alps-starlex-uenv;MY_UENV=prgenv-gnu/25.11:rc1
-cscs-ci run alps-beverin-uenv;MY_UENV=prgenv-gnu/25.07-6.3.3:v9
+cscs-ci run alps-beverin-uenv;MY_UENV=prgenv-gnu/25.07-6.3.3:v12
 ```
 
 - You can also test from your terminal:
