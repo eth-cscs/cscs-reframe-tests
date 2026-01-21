@@ -79,4 +79,4 @@ class stuck_gpu_mem_test(rfm.RunOnlyRegressionTest):
 
     @sanity_function
     def assert_passed(self):
-        return sn.assert_true(True)
+        return sn.assert_eq(self.job.exitcode, 0)
