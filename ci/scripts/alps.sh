@@ -139,12 +139,19 @@ uenv_pull_meta_dir() {
     else
         vasp_flag=""
     fi
-    uenv image inspect --format='{sqfs}' "$img" 2>&1 |grep -q "error:" ;sqfs_missing=$?
+
+    # uenv image inspect --format='{sqfs}'  prgenv-gnu/next:2078663062
+    # # error: no matching uenv
+    # uenv image inspect --format='{sqfs}' build::prgenv-gnu/next:2078663062
+    # # error: invalid search term: found unexpected ':'
+    img_name=`echo "$img" |sed -e "s/build:://" -e "s/service:://"`
+    uenv image inspect --format='{sqfs}' "$img_name" 2>&1 |grep -q "error:" ;sqfs_missing=$?
+
     if [ $sqfs_missing -eq 0 ] ; then
         # 0=missing, !0=not missing
         echo "# WARNING: $img not found, pulling it..."
         /usr/bin/time -p uenv image pull $vasp_flag $img &> .uenv_pull_meta_dir.log
-        uenv image inspect --format='{sqfs}' "$img" 2>&1 |grep -q "error:" ;sqfs_missing=$?
+        uenv image inspect --format='{sqfs}' "$img_name" 2>&1 |grep -q "error:" ;sqfs_missing=$?
         if [ $sqfs_missing -eq 0 ] ; then
             echo "# WARNING: failed pulling $img (sqfs_missing=$sqfs_missing)"
             cat .uenv_pull_meta_dir.log
@@ -163,8 +170,8 @@ uenv_pull_meta_dir() {
     # system=$(uenv image inspect --format='{system}' $img)
     # uarch=$(uenv image inspect --format='{uarch}' $img)
     # sha=$(uenv image inspect --format='{sha}' $img)
-    uenv run $img -- test -f /user-environment/meta/extra/reframe.yaml ;rc1=$?
-    uenv run $img -- test -f /user-tools/meta/extra/reframe.yaml ;rc2=$?
+    uenv run $img_name -- test -f /user-environment/meta/extra/reframe.yaml ;rc1=$?
+    uenv run $img_name -- test -f /user-tools/meta/extra/reframe.yaml ;rc2=$?
     if [ $rc1 -eq 0 ] || [ $rc2 -eq 0 ] ; then
         echo "# OK: reframe.yaml found in $img"
     else
