@@ -6,7 +6,8 @@ import reframe.utility.udeps as udeps
 class fio_compile_test(rfm.RegressionTest):
     '''
     Check title: Check if we can compile fio
-    @victorusu
+    
+    This test was taken from https://github.com/victorusu/reframe-tests-library
     '''
     descr = ('Make sure that we can compile fio.')
     executable = './fio'
