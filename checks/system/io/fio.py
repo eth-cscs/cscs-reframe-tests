@@ -1,3 +1,10 @@
+# Copyright 2026 ETHZ/CSCS
+# See the top-level LICENSE file for details.
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
+import os
+
 import reframe as rfm
 import reframe.utility.sanity as sn
 import reframe.utility.udeps as udeps
@@ -12,9 +19,11 @@ class fio_compile_test(rfm.RegressionTest):
     descr = ('Make sure that we can compile fio.')
     executable = './fio'
     executable_opts = ['--version']
-    valid_systems = ['*']
+    valid_systems = ['+remote']
     valid_prog_environs = ['builtin']
     build_system = 'Autotools'
+    tags = {'maintenance'}
+    maintainers = ['VCUE', 'gppezzi']
 
     @run_after('setup')
     def set_num_procs(self):
@@ -67,16 +76,68 @@ class fio_compile_test(rfm.RegressionTest):
 
 @rfm.simple_test
 class stuck_gpu_mem_test(rfm.RunOnlyRegressionTest):
+    '''
+    Check for stuck GPU memory on GH200. 
+    
+    This simple reproducer does three things:
+    - Allocate 95% of GPU memory. This should pass on a freshly assigned node.
+    - Create and read a 100GB file on scratch.
+    - Attempt to allocate 95% of GPU memory again.
+
+    This test should pass if the driver correctly evicts OS file caches, but fails on the second allocation attempt if the bug is present.
+    
+    Original reproducer: https://github.com/eth-cscs/alps-gh200-reproducers/tree/main/gpu-stuck-memory
+    '''
     valid_prog_environs = ['builtin']
-    valid_systems = ['*']
+    valid_systems = ['+remote']
+    descr = ('Check for stuck GPU memory on GH200')
+    tags = {'maintenance'}
+    maintainers = ['VCUE', 'gppezzi']    
+
+    # One can parametrise these parameters or make them variables
+    test_name = 'cachetest'
+    benchmark = 'read'
+    block_size= '1M'
+    file_size = '100G'
+    engine = 'sync'
+    num_jobs = 1
+    iodepth = 1
+    filename = variable(str, value='/iopsstor/scratch/cscs/$USER/gpu-stuckmem.tmp')
 
     @run_after('init')
     def set_parent(self):
-        self.depends_on('fio_compile_test', how=udeps.fully)
+        self.depends_on('fio_compile_test', how=udeps.by_env)
 
     @run_before('run')
-    def set_executable_path(self):
-        self.executable = ("./run.sh") 
+    def set_executable_and_opts(self):
+        parent = self.getdep('fio_compile_test')
+        fio_cmd = os.path.join(parent.stagedir, parent.executable)
+        self.executable = ' '.join(['numactl', '--membind=0', fio_cmd])
+        self.executable_opts += [
+            f'--name={self.test_name}',
+            f'--rw={self.benchmark}',
+            f'--bs={self.block_size}',
+            f'--numjobs={self.num_jobs}',
+            f'--iodepth={self.iodepth}',
+            f'--size={self.file_size}',
+            f'--ioengine={self.engine}',
+            r'--filename={self.filename}',
+            '--direct=0',
+        ]
+
+    @run_before('run')
+    def set_experiment_opts(self):
+        self.prerun_cmds += [
+        	'function fail() { echo $1; exit 1; }',
+        	'/usr/bin/parallel_allocate_free_gpu_mem 95 || fail "First allocation failed. Is this a clean node with file cached already flushed?"',
+        	'/usr/bin/nvidia-smi',
+        	'/usr/bin/numastat -m -z | grep -v "not in hash table"'
+        ]
+        self.postrun_cmds += [
+        	'/usr/bin/nvidia-smi',
+        	'/usr/bin/numastat -m -z | grep -v "not in hash table"',
+        	'/usr/bin/parallel_allocate_free_gpu_mem 95 || fail "Last allocation failed. Stuck memory bug still present. Check FilePages in numastat output above."'
+        ]
 
     @sanity_function
     def assert_passed(self):
