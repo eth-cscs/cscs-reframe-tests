@@ -6,6 +6,7 @@ class ddBlockSizeTest(rfm.RunOnlyRegressionTest):
     """
     Reproduce the behaviour of sbatch_dd_repro.sh:
       - run a series of dd write tests with different block sizes 
+        - block size 4096000 is known to trigger the stuck node issue
     
     Original script link:
     https://github.com/eth-cscs/alps-gh200-reproducers/blob/main/stuck-node-on-io/sbatch_dd_repro.sh
