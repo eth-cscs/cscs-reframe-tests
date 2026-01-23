@@ -35,7 +35,7 @@ class uenv_ascent_heatdiffusion_cpp(rfm.RegressionTest):
             f'-S {self.build_system.srcdir}',
             f'-DCMAKE_BUILD_TYPE=Debug',  # Release
             f'-DINSITU=Ascent',
-            f'-DAscent_DIR=`find /user-tools/ -name ascent |grep ascent- |grep cmake`'  # noqa: E402
+            f'-DAscent_DIR=`find /user-tools/ -name ascent |grep ascent- |grep cmake`'  # noqa: E501
         ]
         cmake_arch = ''
         if uenv.uarch(self.current_partition) == 'gh200':
@@ -47,7 +47,8 @@ class uenv_ascent_heatdiffusion_cpp(rfm.RegressionTest):
                 '-DCMAKE_CUDA_ARCHITECTURES=80 '
                 '-DCMAKE_CUDA_HOST_COMPILER=mpicxx')
 
-        self.build_system.config_opts.append(cmake_arch)
+        if cmake_arch:
+            self.build_system.config_opts.append(cmake_arch)
 
     @run_before('run')
     def set_run(self):
@@ -117,7 +118,7 @@ class uenv_ascent_noise(rfm.RegressionTest):
             f'-S {self.build_system.srcdir}',
             f'-DCMAKE_BUILD_TYPE=Debug',  # Release
             f'-DINSITU=Ascent',
-            f'-DAscent_DIR=`find /user-tools/ -name ascent |grep ascent- |grep cmake`'  # noqa: E402
+            f'-DAscent_DIR=`find /user-tools/ -name ascent |grep ascent- |grep cmake`'  # noqa: E501
         ]
         cmake_arch = ''
         if uenv.uarch(self.current_partition) == 'gh200':
@@ -129,7 +130,8 @@ class uenv_ascent_noise(rfm.RegressionTest):
                 '-DCMAKE_CUDA_ARCHITECTURES=80 '
                 '-DCMAKE_CUDA_HOST_COMPILER=mpicxx')
 
-        self.build_system.config_opts.append(cmake_arch)
+        if cmake_arch:
+            self.build_system.config_opts.append(cmake_arch)
 
     @run_before('run')
     def set_run(self):
@@ -196,7 +198,7 @@ class uenv_ascent_kripke(rfm.RegressionTest):
             f'-S {self.build_system.srcdir}',
             f'-DCMAKE_BUILD_TYPE=Debug',  # Release
             f'-DINSITU=Ascent',
-            f'-DAscent_DIR=`find /user-tools/ -name ascent |grep ascent- |grep cmake`'  # noqa: E402
+            f'-DAscent_DIR=`find /user-tools/ -name ascent |grep ascent- |grep cmake`'  # noqa: E501
         ]
         cmake_arch = ''
         if uenv.uarch(self.current_partition) == 'gh200':
@@ -208,7 +210,8 @@ class uenv_ascent_kripke(rfm.RegressionTest):
                 '-DCMAKE_CUDA_ARCHITECTURES=80 '
                 '-DCMAKE_CUDA_HOST_COMPILER=mpicxx')
 
-        self.build_system.config_opts.append(cmake_arch)
+        if cmake_arch:
+            self.build_system.config_opts.append(cmake_arch)
 
     @run_before('run')
     def set_run(self):
@@ -226,11 +229,11 @@ class uenv_ascent_kripke(rfm.RegressionTest):
             f'ln -fs {build_system_srcdir}/run_kripke_simple_example.sh .',
         ]
         self.env_vars['OMP_NUM_THREADS'] = '16'
-        ref_dir = os.path.join(self.current_system.resourcesdir,
-                               'ascent/reference/kripke')
+        # ref_dir = os.path.join(self.current_system.resourcesdir,
+        #                        'ascent/reference/kripke')
         self.postrun_cmds = [
             f'file {self.png1}',
-            # TODO: f'diff -s {self.png1} {ref_dir}/{self.png1}'
+            # .png may vary between identical jobs, can't use 'diff -s' here
         ]
 
     @sanity_function
@@ -239,7 +242,6 @@ class uenv_ascent_kripke(rfm.RegressionTest):
             r'blueprint verify succeeded',
             r'iter 9: particle count=',
             r'PNG image data, 1024 x 1024',
-            # TODO: f'{self.png1} are identical',
         ]
         assert_list = []
         for regex in regexes:
@@ -253,7 +255,7 @@ class uenv_ascent_kripke(rfm.RegressionTest):
 # {{{ uenv_ascent_cloverleaf3d
 @rfm.simple_test
 class uenv_ascent_cloverleaf3d(rfm.RegressionTest):
-    descr = "Build and Run Ascent test: CloverLeaf3D ()"
+    descr = "Build and Run Ascent test: CloverLeaf3D (F90)"
     maintainers = ['SSA']
     tags = {'uenv', 'production'}
     valid_systems = ['+uenv']
@@ -312,7 +314,7 @@ class uenv_ascent_cloverleaf3d(rfm.RegressionTest):
     @sanity_function
     def validate_test(self):
         regexes = [
-            r'This test is considered NOT PASSED',
+            r'This test is considered NOT PASSED',  # ok as long as .png exist
             f'{self.png1} are identical',
             f'{self.png2} are identical',
             f'{self.png3} are identical',
