@@ -54,3 +54,4 @@ class ddBlockSizeTest(rfm.RunOnlyRegressionTest):
         return sn.all([
             sn.assert_found(r"SUCCESS", self.stdout),
         ])
+    
