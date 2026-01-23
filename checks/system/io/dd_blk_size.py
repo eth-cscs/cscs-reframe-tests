@@ -15,6 +15,10 @@ class ddBlockSizeTest(rfm.RunOnlyRegressionTest):
     descr = "dd write tests with different block sizes"
     valid_systems = ['+remote']              
     valid_prog_environs = ['builtin']
+    tags = {"maintenance"}
+    maintainers = ["VCUE", "gppezzi"]
+
+    prob_blk_size = variable(int, value=4096000)
     
     @run_before('run')
     def set_commands(self):
@@ -26,7 +30,7 @@ class ddBlockSizeTest(rfm.RunOnlyRegressionTest):
         sleep 5
 
         for ntasks in 1 2; do
-            for bs in 1M 2M 3M 4M 5M 4096000; do
+            for bs in 1M 2M 3M 4M 5M {self.prob_blk_size}; do
             
                 echo "------------------------------------------"
                 echo "Running dd with bs=$bs and ntasks=$ntasks"
