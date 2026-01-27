@@ -5,47 +5,49 @@ import reframe.utility.sanity as sn
 class ddBlockSizeTest(rfm.RunOnlyRegressionTest):
     """
     Reproduce the behaviour of sbatch_dd_repro.sh:
-      - run a series of dd write tests with different block sizes 
-        - block size 4096000 is known to trigger the stuck node issue
+      - runs dd write tests with different block sizes
+        - 1M and 5M (control runs) and 4096000 (hangs indefinitely)
     
     Original script link:
     https://github.com/eth-cscs/alps-gh200-reproducers/blob/main/stuck-node-on-io/sbatch_dd_repro.sh
     """
  
     descr = "dd write tests with different block sizes"
-    valid_systems = ['+remote']              
+    #valid_systems = ['+remote']              
+    valid_systems = ['*']
     valid_prog_environs = ['builtin']
     tags = {"maintenance"}
     maintainers = ["VCUE", "gppezzi"]
 
-    prob_blk_size = variable(int, value=4096000)
+    # bs=4096000 can potentially trigger node issues
+    prob_block_size = variable(int, value=4096000)
+    count = variable(int, value=1000)
+    test_path = variable(str, value="$SCRATCH/ddBlockSizeTest")
     
     @run_before('run')
     def set_commands(self):
-        self.executable = "bash"
-        self.executable_opts = ["-c", f'''
-        OUT=./
-        mkdir -p $OUT
+        self.executable = "/bin/bash"
+        self.executable_opts = [f''' 
+
+        mkdir -p {self.test_path}
 
         sleep 5
-
+        
         for ntasks in 1 2; do
-            for bs in 1M 2M 3M 4M 5M {self.prob_blk_size}; do
+            for bs in 1M 5M {self.prob_block_size}; do
             
                 echo "------------------------------------------"
-                echo "Running dd with bs=$bs and ntasks=$ntasks"
-            
-                srun -ul -n$ntasks \
-                bash -c "dd if=/dev/zero of=$OUT/dd_largefile.\$SLURM_PROCID bs=$bs count=1000 status=progress"
-            
+                echo "Running dd with bs=$bs and ntasks=$ntasks count={self.count} path={self.test_path}/dd_largefile.$bs.$SLURM_PROCID"
+
+                /usr/bin/dd if=/dev/zero of={self.test_path}/dd_largefile.$bs.$SLURM_PROCID bs=$bs count={self.count} status=progress
+
                 echo "Finished."
-            
-                rm $OUT/dd_largefile.*
+
+                rm {self.test_path}/dd_largefile.*
                 sleep 5
             done
         done
 
-        echo
         echo "SUCCESS"
         '''] 
         
