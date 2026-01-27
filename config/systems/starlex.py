@@ -73,22 +73,4 @@ site_configuration = {
             ]
         },
     ],
-    'modes': [
-        {
-            'name': 'production',
-            'options': [
-                '-Sstrict_check=1',
-                f'-c {reframe_dir}/cscs-reframe-tests.git/checks/apps/quantumespresso',
-                f'-c {reframe_dir}/cscs-reframe-tests.git/checks/apps/cp2k',
-                f'-c {reframe_dir}/cscs-reframe-tests.git/checks/apps/namd',
-                '--failure-stats',
-                '--tag=production',
-                '-p \'(?!PrgEnv-ce)\'',
-                f'--prefix={os.getenv("TARGET_DIR") if target_dir_var_exists else target_dir_base + "/prod"}',  # noqa: E501
-                f'--output={os.getenv("TARGET_DIR") if target_dir_var_exists else target_dir_base + "/prod"}',  # noqa: E501
-                '--timestamp=%F_%H-%M-%S'
-            ],
-            'target_systems': ['starlex'],
-        }
-    ]
 }
