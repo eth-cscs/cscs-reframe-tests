@@ -1,3 +1,8 @@
+# Copyright 2026 ETHZ/CSCS
+# See the top-level LICENSE file for details.
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
 import reframe as rfm
 import reframe.utility.sanity as sn
 
