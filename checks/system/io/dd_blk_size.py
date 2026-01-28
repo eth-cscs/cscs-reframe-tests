@@ -18,7 +18,6 @@ class ddBlockSizeTest(rfm.RunOnlyRegressionTest):
     """
  
     descr = "dd write tests with different block sizes"
-    #valid_systems = ['+remote']              
     valid_systems = ['*']
     valid_prog_environs = ['builtin']
     tags = {"maintenance"}
