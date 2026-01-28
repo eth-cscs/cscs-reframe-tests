@@ -30,13 +30,16 @@ class GPUBenchmarks(rfm.RegressionTest):
 class ParallelAlgos(GPUBenchmarks):
     benchmark = 'parallel_algos'
     algo = parameter(['radix-sort', 'scan', 'reduce'])
-    _executable_opts = parameter(['6', '12', '23', '27', '28', '32'])
+    _executable_opts = parameter(['21', '24', '26', '27', '29', '30', '31'])
 
     # input values are specific to the algorithm for gpu saturation
+    # - Column 1: saturates 95% of faster GPU (GH200)
+    # - Column 2: saturates 95% of slowest GPU (MI300A)
+    # - Column 3: saturates 50% of the bandwidth of first column
     _valid_inputs = {
-        'radix-sort': ['6', '12', '23', '27'],
-        'scan': ['6', '12', '23', '27'],
-        'reduce': ['6', '12', '28', '32']
+        'radix-sort': ['27', '30', '21'],
+        'scan': ['29', '26', '24'],
+        'reduce': ['31', '29', '26']
     }
 
     @run_after('init')
