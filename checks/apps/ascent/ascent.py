@@ -27,7 +27,7 @@ ascent_intro_cpp_d = {
     'ascent_query_example1': 'out_gyre_0009.png',
     #
     'ascent_trigger_example1': 'entropy_trigger_out_000200.png',
-    'ascent_binning_example1': 'binning.png'
+    'ascent_binning_example1': '3d_binning.png'
 }
 
 
@@ -118,16 +118,13 @@ class uenv_ascent_intro_cpp(rfm.RunOnlyRegressionTest):
                 f'ln -s cinema_databases/out_extract_cinema_contour/0.0/'
                 f'{self.png}']
         elif self.exe == 'ascent_binning_example1':
-            # TODO: add pyyaml to uenv
             self.postrun_cmds += [
                 # plot (1D,2D,3D) data from ascent_session.yaml
-                f'# ln -s {ascent_dir}/plot_binning*.py .',
-                f'# sed -i "s@yaml.load@yaml.safe_load@" plot_binning*.py',
-                f'# pip install --user pyyaml',
-                f'# python3 plot_binning_1d.py',
-                f'# python3 plot_binning_2d.py',
-                f'# python3 plot_binning_3d.py',
-                f'touch binning.png'
+                f'ln -s {ascent_dir}/plot_binning*.py .',
+                f'sed -i "s@yaml.load@yaml.safe_load@" plot_binning*.py',
+                f'python3 plot_binning_1d.py',
+                f'python3 plot_binning_2d.py',
+                f'python3 plot_binning_3d.py'
             ]
 
         self.postrun_cmds += [f'file {self.png}',
