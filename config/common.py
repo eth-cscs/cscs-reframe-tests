@@ -246,7 +246,8 @@ site_configuration = {
             'check_search_path': ['checks/'],
             'check_search_recursive': True,
             'remote_detect': True,
-            'resolve_module_conflicts': False
+            'resolve_module_conflicts': False,
+            'pipeline_timeout': 1000 # https://reframe-hpc.readthedocs.io/en/stable/pipeline.html#tweaking-the-throughput-and-interactivity-of-test-jobs-in-the-asynchronous-execution-policy
         }
     ],
 #     'autodetect_methods': [
