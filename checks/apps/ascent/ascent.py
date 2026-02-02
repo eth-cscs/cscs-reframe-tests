@@ -6,7 +6,7 @@
 import os
 import reframe as rfm
 import reframe.utility.sanity as sn
-import uenv
+
 
 # {{{ uenv_ascent_intro_cpp
 ascent_intro_cpp_d = {
