@@ -25,7 +25,7 @@ class UenvFixincludes(rfm.RunOnlyRegressionTest):
     executable = 'find'
     executable_opts = ["/user-environment", "/user-tools", "-type", "f",
                        "-name", "pthread.h"]
-    tags = {'production', 'maintenance', 'uenv'}
+    tags = {'maintenance', 'uenv'}
 
     @sanity_function
     def validate(self):
