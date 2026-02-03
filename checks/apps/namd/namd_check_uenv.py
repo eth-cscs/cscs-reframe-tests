@@ -146,7 +146,7 @@ class NamdBuildTest(rfm.CompileOnlyRegressionTest):
     maintainers = ['romeli', 'jcoles', 'SSA']
     namd_sources = fixture(namd_download, scope='session')
     build_locally = False
-    tags = {'uenv'}
+    tags = {'uenv', 'maintenance'}
 
     @run_before('compile')
     def prepare_build(self):
@@ -306,7 +306,7 @@ class NamdCheckUENVExec(NamdCheckUENV):
 @rfm.simple_test
 class NamdCheckUENVCustomExec(NamdCheckUENV):
     valid_prog_environs = ['+namd-single-node-dev']
-    tags = {'uenv'}
+    tags = {'uenv', 'maintenance'}
 
     @run_after('init')
     def setup_dependency(self):
