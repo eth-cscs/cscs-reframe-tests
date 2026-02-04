@@ -139,12 +139,19 @@ uenv_pull_meta_dir() {
     else
         vasp_flag=""
     fi
-    uenv image inspect --format='{sqfs}' "$img" 2>&1 |grep -q "error:" ;sqfs_missing=$?
+
+    # uenv image inspect --format='{sqfs}'  prgenv-gnu/next:2078663062
+    # # error: no matching uenv
+    # uenv image inspect --format='{sqfs}' build::prgenv-gnu/next:2078663062
+    # # error: invalid search term: found unexpected ':'
+    img_name=`echo "$img" |sed -e "s/build:://" -e "s/service:://"`
+    uenv image inspect --format='{sqfs}' "$img_name" 2>&1 |grep -q "error:" ;sqfs_missing=$?
+
     if [ $sqfs_missing -eq 0 ] ; then
         # 0=missing, !0=not missing
         echo "# WARNING: $img not found, pulling it..."
         /usr/bin/time -p uenv image pull $vasp_flag $img &> .uenv_pull_meta_dir.log
-        uenv image inspect --format='{sqfs}' "$img" 2>&1 |grep -q "error:" ;sqfs_missing=$?
+        uenv image inspect --format='{sqfs}' "$img_name" 2>&1 |grep -q "error:" ;sqfs_missing=$?
         if [ $sqfs_missing -eq 0 ] ; then
             echo "# WARNING: failed pulling $img (sqfs_missing=$sqfs_missing)"
             cat .uenv_pull_meta_dir.log
@@ -163,8 +170,8 @@ uenv_pull_meta_dir() {
     # system=$(uenv image inspect --format='{system}' $img)
     # uarch=$(uenv image inspect --format='{uarch}' $img)
     # sha=$(uenv image inspect --format='{sha}' $img)
-    uenv run $img -- test -f /user-environment/meta/extra/reframe.yaml ;rc1=$?
-    uenv run $img -- test -f /user-tools/meta/extra/reframe.yaml ;rc2=$?
+    uenv run $img_name -- test -f /user-environment/meta/extra/reframe.yaml ;rc1=$?
+    uenv run $img_name -- test -f /user-tools/meta/extra/reframe.yaml ;rc2=$?
     if [ $rc1 -eq 0 ] || [ $rc2 -eq 0 ] ; then
         echo "# OK: reframe.yaml found in $img"
     else
@@ -401,11 +408,17 @@ launch_reframe_bencher() {
     # reframe -V
     # echo "# UENV=$UENV"
 
+    # ---------------------------------------------------------------------
+    # Run reframe but DO NOT exit on failure, capture the exit code
+    # ---------------------------------------------------------------------
+    set +e
     reframe -C ./config/cscs.py \
         --mode daily_bencher \
         --system=$system \
         --prefix=$SCRATCH/rfm-$CI_JOB_ID \
         -r
+    reframe_status=$?
+    set -e
 
     python3 ./utility/bencher_metric_format.py latest.json
 
@@ -456,7 +469,49 @@ launch_reframe_bencher() {
             --branch main \
             --token $BENCHER_API_TOKEN \
             --project $BENCHER_PROJECT
+
+        # ------------------------------------------------------------
+        # Second upload: shortened testbed with only name + version
+        # ------------------------------------------------------------
+
+        # Extract everything after "bencher="
+        rest="${bmf_file%.json}"
+        rest="${rest#bencher=}"  # system=partition=environ
+
+        # Split by "=" → system, partition, environ
+        IFS='=' read -r system partition environ <<< "$rest"
+
+        # environ="name_version_tag_..."
+        IFS='_' read -r uenv_name uenv_version _ <<< "$environ"
+        short_environ="${uenv_name}_${uenv_version}"
+
+        short_testbed="${system}=${partition}=${short_environ}"
+
+        echo "Re-uploading results for SHORT testbed: $short_testbed from file: $bmf_file"
+
+        ./bencher run \
+            --adapter json \
+            --file "$bmf_file" \
+            --testbed "$short_testbed" \
+            --thresholds-reset \
+            --branch main \
+            --token $BENCHER_API_TOKEN \
+            --project $BENCHER_PROJECT
+
     done
+
+    # ---------------------------------------------------------------------
+    # Report ReFrame status
+    # ---------------------------------------------------------------------
+    echo "------------------------------------------------------------"
+    if [ "$reframe_status" -eq 0 ]; then
+        echo "# ReFrame finished successfully (exit code 0)"
+    else
+        echo "# ReFrame FAILED (exit code $reframe_status)"
+    fi
+    echo "------------------------------------------------------------"
+
+    return "$reframe_status"
 }
 # }}}
 # {{{ oneuptime

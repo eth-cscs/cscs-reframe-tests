@@ -18,7 +18,7 @@ from container_engine import ContainerEngineMixin  # noqa: E402
 class PyTorchMegatronLM_AMD(rfm.RunOnlyRegressionTest):
     num_tasks_per_node = 1
     default_num_nodes = variable(int, type(None), value=None)
-    time_limit = '30m'
+    time_limit = '50m'
     megatron_repo = variable(
         str, value='https://github.com/ROCm/Megatron-LM'
     )
@@ -46,7 +46,7 @@ class PyTorchMegatronLM_AMD(rfm.RunOnlyRegressionTest):
     batch_size_per_node = variable(int, value=256)
     checkpoint_steps = variable(int, value=10)
     hf_home = variable(
-        str, value=str(pathlib.Path.home() / '.cache' / 'huggingface')
+        str, value=str(pathlib.Path(os.environ['SCRATCH']) / '.cache' / 'huggingface')
     )
     training_steps = variable(int, value=10)
     wandb_logging = variable(bool, value=False)
@@ -88,8 +88,8 @@ class PyTorchMegatronLM_AMD(rfm.RunOnlyRegressionTest):
     sourcesdir = None
     executable = 'bash'
 
-    maintainers = ['VCUE']
-    tags = {'ml'}
+    maintainers = ['VCUE', 'SSA']
+    tags = {'ml', 'bencher'}
 
     @run_after('setup')
     def setup_test(self):
@@ -379,37 +379,15 @@ class PyTorchMegatronLM_AMD(rfm.RunOnlyRegressionTest):
         ))
 
 
-class pytorch_image_import(rfm.RunOnlyRegressionTest):
-    sourcesdir = None
-    image = variable(
-        str,
-        value=('docker://rocm/megatron-lm:v25.6_py312')
-    )
-    archive_name = 'pytorch.sqsh'
-    executable = 'enroot'
-    valid_systems = ['+ce']
-    valid_prog_environs = ['builtin']
-
-    @run_before('run')
-    def set_executable_opts(self):
-        self.executable_opts = ['import', '-o', self.archive_name, self.image]
-
-    @sanity_function
-    def assert_image_imported(self):
-        return sn.path_exists(os.path.join(self.stagedir, self.archive_name))
-
-
 @rfm.simple_test
 class PyTorchMegatronLM_AMD_CE(PyTorchMegatronLM_AMD, ContainerEngineMixin):
     valid_systems = ['+amdgpu +ce']
     valid_prog_environs = ['builtin']
-    maintainers = ['ml-team']
-    pytorch_image = fixture(pytorch_image_import, scope='session')
+    maintainers = ['VCUE', 'SSA']
+    container_image = 'rocm/megatron-lm:v25.6_py312'
 
     @run_after('setup')
     def set_container_config(self):
-        self.container_image = os.path.join(self.pytorch_image.stagedir,
-                                            self.pytorch_image.archive_name)
         self.container_env_table = {
             'annotations.com.hooks': {
                 'aws_ofi_nccl.enabled': 'true',

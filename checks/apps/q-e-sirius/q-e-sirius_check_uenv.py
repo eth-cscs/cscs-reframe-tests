@@ -157,7 +157,7 @@ class QeSiriusCheckAuSurfUENV(QeSiriusCheckUENV):
 
 
 @rfm.simple_test
-class QeCheckAuSurfUENVExec(QeSiriusCheckAuSurfUENV):
+class QeSiriusCheckAuSurfUENVExec(QeSiriusCheckAuSurfUENV):
     valid_prog_environs = ['+uenv +q-e-sirius']
     tags = {'uenv', 'production', 'bencher'}
 

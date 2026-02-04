@@ -6,6 +6,17 @@
 # ReFrame CSCS settings
 #
 
+import os
+
+reframe_dir = os.getenv(
+    'REFRAME_DIR',
+    '/capstor/store/cscs/cscs/public/reframe/reframe-stable/$CLUSTER_NAME'
+)
+target_dir_var_exists = bool(os.getenv('TARGET_DIR'))
+target_dir_base = (
+    '$SCRATCH/reframe/$CLUSTER_NAME' if not target_dir_var_exists else ''
+)
+
 site_configuration = {
     'systems': [
         {
@@ -62,20 +73,4 @@ site_configuration = {
             ]
         },
     ],
-    'modes': [
-        {
-            'name': 'production',
-            'options': [
-                '--unload-module=reframe',
-                '--exec-policy=async',
-                '-Sstrict_check=1',
-                '--prefix=$SCRATCH/regression/production',
-                '--report-file=$SCRATCH/regression/production/reports/prod_report_{sessionid}.json',
-                '--save-log-files',
-                '--tag=production',
-                '--timestamp=%F_%H-%M-%S'
-            ],
-            'target_systems': ['starlex'],
-        }
-    ]
 }

@@ -121,7 +121,7 @@ class lammps_gpu_test(rfm.RunOnlyRegressionTest):
     maintainers = ['pkanduri', 'nbrowning', 'romeli', 'SSA']
     test_name = variable(str, value='lj_gpu')
     energy_reference = -4.620456
-    tags = {'uenv', 'production'}
+    tags = {'uenv', 'production', 'maintenance'}
 
     @run_before('run')
     def prepare_run(self):
@@ -191,7 +191,7 @@ class lammps_kokkos_test(rfm.RunOnlyRegressionTest):
     maintainers = ['SSA']
     test_name = variable(str, value='lj_kokkos')
     energy_reference = -4.620456
-    tags = {'uenv', 'production'}
+    tags = {'uenv', 'production', 'maintenance'}
 
     @run_before('run')
     def prepare_run(self):

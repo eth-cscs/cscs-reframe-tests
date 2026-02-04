@@ -47,7 +47,7 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
     checkpoint_steps = variable(int, value=10)
 
     hf_home = variable(
-        str, value=str(pathlib.Path.home() / '.cache' / 'huggingface')
+        str, value=str(pathlib.Path(os.environ['SCRATCH']) / '.cache' / 'huggingface')
     )
 
     # The number of training steps
@@ -224,7 +224,7 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
     sourcesdir = None
     executable = 'bash'
 
-    tags = {'maintenance', 'production', 'ml'}
+    tags = {'maintenance', 'production', 'ml', 'bencher'}
 
     @run_after('setup')
     def setup_test(self):
@@ -501,37 +501,15 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
         ))
 
 
-class pytorch_image_import(rfm.RunOnlyRegressionTest):
-    image = variable(
-        str,
-        value=('docker://jfrog.svc.cscs.ch#reframe-oci/'
-               'pytorch:25.01-py3_nvrtc-12.9')
-    )
-    archive_name = 'pytorch.sqsh'
-    executable = 'enroot'
-    valid_systems = ['+ce']
-    valid_prog_environs = ['builtin']
-
-    @run_before('run')
-    def set_executable_opts(self):
-        self.executable_opts = ['import', '-o', self.archive_name, self.image]
-
-    @sanity_function
-    def assert_image_imported(self):
-        return sn.path_exists(os.path.join(self.stagedir, self.archive_name))
-
-
 @rfm.simple_test
 class PyTorchMegatronLM_CE(PyTorchMegatronLM, ContainerEngineMixin):
     valid_systems = ['+nvgpu +ce']
     valid_prog_environs = ['builtin']
-    maintainers = ['ml-team']
-    pytorch_image = fixture(pytorch_image_import, scope='session')
+    maintainers = ['VCUE', 'SSA']
+    container_image = 'docker://jfrog.svc.cscs.ch#reframe-oci/pytorch:25.01-py3_nvrtc-12.9'
 
     @run_after('setup')
     def set_container_config(self):
-        self.container_image = os.path.join(self.pytorch_image.stagedir,
-                                            self.pytorch_image.archive_name)
         self.container_env_table = {
             'annotations.com.hooks': {
                 'aws_ofi_nccl.enabled': 'true',
@@ -565,7 +543,7 @@ class PyTorchMegatronLM_CE(PyTorchMegatronLM, ContainerEngineMixin):
 class PyTorchMegatronLM_UENV(PyTorchMegatronLM):
     valid_systems = ['+nvgpu +uenv']
     valid_prog_environs = ['+pytorch']
-    maintainers = ['ml-team']
+    maintainers = ['VCUE', 'SSA']
 
     @run_after('setup')
     def patch_numpy(self):

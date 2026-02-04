@@ -13,7 +13,7 @@ sys.path.append(os.path.abspath(os.path.join(__file__, '../../../../')))
 import microbenchmarks.gpu.hooks as hooks
 
 
-class SystemConfigCSCS(rfm.RegressionMixin):
+class SystemConfigCSCS(rfm.RegressionTestPlugin):
     @run_after('init')
     def arola_tsa_valid_prog_environs(self):
         if self.current_system.name in ['arolla', 'tsa']:

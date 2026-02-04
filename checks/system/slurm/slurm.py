@@ -4,12 +4,17 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import os
+import pathlib
 import re
+import sys
 
 import reframe as rfm
 import reframe.core.runtime as rt
 import reframe.utility.osext as osext
 import reframe.utility.sanity as sn
+
+sys.path.append(str(pathlib.Path(__file__).parent.parent.parent / 'mixins'))
+from uenv_slurm_mpi_options import UenvSlurmMpiOptionsMixin  # noqa: E402
 
 
 class SlurmSimpleBaseCheck(rfm.RunOnlyRegressionTest):
@@ -192,7 +197,8 @@ class MemoryOverconsumptionCheck(SlurmCompiledBaseCheck):
 
 
 @rfm.simple_test
-class MemoryOverconsumptionCheckMPI(SlurmCompiledBaseCheck):
+class MemoryOverconsumptionCheckMPI(SlurmCompiledBaseCheck,
+                                    UenvSlurmMpiOptionsMixin):
     # TODO: maintainers = ['@jgphpc', '@ekouts']
     descr = 'Tests for max allocatable memory'
     valid_systems = ['+remote']
@@ -207,8 +213,11 @@ class MemoryOverconsumptionCheckMPI(SlurmCompiledBaseCheck):
     def set_num_tasks(self):
         self.skip_if_no_procinfo()
         cpu = self.current_partition.processor
-        self.num_tasks_per_node = int(
-            cpu.info['num_cpus'] / cpu.info['num_cpus_per_core'])
+        # Limit number of tasks because PMIx/OpenMPI can take very long to
+        # initialize with e.g. 288 ranks on one GH200 node. The test still
+        # fails in a reasonable time with a limited number of ranks.
+        self.num_tasks_per_node = min(16, int(
+            cpu.info['num_cpus'] / cpu.info['num_cpus_per_core']))
         self.num_tasks = self.num_tasks_per_node
         self.job.launcher.options += ['-u']
 
@@ -433,13 +442,19 @@ class SlurmPrologEpilogCheck(rfm.RunOnlyRegressionTest):
     epilog_dir = '/etc/slurm/node_epilog.d/'
     prerun_cmds = [f'ln -s {kafka_logger} ./kafka_logger']
     test_files = []
-    for file in os.listdir(epilog_dir):
-        if os.path.isfile(os.path.join(epilog_dir, file)):
-            test_files.append(os.path.join(epilog_dir, file))
+    try:
+        for file in os.listdir(epilog_dir):
+            if os.path.isfile(os.path.join(epilog_dir, file)):
+                test_files.append(os.path.join(epilog_dir, file))
+    except PermissionError:
+        pass
 
-    for file in os.listdir(prolog_dir):
-        if os.path.isfile(os.path.join(prolog_dir, file)):
-            test_files.append(os.path.join(prolog_dir, file))
+    try:
+        for file in os.listdir(prolog_dir):
+            if os.path.isfile(os.path.join(prolog_dir, file)):
+                test_files.append(os.path.join(prolog_dir, file))
+    except PermissionError:
+        pass
 
     test_file = parameter(test_files)
     tags = {'vs-node-validator'}
@@ -533,7 +548,29 @@ class SlurmNoIsolCpus(rfm.RunOnlyRegressionTest):
 
     @sanity_function
     def validate(self):
-        return sn.assert_not_found(r'\bisolcpus=', self.stdout),
+        return sn.assert_not_found(r'\bisolcpus=', self.stdout)
+
+
+@rfm.simple_test
+class SlurmNoUvmPerfAccessCounterMigration(rfm.RunOnlyRegressionTest):
+    valid_systems = ['+remote +scontrol +nvgpu']
+    valid_prog_environs = ['builtin']
+    maintainers = ['msimberg', 'SSA']
+    descr = '''
+    Check that uvm_perf_access_counter_mimc_migration_enable is set to 0
+    as it is buggy in older drivers.
+    '''
+    time_limit = '1m'
+    num_tasks_per_node = 1
+    sourcesdir = None
+    executable = 'cat'
+    executable_opts = [('/sys/module/nvidia_uvm/parameters/'
+                        'uvm_perf_access_counter_mimc_migration_enable')]    
+    tags = {'production', 'maintenance', 'slurm'}
+
+    @sanity_function
+    def validate(self):
+        return sn.assert_found(r'0', self.stdout)
 
 
 @rfm.simple_test
@@ -564,11 +601,20 @@ class SlurmGPUGresTest(SlurmSimpleBaseCheck):
         gpu_count = self.current_partition.select_devices('gpu')[0].num_devices
         part_re = rf'Partitions=\S*{partition_name}'
         gres_re = rf'gres/gpu={gpu_count} '
-        node_count = sn.count(sn.extractall(part_re, self.stdout))
-        gres_count = sn.count(
-            sn.extractall(rf'{part_re}.*{gres_re}', self.stdout))
-        return sn.assert_eq(
-            node_count, gres_count,
-            f'{gres_count}/{node_count} of '
-            f'{partition_name} nodes satisfy {gres_re}'
+        node_re = r'NodeName=(\S+)'
+
+        all_nodes = sn.evaluate(
+            sn.extractall(rf'{node_re}.*{part_re}', self.stdout, 1)
+        )
+        good_nodes = sn.evaluate(
+            sn.extractall(rf'{node_re}.*{part_re}.*{gres_re}',
+                          self.stdout, 1)
+        )
+        bad_nodes = ','.join(sorted(set(all_nodes) - set(good_nodes)))
+
+        return sn.assert_true(
+            len(bad_nodes) == 0,
+            msg=(f'{len(good_nodes)}/{len(all_nodes)} of '
+                 f'{partition_name} nodes satisfy {gres_re}. Bad nodes: '
+                 f'{bad_nodes}')
         )

@@ -11,7 +11,7 @@ import reframe.utility.typecheck as typ
 from reframe.core.exceptions import EnvironError
 
 
-class ContainerEngineMixin(rfm.RegressionMixin):
+class ContainerEngineMixin(rfm.RegressionTestPlugin):
     #: The container image to use.
     #:
     #: :default: ``required``
@@ -73,7 +73,7 @@ class ContainerEngineMixin(rfm.RegressionMixin):
         self.job.launcher.options += [f'--environment={self.env_file}']
 
 
-class ContainerEngineCPEMixin(rfm.RegressionMixin):
+class ContainerEngineCPEMixin(rfm.RegressionTestPlugin):
     @run_after('setup')
     def set_container_mounts(self):
        current_environ = self.current_environ
