@@ -79,7 +79,7 @@ class QeBuildTestUENV(rfm.CompileOnlyRegressionTest):
     maintainers = ['simonpi', 'antonk', 'SSA']
     qe_sources = fixture(qe_download, scope="environment")
     build_locally = False
-    tags = {"uenv"}
+    tags = {"uenv", "maintenance"}
     build_time_limit = "0d0h30m0s"
     pwx_executable = None
 
@@ -213,7 +213,7 @@ class QeCheckAuSurfCustomExecUENV(QeCheckAuSurfUENV):
     """
 
     valid_prog_environs = ["+qe-dev"]
-    tags = {"uenv"}
+    tags = {"uenv", "maintenance"}
 
     @run_after("init")
     def setup_dependency(self):

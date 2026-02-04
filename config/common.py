@@ -208,6 +208,7 @@ site_configuration = {
                '-Sstrict_check=1',
                '--report-file=$PWD/latest.json',
                '-c checks',
+               '--tag=maintenance|production',
                "-p '(?!PrgEnv-.*|builtin)'",
            ]
         },
