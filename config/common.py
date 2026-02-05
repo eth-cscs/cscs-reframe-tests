@@ -160,7 +160,7 @@ site_configuration = {
                 f'-c {reframe_dir}/cscs-reframe-tests.git/checks/microbenchmarks/cpu_gpu/node_burn/node-burn-ce.py',  # noqa: E501
                 '-S nb_duration=300',
                 '-S flexible=True',
-                '--flex-alloc-nodes=all',
+                '--flex-alloc-nodes=avail',
                 '--exec-policy=serial',
                 f'--prefix={os.getenv("TARGET_DIR") if target_dir_var_exists else target_dir_base + "/veto"}',  # noqa: E501
                 f'--output={os.getenv("TARGET_DIR") if target_dir_var_exists else target_dir_base + "/veto"}',  # noqa: E501
