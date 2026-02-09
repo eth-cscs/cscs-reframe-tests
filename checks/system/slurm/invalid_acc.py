@@ -18,7 +18,7 @@ class InvalidAccount(rfm.RunOnlyRegressionTest):
     executable = 'srun'
     executable_opts = [
         '--account=abcd1234', 'echo', 'this job should never start']
-    tags = {'production', 'maintenance'}
+    tags = {'production', 'maintenance', 'slurm'}
     maintainers = ['VCUE', 'perettig']
 
     @run_before('setup')
