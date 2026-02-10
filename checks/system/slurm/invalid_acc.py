@@ -11,6 +11,8 @@ import reframe.utility.sanity as sn
 
 @rfm.simple_test
 class InvalidAccount(rfm.RunOnlyRegressionTest):
+    descr = '''Check if Slurm accepts job submission using an invalid
+        account. Reframe should raise a failure if the job starts.'''
     valid_systems = ['-remote']
     valid_prog_environs = ['+builtin']
     local = True
