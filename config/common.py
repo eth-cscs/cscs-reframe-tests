@@ -160,8 +160,8 @@ site_configuration = {
                 f'-c {reframe_dir}/cscs-reframe-tests.git/checks/microbenchmarks/cpu_gpu/node_burn/node-burn-ce.py',  # noqa: E501
                 '-S nb_duration=300',
                 '-S flexible=True',
-                '--flex-alloc-nodes=all',
-                '--exec-policy=serial'
+                '--flex-alloc-nodes=avail',
+                '--exec-policy=serial',
                 f'--prefix={os.getenv("TARGET_DIR") if target_dir_var_exists else target_dir_base + "/veto"}',  # noqa: E501
                 f'--output={os.getenv("TARGET_DIR") if target_dir_var_exists else target_dir_base + "/veto"}',  # noqa: E501
                 '--timestamp=%F_%H-%M-%S'
@@ -208,6 +208,7 @@ site_configuration = {
                '-Sstrict_check=1',
                '--report-file=$PWD/latest.json',
                '-c checks',
+               '--tag=maintenance|production',
                "-p '(?!PrgEnv-.*|builtin)'",
            ]
         },
