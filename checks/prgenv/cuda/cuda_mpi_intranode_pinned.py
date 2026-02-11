@@ -39,7 +39,7 @@ class MPIIntranodePinned(rfm.RegressionTest):
 
     @performance_function('s')
     def time_value(self):
-        regex = r'\[0:1]\s*time:\s*(?P<sec>\S+)'
+        regex = r'\[1:4]\s*time:\s*(?P<sec>\S+)'
         return sn.extractsingle(regex, self.stdout, 'sec', float)
 
     @run_after('init')
