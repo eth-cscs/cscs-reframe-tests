@@ -15,7 +15,7 @@ class MPIIntranodePinned(rfm.RegressionTest):
         '1',
         '2',
         'host',
-        str(1 << 27)   # expands $((1 << 27))
+        str(1 << 27)  
     ]
 
     @run_after('setup')
