@@ -11,7 +11,7 @@ import reframe.utility.sanity as sn
 class MPIIntranodePinned(rfm.RegressionTest):
     descr = 'Reproducer for slow intranode performance with pinned memory'
     valid_systems = ['+remote +nvgpu']
-    valid_prog_environs = ['+uenv -ce']
+    valid_prog_environs = ['+uenv +prgenv -ce']
     sourcesdir = 'https://github.com/eth-cscs/alps-gh200-reproducers.git'
     prebuild_cmds = ['cd intranode-pinned-host-comm']
     prerun_cmds = ['cd intranode-pinned-host-comm']
