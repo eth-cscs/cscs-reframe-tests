@@ -50,7 +50,8 @@ class MPIIntranodePinned(rfm.RegressionTest):
             '*': {
                 # Reference value as suggested by @msimberg
                 # based on the non-pinned test case performance
-                'time_value': xfail('aa', (0.003, None, 0.15, 's'))
+                'time_value': xfail('Known issue for pinned memory', 
+                                    (0.003, None, 0.15, 's'))
             }
         }
         else:
