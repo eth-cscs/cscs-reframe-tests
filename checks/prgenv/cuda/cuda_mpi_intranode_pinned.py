@@ -46,18 +46,9 @@ class MPIIntranodePinned(rfm.RegressionTest):
 
     @run_after('init')
     def set_reference(self):
-        if self.mem == 'pinned_host':
-            self.reference = {
-            '*': {
-                # Reference value as suggested by @msimberg
-                # based on the non-pinned test case performance
-                'time_value': xfail('Known issue for pinned memory', 
-                                    (0.003, None, 0.15, 's'))
-            }
+        self.reference = {
+            "*": ({"time_value": xfail("Known issue with pinned memory",
+                                       (0.003, None, 0.15, "s"))}
+                  if self.mem == "pinned_host"
+                  else {"time_value": (0.003, None, 0.15, "s")})
         }
-        else:
-            self.reference = {
-            '*': {
-                'time_value': (0.003, None, 0.15, 's')
-            }
-        }   
