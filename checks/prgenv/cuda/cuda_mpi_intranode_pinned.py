@@ -30,12 +30,20 @@ class MPIIntranodePinned(rfm.RegressionTest, UenvSlurmMpiOptionsMixin):
     maintainers = ['SSA', 'VCUE', 'msimberg', 'perettig']
     executable = 'intranode_pinned_host_comm'
     mem = parameter(['host', 'pinned_host'])
+    # This has no effect with OpenMPI
+    mpich_smp_single_copy_mode = parameter(['CMA', 'XPMEM'])
 
     @run_after('setup')
     def setup_job(self):
         self.num_tasks = 2
         self.num_tasks_per_node = 2
         self.job.launcher.options += ['--cpu-bind=sockets']
+        self.env_vars['MPICH_SMP_SINGLE_COPY_MODE'] = self.mpich_smp_single_copy_mode
+	# Always disabled GPU support to avoid Cray MPICH's fallback to CMA
+	# when GPU support is enabled (XPMEM is the default if GPU support is
+	# disabled). Some clusters set MPICH_GPU_SUPPORT_ENABLED=1 and some
+	# leave it unset.
+        self.env_vars['MPICH_GPU_SUPPORT_ENABLED'] = '0'
 
     @run_before('run')
     def set_exe_opts(self):
@@ -50,11 +58,12 @@ class MPIIntranodePinned(rfm.RegressionTest, UenvSlurmMpiOptionsMixin):
         regex = r'\[1:4]\s*time:\s*(?P<sec>\S+)'
         return sn.extractsingle(regex, self.stdout, 'sec', float)
 
-    @run_after('init')
+    @run_after('setup')
     def set_reference(self):
-        self.reference = {
-            "*": ({"time_value": xfail("Known issue with pinned memory",
-                                       (0.003, None, 0.15, "s"))}
-                  if self.mem == "pinned_host"
-                  else {"time_value": (0.003, None, 0.15, "s")})
-        }
+        if "openmpi" in self.current_environ.features:
+            ref = (0.056, None, 0.15, "s")
+        elif self.mem == "pinned_host" or self.mpich_smp_single_copy_mode == "XPMEM":
+            ref = xfail("Known issue with pinned memory", (0.003, None, 0.15, "s"))
+        else:
+            ref = (0.003, None, 0.15, "s")
+        self.reference = {"*": {"time_value": ref}}
