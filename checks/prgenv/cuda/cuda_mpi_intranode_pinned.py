@@ -3,14 +3,20 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
+import pathlib
+import sys
+
 import reframe as rfm
 import reframe.utility.sanity as sn
 
 from reframe.core.builtins import xfail
 
+sys.path.append(str(pathlib.Path(__file__).parent.parent.parent / 'mixins'))
+from uenv_slurm_mpi_options import UenvSlurmMpiOptionsMixin
+
 
 @rfm.simple_test
-class MPIIntranodePinned(rfm.RegressionTest):
+class MPIIntranodePinned(rfm.RegressionTest, UenvSlurmMpiOptionsMixin):
     descr = 'Reproducer for slow intranode performance with pinned memory'
     valid_systems = ['+remote +nvgpu']
     valid_prog_environs = ['+uenv +prgenv -ce']
