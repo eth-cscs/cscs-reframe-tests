@@ -4,8 +4,9 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import reframe as rfm
-from reframe.core.builtins import xfail
 import reframe.utility.sanity as sn
+
+from reframe.core.builtins import xfail
 
 
 @rfm.simple_test
