@@ -141,7 +141,7 @@ class VaspBuildTestUENV(rfm.CompileOnlyRegressionTest):
             self.skip(f'No makefile for uarch {self.uarch}')
 
         vasp_download_cmd = (
-            f'curl --retry 5 '
+            f'curl -L --retry 5 '
             f'-u ${{CSCS_REGISTRY_USERNAME}}:${{CSCS_REGISTRY_PASSWORD}} '
             '-X GET https://jfrog.svc.cscs.ch/artifactory'
             f'/uenv-sources/vasp/vasp-{self.version}.tar.bz2 '
