@@ -7,7 +7,6 @@
 # ReFrame CSCS settings
 #
 
-
 import os
 
 site_configuration = {
@@ -26,12 +25,7 @@ site_configuration = {
                     'time_limit': '10m',
                     'environs': [
                         'builtin',
-                        # 'PrgEnv-cray',
-                        # 'PrgEnv-gnu',
                         # 'PrgEnv-ce',
-                        # FIXME: Problem loading the following environments
-                        # 'PrgEnv-nvidia',
-                        # 'PrgEnv-nvhpc'
                     ],
                     'max_jobs': 100,
                     'extras': {
