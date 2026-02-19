@@ -9,6 +9,7 @@ import os
 import reframe as rfm
 import reframe.utility.sanity as sn
 import json
+import sys
 
 # ---------------------------------------------------------------------------
 #                READ THE CONFIGURATION FROM THE YAML FILES
@@ -16,6 +17,8 @@ import json
 #                structure of the V-Clusters config files
 # ---------------------------------------------------------------------------
 
+# Add the current directory to sys.path to ensure local imports work
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 system_data_file = "cluster_data.json"
 
 # Read the extracted info from the json file
