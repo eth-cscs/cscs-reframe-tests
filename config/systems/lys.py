@@ -13,6 +13,7 @@ import os
 base_config = {
     'modules_system': 'lmod',
     'resourcesdir': '/vast/scratch/firecr02/reframe/resources',
+    'topology_prefix': '/opt/reframe/reframe-workdir',
     'partitions': [        
         {
             'name': 'normal',
