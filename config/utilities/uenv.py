@@ -132,7 +132,7 @@ def _get_uenvs():
                 )
 
             # Replace characters that create problems in environment names
-            uenv_name_pretty = uenv_name.replace(":", "_").replace("/", "_")
+            uenv_name_pretty = uenv_name.replace(":", "_").replace("/", "_").replace("%", "_")
             env['name'] = f'{uenv_name_pretty}_{k}'
             env['resources'] = {
                 'uenv': {

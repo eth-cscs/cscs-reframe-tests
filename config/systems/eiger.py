@@ -97,19 +97,4 @@ site_configuration = {
              }
         },
     ],
-    'modes': [
-        {
-            'name': 'production',
-            'options': [
-                '--exec-policy=async',
-                '-Sstrict_check=1',
-                '--prefix=$SCRATCH/regression/production',
-                '--report-file=$SCRATCH/regression/production/reports/prod_report_{sessionid}.json',
-                '--save-log-files',
-                '--tag=production',
-                '--timestamp=%F_%H-%M-%S'
-            ],
-            'target_systems': ['eiger'],
-        },
-    ]
 }

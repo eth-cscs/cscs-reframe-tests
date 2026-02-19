@@ -126,7 +126,7 @@ class Cp2kBuildTestUENV(rfm.CompileOnlyRegressionTest):
     maintainers = ['tmathieu', 'romeli', 'abussy', 'simbergm', 'SSA']
     cp2k_sources = fixture(cp2k_download, scope='test')
     build_locally = False
-    tags = {'uenv'}
+    tags = {'uenv', 'maintenance'}
 
     @run_before('compile')
     def prepare_build(self):
@@ -290,7 +290,7 @@ class Cp2kCheckMD_UENVCustomExec(Cp2kCheckMD_UENV):
     '''
 
     valid_prog_environs = ['+cp2k-dev -dlaf']
-    tags = {'uenv'}
+    tags = {'uenv', 'maintenance'}
 
     @run_after('init')
     def setup_dependency(self):
@@ -345,7 +345,7 @@ class Cp2kCheckPBE_UENVCustomExec(Cp2kCheckPBE_UENV):
     '''
 
     valid_prog_environs = ['+cp2k-dev -dlaf']
-    tags = {'uenv'}
+    tags = {'uenv', 'maintenance'}
 
     @run_after('init')
     def setup_dependency(self):

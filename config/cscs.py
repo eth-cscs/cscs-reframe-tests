@@ -45,6 +45,15 @@ for c in system_configs:
         site_configuration.setdefault(key, [])
         site_configuration[key] += val
 
+# Set the systems.partitions.sched_options.max_sacct_failures to a higher value
+# than the default of 3 for all partitions.
+for system in site_configuration['systems']:
+    for partition in system['partitions']:
+        sched_options = partition.get('sched_options', {})
+        if 'max_sacct_failures' not in sched_options:
+            sched_options['max_sacct_failures'] = 100
+        partition['sched_options'] = sched_options
+
 uenv_environs = uenv.UENV
 
 # If a system partition has the 'uenv' feature, replace the environment'
