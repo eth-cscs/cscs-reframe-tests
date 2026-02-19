@@ -91,9 +91,4 @@ site_configuration = {
     ],
     'environments': [        
     ],
-    'general': [
-        {
-            'topology_prefix': '/opt/reframe/reframe-workdir',
-        }
-    ],
 }
