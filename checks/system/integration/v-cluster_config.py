@@ -4,6 +4,9 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 from utils import *
+import sys
+import os
+
 
 # ---------------------------------------------------------------------------
 #                READ THE CONFIGURATION FROM THE YAML FILES
@@ -15,11 +18,9 @@ from utils import *
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from constants import *
-import os
 import reframe as rfm
 import reframe.utility.sanity as sn
 import json
-import sys
 
 
 system_data_file = "cluster_data.json"
