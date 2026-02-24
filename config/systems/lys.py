@@ -7,8 +7,6 @@
 # ReFrame CSCS settings
 #
 
-import os
-
 site_configuration = {
     'systems': [
          {
