@@ -12,8 +12,8 @@ from uenv import uarch
 @rfm.simple_test
 class CoralGemm(rfm.RegressionTest):
     descr = 'AMD CoralGemm test'
-    valid_systems = ['+amdgpu +uenv', '+nvgpu +uenv']
-    valid_prog_environs = ['+uenv +prgenv +rocm', '+uenv +prgenv +cuda']
+    valid_systems = ['+amdgpu +uenv']
+    valid_prog_environs = ['+uenv +prgenv +rocm']
     maintainers = ['SSA']
     sourcesdir = None
     build_system = 'CMake'
