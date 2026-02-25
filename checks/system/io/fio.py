@@ -105,7 +105,7 @@ class stuck_gpu_mem_test(rfm.RunOnlyRegressionTest):
     """
 
     valid_prog_environs = ["builtin"]
-    valid_systems = ["+remote"]
+    valid_systems = ["+remote +nvgpu"]
     descr = "Check for stuck GPU memory on GH200"
     tags = {"maintenance"}
     maintainers = ["VCUE", "gppezzi"]
