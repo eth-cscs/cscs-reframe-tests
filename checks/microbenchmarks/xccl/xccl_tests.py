@@ -167,7 +167,7 @@ class NCCLTestsCE(XCCLTestsBaseCE):
 class NCCLTestsUENV(XCCLTestsBaseUENV):
     descr = 'Point-to-Point and All-Reduce NCCL tests with uenv'
     valid_systems = ['+nvgpu']
-    valid_prog_environs = ['+uenv +prgenv +nccl-tests']
+    valid_prog_environs = ['+uenv +nccl-tests']
 
     @run_after('setup')
     def set_env_vars(self):
@@ -215,7 +215,7 @@ def _set_rccl_uenv_env_vars(env_vars):
 class RCCLTestsUENV(XCCLTestsBaseUENV):
     descr = 'Point-to-Point and All-Reduce RCCL tests with uenv'
     valid_systems = ['+amdgpu']
-    valid_prog_environs = ['+uenv +prgenv +rccl-tests']
+    valid_prog_environs = ['+uenv +rccl-tests']
 
     @run_after('setup')
     def set_env_vars(self):
