@@ -120,6 +120,7 @@ site_configuration = {
             'options': [
                 '-Sstrict_check=1',
                 f'-c {reframe_dir}/cscs-reframe-tests.git/checks',
+                '--max-retries=1',
                 '--failure-stats',
                 '--tag=maintenance|production',
                 '-p \'(?!PrgEnv-ce)\'',
@@ -133,6 +134,7 @@ site_configuration = {
             'options': [
                 '-Sstrict_check=1',
                 f'-c {reframe_dir}/cscs-reframe-tests.git/checks',
+                '--max-retries=1',
                 '--failure-stats',
                 '--tag=production',
                 '-p \'(?!PrgEnv-ce)\'',
@@ -206,6 +208,7 @@ site_configuration = {
            'name': 'uenv_deployment',
            'options': [
                '-Sstrict_check=1',
+               '--max-retries=1',
                '--report-file=$PWD/latest.json',
                '-c checks',
                '--tag=maintenance|production',
