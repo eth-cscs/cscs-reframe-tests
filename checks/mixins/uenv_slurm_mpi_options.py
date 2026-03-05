@@ -32,6 +32,8 @@ class UenvSlurmMpiOptionsMixin(rfm.RegressionTestPlugin):
             )
         elif "cray-mpich" in features:
             self.job.launcher.options += ['--mpi=cray_shasta']
+        elif "mpich" in features:
+            self.job.launcher.options += ['--mpi=pmi2']
         else:
             # Assume cray-mpich is used if nothing is specified.
             self.job.launcher.options += ['--mpi=cray_shasta']
