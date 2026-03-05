@@ -9,7 +9,7 @@ import json
 import os
 
 import reframe.core.launchers.mpi as mpi
-import reframe.utility.osext as osext
+# import reframe.utility.osext as osext
 
 
 @mpi.register_launcher('squashfs-run')
