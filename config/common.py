@@ -120,6 +120,7 @@ site_configuration = {
             'options': [
                 '-Sstrict_check=1',
                 f'-c {reframe_dir}/cscs-reframe-tests.git/checks',
+                '--max-retries=1',
                 '--failure-stats',
                 '--tag=maintenance|production',
                 '-p \'(?!PrgEnv-ce)\'',
@@ -133,6 +134,7 @@ site_configuration = {
             'options': [
                 '-Sstrict_check=1',
                 f'-c {reframe_dir}/cscs-reframe-tests.git/checks',
+                '--max-retries=1',
                 '--failure-stats',
                 '--tag=production',
                 '-p \'(?!PrgEnv-ce)\'',
@@ -146,6 +148,7 @@ site_configuration = {
             'options': [
                 '-Sstrict_check=1',
                 f'-c {reframe_dir}/cscs-reframe-tests.git/checks/microbenchmarks/cpu_gpu/node_burn/node-burn-ce.py',  # noqa: E501
+                '--max-retries=1',
                 '-S nb_duration=300',
                 '--distribute=all',
                 f'--prefix={os.getenv("TARGET_DIR") if target_dir_var_exists else target_dir_base + "/veto"}',  # noqa: E501
@@ -158,6 +161,7 @@ site_configuration = {
             'options': [
                 '-Sstrict_check=1',
                 f'-c {reframe_dir}/cscs-reframe-tests.git/checks/microbenchmarks/cpu_gpu/node_burn/node-burn-ce.py',  # noqa: E501
+                '--max-retries=1',
                 '-S nb_duration=300',
                 '-S flexible=True',
                 '--flex-alloc-nodes=avail',
@@ -206,6 +210,7 @@ site_configuration = {
            'name': 'uenv_deployment',
            'options': [
                '-Sstrict_check=1',
+               '--max-retries=1',
                '--report-file=$PWD/latest.json',
                '-c checks',
                '--tag=maintenance|production',
