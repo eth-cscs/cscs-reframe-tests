@@ -18,7 +18,7 @@ base_config = {
                 'builtin',
             ],
             'descr': 'Login nodes',
-            'max_jobs': 4,
+            'max_jobs': 20,
             'launcher': 'local'
         },
         {
@@ -31,7 +31,7 @@ base_config = {
             'environs': [
                 'builtin',
             ],
-            'max_jobs': 100,
+            'max_jobs': 1000,
             'extras': {
                 'cn_memory': 501,
             },
@@ -70,7 +70,7 @@ base_config = {
             'environs': [
                 'builtin',
             ],
-            'max_jobs': 100,
+            'max_jobs': 1000,
             'extras': {
                 'cn_memory': 503,
             },

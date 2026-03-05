@@ -26,7 +26,7 @@ base_config = {
                 # 'PrgEnv-nvhpc'
             ],
             'descr': 'Login nodes',
-            'max_jobs': 4,
+            'max_jobs': 20,
             'launcher': 'local'
         },
         {
@@ -43,7 +43,7 @@ base_config = {
                 # 'PrgEnv-nvidia',
                 # 'PrgEnv-nvhpc'
             ],
-            'max_jobs': 100,
+            'max_jobs': 1000,
             'extras': {
                 'cn_memory': 854,
             },

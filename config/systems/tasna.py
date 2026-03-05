@@ -25,7 +25,7 @@ site_configuration = {
                         'remote', 'uenv',
                     ],
                     'descr': 'Login nodes',
-                    'max_jobs': 4,
+                    'max_jobs': 20,
                     'launcher': 'local'
                 },
                 {
@@ -36,11 +36,11 @@ site_configuration = {
                         'builtin',
                     ],
                     'container_platforms': [
-                        { 
+                        {
                              'type': 'Sarus',
                         },
                     ],
-                    'max_jobs': 100,
+                    'max_jobs': 1000,
                     'access': ['-pnormal'],
                     'resources': [
                         {
@@ -76,7 +76,7 @@ site_configuration = {
                     'environs': [
                         'builtin',
                     ],
-                    'max_jobs': 100,
+                    'max_jobs': 1000,
                     'access': ['-ppostproc'],
                     'resources': [
                         {
