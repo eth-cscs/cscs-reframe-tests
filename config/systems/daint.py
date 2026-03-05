@@ -45,7 +45,7 @@ base_config = {
             ],
             'max_jobs': 100,
             'extras': {
-                'cn_memory': 825,
+                'cn_memory': 854,
             },
             'features': [
                 'ce', 'gpu', 'nvgpu', 'remote', 'scontrol', 'uenv',

@@ -241,10 +241,20 @@ class MemoryOverconsumptionCheckMPI(SlurmCompiledBaseCheck,
 
     @run_before('performance')
     def set_reference_from_config_systems_file(self):
-        reference_mem = self.current_partition.extras['cn_memory'] - 3
+        """
+                    ref-1%< ref <ref+1%
+        eiger:         498< 503 <508
+        beverin/mi200: 498< 503 <508
+        beverin/mi300: 496< 501 <506
+        daint:         845< 854 <863
+        clariden:      514< 519 <524 # grep MaxMemPerNode /etc/slurm/slurm.conf
+        santis:        845< 854 <863
+        starlex:       847< 856 <865
+        """
+        reference_mem = self.current_partition.extras['cn_memory']
         self.reference = {
             '*': {
-                'cn_max_allocated_memory': (reference_mem, -0.10, None, 'GB'),
+                'cn_max_allocated_memory': (reference_mem, -0.01, 0.01, 'GB'),
             }
         }
 
