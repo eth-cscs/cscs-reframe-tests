@@ -43,7 +43,7 @@ base_config = {
                 # 'PrgEnv-nvidia',
                 # 'PrgEnv-nvhpc'
             ],
-            'max_jobs': 100,
+            'max_jobs': 1000,
             'extras': {
                 'cn_memory': 825,
             },

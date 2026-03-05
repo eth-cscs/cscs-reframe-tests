@@ -40,7 +40,7 @@ site_configuration = {
                         'builtin',
                         'PrgEnv-ce',
                     ],
-                    'max_jobs': 100,
+                    'max_jobs': 1000,
                     'extras': {
                         'cn_memory': 256,
                     },
