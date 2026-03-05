@@ -21,7 +21,7 @@ base_config = {
                 'builtin',
             ],
             'descr': 'Login nodes',
-            'max_jobs': 4,
+            'max_jobs': 20,
             'launcher': 'local'
         },
         {
