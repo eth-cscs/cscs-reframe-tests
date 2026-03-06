@@ -199,8 +199,8 @@ class MemoryOverconsumptionCheck(SlurmCompiledBaseCheck):
 @rfm.simple_test
 class MemoryOverconsumptionCheckMPI(SlurmCompiledBaseCheck,
                                     UenvSlurmMpiOptionsMixin):
-    # TODO: maintainers = ['@jgphpc', '@ekouts']
-    descr = 'Tests for max allocatable memory'
+    descr = 'Testing max "allocatable" memory'
+    maintainers = ['SSA', 'VCUE', '@jgphpc', '@ekouts']
     valid_systems = ['+remote']
     valid_prog_environs = ['+uenv -cpe +prgenv +mpi']
     time_limit = '4m'
@@ -243,7 +243,7 @@ class MemoryOverconsumptionCheckMPI(SlurmCompiledBaseCheck,
     def set_reference_from_config_systems_file(self):
         """
                     ref-1%< ref <ref+1%
-        eiger:         498< 503 <508
+        eiger:         498< 503 <508 # std=256G, large=512G
         beverin/mi200: 498< 503 <508
         beverin/mi300: 496< 501 <506
         daint:         845< 854 <863
@@ -252,9 +252,11 @@ class MemoryOverconsumptionCheckMPI(SlurmCompiledBaseCheck,
         starlex:       847< 856 <865
         """
         reference_mem = self.current_partition.extras['cn_memory']
+        lower = None if self.current_system.name == 'eiger' else -0.01
+        upper = None if self.current_system.name == 'eiger' else 0.01
         self.reference = {
             '*': {
-                'cn_max_allocated_memory': (reference_mem, -0.01, 0.01, 'GB'),
+                'cn_max_allocated_memory': (reference_mem, lower, upper, 'GB')
             }
         }
 
@@ -522,7 +524,7 @@ class SlurmTransparentHugepagesCheck(rfm.RunOnlyRegressionTest):
 class SlurmParanoidCheck(rfm.RunOnlyRegressionTest):
     valid_systems = ['+remote +scontrol']
     valid_prog_environs = ['builtin']
-    maintainers = ['piccinal', 'PA']
+    maintainers = ['PA', '@jgphpc']
     descr = (
         'Check that perf_event_paranoid enables per-process and system wide'
         'performance monitoring')
@@ -575,7 +577,7 @@ class SlurmNoUvmPerfAccessCounterMigration(rfm.RunOnlyRegressionTest):
     sourcesdir = None
     executable = 'cat'
     executable_opts = [('/sys/module/nvidia_uvm/parameters/'
-                        'uvm_perf_access_counter_mimc_migration_enable')]    
+                        'uvm_perf_access_counter_mimc_migration_enable')]
     tags = {'production', 'maintenance', 'slurm'}
 
     @sanity_function
