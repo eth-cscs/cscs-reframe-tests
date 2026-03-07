@@ -200,7 +200,7 @@ class MemoryOverconsumptionCheck(SlurmCompiledBaseCheck):
 class MemoryOverconsumptionCheckMPI(SlurmCompiledBaseCheck,
                                     UenvSlurmMpiOptionsMixin):
     descr = 'Testing max "allocatable" memory'
-    maintainers = ['SSA', 'VCUE', '@jgphpc', '@ekouts']
+    maintainers = ['@jgphpc', '@ekouts']
     valid_systems = ['+remote']
     valid_prog_environs = ['+uenv -cpe +prgenv +mpi']
     time_limit = '4m'
@@ -243,7 +243,7 @@ class MemoryOverconsumptionCheckMPI(SlurmCompiledBaseCheck,
     def set_reference_from_config_systems_file(self):
         """
                     ref-1%< ref <ref+1%
-        eiger:         498< 503 <508 # std=256G, large=512G
+        eiger:         498< 503 <508 # 2 type of nodes: std=256G, large=512G
         beverin/mi200: 498< 503 <508
         beverin/mi300: 496< 501 <506
         daint:         845< 854 <863
@@ -252,11 +252,10 @@ class MemoryOverconsumptionCheckMPI(SlurmCompiledBaseCheck,
         starlex:       847< 856 <865
         """
         reference_mem = self.current_partition.extras['cn_memory']
-        lower = None if self.current_system.name == 'eiger' else -0.01
-        upper = None if self.current_system.name == 'eiger' else 0.01
+        lower = -0.51 if self.current_system.name == 'eiger' else -0.01
         self.reference = {
             '*': {
-                'cn_max_allocated_memory': (reference_mem, lower, upper, 'GB')
+                'cn_max_allocated_memory': (reference_mem, lower, 0.01, 'GB')
             }
         }
 
@@ -281,7 +280,6 @@ class slurm_response_check(rfm.RunOnlyRegressionTest):
     }
     executable = 'time -p'
     tags = {'diagnostic', 'health'}
-    # TODO: maintainers = ['CB', 'VH']
 
     @run_before('run')
     def set_exec_opts(self):
