@@ -243,13 +243,13 @@ class MemoryOverconsumptionCheckMPI(SlurmCompiledBaseCheck,
     def set_reference_from_config_systems_file(self):
         """
                     ref-1%< ref <ref+1%
-        eiger:         498< 503 <508 # 2 type of nodes: std=256G, large=512G
         beverin/mi200: 498< 503 <508
         beverin/mi300: 496< 501 <506
         daint:         845< 854 <863
         clariden:      514< 519 <524 # grep MaxMemPerNode /etc/slurm/slurm.conf
         santis:        845< 854 <863
         starlex:       847< 856 <865
+        and eiger is a special case with 2 type of nodes: std=256G, large=512G
         """
         reference_mem = self.current_partition.extras['cn_memory']
         lower = -0.51 if self.current_system.name == 'eiger' else -0.01
