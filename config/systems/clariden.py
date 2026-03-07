@@ -36,7 +36,7 @@ base_config = {
             ],
             'max_jobs': 1000,
             'extras': {
-                'cn_memory': 825,
+                'cn_memory': 519,
             },
             'features': ['ce', 'gpu', 'nvgpu', 'remote', 'scontrol', 'uenv', 'hugepages_slurm'],
             'access': [f'--account=a-{osext.osgroup()}'],

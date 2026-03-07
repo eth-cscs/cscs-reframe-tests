@@ -199,8 +199,8 @@ class MemoryOverconsumptionCheck(SlurmCompiledBaseCheck):
 @rfm.simple_test
 class MemoryOverconsumptionCheckMPI(SlurmCompiledBaseCheck,
                                     UenvSlurmMpiOptionsMixin):
-    # TODO: maintainers = ['@jgphpc', '@ekouts']
-    descr = 'Tests for max allocatable memory'
+    descr = 'Testing max "allocatable" memory'
+    maintainers = ['@jgphpc', '@ekouts']
     valid_systems = ['+remote']
     valid_prog_environs = ['+uenv -cpe +prgenv +mpi']
     time_limit = '4m'
@@ -241,10 +241,21 @@ class MemoryOverconsumptionCheckMPI(SlurmCompiledBaseCheck,
 
     @run_before('performance')
     def set_reference_from_config_systems_file(self):
-        reference_mem = self.current_partition.extras['cn_memory'] - 3
+        """
+                    ref-1%< ref <ref+1%
+        beverin/mi200: 498< 503 <508
+        beverin/mi300: 496< 501 <506
+        daint:         845< 854 <863
+        clariden:      514< 519 <524 # grep MaxMemPerNode /etc/slurm/slurm.conf
+        santis:        845< 854 <863
+        starlex:       847< 856 <865
+        and eiger is a special case with 2 type of nodes: std=256G, large=512G
+        """
+        reference_mem = self.current_partition.extras['cn_memory']
+        lower = -0.51 if self.current_system.name == 'eiger' else -0.01
         self.reference = {
             '*': {
-                'cn_max_allocated_memory': (reference_mem, -0.10, None, 'GB'),
+                'cn_max_allocated_memory': (reference_mem, lower, 0.01, 'GB')
             }
         }
 
@@ -269,7 +280,6 @@ class slurm_response_check(rfm.RunOnlyRegressionTest):
     }
     executable = 'time -p'
     tags = {'diagnostic', 'health'}
-    # TODO: maintainers = ['CB', 'VH']
 
     @run_before('run')
     def set_exec_opts(self):
@@ -512,7 +522,7 @@ class SlurmTransparentHugepagesCheck(rfm.RunOnlyRegressionTest):
 class SlurmParanoidCheck(rfm.RunOnlyRegressionTest):
     valid_systems = ['+remote +scontrol']
     valid_prog_environs = ['builtin']
-    maintainers = ['piccinal', 'PA']
+    maintainers = ['PA', '@jgphpc']
     descr = (
         'Check that perf_event_paranoid enables per-process and system wide'
         'performance monitoring')
@@ -565,7 +575,7 @@ class SlurmNoUvmPerfAccessCounterMigration(rfm.RunOnlyRegressionTest):
     sourcesdir = None
     executable = 'cat'
     executable_opts = [('/sys/module/nvidia_uvm/parameters/'
-                        'uvm_perf_access_counter_mimc_migration_enable')]    
+                        'uvm_perf_access_counter_mimc_migration_enable')]
     tags = {'production', 'maintenance', 'slurm'}
 
     @sanity_function
