@@ -76,7 +76,7 @@ class uenv_ascent_intro_cpp(rfm.RunOnlyRegressionTest):
     tags = {'uenv', 'production'}
     valid_systems = ['+uenv']
     valid_prog_environs = ['+uenv +ascent -cpe']
-    sourcesdir = None
+    sourcesdir = 'src'
     ascent_v = variable(str, value='0.9.5')
     time_limit = '2m'
     build_dir = fixture(uenv_ascent_intro_cpp_build, scope='environment')
@@ -127,8 +127,10 @@ class uenv_ascent_intro_cpp(rfm.RunOnlyRegressionTest):
                 f'python3 plot_binning_3d.py'
             ]
 
-        self.postrun_cmds += [f'file {self.png}',
-                              f'diff -s {self.png} {ref_dir}/{self.png}']
+        self.postrun_cmds += [
+            f'file {self.png}',
+            f'./png.sh {self.exe} {ref_dir}/{self.png} {self.png}'
+        ]
 
     @sanity_function
     def validate_test(self):
