@@ -3,10 +3,16 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
+import pathlib
 import os
+import sys
+
 import reframe as rfm
 import reframe.utility.sanity as sn
 from uenv import uarch
+
+sys.path.append(str(pathlib.Path(__file__).parent.parent.parent / 'mixins'))
+from uenv_slurm_mpi_options import UenvSlurmMpiOptionsMixin
 
 rochpl_references = {
     'mi200': {38400: 2.65e+04, 192000: 1.49e+05, 218880: 1.55e+05},
@@ -58,7 +64,7 @@ HPL.out      output file name (if any)
 """
 
 
-class RocHPL(rfm.RegressionTest):
+class RocHPL(rfm.RegressionTest, UenvSlurmMpiOptionsMixin):
     descr = 'AMD HPL (rocHPL) test'
     valid_systems = ['+amdgpu +uenv']
     valid_prog_environs = ['+uenv +prgenv +rocm']
@@ -110,7 +116,7 @@ class RocHPL(rfm.RegressionTest):
         self.num_cpus_per_task = config['cpus-per-task']
         self.ntasks_per_core = 2
         if self.uarch == 'mi200':
-            self.job.launcher.options = [(
+            self.job.launcher.options += [(
                 '--cpu-bind=mask_cpu:'
                 'ff00000000000000ff000000000000,'
                 'ff00000000000000ff00000000000000,'
@@ -121,13 +127,13 @@ class RocHPL(rfm.RegressionTest):
                 'ff00000000000000ff00000000,'
                 'ff00000000000000ff0000000000')]
         else:
-            self.job.launcher.options = ['--cpu-bind=cores']
+            self.job.launcher.options += ['--cpu-bind=cores']
 
         # env variables
         self.env_vars['MPICH_GPU_SUPPORT_ENABLED'] = '1'
         self.env_vars['OMP_PROC_BIND'] = 'true'
         self.env_vars['OMP_NUM_THREADS'] = \
-            f'{self.num_cpus_per_task / self.ntasks_per_core}'
+            f'{int(self.num_cpus_per_task / self.ntasks_per_core)}'
 
         # executable options
         if self.uarch == 'mi200':
