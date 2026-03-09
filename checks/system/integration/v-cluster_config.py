@@ -4,17 +4,24 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 from utils import *
-from constants import *
+import sys
 import os
-import reframe as rfm
-import reframe.utility.sanity as sn
-import json
+
 
 # ---------------------------------------------------------------------------
 #                READ THE CONFIGURATION FROM THE YAML FILES
 #                This part should be modified for the final
 #                structure of the V-Clusters config files
 # ---------------------------------------------------------------------------
+
+# Add the current directory to sys.path to ensure local imports work
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+from constants import *
+import reframe as rfm
+import reframe.utility.sanity as sn
+import json
+
 
 system_data_file = "cluster_data.json"
 
