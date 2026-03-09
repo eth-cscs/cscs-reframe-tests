@@ -7,6 +7,7 @@
 #
 
 import os
+import reframe.utility.osext as osext
 
 reframe_dir = os.getenv(
     'REFRAME_DIR',
@@ -35,7 +36,7 @@ site_configuration = {
                         'builtin',
                     ],
                     'descr': 'Login nodes',
-                    'max_jobs': 4,
+                    'max_jobs': 20,
                     'launcher': 'local'
                 },
                 {
@@ -45,9 +46,9 @@ site_configuration = {
                     'environs': [
                         'builtin',
                     ],
-                    'max_jobs': 100,
+                    'max_jobs': 1000,
                     'extras': {
-                        'cn_memory': 850,
+                        'cn_memory': 856,
                     },
                     'resources': [
                         {
@@ -61,6 +62,7 @@ site_configuration = {
                     ],
                     'features': ['ce', 'gpu', 'nvgpu', 'remote', 'scontrol',
                                  'uenv', 'hugepages_slurm'],
+                    'access': [f'--account={osext.osgroup()}'],
                     'devices': [
                         {
                             'type': 'gpu',

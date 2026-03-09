@@ -15,7 +15,7 @@ site_configuration = {
             'hostnames': ['lys'],
             'modules_system': 'lmod',
             'resourcesdir': '/vast/scratch/firecr02/reframe/resources',
-            'partitions': [        
+            'partitions': [
                 {
                     'name': 'normal',
                     'descr': 'GH200',
@@ -25,7 +25,7 @@ site_configuration = {
                         'builtin',
                         # 'PrgEnv-ce',
                     ],
-                    'max_jobs': 100,
+                    'max_jobs': 1000,
                     'extras': {
                         'cn_memory': 825,
                     },
@@ -81,6 +81,6 @@ site_configuration = {
             ]
         },
     ],
-    'environments': [        
+    'environments': [
     ],
 }

@@ -18,7 +18,7 @@ base_config = {
                 'builtin',
             ],
             'descr': 'Login nodes',
-            'max_jobs': 4,
+            'max_jobs': 20,
             'launcher': 'local'
         },
         {
@@ -31,9 +31,9 @@ base_config = {
             'environs': [
                 'builtin',
             ],
-            'max_jobs': 100,
+            'max_jobs': 1000,
             'extras': {
-                'cn_memory': 500,
+                'cn_memory': 501,
             },
             'features': ['ce', 'gpu', 'amdgpu', 'remote', 'scontrol', 'uenv'],
             'access': ['-pmi300'],
@@ -70,9 +70,9 @@ base_config = {
             'environs': [
                 'builtin',
             ],
-            'max_jobs': 100,
+            'max_jobs': 1000,
             'extras': {
-                'cn_memory': 500,
+                'cn_memory': 503,
             },
             'features': ['ce', 'gpu', 'amdgpu', 'remote', 'scontrol', 'uenv'],
             'access': ['-pmi200'],

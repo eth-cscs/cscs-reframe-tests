@@ -9,7 +9,7 @@ import json
 import os
 
 import reframe.core.launchers.mpi as mpi
-import reframe.utility.osext as osext
+# import reframe.utility.osext as osext
 
 
 @mpi.register_launcher('squashfs-run')
@@ -50,7 +50,7 @@ site_configuration = {
                         'PrgEnv-nvidia'
                     ],
                     'descr': 'Login nodes',
-                    'max_jobs': 4,
+                    'max_jobs': 20,
                     'launcher': 'local',
                 },
                 {
