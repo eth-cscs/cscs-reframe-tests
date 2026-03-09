@@ -133,7 +133,7 @@ class RocHPL(rfm.RegressionTest, UenvSlurmMpiOptionsMixin):
         self.env_vars['MPICH_GPU_SUPPORT_ENABLED'] = '1'
         self.env_vars['OMP_PROC_BIND'] = 'true'
         self.env_vars['OMP_NUM_THREADS'] = \
-            f'{int(self.num_cpus_per_task / self.ntasks_per_core)}'
+            f'{self.num_cpus_per_task // self.ntasks_per_core}'
 
         # executable options
         if self.uarch == 'mi200':
