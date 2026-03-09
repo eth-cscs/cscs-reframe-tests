@@ -12,7 +12,7 @@ import reframe.utility.sanity as sn
 from uenv import uarch
 
 sys.path.append(str(pathlib.Path(__file__).parent.parent.parent / 'mixins'))
-from uenv_slurm_mpi_options import UenvSlurmMpiOptionsMixin
+from uenv_slurm_mpi_options import UenvSlurmMpiOptionsMixin  # noqa: E402
 
 rochpl_references = {
     'mi200': {38400: 2.65e+04, 192000: 1.49e+05, 218880: 1.55e+05},
