@@ -15,6 +15,7 @@ site_configuration = {
             'modules_system': 'nomod',
             'resourcesdir':
                 '/capstor/store/cscs/cscs/public/reframe/resources',
+            'max_local_jobs': 20,
             'partitions': [
                 {
                     'name': 'login',
