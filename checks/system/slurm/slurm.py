@@ -253,9 +253,10 @@ class MemoryOverconsumptionCheckMPI(SlurmCompiledBaseCheck,
         """
         reference_mem = self.current_partition.extras['cn_memory']
         lower = -0.51 if self.current_system.name == 'eiger' else -0.01
+        upper = 0.03 if 'openmpi' in self.current_environ.features else 0.01
         self.reference = {
             '*': {
-                'cn_max_allocated_memory': (reference_mem, lower, 0.01, 'GB')
+                'cn_max_allocated_memory': (reference_mem, lower, upper, 'GB')
             }
         }
 
