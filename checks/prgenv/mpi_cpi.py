@@ -6,7 +6,7 @@ import reframe.utility.sanity as sn
 class cpi_build_test(rfm.RegressionTest):
     descr = 'Simple mpi test'
     valid_systems = ['+remote']
-    valid_prog_environs = ['+uenv +mpi']
+    valid_prog_environs = ['+mpi']
     build_system = 'SingleSource'
     sourcepath = 'mpi_cpi/cpi.c'
     executable = './cpi.x'
@@ -20,3 +20,4 @@ class cpi_build_test(rfm.RegressionTest):
     @sanity_function
     def validate(self):
         return sn.assert_found(r'Error is 0.00000000', self.stdout)
+
