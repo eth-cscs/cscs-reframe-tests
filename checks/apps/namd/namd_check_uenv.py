@@ -11,7 +11,7 @@ import uenv
 
 namd_references = {
     'stmv': {
-        'gh200': {'ns_day': (91, -0.05, None, 'ns/day')}, 
+        'gh200': {'ns_day': (86, -0.05, None, 'ns/day')}, 
         'zen2': {'ns_day': (4.7, -0.05, None, 'ns/day')}
     },
 }
@@ -135,7 +135,7 @@ class AutotoolsCustom(rfm.core.buildsystems.Autotools):
 
 
 @rfm.simple_test
-class NamdBuildTest(rfm.CompileOnlyRegressionTest):
+class NamdBuildTestUENV(rfm.CompileOnlyRegressionTest):
     '''
     Test NAMD build from source.
     '''

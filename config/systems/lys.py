@@ -1,4 +1,5 @@
-# Copyright 2025 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+
+# Copyright 2024 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -6,45 +7,40 @@
 # ReFrame CSCS settings
 #
 
-import os
-
-import reframe.utility.osext as osext
-
-
 site_configuration = {
     'systems': [
-        {
-            'name': 'eiger',
-            'descr': 'Alps Eiger vcluster',
-            'hostnames': ['eiger'],
+         {
+            'name': 'lys',
+            'descr': 'Lys vcluster',
+            'hostnames': ['lys'],
             'modules_system': 'lmod',
-            'resourcesdir':
-                '/capstor/store/cscs/cscs/public/reframe/resources',
+            'resourcesdir': '/vast/scratch/firecr02/reframe/resources',
             'partitions': [
                 {
-                    'name': 'login',
-                    'scheduler': 'local',
-                    'time_limit': '10m',
-                    'environs': [
-                        'builtin',
-                    ],
-                    'descr': 'Login nodes',
-                    'max_jobs': 20,
-                    'launcher': 'local'
-                },
-                {
                     'name': 'normal',
+                    'descr': 'GH200',
                     'scheduler': 'slurm',
                     'time_limit': '10m',
                     'environs': [
                         'builtin',
-                        'PrgEnv-ce',
+                        # 'PrgEnv-ce',
                     ],
                     'max_jobs': 1000,
                     'extras': {
-                        'cn_memory': 503,
+                        'cn_memory': 825,
                     },
+                    'features': [
+                        'ce', 'gpu', 'nvgpu', 'remote', 'scontrol', 'uenv',
+                        'hugepages_slurm'],
                     'resources': [
+                        {
+                            'name': 'switches',
+                            'options': ['--switches={num_switches}']
+                        },
+                        {
+                            'name': 'gres',
+                            'options': ['--gres={gres}']
+                        },
                         {
                             'name': 'memory',
                             'options': ['--mem={mem_per_node}']
@@ -53,7 +49,7 @@ site_configuration = {
                             'name': 'cpe_ce_image',
                             'options': [
                                 '--container-image={image}',
-                             ]
+                            ]
                         },
                         {
                             'name': 'cpe_ce_mount',
@@ -64,37 +60,27 @@ site_configuration = {
                                 '--container-mounts={stagedir}/../../../,'  # split
                                 '{stagedir}:/rfm_workdir',
                                 '--container-workdir=/rfm_workdir'
-                             ]
+                            ]
                         },
                         {
                             'name': 'cpe_ce_extra_mounts',
                             'options': [
                                 '--container-mounts={mount}:{mount}',
-                             ]
+                            ]
                         }
                     ],
-                    'access': [f'--account={osext.osgroup()}'],
-                    'features': ['ce', 'remote', 'scontrol', 'uenv'],
-                    'launcher': 'srun'
+                    'devices': [
+                        {
+                            'type': 'gpu',
+                            'arch': 'sm_90',
+                            'num_devices': 4
+                        }
+                    ],
+                    'launcher': 'srun',
                 },
             ]
         },
     ],
     'environments': [
-        {
-            'name': 'PrgEnv-ce',
-            'features': [
-                'cpe', 'prgenv',
-                'serial', 'openmp', 'mpi', 'containerized_cpe'],
-            'resources': {
-                'cpe_ce_image': {
-                    'image':
-                        # Avoid interpretting '#' as a start of a comment
-                        os.environ.get(
-                            'CPE_CE', ''
-                        ).replace(r'#', r'\#')
-                }
-             }
-        },
     ],
 }
