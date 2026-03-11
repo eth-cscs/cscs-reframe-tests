@@ -78,7 +78,7 @@ class TorchHammerCEMultiGPU(TorchHammerBase, ContainerEngineMixin):
     tags = {'gpu', 'multi-gpu', 'parallel'}
     
     num_gpus = variable(int, value=4)
-    time_limit = '1h'
+    time_limit = '10m'
     valid_prog_environs = ['builtin']
     
     @run_after('init')
