@@ -6,7 +6,7 @@ import reframe.utility.sanity as sn
 class cpi_build_test(rfm.RegressionTest):
     descr = 'Simple mpi test'
     valid_systems = ['+remote']
-    valid_prog_environs = ['+mpi']
+    valid_prog_environs = ['+uenv +mpi']
     build_system = 'SingleSource'
     sourcepath = 'mpi_cpi/cpi.c'
     executable = './cpi.x'
