@@ -25,7 +25,6 @@ RUN git clone https://github.com/NVIDIA/nccl-tests.git && \
 
 FROM docker.io/nvidia/cuda:12.9.1-runtime-ubuntu24.04
 
-# TODO
 RUN apt update && \
     apt install -y libhwloc15 libopenmpi3 && \
     apt clean && \
