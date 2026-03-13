@@ -15,6 +15,7 @@ site_configuration = {
             'hostnames': ['lys'],
             'modules_system': 'lmod',
             'resourcesdir': '/vast/scratch/firecr02/reframe/resources',
+            'max_local_jobs': 20,
             'partitions': [
                 {
                     'name': 'normal',

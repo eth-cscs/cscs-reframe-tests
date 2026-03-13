@@ -7,6 +7,7 @@
 #
 
 import os
+import reframe.utility.osext as osext
 
 reframe_dir = os.getenv(
     'REFRAME_DIR',
@@ -26,6 +27,7 @@ site_configuration = {
             'modules_system': 'lmod',
             'resourcesdir':
                 '/capstor/store/cscs/cscs/public/reframe/resources',
+            'max_local_jobs': 20,
             'partitions': [
                 {
                     'name': 'login',
@@ -47,7 +49,7 @@ site_configuration = {
                     ],
                     'max_jobs': 1000,
                     'extras': {
-                        'cn_memory': 850,
+                        'cn_memory': 856,
                     },
                     'resources': [
                         {
@@ -61,6 +63,7 @@ site_configuration = {
                     ],
                     'features': ['ce', 'gpu', 'nvgpu', 'remote', 'scontrol',
                                  'uenv', 'hugepages_slurm'],
+                    'access': [f'--account={osext.osgroup()}'],
                     'devices': [
                         {
                             'type': 'gpu',

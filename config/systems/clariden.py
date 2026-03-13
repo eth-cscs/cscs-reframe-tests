@@ -12,6 +12,7 @@ import reframe.utility.osext as osext
 base_config = {
     'modules_system': 'nomod',
     'resourcesdir': '/capstor/store/cscs/cscs/public/reframe/resources',
+    'max_local_jobs': 20,
     'partitions': [
         {
             'name': 'login',
@@ -36,7 +37,7 @@ base_config = {
             ],
             'max_jobs': 1000,
             'extras': {
-                'cn_memory': 825,
+                'cn_memory': 519,
             },
             'features': ['ce', 'gpu', 'nvgpu', 'remote', 'scontrol', 'uenv', 'hugepages_slurm'],
             'access': [f'--account=a-{osext.osgroup()}'],
