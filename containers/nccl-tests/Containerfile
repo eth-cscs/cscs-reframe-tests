@@ -27,7 +27,7 @@ FROM docker.io/nvidia/cuda:12.9.1-runtime-ubuntu24.04
 
 # TODO
 RUN apt update && \
-    apt install -y libhwloc15 libopenmpi3 strace gdb && \
+    apt install -y libhwloc15 libopenmpi3 && \
     apt clean && \
     rm -rf /var/lib/apt/lists/*
 
