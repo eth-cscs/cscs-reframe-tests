@@ -95,11 +95,6 @@ class RocHPL(rfm.RegressionTest, UenvSlurmMpiOptionsMixin):
             f'-DCMAKE_HIP_ARCHITECTURES="{gpu_arch}"'
         ]
 
-    @run_after('setup')
-    def set_num_gpus(self):
-        curr_part = self.current_partition
-        self.num_gpus = curr_part.select_devices('gpu')[0].num_devices
-
     @run_before('run')
     def set_executable(self):
         self.uarch = uarch(self.current_partition)
@@ -158,45 +153,40 @@ class RocHPL(rfm.RegressionTest, UenvSlurmMpiOptionsMixin):
         # set performance reference
         if self.uarch in rochpl_references:
             reference = {}
-
             for n in self.matrix_sizes:
                 if n in rochpl_references[self.uarch]:
-                    # Note: Permissive threshold for mi300 as sles15sp5 shows
-                    # performance drops with large matrices. Should be removed
-                    # when all the nodes run the sles15sp6 image.
-                    lower_bound = -0.1
-                    if self.uarch == 'mi300':
-                        if n > 200000:
-                            lower_bound = -0.90
-                        elif n > 150000:
-                            lower_bound = -0.33
-
-                    reference[f'size {n}'] = \
-                        (rochpl_references[self.uarch][n],
-                         lower_bound, 0.05, 'Gflop/s')
+                    reference[f'size {n}'] = (rochpl_references[self.uarch][n], -0.1, 0.05, 'Gflop/s')  # noqa: E501
 
             self.reference = {self.current_partition.fullname: reference}
 
     @sanity_function
     def assert_results(self):
         """
-        WC15R2R8      218880   384     2     2             102.52              6.819e+04
-        ||Ax-b||_oo/(eps*(||A||_oo*||x||_oo+||b||_oo)*N)=        0.0000524 ...... PASSED
+        WC15R2R8      218880   384     2     2             102.52     6.819e+04
+        ||Ax-b||_oo/(eps*(||A||_oo*||x||_oo+||b||_oo)*N)= 0.0000524 .... PASSED
         """
         out_file = os.path.join(self.stagedir, 'HPL.out')
 
-        regex1 = r'^WC15R2R8\s+([0-9]+)\s+384\s+[0-9]+\s+[0-9]+\s+[0-9\.]+\s+([0-9\.]+e\+[0-9]+)$'
-        regex2 = r'^\|\|Ax-b\|\|_oo\/\(eps\*\(\|\|A\|\|_oo\*\|\|x\|\|_oo\+\|\|b\|\|_oo\)\*N\)=\s+([\.0-9]+)\s+\.+\s+PASSED$'
-        self.perf_ = sn.extractall(regex1, out_file, tag=(1, 2), conv=(int, float))
+        regex1 = (
+            r'^WC15R2R8\s+([0-9]+)\s+384\s+[0-9]+\s+[0-9]+\s+[0-9\.]+'
+            r'\s+([0-9\.]+e\+[0-9]+)$')
+        regex2 = (
+            r'^\|\|Ax-b\|\|_oo\/\(eps\*\(\|\|A\|\|_oo\*\|\|x\|\|_oo\+'
+            r'\|\|b\|\|_oo\)\*N\)=\s+([\.0-9]+)\s+\.+\s+PASSED$')
+        self.perf_ = sn.extractall(regex1, out_file, tag=(1, 2),
+                                   conv=(int, float))
         self.accuracy_ = sn.extractall(regex2, out_file, tag=1, conv=float)
 
         sanity_patterns = [
-            sn.assert_eq(sn.len(self.perf_), sn.len(self.matrix_sizes), 'Number of results do not match with number of runs'),
-            sn.assert_eq(sn.len(self.accuracy_), sn.len(self.matrix_sizes), 'Number of PASSED accuracy results do not match with number of runs')
+            sn.assert_eq(sn.len(self.perf_), sn.len(self.matrix_sizes),
+                         'Number of results do not match with number of runs'),
+            sn.assert_eq(sn.len(self.accuracy_), sn.len(self.matrix_sizes),
+                         'Number of PASSED accuracy results do not match with number of runs'),  # noqa: E501
             ]
 
         for (perf, n) in sn.zip(self.perf_, self.matrix_sizes):
-            sanity_patterns.append(sn.assert_eq(perf[0], n, 'Matrix size does not match'))
+            sanity_patterns.append(sn.assert_eq(perf[0], n,
+                                                'Matrix size does not match'))
 
         self.sanity_patterns = sn.all(sanity_patterns)
 
@@ -208,7 +198,8 @@ class RocHPL(rfm.RegressionTest, UenvSlurmMpiOptionsMixin):
 
         self.perf_variables = {}
         for perf in self.perf_:
-            self.perf_variables[f'size {perf[0]}'] = make_perf(sn.getitem(perf, 1), 'Gflop/s')
+            self.perf_variables[f'size {perf[0]}'] = \
+                make_perf(sn.getitem(perf, 1), 'Gflop/s')
 
 
 @rfm.simple_test
