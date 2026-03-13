@@ -29,6 +29,9 @@ class XCCLTestsBase(rfm.RunOnlyRegressionTest):
     env_vars = {
         'NCCL_DEBUG': 'Info',
         'FI_LOG_LEVEL': 'Info',
+        # Make sure hwloc doesn't try to load GL components, which would make
+        # the tests hang if there's no display.
+        'HWLOC_COMPONENTS': '-gl',
     }
 
     reference_per_test = {
@@ -148,7 +151,7 @@ def _set_xccl_uenv_env_vars(env_vars):
 class NCCLTestsCE(XCCLTestsBaseCE):
     descr = 'Point-to-Point and All-Reduce NCCL tests with CE'
     valid_systems = ['+ce +nvgpu']
-    image_tag = parameter(['cuda12.9.1'])
+    image_tag = parameter(['cuda12.9.1-ubuntu24.04'])
 
     # Disable Nvidia Driver requirement
     env_vars['NVIDIA_DISABLE_REQUIRE'] = 1
@@ -184,7 +187,7 @@ def _set_rccl_min_nchannels(gpu_devices, env_vars):
 class RCCLTestsCE(XCCLTestsBaseCE):
     descr = 'Point-to-Point and All-Reduce RCCL tests with CE'
     valid_systems = ['+ce +amdgpu']
-    image_tag = parameter(['rocm6.3.4'])
+    image_tag = parameter(['rocm6.4.3-ubuntu24.04'])
 
     @run_after('init')
     def setup_ce(self):
