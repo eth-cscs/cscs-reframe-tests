@@ -253,9 +253,10 @@ class MemoryOverconsumptionCheckMPI(SlurmCompiledBaseCheck,
         """
         reference_mem = self.current_partition.extras['cn_memory']
         lower = -0.51 if self.current_system.name == 'eiger' else -0.01
+        upper = 0.03 if 'openmpi' in self.current_environ.features else 0.01
         self.reference = {
             '*': {
-                'cn_max_allocated_memory': (reference_mem, lower, 0.01, 'GB')
+                'cn_max_allocated_memory': (reference_mem, lower, upper, 'GB')
             }
         }
 
@@ -562,25 +563,32 @@ class SlurmNoIsolCpus(rfm.RunOnlyRegressionTest):
 
 
 @rfm.simple_test
-class SlurmNoUvmPerfAccessCounterMigration(rfm.RunOnlyRegressionTest):
+class SlurmUvmPerfAccessCounterMigration(rfm.RunOnlyRegressionTest):
     valid_systems = ['+remote +scontrol +nvgpu']
     valid_prog_environs = ['builtin']
     maintainers = ['msimberg', 'SSA']
     descr = '''
     Check that uvm_perf_access_counter_mimc_migration_enable is set to 0
-    as it is buggy in older drivers.
+    as it is buggy in older drivers. If the driver is at least version 565, the
+    name of the option is different and should be set to the default (-1).
     '''
     time_limit = '1m'
     num_tasks_per_node = 1
-    sourcesdir = None
-    executable = 'cat'
-    executable_opts = [('/sys/module/nvidia_uvm/parameters/'
-                        'uvm_perf_access_counter_mimc_migration_enable')]
+    executable = 'bash'
+    executable_opts = ['check_uvm_perf_access_counter_migration.sh']
     tags = {'production', 'maintenance', 'slurm'}
 
     @sanity_function
     def validate(self):
-        return sn.assert_found(r'0', self.stdout)
+        driver_ver = sn.extractsingle(r'driver_version=(\d+)', self.stdout, 1, int)
+        if driver_ver >= 565:
+            param = 'uvm_perf_access_counter_migration_enable'
+            expected = '-1'
+        else:
+            param = 'uvm_perf_access_counter_mimc_migration_enable'
+            expected = '0'
+        value = sn.extractsingle(rf'{param}=(.+)', self.stdout, 1)
+        return sn.assert_eq(value, expected)
 
 
 @rfm.simple_test

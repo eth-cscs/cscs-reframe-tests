@@ -13,6 +13,7 @@ import copy
 base_config = {
     'modules_system': 'lmod',
     'resourcesdir': '/capstor/apps/cscs/common/regression/resources',
+    'max_local_jobs': 20,
     'partitions': [
         {
             'name': 'login',
