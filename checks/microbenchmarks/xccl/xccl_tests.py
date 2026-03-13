@@ -29,8 +29,8 @@ class XCCLTestsBase(rfm.RunOnlyRegressionTest):
     env_vars = {
         'NCCL_DEBUG': 'Info',
         'FI_LOG_LEVEL': 'Info',
-	# Make sure hwloc doesn't try to load GL components, which would make
-	# the tests hang if there's no display.
+        # Make sure hwloc doesn't try to load GL components, which would make
+        # the tests hang if there's no display.
         'HWLOC_COMPONENTS': '-gl',
     }
 
