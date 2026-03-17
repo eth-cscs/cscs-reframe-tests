@@ -573,6 +573,7 @@ class NVreg_RestrictProfilingToAdminUsers(rfm.RunOnlyRegressionTest):
     '''
     time_limit = '1m'
     num_tasks_per_node = 1
+    sourcesdir = None
     executable = 'hostname'
     tags = {'production', 'maintenance', 'slurm'}
 
