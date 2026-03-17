@@ -563,6 +563,45 @@ class SlurmNoIsolCpus(rfm.RunOnlyRegressionTest):
 
 
 @rfm.simple_test
+class NVreg_RestrictProfilingToAdminUsers(rfm.RunOnlyRegressionTest):
+    valid_systems = ['+remote +nvgpu']
+    valid_prog_environs = ['builtin']
+    maintainers = ['PA', '@jgphpc']
+    descr = '''
+    Allow access to the GPU Performance Counters for NVIDIA tools:
+    https://developer.nvidia.com/nvidia-development-tools-solutions-err_nvgpuctrperm-permission-issue-performance-counters
+    '''
+    time_limit = '1m'
+    num_tasks_per_node = 1
+    sourcesdir = None
+    executable = 'hostname'
+    tags = {'production', 'maintenance', 'slurm'}
+
+    @run_before('run')
+    def test_settings(self):
+        self.postrun_cmds = [
+            'grep ^NVRM /proc/driver/nvidia/version',
+            'grep -H RmProfilingAdminOnly /proc/driver/nvidia/params',
+            'grep NVreg_RestrictProfilingToAdminUsers /etc/modprobe.d/*'
+        ]
+
+    @sanity_function
+    def validate(self):
+        regex1 = r'RmProfilingAdminOnly: (?P<adminonly>\d+)'
+        sanity1 = sn.extractsingle(regex1, self.stdout, 'adminonly')
+        expected1 = '0'
+
+        regex2 = r'NVreg_RestrictProfilingToAdminUsers=(?P<adminonly>\d+)'
+        sanity2 = sn.extractsingle(regex2, self.stdout, 'adminonly')
+        expected2 = '0'
+
+        return sn.all([
+            sn.assert_eq(sanity1, expected1),
+            sn.assert_eq(sanity2, expected2)
+        ])
+
+
+@rfm.simple_test
 class SlurmUvmPerfAccessCounterMigration(rfm.RunOnlyRegressionTest):
     valid_systems = ['+remote +scontrol +nvgpu']
     valid_prog_environs = ['builtin']
@@ -580,7 +619,8 @@ class SlurmUvmPerfAccessCounterMigration(rfm.RunOnlyRegressionTest):
 
     @sanity_function
     def validate(self):
-        driver_ver = sn.extractsingle(r'driver_version=(\d+)', self.stdout, 1, int)
+        driver_ver = sn.extractsingle(r'driver_version=(\d+)', self.stdout, 1,
+                                      int)
         if driver_ver >= 565:
             param = 'uvm_perf_access_counter_migration_enable'
             expected = '-1'
