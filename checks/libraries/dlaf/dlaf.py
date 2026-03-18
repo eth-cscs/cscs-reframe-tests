@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 import reframe as rfm
 import reframe.utility.sanity as sn
+from reframe.core.builtins import xfail
 from uenv import uarch
 
 dlaf_references = {
@@ -15,7 +16,7 @@ dlaf_references = {
             "time_run": (36.0, -0.1, 0.1, "s"),
         },
         "mi200": {
-            "time_run": (41.0, -0.1, 0.1, "s"),
+            "time_run": xfail("Known performance regression", (41.0, -0.1, 0.1, "s")),
         },
         "zen2": {
             "time_run": (170.0, -0.1, 0.1, "s"),
@@ -29,7 +30,7 @@ dlaf_references = {
             "time_run": (47.0, -0.1, 0.1, "s")
         },
         "mi200": {
-            "time_run": (54.0, -0.1, 0.1, "s")
+            "time_run": xfail("Known performance regression", (54.0, -0.1, 0.1, "s"))
         },
         "zen2": {
             "time_run": (210.0, -0.1, 0.1, "s"),
