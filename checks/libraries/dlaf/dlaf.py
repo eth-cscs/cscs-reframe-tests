@@ -94,7 +94,7 @@ slurm_config = {
             "nodes": 2,
             "ntasks-per-node": 8,
             "cpus-per-task": 16,
-            "walltime": "0d0h10m0s",
+            "walltime": "0d0h20m0s",
             "gpu": True,
             "extra_job_options": [],
         },
