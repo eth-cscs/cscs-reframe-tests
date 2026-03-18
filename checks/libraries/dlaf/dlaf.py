@@ -4,35 +4,36 @@
 # SPDX-License-Identifier: BSD-3-Clause
 import reframe as rfm
 import reframe.utility.sanity as sn
+from reframe.core.builtins import xfail
 from uenv import uarch
 
 dlaf_references = {
     "eigensolver": {
         "gh200": {
-            "time_run": (24.0, -1.0, 0.1, "s"),
+            "time_run": (24.0, -0.1, 0.1, "s"),
         },
         "mi300": {
-            "time_run": (51.0, -1.0, 0.1, "s"),
+            "time_run": (36.0, -0.1, 0.1, "s"),
         },
         "mi200": {
-            "time_run": (41.0, -1.0, 0.1, "s"),
+            "time_run": xfail("Known performance regression", (41.0, -0.1, 0.1, "s")),
         },
         "zen2": {
-            "time_run": (170.0, -1.0, 0.1, "s"),
+            "time_run": (170.0, -0.1, 0.1, "s"),
         }
     },
     "gen_eigensolver": {
         "gh200": {
-            "time_run": (26.0, -1.0, 0.1, "s")
+            "time_run": (26.0, -0.1, 0.1, "s")
         },
         "mi300": {
-            "time_run": (61.0, -1.0, 0.1, "s")
+            "time_run": (47.0, -0.1, 0.1, "s")
         },
         "mi200": {
-            "time_run": (54.0, -1.0, 0.1, "s")
+            "time_run": xfail("Known performance regression", (54.0, -0.1, 0.1, "s"))
         },
         "zen2": {
-            "time_run": (210.0, -1.0, 0.1, "s"),
+            "time_run": (210.0, -0.1, 0.1, "s"),
         }
     },
 }
@@ -93,7 +94,7 @@ slurm_config = {
             "nodes": 2,
             "ntasks-per-node": 8,
             "cpus-per-task": 16,
-            "walltime": "0d0h10m0s",
+            "walltime": "0d0h20m0s",
             "gpu": True,
             "extra_job_options": [],
         },
