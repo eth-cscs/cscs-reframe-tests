@@ -109,6 +109,9 @@ class OMB_OMPI_CE(OMB_Base_CE, SlurmMpiPmixMixin):
             }
         },
         'collective/osu_alltoall': {
+            'zinal': {
+                'latency_1M': (1400., None, 0.15, 'us')
+            },
             '*': {
                 'latency_1M': (500., None, 0.15, 'us')
             }
