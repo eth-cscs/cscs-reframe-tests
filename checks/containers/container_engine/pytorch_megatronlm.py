@@ -16,7 +16,7 @@ from container_engine import ContainerEngineMixin  # noqa: E402
 
 
 class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
-    num_tasks_per_node = 4
+    num_tasks_per_node = 1
 
     default_num_nodes = variable(int, type(None), value=None)
 
@@ -65,7 +65,7 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
     }
 
     sourcesdir = None
-    executable = 'bash'
+    executable = 'torchrun'
 
     @run_after('setup')
     def setup_test(self):
@@ -80,7 +80,7 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
 
         curr_part = self.current_partition
         self.num_gpus_per_node = curr_part.select_devices('gpu')[0].num_devices
-        self.num_tasks = self.num_nodes * self.num_gpus_per_node
+        self.num_tasks = self.num_nodes
         gpu_arch = curr_part.select_devices('gpu')[0].arch
         self.skip_if(
             gpu_arch != 'sm_90', 'test tuned only for 8xGH200'
@@ -102,8 +102,9 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
         model_config = self.configurations[self.model]
         self.env_vars = {
             'CUDA_DEVICE_MAX_CONNECTIONS': 1,
+            'MASTER_ADDRESS': '$(srun -N1 hostname)',
             'MASTER_PORT': '28400',
-            'WORLD_SIZE': f'{self.num_tasks}',
+            'WORLD_SIZE': f'{self.num_nodes * self.num_gpus_per_node}',
             'OMP_NUM_THREADS': '72'
         }
 
@@ -114,7 +115,7 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
         torchrun_args = [
             f'--nproc_per_node={self.num_gpus_per_node}',
             f'--nnodes={self.num_nodes}',
-            '--rdzv-endpoint=$MASTER_ADDRESS:28400',
+            '--rdzv-endpoint=$MASTER_ADDRESS:$MASTER_PORT',
             '--rdzv-backend=c10d',
         ]
 
@@ -185,7 +186,7 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
             '--mock-data',
             '--tokenizer-type NullTokenizer',
             '--vocab-size 128256',
-            '--data-cache-path $PWD/benchmark_cache_llama3_8b_fp8',
+            '--data-cache-path /rfm_workdir/benchmark_cache_llama3_8b_fp8',
             '--tiktoken-pattern v2',
             '--split 99,1,0',
             '--no-create-attention-mask-in-dataloader',
@@ -206,7 +207,9 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
             '--distributed-timeout-minutes 60',
         ]
 
-        pretrain_script_args =[
+        self.executable_opts = [
+            *torchrun_args,
+            pretrain_script_path,
             *model_args,
             *training_args,
             *dtype_args,
@@ -215,25 +218,9 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
             *eval_and_logging_args,
         ]
 
-        training_cmd = (
-            f'torchrun {" ".join(torchrun_args)} '
-            f'{pretrain_script_path} '
-            f'{" ".join(pretrain_script_args)}'
-        )
-
-        self.executable_opts = [
-            rf"-c",
-
-            # Open with single quote
-            rf"'MASTER_ADDRESS=$(srun -N1 hostname) "
-
-            # Close with single quote
-            rf"{training_cmd}'"
-        ]
-
     @sanity_function
     def assert_sanity(self):
-        return sn.assert_found(r'\[exiting program at iteration \d+\]',
+        return sn.assert_found(r'\[after training is done\] datetime:',
                                self.stdout)
 
     @performance_function('TFLOP/s/GPU')
