@@ -12,6 +12,11 @@ from reframe.core.exceptions import EnvironError
 
 
 class ContainerEngineMixin(rfm.RegressionTestPlugin):
+    #: Slurm option to activate the SPANK plugin providing container integration.
+    #:
+    #: :default: ``environment``
+    spank_option = variable(str, value='environment')
+
     #: The container image to use.
     #:
     #: :default: ``required``
@@ -32,9 +37,10 @@ class ContainerEngineMixin(rfm.RegressionTestPlugin):
     container_mounts = variable(typ.List[str], value=[])
 
     #: A dictionary of key/values to pass to the container environment.
+    #: Useful for setting arbitrary parameters in the EDF.
     #:
     #: :default: ``{}``
-    container_env_key_values = variable(typ.Dict[str, str], value={})
+    container_env_key_values = variable(typ.Dict[str, object], value={})
 
     #: A dictionary of tables to pass to the container environment.
     #: For each key, a dictionary of key/value pairs is given.
@@ -56,7 +62,7 @@ class ContainerEngineMixin(rfm.RegressionTestPlugin):
             toml_lines += [f'workdir = "{self.container_workdir}"']
 
         for k, v in self.container_env_key_values.items():
-            toml_lines.append(f'{k} = "{v}"')
+            toml_lines.append(f'{k} = {v}')
 
         for table_name, values in self.container_env_table.items():
             if values:
@@ -70,8 +76,7 @@ class ContainerEngineMixin(rfm.RegressionTestPlugin):
 
     @run_before('run')
     def set_container_engine_env_launcher_options(self):
-        self.job.launcher.options += [f'--environment={self.env_file}']
-
+        self.job.launcher.options += [f'--{self.spank_option}={self.env_file}']
 
 class ContainerEngineCPEMixin(rfm.RegressionTestPlugin):
     @run_after('setup')

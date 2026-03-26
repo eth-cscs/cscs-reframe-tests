@@ -8,10 +8,11 @@ import sys
 
 import reframe as rfm
 import reframe.utility.sanity as sn
-from uenv import uarch
 
 sys.path.append(str(pathlib.Path(__file__).parent.parent.parent / 'mixins'))
+sys.path.append(str(pathlib.Path(__file__).parent.parent.parent.parent / 'config' / 'utilities'))
 
+from uenv import uarch
 from container_engine import ContainerEngineMixin  # noqa: E402
 from slurm_mpi_pmix import SlurmMpiPmixMixin
 from uenv_slurm_mpi_options import UenvSlurmMpiOptionsMixin
@@ -164,12 +165,28 @@ class NCCLTestsCE(XCCLTestsBaseCE):
 
     @run_after('init')
     def setup_ce(self):
-        cuda_major = self.image_tag.split('.')[0]
+        nccl_plugin_variant = self.image_tag.split('.')[0] # 'cuda12'
         self.container_image = (f'jfrog.svc.cscs.ch#reframe-oci/nccl-tests:'
                                 f'{self.image_tag}')
         self.container_env_table['annotations.com.hooks'].update({
-            'aws_ofi_nccl.variant': cuda_major
+            'aws_ofi_nccl.variant': nccl_plugin_variant
         })
+
+
+@rfm.simple_test
+class NCCLTestsSkybox(NCCLTestsCE):
+    descr = 'Point-to-Point and All-Reduce NCCL tests with CE/Skybox'
+    tags = {'ce_dev', 'skybox'}
+    spank_option = 'edf'
+    container_workdir = '/nccl-tests-2.17.9/build/'
+    container_env_key_values = {
+        'devices': ["alps.cscs/cxi=all", "nvidia.com/gpu=all", "alps.cscs/aws-ofi-nccl=cuda-dl", "/dev/gdrdrv"]
+    }
+
+    @run_after('init')
+    def setup_ce(self):
+        nccl_plugin_variant = 'cuda-dl' # not used by Skybox right now but kept for consistency
+        self.container_image = 'jfrog.svc.cscs.ch/ghcr/sarus-suite/containerfiles-ci/nccl-tests:2.17.9-ompi5.0.9-ofi1.22-cuda12.8.1'
 
 
 @rfm.simple_test
