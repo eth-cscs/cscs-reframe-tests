@@ -28,7 +28,7 @@ class OMB_Base_CE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
             'cxi.enabled': 'true',
         }
     }
-    tags = {'production', 'ce', 'maintenance'}
+    tags = {'production', 'ce', 'ce_dev', 'maintenance'}
 
     mpi_tests_dir = '/usr/local/libexec/osu-micro-benchmarks/mpi'
 
@@ -80,7 +80,7 @@ class OMB_Base_CE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
 class OMB_MPICH_CE(OMB_Base_CE, SlurmMpiPmi2Mixin):
     descr = 'OSU Micro-benchmarks for MPICH/CE (Point-to-Point and All-to-All)'
     container_image = (
-        'jfrog.svc.cscs.ch#reframe-oci/osu-mb:7.5-mpich4.3.0-ofi1.15-cuda12.8'
+        'jfrog.svc.cscs.ch/reframe-oci/osu-mb:7.5-mpich4.3.0-ofi1.15-cuda12.8'
     )
     valid_systems = ['+ce +nvgpu']
     reference_per_test = {
@@ -90,6 +90,9 @@ class OMB_MPICH_CE(OMB_Base_CE, SlurmMpiPmi2Mixin):
             }
         },
         'collective/osu_alltoall': {
+            'zinal': {
+                'latency_1M': (2400., None, 0.15, 'us')
+            },
             '*': {
                 'latency_1M': (1800., None, 0.15, 'us')
             }
@@ -100,7 +103,7 @@ class OMB_MPICH_CE(OMB_Base_CE, SlurmMpiPmi2Mixin):
 @rfm.simple_test
 class OMB_OMPI_CE(OMB_Base_CE, SlurmMpiPmixMixin):
     descr = 'OSU Micro-benchmarks for OpenMPI/CE (Point-to-Point and All-to-All)'
-    container_image = (f'jfrog.svc.cscs.ch#reframe-oci/osu-mb:7.5-ompi5.0.7-ofi1.15-cuda12.8')
+    container_image = (f'jfrog.svc.cscs.ch/reframe-oci/osu-mb:7.5-ompi5.0.7-ofi1.15-cuda12.8')
     valid_systems = ['+ce +nvgpu']
     reference_per_test = {
         'pt2pt/osu_bw': {
