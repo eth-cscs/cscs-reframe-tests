@@ -128,6 +128,7 @@ class OMB_OMPI_Skybox(OMB_OMPI_CE):
     tags = {'ce_dev', 'skybox'}
     spank_option = 'edf'
     container_image = 'jfrog.svc.cscs.ch/ghcr/sarus-suite/containerfiles-ci/omb:7.5.2-ompi5.0.9-ofi1.22-cuda12.8.1'
+    container_mounts = ["/etc/slurm:/etc/slurm:ro"]
     container_env_key_values = {
         'devices': ["alps.cscs/cxi=all", "nvidia.com/gpu=all", "/dev/gdrdrv"]
     }
