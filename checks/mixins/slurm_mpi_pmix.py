@@ -22,7 +22,7 @@ class SlurmMpiPmixMixin(rfm.RegressionTestPlugin):
         # Disable MCA components to avoid warnings
         self.env_vars.update(
             {
-                'PMIX_MCA_psec': 'native',
+                'PMIX_MCA_psec': '^munge',
                 'PMIX_MCA_gds': '^shmem2'
             }
         )
