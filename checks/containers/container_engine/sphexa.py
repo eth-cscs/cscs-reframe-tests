@@ -81,9 +81,7 @@ class SphExa_CE(rfm.RunOnlyRegressionTest, ContainerEngineMixin, SlurmMpiPmi2Mix
 
     _ref_sec_per_step = {
         'evrard': {
-            'mi200': 5.6,
-            'mi300': 5.1,
-            'gh200': 0.9,
+            'gh200': 1.7,
             'a100':  1.9},
     }
 

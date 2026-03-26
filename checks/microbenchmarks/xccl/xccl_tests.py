@@ -158,6 +158,7 @@ def _set_xccl_uenv_env_vars(env_vars):
 class NCCLTestsCE(XCCLTestsBaseCE):
     descr = 'Point-to-Point and All-Reduce NCCL tests with CE'
     valid_systems = ['+ce +nvgpu']
+    tags.add('ce_dev')
     image_tag = parameter(['cuda12.9.1-ubuntu24.04'])
 
     # Disable Nvidia Driver requirement
@@ -166,7 +167,7 @@ class NCCLTestsCE(XCCLTestsBaseCE):
     @run_after('init')
     def setup_ce(self):
         nccl_plugin_variant = self.image_tag.split('.')[0] # 'cuda12'
-        self.container_image = (f'jfrog.svc.cscs.ch#reframe-oci/nccl-tests:'
+        self.container_image = (f'jfrog.svc.cscs.ch/reframe-oci/nccl-tests:'
                                 f'{self.image_tag}')
         self.container_env_table['annotations.com.hooks'].update({
             'aws_ofi_nccl.variant': nccl_plugin_variant
