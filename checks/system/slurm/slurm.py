@@ -318,7 +318,7 @@ class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
     valid_systems = ['-remote']
     valid_prog_environs = ['builtin']
     maintainers = ['VCUE', 'PA']
-    tags = {'slurm', 'ops', 'production', 'single-node'}
+    tags = {'slurm', 'ops', 'single-node'}
     min_avail_nodes = variable(int, value=1)
     ratio_minavail_nodes = variable(float, value=0.1)
     local = True
