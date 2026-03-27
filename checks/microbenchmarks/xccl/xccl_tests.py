@@ -159,18 +159,16 @@ class NCCLTestsCE(XCCLTestsBaseCE):
     descr = 'Point-to-Point and All-Reduce NCCL tests with CE'
     valid_systems = ['+ce +nvgpu']
     tags.add('ce_dev')
-    image_tag = parameter(['cuda12.9.1-ubuntu24.04'])
+    container_image = 'jfrog.svc.cscs.ch/ghcr/sarus-suite/containerfiles-ci/nccl-tests:2.17.9-ompi5.0.9-ofi1.22-cuda12.8.1'
+    container_workdir = '/nccl-tests-2.17.9/build/'
 
     # Disable Nvidia Driver requirement
     env_vars['NVIDIA_DISABLE_REQUIRE'] = 1
 
     @run_after('init')
     def setup_ce(self):
-        nccl_plugin_variant = self.image_tag.split('.')[0] # 'cuda12'
-        self.container_image = (f'jfrog.svc.cscs.ch/reframe-oci/nccl-tests:'
-                                f'{self.image_tag}')
         self.container_env_table['annotations.com.hooks'].update({
-            'aws_ofi_nccl.variant': nccl_plugin_variant
+            'aws_ofi_nccl.variant': 'cuda12'
         })
 
 
