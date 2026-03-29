@@ -1,4 +1,4 @@
-# Copyright 2016-2026 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -12,5 +12,5 @@ class SlurmMpiPmi2Mixin(rfm.RegressionTestPlugin):
     """
 
     @run_after('setup')
-    def set_slurm_mpi_pmix(self):
+    def set_slurm_mpi_pmi2(self):
         self.job.launcher.options += ['--mpi=pmi2']
