@@ -8,6 +8,7 @@
 
 
 import os
+import reframe.utility.osext as osext
 
 base_config = {
     'modules_system': 'lmod',
