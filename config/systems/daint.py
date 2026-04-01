@@ -51,6 +51,7 @@ base_config = {
             'features': [
                 'ce', 'gpu', 'nvgpu', 'remote', 'scontrol', 'uenv',
                 'hugepages_slurm'],
+            'access': [f'--account={osext.osgroup()}'],
             'resources': [
                 {
                     'name': 'switches',
