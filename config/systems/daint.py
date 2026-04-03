@@ -8,6 +8,7 @@
 
 
 import os
+import reframe.utility.osext as osext
 
 base_config = {
     'modules_system': 'lmod',
@@ -51,6 +52,7 @@ base_config = {
             'features': [
                 'ce', 'gpu', 'nvgpu', 'remote', 'scontrol', 'uenv',
                 'hugepages_slurm'],
+            'access': [f'--account={osext.osgroup()}'],
             'resources': [
                 {
                     'name': 'switches',
