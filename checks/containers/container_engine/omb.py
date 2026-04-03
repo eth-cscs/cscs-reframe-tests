@@ -12,6 +12,8 @@ import reframe.utility.sanity as sn
 sys.path.append(str(pathlib.Path(__file__).parent.parent.parent / 'mixins'))
 
 from container_engine import ContainerEngineMixin  # noqa: E402
+from slurm_mpi_pmi2 import SlurmMpiPmi2Mixin
+from slurm_mpi_pmix import SlurmMpiPmixMixin
 
 
 class OMB_Base_CE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
@@ -26,7 +28,7 @@ class OMB_Base_CE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
             'cxi.enabled': 'true',
         }
     }
-    tags = {'production', 'ce', 'maintenance'}
+    tags = {'production', 'ce', 'ce_dev', 'maintenance'}
 
     mpi_tests_dir = '/usr/local/libexec/osu-micro-benchmarks/mpi'
 
@@ -75,10 +77,10 @@ class OMB_Base_CE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
 
 
 @rfm.simple_test
-class OMB_MPICH_CE(OMB_Base_CE):
+class OMB_MPICH_CE(OMB_Base_CE, SlurmMpiPmi2Mixin):
     descr = 'OSU Micro-benchmarks for MPICH/CE (Point-to-Point and All-to-All)'
     container_image = (
-        'jfrog.svc.cscs.ch#reframe-oci/osu-mb:7.5-mpich4.3.0-ofi1.15-cuda12.8'
+        'jfrog.svc.cscs.ch/reframe-oci/osu-mb:7.5-mpich4.3.0-ofi1.15-cuda12.8'
     )
     valid_systems = ['+ce +nvgpu']
     reference_per_test = {
@@ -88,21 +90,20 @@ class OMB_MPICH_CE(OMB_Base_CE):
             }
         },
         'collective/osu_alltoall': {
+            'zinal': {
+                'latency_1M': (2400., None, 0.15, 'us')
+            },
             '*': {
                 'latency_1M': (1800., None, 0.15, 'us')
             }
         }
     }
 
-    @run_before('run')
-    def set_pmi2(self):
-        self.job.launcher.options += ['--mpi=pmi2']
-
 
 @rfm.simple_test
-class OMB_OMPI_CE(OMB_Base_CE):
+class OMB_OMPI_CE(OMB_Base_CE, SlurmMpiPmixMixin):
     descr = 'OSU Micro-benchmarks for OpenMPI/CE (Point-to-Point and All-to-All)'
-    container_image = (f'jfrog.svc.cscs.ch#reframe-oci/osu-mb:7.5-ompi5.0.7-ofi1.15-cuda12.8')
+    container_image = (f'jfrog.svc.cscs.ch/reframe-oci/osu-mb:7.5-ompi5.0.7-ofi1.15-cuda12.8')
     valid_systems = ['+ce +nvgpu']
     reference_per_test = {
         'pt2pt/osu_bw': {
@@ -111,12 +112,23 @@ class OMB_OMPI_CE(OMB_Base_CE):
             }
         },
         'collective/osu_alltoall': {
+            'zinal': {
+                'latency_1M': (1400., None, 0.15, 'us')
+            },
             '*': {
                 'latency_1M': (500., None, 0.15, 'us')
             }
         }
     }
 
-    @run_before('run')
-    def set_pmix(self):
-        self.job.launcher.options += ['--mpi=pmix']
+
+@rfm.simple_test
+class OMB_OMPI_Skybox(OMB_OMPI_CE):
+    descr = 'OSU Micro-benchmarks for OpenMPI/CE/Skybox (Point-to-Point and All-to-All)'
+    tags = {'ce_dev', 'skybox'}
+    spank_option = 'edf'
+    container_image = 'jfrog.svc.cscs.ch/ghcr/sarus-suite/containerfiles-ci/omb:7.5.2-ompi5.0.9-ofi1.22-cuda12.8.1'
+    container_mounts = ["/etc/slurm:/etc/slurm:ro"]
+    container_env_key_values = {
+        'devices': ["alps.cscs/cxi=all", "nvidia.com/gpu=all", "/dev/gdrdrv"]
+    }
