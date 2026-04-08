@@ -50,10 +50,12 @@ sphere = Sphere()
 sphere.ThetaResolution = 1024
 sphere.PhiResolution = 1024
 
-if Version <= (5, 11, 2):
-    pidscal = ProcessIdScalars(sphere)
-else:
+if Version >= (6, 0, 0):
+    pidscal = ProcessIds(Input=sphere)
+elif Version >= (5, 12, 0):
     pidscal = GenerateProcessIds(Input=sphere)
+else:
+    pidscal = ProcessIdScalars(sphere)
 
 rep = Show(pidscal, view)
 
