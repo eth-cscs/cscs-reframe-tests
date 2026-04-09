@@ -13,7 +13,6 @@ class paraview_catalystclipping(rfm.RegressionTest):
     valid_prog_environs = ['+paraview']
 
     build_system = 'CMake'
-    # note: required! because the uenv is loaded by slurm, i.e not available on login node
     build_locally = False
 
     num_tasks = 1

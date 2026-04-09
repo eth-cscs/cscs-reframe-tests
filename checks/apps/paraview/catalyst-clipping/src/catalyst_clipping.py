@@ -3,10 +3,11 @@
 #### import the simple module from the paraview
 from paraview.simple import *
 
-import paraview
-
-paraview.compatibility.major = 6
-paraview.compatibility.minor = 0
+Version = (
+    servermanager.vtkSMProxyManager.GetVersionMajor(),
+    servermanager.vtkSMProxyManager.GetVersionMinor(),
+    servermanager.vtkSMProxyManager.GetVersionPatch(),
+)
 
 #### disable automatic camera reset on 'Show'
 paraview.simple._DisableFirstRenderCameraReset()
@@ -32,9 +33,11 @@ bounds = reader.GetDataInformation().GetBounds()
 clip1 = Clip(registrationName='Clip1', Input=reader)
 clip1.ClipType = 'Plane'
 clip1.ClipType.Normal = [0.0, 0.0, 1.0]
-clip1.ClipType.Origin = [(bounds[1]+bounds[0])*.5,
-                         (bounds[3]+bounds[2])*.5,
-                         (bounds[5]+bounds[4])*.5]
+clip1.ClipType.Origin = [
+    (bounds[1] + bounds[0]) * 0.5,
+    (bounds[3] + bounds[2]) * 0.5,
+    (bounds[5] + bounds[4]) * 0.5,
+]
 
 varname = "velocity"
 readerDisplay = Show(clip1, renderView1, 'GeometryRepresentation')
@@ -44,8 +47,11 @@ readerDisplay.PointSize = 1.0
 readerDisplay.GaussianRadius = 0.02
 
 varnameLUT = GetColorTransferFunction(varname)
-varnameLUT.ApplyPreset('Inferno (matplotlib)', True)
-#varnameLUT.AutomaticRescaleRangeMode = "Grow and update every timestep"
+if Version >= (6, 1):
+    preset_name = "Inferno"
+else:
+    preset_name = "Inferno (matplotlib)"
+varnameLUT.ApplyPreset(preset_name, True)
 
 varnameLUTColorBar = GetScalarBar(varnameLUT, renderView1)
 varnameLUTColorBar.Title = varname
@@ -76,6 +82,7 @@ vTP1.Writer.FileName = 'dataset_{timestep:06d}.vtpd'
 
 # Catalyst options
 from paraview import catalyst
+
 options = catalyst.Options()
 options.GlobalTrigger = 'TimeStep'
 options.EnableCatalystLive = 1
