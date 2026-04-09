@@ -40,7 +40,7 @@ class paraview_catalystclipping(rfm.RegressionTest):
     def prepare_runtime(self):
         self.executable_opts = [
             '--catalyst',
-            f'catalyst_clipping.py', # TODO this is copied because it is in src
+            f'catalyst_clipping.py',
         ]
         self.postrun_cmds = [
             'head -1 datasets/dataset_000020/dataset_000020_0.vtp',
