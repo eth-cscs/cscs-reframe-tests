@@ -14,14 +14,22 @@ class paraview_coloredsphere(rfm.RunOnlyRegressionTest):
     num_tasks = 12
     num_tasks_per_node = 4
     time_limit = '3m'
-    executable = 'pvbatch'
-    executable_opts = ['-- coloredSphere.py']
     maintainers = ['jfavre', 'albestro', 'biddisco', 'SSA']
     tags = {'production'}
 
     @run_before('run')
     def output_file_info(self):
-        self.postrun_cmds = ['file *.png']
+        self.job.options = ['--gpus-per-task=1']
+
+        self.prerun_cmds = [
+            'cp /user-environment/helpers/bind-gpu-vtk-egl .',
+        ]
+        self.executable = 'bind-gpu-vtk-egl'
+        self.executable_opts = ['pvbatch', 'coloredSphere.py']
+
+        self.postrun_cmds = [
+            'file *.png',
+        ]
 
     @sanity_function
     def assert_vendor_renderer(self):

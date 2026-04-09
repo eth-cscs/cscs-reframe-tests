@@ -4,16 +4,18 @@ from paraview.simple import *
 from paraview.modules.vtkRemotingCore import vtkProcessModule
 from paraview.modules.vtkRemotingViews import (
     vtkPVOpenGLInformation,
-    vtkPVRenderingCapabilitiesInformation
+    vtkPVRenderingCapabilitiesInformation,
 )
 
 basename = os.getenv('SCRATCH')
 if basename is None:
     basename = "/tmp"
 
-Version = (servermanager.vtkSMProxyManager.GetVersionMajor(),
-           servermanager.vtkSMProxyManager.GetVersionMinor(),
-           servermanager.vtkSMProxyManager.GetVersionPatch())
+Version = (
+    servermanager.vtkSMProxyManager.GetVersionMajor(),
+    servermanager.vtkSMProxyManager.GetVersionMinor(),
+    servermanager.vtkSMProxyManager.GetVersionPatch(),
+)
 
 info = vtkPVOpenGLInformation()
 info.CopyFromObject(None)
@@ -31,11 +33,9 @@ if rank == 0:
     print("Version:  %s" % info.GetVersion())
     print("Renderer: %s" % info.GetRenderer())
 
-if renInfo.Supports(
-    vtkPVRenderingCapabilitiesInformation.HEADLESS_RENDERING_USES_EGL):  # noqa: E125
+if renInfo.Supports(vtkPVRenderingCapabilitiesInformation.HEADLESS_RENDERING_USES_EGL):  # noqa: E125
     Vendor = "EGL"
-elif renInfo.Supports(
-    vtkPVRenderingCapabilitiesInformation.HEADLESS_RENDERING_USES_OSMESA):  # noqa: E125
+elif renInfo.Supports(vtkPVRenderingCapabilitiesInformation.HEADLESS_RENDERING_USES_OSMESA):  # noqa: E125
     Vendor = "OSMESA"
 else:
     Vendor = ""
@@ -72,18 +72,42 @@ processIdLUT.InterpretValuesAsCategories = 1
 # we take colors from the pre-defined "KAAMS" found in
 # ParaViewCore/ServerManager/Rendering/ColorMaps.json
 IndexedColors = [
-    1.0, 1.0, 1.0,
-    1.0, 0.0, 0.0,
-    0.0, 1.0, 0.0,
-    0.0, 0.0, 1.0,
-    1.0, 1.0, 0.0,
-    1.0, 0.0, 1.0,
-    0.0, 1.0, 1.0,
-    0.63, 0.63, 1.0,
-    0.67, 0.5, 0.33,
-    1.0, 0.5, 0.75,
-    0.53, 0.35, 0.7,
-    1.0, 0.75, 0.5
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    0.0,
+    0.0,
+    0.0,
+    1.0,
+    0.0,
+    0.0,
+    0.0,
+    1.0,
+    1.0,
+    1.0,
+    0.0,
+    1.0,
+    0.0,
+    1.0,
+    0.0,
+    1.0,
+    1.0,
+    0.63,
+    0.63,
+    1.0,
+    0.67,
+    0.5,
+    0.33,
+    1.0,
+    0.5,
+    0.75,
+    0.53,
+    0.35,
+    0.7,
+    1.0,
+    0.75,
+    0.5,
 ]
 
 a = []
@@ -103,7 +127,7 @@ processIdLUTColorBar.Visibility = 1
 # show color legend
 rep.SetScalarBarVisibility(view, True)
 
-view.Background = [.7, .7, .7]
+view.Background = [0.7, 0.7, 0.7]
 view.ViewSize = [1024, 1024]
 
 # change the pathname to a place where you have write access
