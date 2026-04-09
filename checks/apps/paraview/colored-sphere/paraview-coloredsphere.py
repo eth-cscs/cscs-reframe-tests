@@ -29,6 +29,11 @@ class paraview_coloredsphere(rfm.RunOnlyRegressionTest):
 
         self.postrun_cmds = [
             'file *.png',
+            (
+                'magick *.png -format "%c" histogram:info:'
+                '| tr -d :'
+                '| awk \'$1 > 1000 { count++ }; END { print "unique colors: " count }\''
+            ),
         ]
 
     @sanity_function
@@ -44,10 +49,13 @@ class paraview_coloredsphere(rfm.RunOnlyRegressionTest):
         }
         regex_png = 'PNG image data, 1024 x 1024, 8-bit/color RGB, non-interlaced'
 
+        ncolors = sn.extractsingle(r"unique colors: (\d+)", self.stdout, 1, int)
+
         return sn.all(
             [
                 sn.assert_found(regex_vendor[arch], self.stdout),
                 sn.assert_found(regex_render[arch], self.stdout),
                 sn.assert_found(regex_png, self.stdout),
+                sn.assert_eq(ncolors, self.num_tasks + 1),
             ]
         )
