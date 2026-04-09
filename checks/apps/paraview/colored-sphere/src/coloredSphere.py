@@ -41,9 +41,9 @@ else:
     Vendor = ""
 
 view = GetRenderView()
-view.CameraPosition = [1.642208, 1.973803, 2.14555]
-view.CameraViewUp = [-0.410182, -0.492857, 0.76736]
+view.CameraPosition = [0, 0, 1]
 view.CameraFocalPoint = [0.0, 0.0, 0.0]
+view.CameraViewUp = [0.0, 1.0, 0.0]
 view.OrientationAxesVisibility = 0
 
 sphere = Sphere()
@@ -129,6 +129,7 @@ rep.SetScalarBarVisibility(view, True)
 
 view.Background = [0.7, 0.7, 0.7]
 view.ViewSize = [1024, 1024]
+view.UseLight = False
 
 Render(view)
 
