@@ -130,6 +130,8 @@ rep.SetScalarBarVisibility(view, True)
 view.Background = [0.7, 0.7, 0.7]
 view.ViewSize = [1024, 1024]
 
+Render(view)
+
 # change the pathname to a place where you have write access
 SourceVersion = servermanager.vtkSMProxyManager.GetParaViewSourceVersion()
 filename = f"coloredSphere_v{SourceVersion.split()[-1]}.{Vendor}.png"
