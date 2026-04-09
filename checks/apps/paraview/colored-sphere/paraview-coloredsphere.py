@@ -11,22 +11,41 @@ import reframe.utility.sanity as sn
 class paraview_coloredsphere(rfm.RunOnlyRegressionTest):
     valid_systems = ['+uenv']
     valid_prog_environs = ['+paraview']
-    num_tasks = 12
-    num_tasks_per_node = 4
     time_limit = '3m'
-    maintainers = ['jfavre', 'albestro', 'biddisco', 'SSA']
+    maintainers = ['jfavre', 'albestro', 'SSA']
     tags = {'production'}
 
     @run_before('run')
-    def output_file_info(self):
-        self.job.options = ['--gpus-per-task=1']
+    def setup_mpi(self):
+        def get_num_gpus(partition):
+            gpus = partition.select_devices("gpu")
+            if len(gpus) == 0:
+                return 0
+            return gpus[0].num_devices
 
-        self.prerun_cmds = [
-            'cp /user-environment/helpers/bind-gpu-vtk-egl .',
-        ]
-        self.executable = 'bind-gpu-vtk-egl'
-        self.executable_opts = ['pvbatch', 'coloredSphere.py']
+        self.num_gpus_per_node = get_num_gpus(self.current_partition)
 
+        if self.num_gpus_per_node > 0:
+            self.num_tasks_per_node = self.num_gpus_per_node
+            self.job.options = ['--gpus-per-task=1']
+        else:
+            self.num_tasks_per_node = 2
+
+        self.num_tasks = 2 * self.num_tasks_per_node
+
+    @run_before('run')
+    def setup_execution(self):
+        cli_exec = ["pvbatch", "coloredSphere.py"]
+        if self.num_gpus_per_node > 0:
+            self.prerun_cmds += [
+                'cp /user-environment/helpers/bind-gpu-vtk-egl .',
+            ]
+            cli_exec.insert(0, "bind-gpu-vtk-egl")
+        self.executable = cli_exec[0]
+        self.executable_opts = cli_exec[1:]
+
+    @run_before('run')
+    def extract_info(self):
         self.postrun_cmds = [
             'file *.png',
             (
@@ -37,8 +56,7 @@ class paraview_coloredsphere(rfm.RunOnlyRegressionTest):
         ]
 
     @sanity_function
-    def assert_vendor_renderer(self):
-        arch = self.current_partition.processor.arch
+    def verify_info(self):
         regex_vendor = {
             'zen2': 'Mesa',
             'neoverse_v2': 'NVIDIA Corporation',
@@ -49,6 +67,7 @@ class paraview_coloredsphere(rfm.RunOnlyRegressionTest):
         }
         regex_png = 'PNG image data, 1024 x 1024, 8-bit/color RGB, non-interlaced'
 
+        arch = self.current_partition.processor.arch
         ncolors = sn.extractsingle(r"unique colors: (\d+)", self.stdout, 1, int)
 
         return sn.all(
