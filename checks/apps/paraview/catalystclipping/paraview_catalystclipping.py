@@ -8,7 +8,7 @@ import reframe.utility.sanity as sn
 
 
 @rfm.simple_test
-class paraview_catalystclipping(rfm.RegressionTest):
+class ParaviewCatalystClipping(rfm.RegressionTest):
     valid_systems = ['+uenv']
     valid_prog_environs = ['+paraview']
 

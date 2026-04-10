@@ -8,7 +8,7 @@ import reframe.utility.sanity as sn
 
 
 @rfm.simple_test
-class paraview_coloredsphere(rfm.RunOnlyRegressionTest):
+class ParaviewColoredSphere(rfm.RunOnlyRegressionTest):
     valid_systems = ['+uenv']
     valid_prog_environs = ['+paraview']
     time_limit = '3m'
