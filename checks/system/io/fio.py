@@ -118,7 +118,7 @@ class stuck_gpu_mem_test(rfm.RunOnlyRegressionTest):
     engine = "sync"
     num_jobs = 1
     iodepth = 1
-    filename = variable(str, value="/iopsstor/scratch/cscs/$USER/gpu-stuckmem.tmp")
+    filename = variable(str, value="$SCRATCH/gpu-stuckmem.tmp")
 
     @run_after("init")
     def set_parent(self):
