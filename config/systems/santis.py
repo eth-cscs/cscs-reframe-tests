@@ -6,6 +6,8 @@
 # ReFrame CSCS settings
 #
 
+import reframe.utility.osext as osext
+
 site_configuration = {
     'systems': [
         {
@@ -50,6 +52,7 @@ site_configuration = {
                         },
                     ],
                     'features': ['ce', 'gpu', 'nvgpu', 'remote', 'scontrol', 'uenv', 'hugepages_slurm'],
+                    'access': [f'--account=a-{osext.osgroup()}'],
                     'devices': [
                         {
                             'type': 'gpu',
