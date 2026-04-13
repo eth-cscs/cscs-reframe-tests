@@ -179,7 +179,6 @@ class NCCLTestsSkybox(NCCLTestsCE):
     spank_option = 'edf'
     container_image = 'jfrog.svc.cscs.ch/ghcr/sarus-suite/containerfiles-ci/nccl-tests:2.17.9-ompi5.0.9-ofi1.22-cuda12.8.1'
     container_workdir = '/nccl-tests-2.17.9/build/'
-    container_mounts = ["/etc/slurm:/etc/slurm:ro"]
     container_env_key_values = {
         'devices': ["alps.cscs/cxi=all", "nvidia.com/gpu=all", "alps.cscs/aws-ofi-nccl=cuda-dl", "/dev/gdrdrv"]
     }

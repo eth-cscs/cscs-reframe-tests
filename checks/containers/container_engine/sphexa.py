@@ -103,7 +103,6 @@ class SphExa_Skybox(SphExa_CE):
     descr = 'SPH-EXA for CE/Skybox'
     tags = {'ce_dev', 'skybox'}
     spank_option = 'edf'
-    container_mounts = ["/etc/slurm:/etc/slurm:ro"]
     container_env_key_values = {
         'devices': ["alps.cscs/cxi=all", "nvidia.com/gpu=all", "/dev/gdrdrv"]
     }
