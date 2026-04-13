@@ -52,7 +52,7 @@ site_configuration = {
                         },
                     ],
                     'features': ['ce', 'gpu', 'nvgpu', 'remote', 'scontrol', 'uenv', 'hugepages_slurm'],
-                    'access': [f'--account=a-{osext.osgroup()}'],
+                    'access': [f'--account={osext.osgroup()}'],
                     'devices': [
                         {
                             'type': 'gpu',
