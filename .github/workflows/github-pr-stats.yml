@@ -1,8 +1,12 @@
-name: Pull Request Stats
+name: github-pr-stats
 
 on:
-  pull_request:
-    types: [opened]
+  schedule:
+    # every sunday
+    - cron: "0 0 * * 0"
+  workflow_dispatch: # Allow for running this manually.
+  #pull_request:
+  #  types: [opened]
 
 jobs:
   stats:
