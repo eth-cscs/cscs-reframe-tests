@@ -1,0 +1,21 @@
+name: Pull Request Stats
+
+on:
+  pull_request:
+    types: [opened]
+
+jobs:
+  stats:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run pull request stats
+        uses: flowwer-dev/pull-request-stats@main
+        with:
+          token: ${{ secrets.ghrs_github_api_token }}
+          # organization: 'piedpiper'
+          period: 30
+          limit: 0
+          charts: true
+          disableLinks: true
+          sortBy: 'totalComments'
+          stats: 'totalComments,openedPullRequests,totalReviews'
