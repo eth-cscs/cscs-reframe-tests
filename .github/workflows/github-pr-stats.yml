@@ -20,6 +20,6 @@ jobs:
           period: 30
           limit: 0
           charts: true
-          disableLinks: true
+          disableLinks: false
           sortBy: 'totalComments'
           stats: 'totalComments,openedPullRequests,totalReviews'
