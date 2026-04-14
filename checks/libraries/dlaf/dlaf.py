@@ -2,10 +2,17 @@
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
+import sys
+import pathlib
+
 import reframe as rfm
 import reframe.utility.sanity as sn
 from reframe.core.builtins import xfail
 from uenv import uarch
+
+sys.path.append(str(pathlib.Path(__file__).parent.parent.parent / 'mixins'))
+
+from uenv_slurm_mpi_options import UenvSlurmMpiOptionsMixin
 
 dlaf_references = {
     "eigensolver": {
@@ -110,7 +117,7 @@ slurm_config = {
 }
 
 
-class dlaf_base(rfm.RunOnlyRegressionTest):
+class dlaf_base(rfm.RunOnlyRegressionTest, UenvSlurmMpiOptionsMixin):
     valid_systems = ['+uenv']
     valid_prog_environs = ['+dlaf -cp2k -cp2k-dev']
     maintainers = ['simbergm', 'rasolca', 'SSA']
@@ -138,7 +145,7 @@ class dlaf_base(rfm.RunOnlyRegressionTest):
         self.num_cpus_per_task = config["cpus-per-task"]
         self.ntasks_per_core = 1
         self.time_limit = config["walltime"]
-        self.job.launcher.options = ["--cpu-bind=cores"]
+        self.job.launcher.options += ["--cpu-bind=cores"]
         if self.uarch == "gh200":
             self.job.launcher.options += ["--gpus-per-task=1"]
 
