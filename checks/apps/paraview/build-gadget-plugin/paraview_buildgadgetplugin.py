@@ -28,8 +28,8 @@ class ParaviewBuildGadgetPlugin(rfm.CompileOnlyRegressionTest):
             'git clone --depth 1 --branch master https://github.com/jfavre/ParaViewGadgetPlugin gadget-plugin.git',
         ]
 
-        self.build_system.cc = "mpicc"
-        self.build_system.cxx = "mpicxx"
+        self.build_system.cc = "gcc"
+        self.build_system.cxx = "g++"
         self.build_system.builddir = "build"
         self.build_system.configuredir = "gadget-plugin.git"
 
