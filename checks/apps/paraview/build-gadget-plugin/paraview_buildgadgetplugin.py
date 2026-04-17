@@ -6,6 +6,8 @@
 import reframe as rfm
 import reframe.utility.sanity as sn
 
+from textwrap import dedent
+
 
 @rfm.simple_test
 class ParaviewBuildGadgetPlugin(rfm.CompileOnlyRegressionTest):
@@ -26,6 +28,22 @@ class ParaviewBuildGadgetPlugin(rfm.CompileOnlyRegressionTest):
     def prepare_build(self):
         self.prebuild_cmds = [
             'git clone --depth 1 --branch master https://github.com/jfavre/ParaViewGadgetPlugin gadget-plugin.git',
+            dedent(
+                """
+                patch -p 1 -d gadget-plugin.git <<-'EOF'
+                    diff --git a/src/Reader/vtk.module b/src/Reader/vtk.module
+                    index 46b504d..ed640bc 100644
+                    --- a/src/Reader/vtk.module
+                    +++ b/src/Reader/vtk.module
+                    @@ -12,4 +12,4 @@ DEPENDS
+                     PRIVATE_DEPENDS
+                       VTK::vtksys
+                       VTK::mpi
+                    -  VTK::hdf5
+                    +  VTK::hdf5vtk
+                EOF
+                """
+            ),
         ]
 
         self.build_system.cc = "gcc"
