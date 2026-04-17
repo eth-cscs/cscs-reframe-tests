@@ -1,4 +1,4 @@
-# Copyright 2016 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright ETH Zurich/Swiss National Supercomputing Centre (CSCS)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
