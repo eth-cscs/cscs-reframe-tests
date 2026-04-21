@@ -14,14 +14,13 @@ class ICON4PyBenchmarks(rfm.RunOnlyRegressionTest):
     descr = 'ICON4Py Check -Diffusion & DyCore Granules-'
     maintainers = ['SSA']
     valid_systems = ['+uenv +amdgpu', '+uenv +nvgpu']
-    valid_prog_environs = ['+uenv +rocm', '+uenv +cuda']
+    valid_prog_environs = ['+uenv +rocm -qe -qe-dev -q-e-sirius',
+                           '+uenv +cuda -qe -qe-dev -q-e-sirius']
     tags = {'uenv', 'bencher'}
     time_limit = '60m'
     build_locally = False
     env_vars = {
-        'ICON4PY_PYTHON_VERSION': '3.11',
-        'UV_NO_CACHE': '1',
-        'UV_CACHE_DIR': '$SCRATCH/.cache/uv',
+        'ICON4PY_PYTHON_VERSION': '3.12',
         'CC': '$(which gcc)',
         'MPICH_CC': '$(which gcc)',
         'CXX': '$(which g++)',
@@ -50,12 +49,27 @@ class ICON4PyBenchmarks(rfm.RunOnlyRegressionTest):
         )
         sub_folder = re.sub(r'[^a-zA-Z0-9=]', '', sub_folder)
         cache_folder = os.path.join(cache_folder, sub_folder)
+        self.env_vars['UV_CACHE_DIR'] = cache_folder
         self.env_vars['GT4PY_BUILD_CACHE_DIR'] = cache_folder
 
-        if 'gfx' in gpu_arch:  # AMD GPU | 'sm_' in gpu_arch for NVIDIA GPU
+        if 'gfx' in gpu_arch:  # AMD GPU
+            self.env_vars['UV_GPU_SUPPORT'] = (
+                'rocm$('
+                'hipcc --version '
+                '| grep -oP "HIP version:\\s*\\K\\d+" '
+                '| head -n1'
+                ')'
+            )
+            self.env_vars['HIPCC'] = '$(which hipcc)'
             self.env_vars['CUPY_INSTALL_USE_HIP'] = '1'
             self.env_vars['HCC_AMDGPU_TARGET'] = gpu_arch
             self.env_vars['ROCM_HOME'] = '/user-environment/env/default'
+        elif 'sm_' in gpu_arch:  # NVIDIA GPU
+            self.env_vars['UV_GPU_SUPPORT'] = (
+                'cuda$(nvcc --version'
+                ' | grep -oP "release\\s+\\K\\d+"'
+                ' | head -n1)'
+            )
 
     @run_before('run')
     def install_deps(self):
