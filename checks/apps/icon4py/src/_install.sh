@@ -5,9 +5,8 @@ echo "# SLURM_JOBID=$SLURM_JOBID"
 
 unset PYTHONPATH
 
-git clone https://github.com/C2SM/icon4py.git
+git clone --depth 1 --single-branch --branch main https://github.com/C2SM/icon4py.git
 cd icon4py
-git checkout 15b7406d9385a189abaaa71b14851d1491b231f1  # Commit: Update to GT4Py v1.1.2 (#969)
 
 # Install uv locally
 curl -LsSf https://astral.sh/uv/install.sh | UV_UNMANAGED_INSTALL="$PWD/bin" sh
@@ -15,63 +14,50 @@ export PATH="$PWD/bin:$PATH"
 
 # Install ICON4Py
 HOME="$PWD/_home" uv python install $ICON4PY_PYTHON_VERSION
-uv sync --extra all --python $PWD/_home/.local/bin/python$ICON4PY_PYTHON_VERSION
+if [ -z "$UV_GPU_SUPPORT" ]; then
+    echo "ERROR: UV_GPU_SUPPORT must be set" >&2
+    exit 1
+elif [ "$UV_GPU_SUPPORT" = "rocm6" ]; then
+    echo "Branch: rocm6 (no --extra \$UV_GPU_SUPPORT flag)"
+    echo "Running: uv sync --extra all --python $PWD/_home/.local/bin/python$ICON4PY_PYTHON_VERSION"
+    uv sync --extra all --python $PWD/_home/.local/bin/python$ICON4PY_PYTHON_VERSION
+    uv_sync_rc=$?
+else
+    echo "Branch: generic GPU support ($UV_GPU_SUPPORT)"
+    echo "Running: uv sync --extra all --extra $UV_GPU_SUPPORT --python $PWD/_home/.local/bin/python$ICON4PY_PYTHON_VERSION"
+    uv sync --extra all --extra "$UV_GPU_SUPPORT" --python $PWD/_home/.local/bin/python$ICON4PY_PYTHON_VERSION
+    uv_sync_rc=$?
+fi
 
-# Activate virtual environment
+# If uv sync failed, wipe the uv cache so subsequent runs start clean.
+# A corrupted/partial cache is a common cause of repeat failures.
+if [ "$uv_sync_rc" -ne 0 ]; then
+    echo "ERROR: uv sync failed with exit code $uv_sync_rc" >&2
+    cache_to_clear="${UV_CACHE_DIR:-${SCRATCH:+$SCRATCH/.cache/uv}}"
+    if [ -n "$cache_to_clear" ] && [ -d "$cache_to_clear" ]; then
+        echo "# Removing uv cache for subsequent runs: $cache_to_clear"
+        rm -rf "$cache_to_clear"
+    else
+        echo "# uv cache dir not found or not set (UV_CACHE_DIR='$UV_CACHE_DIR', SCRATCH='$SCRATCH')" >&2
+    fi
+    exit "$uv_sync_rc"
+fi
+
 source .venv/bin/activate
 
 # Compatibility for both Daint & Beverin
 mpi4py_ver=$(uv pip show mpi4py | awk '/Version:/ {print $2}')
 uv pip uninstall mpi4py && uv pip install --no-binary mpi4py "mpi4py==$mpi4py_ver"
-uv pip install git+https://github.com/cupy/cupy.git@v13.6.0
-
-# Patch Gt4Py to avoid cache issues
-uv pip uninstall gt4py
-git clone --branch v1.1.2 https://github.com/GridTools/gt4py.git
-python3 -c '
-import sys
-from pathlib import Path
-
-file_path = Path("gt4py/src/gt4py/next/otf/stages.py")
-lines = file_path.read_text().splitlines()
-
-new_lines = []
-iterator = iter(lines)
-
-found = False
-for line in iterator:
-    # 1. Detect the start of the block we want to change
-    if "program_hash = utils.content_hash(" in line:
-        found = True
-        # Insert the NEW pre-calculation line
-        # We steal the indentation from the current line to be safe
-        indent = line[:line.find("program_hash")]
-        new_lines.append(f"{indent}offset_provider_arrays = {{key: value.ndarray if hasattr(value, \"ndarray\") else value for key, value in offset_provider.items()}}")
-        
-        # Add the modified content_hash call
-        new_lines.append(f"{indent}program_hash = utils.content_hash(")
-        new_lines.append(f"{indent}    (")
-        new_lines.append(f"{indent}        program.fingerprint(),")
-        new_lines.append(f"{indent}        sorted(offset_provider_arrays.items(), key=lambda el: el[0]),")
-        
-        # Skip the OLD lines from the iterator until we hit "column_axis"
-        # We blindly consume lines until we find the one we keep
-        while True:
-            skipped_line = next(iterator)
-            if "column_axis," in skipped_line:
-                new_lines.append(skipped_line) # Add column_axis line back
-                break
-    else:
-        new_lines.append(line)
-
-if found:
-    file_path.write_text("\n".join(new_lines) + "\n")
-    print("Patch applied.")
-else:
-    print("Target line not found.")
-    sys.exit(1)
-'
-uv pip install -e ./gt4py
+if [ "$UV_GPU_SUPPORT" = "rocm6" ]; then
+    uv pip install git+https://github.com/cupy/cupy.git@v13.6.0
+elif [[ "$UV_GPU_SUPPORT" == rocm* ]]; then
+    echo "Applying CuPy hip_workaround.cuh patch for ROCm support (CuPy 14.0.1 bug)"
+    CUPY_HIP_WORKAROUND=$(python3 -c "import cupy, os; print(os.path.join(os.path.dirname(cupy.__file__), '_core', 'include', 'cupy', 'hip_workaround.cuh'))" 2>/dev/null)
+    if [ -f "$CUPY_HIP_WORKAROUND" ]; then
+        sed -i 's/#if (HIP_VERSION < 60200000) || defined(HIP_DISABLE_WARP_SYNC_BUILTINS)/#if 1  \/\/ Patched: force mask-stripping for all ROCm versions (CuPy 14.0.1 bug)/' "$CUPY_HIP_WORKAROUND"
+        echo "# Patched CuPy hip_workaround.cuh: $CUPY_HIP_WORKAROUND"
+    fi
+fi
 
 ################################################################################
 # NVHPC runtime auto-discovery for serialbox (libnvhpcatm.so)
@@ -157,6 +143,14 @@ if [ -n "$VIRTUAL_ENV" ]; then
 fi
 
 EOF
+
+################################################################################
+# Trim uv cache to keep Lustre happy
+################################################################################
+if command -v uv >/dev/null 2>&1; then
+    echo "# Pruning uv cache (--ci: keep source-built wheels, drop the rest)"
+    uv cache prune --ci || echo "# WARNING: 'uv cache prune --ci' failed (non-fatal)" >&2
+fi
 
 ################################################################################
 
