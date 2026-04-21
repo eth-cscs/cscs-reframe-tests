@@ -20,8 +20,6 @@ class ICON4PyBenchmarks(rfm.RunOnlyRegressionTest):
     build_locally = False
     env_vars = {
         'ICON4PY_PYTHON_VERSION': '3.12',
-        'UV_NO_CACHE': '1',
-        'UV_CACHE_DIR': '$SCRATCH/.cache/uv',
         'CC': '$(which gcc)',
         'MPICH_CC': '$(which gcc)',
         'CXX': '$(which g++)',
@@ -50,6 +48,7 @@ class ICON4PyBenchmarks(rfm.RunOnlyRegressionTest):
         )
         sub_folder = re.sub(r'[^a-zA-Z0-9=]', '', sub_folder)
         cache_folder = os.path.join(cache_folder, sub_folder)
+        self.env_vars['UV_CACHE_DIR'] = cache_folder
         self.env_vars['GT4PY_BUILD_CACHE_DIR'] = cache_folder
 
         if 'gfx' in gpu_arch:  # AMD GPU
