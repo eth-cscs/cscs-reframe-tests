@@ -52,11 +52,10 @@ class ICON4PyBenchmarks(rfm.RunOnlyRegressionTest):
         cache_folder = os.path.join(cache_folder, sub_folder)
         self.env_vars['GT4PY_BUILD_CACHE_DIR'] = cache_folder
 
-        if 'gfx' in gpu_arch:  # AMD GPU
+        if 'gfx' in gpu_arch:  # AMD GPU | 'sm_' in gpu_arch for NVIDIA GPU
             self.env_vars['CUPY_INSTALL_USE_HIP'] = '1'
             self.env_vars['HCC_AMDGPU_TARGET'] = gpu_arch
             self.env_vars['ROCM_HOME'] = '/user-environment/env/default'
-        # elif 'sm_' in gpu_arch:  # CUDA GPU
 
     @run_before('run')
     def install_deps(self):

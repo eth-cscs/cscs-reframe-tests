@@ -23,7 +23,7 @@ source .venv/bin/activate
 # Compatibility for both Daint & Beverin
 mpi4py_ver=$(uv pip show mpi4py | awk '/Version:/ {print $2}')
 uv pip uninstall mpi4py && uv pip install --no-binary mpi4py "mpi4py==$mpi4py_ver"
-uv pip install git+https://github.com/cupy/cupy.git
+uv pip install git+https://github.com/cupy/cupy.git@v13.6.0
 
 # Patch Gt4Py to avoid cache issues
 uv pip uninstall gt4py

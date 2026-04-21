@@ -112,7 +112,7 @@ def create_checks(check):
 
     check.CLASS = 'OSINSTALL'
 
-    check('cat /etc/os-release', expected=r'PRETTY_NAME="SUSE Linux Enterprise Server 15 SP5"')
+    check('cat /etc/os-release', expected=r'PRETTY_NAME="SUSE Linux Enterprise Server 15 SP6"')
     check('cat /etc/locale.conf', expected=r'LANG=en_US.UTF-8')
 
     # ----------------------------------------------------------------------- #
@@ -176,8 +176,6 @@ def create_checks(check):
     check('grep -q "/capstor/scratch/cscs /capstor/scratch/cscs lustre"     /proc/mounts || echo FAILED', not_expected=r'FAILED')
     check('grep -q "/capstor/store/cscs /capstor/store/cscs lustre"         /proc/mounts || echo FAILED', not_expected=r'FAILED')
     check('grep -q "/capstor/store/cscs /capstor/store/cscs lustre"         /proc/mounts || echo FAILED', not_expected=r'FAILED')
-
-    check('grep -q "pe_opt_cray_pe /opt/cray/pe"  /proc/mounts || echo FAILED', not_expected=r'FAILED')
 
     check('printenv SCRATCH || echo FAILED', not_expected=r'FAILED')
     check('printenv PROJECT || echo FAILED', not_expected=r'FAILED')

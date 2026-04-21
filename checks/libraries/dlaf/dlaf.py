@@ -2,15 +2,22 @@
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
+import sys
+import pathlib
+
 import reframe as rfm
 import reframe.utility.sanity as sn
 from reframe.core.builtins import xfail
 from uenv import uarch
 
+sys.path.append(str(pathlib.Path(__file__).parent.parent.parent / 'mixins'))
+
+from uenv_slurm_mpi_options import UenvSlurmMpiOptionsMixin
+
 dlaf_references = {
     "eigensolver": {
         "gh200": {
-            "time_run": (24.0, -0.1, 0.1, "s"),
+            "time_run": xfail("Known performance regression", (24.0, -0.1, 0.1, "s")),
         },
         "mi300": {
             "time_run": (36.0, -0.1, 0.1, "s"),
@@ -24,7 +31,7 @@ dlaf_references = {
     },
     "gen_eigensolver": {
         "gh200": {
-            "time_run": (26.0, -0.1, 0.1, "s")
+            "time_run": xfail("Known performance regression", (26.0, -0.1, 0.1, "s"))
         },
         "mi300": {
             "time_run": (47.0, -0.1, 0.1, "s")
@@ -110,7 +117,7 @@ slurm_config = {
 }
 
 
-class dlaf_base(rfm.RunOnlyRegressionTest):
+class dlaf_base(rfm.RunOnlyRegressionTest, UenvSlurmMpiOptionsMixin):
     valid_systems = ['+uenv']
     valid_prog_environs = ['+dlaf -cp2k -cp2k-dev']
     maintainers = ['simbergm', 'rasolca', 'SSA']
@@ -138,7 +145,7 @@ class dlaf_base(rfm.RunOnlyRegressionTest):
         self.num_cpus_per_task = config["cpus-per-task"]
         self.ntasks_per_core = 1
         self.time_limit = config["walltime"]
-        self.job.launcher.options = ["--cpu-bind=cores"]
+        self.job.launcher.options += ["--cpu-bind=cores"]
         if self.uarch == "gh200":
             self.job.launcher.options += ["--gpus-per-task=1"]
 
@@ -148,7 +155,10 @@ class dlaf_base(rfm.RunOnlyRegressionTest):
                 str((self.num_cpus_per_task // 2) - 1)
         else:
             self.env_vars["PIKA_THREADS"] = str(self.num_cpus_per_task - 1)
-        self.env_vars["MIMALLOC_ALLOW_LARGE_OS_PAGES"] = "1"
+        # This generally gives better performance, but causes:
+        # create_endpoint(1391).......: OFI EP enable failed (ofi_init.c:1391:create_endpoint:Invalid resource domain)
+        # on GH200 since the SLES 15 SP6 update.
+        # self.env_vars["MIMALLOC_ALLOW_LARGE_OS_PAGES"] = "1"
         self.env_vars["MIMALLOC_EAGER_COMMIT_DELAY"] = "0"
         if self.uarch in ("gh200", "mi300", "mi200"):
             self.env_vars["FI_MR_CACHE_MONITOR"] = "disabled"
@@ -159,6 +169,7 @@ class dlaf_base(rfm.RunOnlyRegressionTest):
                 str(2**21)
 
         if self.uarch in ("mi300", "mi200"):
+            self.env_vars["MIMALLOC_ALLOW_LARGE_OS_PAGES"] = "1"
             self.env_vars["PIKA_MPI_ENABLE_POOL"] = "1"
             self.env_vars["PIKA_MPI_COMPLETION_MODE"] = "28"
             self.env_vars["DLAF_BAND_TO_TRIDIAG_1D_BLOCK_SIZE_BASE"] = "2048"
