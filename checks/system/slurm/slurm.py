@@ -211,7 +211,6 @@ class MemoryOverconsumptionCheckMPI(SlurmCompiledBaseCheck,
 
     @run_before('compile')
     def oneapi_compilers(self):
-        print(f"xx={self.current_environ.features}")
         if 'oneapi' in self.current_environ.features:
             self.build_system.cflags += ['-g']
 
