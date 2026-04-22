@@ -186,6 +186,11 @@ class MemoryOverconsumptionCheck(SlurmCompiledBaseCheck):
     sourcepath = 'eatmem/eatmemory.c'
     executable_opts = ['4000M']
 
+    @run_before('compile')
+    def oneapi_compilers(self):
+        if 'oneapi' in self.current_environ.features:
+            self.build_system.cflags += ['-g']
+
     @run_before('run')
     def set_memory_limit(self):
         self.job.options = ['--mem=2000']
