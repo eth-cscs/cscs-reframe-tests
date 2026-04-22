@@ -209,6 +209,12 @@ class MemoryOverconsumptionCheckMPI(SlurmCompiledBaseCheck,
     # env_vars = {'MPICH_GPU_SUPPORT_ENABLED': 0}
     tags.add('mem')
 
+    @run_before('compile')
+    def oneapi_compilers(self):
+        print(f"xx={self.current_environ.features}")
+        if 'oneapi' in self.current_environ.features:
+            self.build_system.cflags += ['-g']
+
     @run_before('run')
     def set_num_tasks(self):
         self.skip_if_no_procinfo()
