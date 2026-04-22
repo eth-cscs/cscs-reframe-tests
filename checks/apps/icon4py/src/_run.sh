@@ -11,6 +11,7 @@ pytest -sv \
 -m continuous_benchmarking \
 --benchmark-only \
 --benchmark-warmup=on \
+--benchmark-min-rounds=100 \
 --benchmark-warmup-iterations=30 \
 --benchmark-disable-gc \
 --benchmark-json=icon4py_benchmarks.json \
