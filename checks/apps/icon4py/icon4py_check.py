@@ -100,9 +100,13 @@ class ICON4PyBenchmarks(rfm.RunOnlyRegressionTest):
             r'(?P<max>\d+(?:\.\d+)?)'            # Max
             r'(?:\s+\([^)]+\))?\s+'              # optional '(...)'
             r'(?P<mean>\d+(?:\.\d+)?)'           # Mean
+            r'(?:\s+\([^)]+\))?\s+'              # optional '(...)'
+            r'(?P<stddev>\d+(?:\.\d+)?)'         # StdDev
+            r'(?:\s+\([^)]+\))?\s+'              # optional '(...)'
+            r'(?P<median>\d+(?:\.\d+)?)'         # Median
         )
-        diffusion_granule_mean = sn.extractsingle(
-            diffusion_regex, self.stdout, 'mean', float)
+        diffusion_granule_median = sn.extractsingle(
+            diffusion_regex, self.stdout, 'median', float)
 
         dycore_regex = (
             r'^\s*test_benchmark_solve_nonhydro\[True-False\]\s+'
@@ -111,16 +115,20 @@ class ICON4PyBenchmarks(rfm.RunOnlyRegressionTest):
             r'(?P<max>\d+(?:\.\d+)?)'            # Max
             r'(?:\s+\([^)]+\))?\s+'              # optional '(...)'
             r'(?P<mean>\d+(?:\.\d+)?)'           # Mean
+            r'(?:\s+\([^)]+\))?\s+'              # optional '(...)'
+            r'(?P<stddev>\d+(?:\.\d+)?)'         # StdDev
+            r'(?:\s+\([^)]+\))?\s+'              # optional '(...)'
+            r'(?P<median>\d+(?:\.\d+)?)'         # Median
         )
-        dycore_granule_mean = sn.extractsingle(
-            dycore_regex, self.stdout, 'mean', float)
+        dycore_granule_median = sn.extractsingle(
+            dycore_regex, self.stdout, 'median', float)
 
         self.perf_variables = {
             'diffusion_granule':
-                sn.make_performance_function(diffusion_granule_mean, 'ms'),
+                sn.make_performance_function(diffusion_granule_median, 'ms'),
             #
             'dycore_granule':
-                sn.make_performance_function(dycore_granule_mean, 'ms'),
+                sn.make_performance_function(dycore_granule_median, 'ms'),
         }
 
     # TODO: add ref. (https://github.com/eth-cscs/cscs-reframe-tests/pull/440)

@@ -12,6 +12,7 @@ pytest -sv \
 --benchmark-only \
 --benchmark-warmup=on \
 --benchmark-warmup-iterations=30 \
+--benchmark-disable-gc \
 --benchmark-json=icon4py_benchmarks.json \
 --backend=dace_gpu \
 --grid=icon_benchmark_regional \
