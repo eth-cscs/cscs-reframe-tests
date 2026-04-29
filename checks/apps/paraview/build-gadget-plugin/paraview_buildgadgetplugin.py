@@ -45,8 +45,14 @@ class ParaviewBuildGadgetPlugin(rfm.CompileOnlyRegressionTest):
 
     @run_before('compile')
     def prepare_build(self):
+        commit = "776ad531c2ac559528ff68ba8beabfa3a45c5011"
         self.prebuild_cmds = [
-            'git clone --depth 1 --branch master https://github.com/jfavre/ParaViewGadgetPlugin gadget-plugin.git',
+            "mkdir gadget-plugin.git; pushd gadget-plugin.git",
+            "git init",
+            "git remote add origin https://github.com/jfavre/ParaViewGadgetPlugin",
+            "git fetch --depth 1 origin {}".format(commit),
+            "git reset --hard FETCH_HEAD",
+            "popd",
         ]
 
         if (fix_actions := need_fix_hdf5vtk(self)) is not None:
