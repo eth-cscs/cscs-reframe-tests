@@ -1,4 +1,4 @@
-# Copyright 2016-2023 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -22,7 +22,7 @@ class SlurmMpiPmixMixin(rfm.RegressionTestPlugin):
         # Disable MCA components to avoid warnings
         self.env_vars.update(
             {
-                'PMIX_MCA_psec': 'native',
+                'PMIX_MCA_psec': '^munge',
                 'PMIX_MCA_gds': '^shmem2'
             }
         )
