@@ -8,6 +8,19 @@ import reframe.utility.sanity as sn
 
 from textwrap import dedent
 
+from packaging.version import Version
+from packaging.specifiers import SpecifierSet
+
+
+def uenv_metadata():
+    import os
+    import json
+    from reframe.utility import osext
+
+    uenv_label = os.environ['UENV']
+    metadata = json.loads(osext.run_command(f"uenv image inspect --json {uenv_label}").stdout)
+    return Version(metadata["version"]), Version(metadata["tag"])
+
 
 @rfm.simple_test
 class ParaviewBuildGadgetPlugin(rfm.CompileOnlyRegressionTest):
@@ -23,6 +36,12 @@ class ParaviewBuildGadgetPlugin(rfm.CompileOnlyRegressionTest):
 
     maintainers = ['jfavre', 'albestro', 'SSA']
     tags = {'production'}
+
+    uenv_version = variable(tuple, value=(None, None))
+
+    @run_before("compile")
+    def set_version(self):
+        self.uenv_version = uenv_metadata()
 
     @run_before('compile')
     def prepare_build(self):
