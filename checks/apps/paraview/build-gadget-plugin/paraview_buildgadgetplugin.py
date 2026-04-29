@@ -47,23 +47,10 @@ class ParaviewBuildGadgetPlugin(rfm.CompileOnlyRegressionTest):
     def prepare_build(self):
         self.prebuild_cmds = [
             'git clone --depth 1 --branch master https://github.com/jfavre/ParaViewGadgetPlugin gadget-plugin.git',
-            dedent(
-                """
-                patch -p 1 -d gadget-plugin.git <<-'EOF'
-                    diff --git a/src/Reader/vtk.module b/src/Reader/vtk.module
-                    index 46b504d..ed640bc 100644
-                    --- a/src/Reader/vtk.module
-                    +++ b/src/Reader/vtk.module
-                    @@ -12,4 +12,4 @@ DEPENDS
-                     PRIVATE_DEPENDS
-                       VTK::vtksys
-                       VTK::mpi
-                    -  VTK::hdf5
-                    +  VTK::hdf5vtk
-                EOF
-                """
-            ),
         ]
+
+        if (fix_actions := need_fix_hdf5vtk(self)) is not None:
+            self.prebuild_cmds.extend(fix_actions)
 
         self.build_system.cc = "gcc"
         self.build_system.cxx = "g++"
@@ -84,3 +71,70 @@ class ParaviewBuildGadgetPlugin(rfm.CompileOnlyRegressionTest):
                 ),
             ]
         )
+
+
+# External VTK and hdf5
+
+
+def has_bug_hdf5vtk(test):
+    """
+    This tells if upstream paraview has the bug of VTK::hdf5 when used as external.
+    """
+    version, _ = test.uenv_version
+
+    if version in SpecifierSet("~=6.1"):
+        return True
+    elif version in SpecifierSet("~=6.0"):
+        return True
+
+    return False
+
+
+def need_fix_hdf5vtk(test):
+    """
+    This tells which fix should be applied according to how bug has been workarounded in uenv.
+    """
+    version, _ = test.uenv_version
+
+    if version in SpecifierSet("~=6.1"):
+        # this is a newer workaround that avoids warning about deprecated targets "vtk*"
+        return [
+            dedent(
+                """
+                patch -p 1 -d gadget-plugin.git <<-'EOF'
+                    diff --git a/src/Reader/vtk.module b/src/Reader/vtk.module
+                    index 46b504d..ed640bc 100644
+                    --- a/src/Reader/vtk.module
+                    +++ b/src/Reader/vtk.module
+                    @@ -12,4 +12,4 @@ DEPENDS
+                     PRIVATE_DEPENDS
+                       VTK::vtksys
+                       VTK::mpi
+                    -  VTK::hdf5
+                    +  VTK::hdf5vtk
+                EOF
+                """
+            )
+        ]
+    elif version in SpecifierSet("~=6.0"):
+        # this is the first workaround applied. it works, but there is a complain about
+        # deprecated targets due to the name chosen, because it starts with "vtk*"
+        return [
+            dedent(
+                """
+                patch -p 1 -d gadget-plugin.git <<-'EOF'
+                    diff --git a/src/Reader/vtk.module b/src/Reader/vtk.module
+                    index 46b504d..ed640bc 100644
+                    --- a/src/Reader/vtk.module
+                    +++ b/src/Reader/vtk.module
+                    @@ -12,4 +12,4 @@ DEPENDS
+                     PRIVATE_DEPENDS
+                       VTK::vtksys
+                       VTK::mpi
+                    -  VTK::hdf5
+                    +  VTK::vtkhdf5
+                EOF
+                """
+            )
+        ]
+    return None
