@@ -45,7 +45,7 @@ class ParaviewBuildGadgetPlugin(rfm.CompileOnlyRegressionTest):
 
     @run_before('compile')
     def prepare_build(self):
-        commit = "776ad531c2ac559528ff68ba8beabfa3a45c5011"
+        commit = "d9d12bde19454199b733b4e1285be3dcd1ac5595"
         self.prebuild_cmds = [
             "mkdir gadget-plugin.git; pushd gadget-plugin.git",
             "git init",
