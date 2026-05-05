@@ -245,8 +245,8 @@ def md_link(text: str, href: str) -> str:
 
 def category_cell(file_path: str | None) -> str:
     """
-    Category display: subfolders after ../checks (e.g. system/gssr)
-    Hyperlink target: the path currently displayed (../checks/system/gssr/)
+    Category display: only the subfolders after checks/ (e.g. system/gssr)
+    Hyperlink target: ../checks/<category>/
     """
     rel = checks_relative_path(file_path) if file_path else None
     category = category_from_checks_rel(rel)
@@ -259,25 +259,22 @@ def category_cell(file_path: str | None) -> str:
 
 def test_name_cell(display_name: str, kind: str, file_path: str | None) -> str:
     """
-    Show actual test name (base) + parameter bullets.
-    Also add a hyperlink to the filename using the displayed relative path.
+    Show the actual test name (not filename), with parameter bullets underneath.
+    The test name itself is linked to the check's defining file (../checks/.../file.py).
     """
     base, params = split_name_and_params(display_name)
     prefix = "↳ " if kind == "related" else ""
 
-    # Test name should be the actual test name (not the filename)
-    test_text = normalize_table_cell(prefix + base)
-    cell = test_text + params_inline_lines(params)
+    link_text = normalize_table_cell(prefix + base)
+    bullets = params_inline_lines(params)
 
-    # Add file hyperlink using current displayed relative path
     rel = checks_relative_path(file_path) if file_path else None
     if rel and rel.startswith("checks/"):
         href = quote(f"../{rel}", safe="/._-")
-        # Display text is the same relative path currently shown
-        file_text = normalize_table_cell(f"../{rel}")
-        cell += f"<br>file: {md_link(file_text, href)}"
+        return md_link(link_text, href) + bullets
 
-    return cell
+    # Fallback: no file path detected
+    return link_text + bullets
 
 
 def build_preamble(system: str, mode: str | None, tag: str | None, found: int | None) -> str:
