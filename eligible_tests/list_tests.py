@@ -3,15 +3,11 @@
 Generate a Markdown report by running and parsing ReFrame `-L` (list-detailed).
 
 Why parsing?
-- `reframe -L` already applies the exact selection logic (system/mode/tags/prgenv/etc.).
+- `reframe -L` already applies the exact selection logic (system/mode/tags/prgenv/etc.). [1](https://reframe-hpc.readthedocs.io/en/v3.5.0/manpage.html)
 - We simply format what ReFrame outputs, rather than re-implementing filtering.
-
-ReFrame reference:
-- `-L/--list-detailed` lists selected tests with details and supports `T|C` listing types. [1](https://stackoverflow.com/questions/77201512/unable-to-use-json-flag-with-nuclei-for-jsonl-output)
 """
 
 import argparse
-import os
 import re
 import shlex
 import subprocess
@@ -85,13 +81,10 @@ def build_output_path(base_output: str, system: str, mode: str | None, tag: str 
 
 
 def build_reframe_out_path(md_path: Path) -> Path:
-    """
-    Return the sibling path for raw ReFrame output.
-    Requirement: same filename, but suffix is '.reframe.out' instead of '.md'.
-    """
+    """Same filename as the Markdown file, but with '.reframe.out' suffix."""
     name = md_path.name
     if name.lower().endswith(".md"):
-        base = name[:-3]  # drop '.md'
+        base = name[:-3]
     else:
         base = md_path.stem
     return md_path.with_name(f"{base}.reframe.out")
@@ -123,7 +116,7 @@ def strip_quotes(s: str) -> str:
     return s
 
 
-def parse_list_detailed(text: str) -> list:
+def parse_list_detailed(text: str) -> list[dict]:
     """
     Parse ReFrame -L output into a list of items.
     Each item contains:
@@ -194,6 +187,7 @@ def parse_list_detailed(text: str) -> list:
 # -----------------------------------------------------------------------------
 
 def normalize_table_cell(text: str | None) -> str:
+    """Table-safe: no physical newlines; escape pipes."""
     if not text:
         return "—"
     s = str(text).replace("\r\n", "\n").replace("\r", "\n").strip()
@@ -204,6 +198,7 @@ def normalize_table_cell(text: str | None) -> str:
 
 
 def split_name_and_params(name: str) -> tuple[str, list[str]]:
+    """Extract %param=value tokens from display_name."""
     s = (name or "").strip()
     if not s:
         return "—", []
@@ -213,12 +208,14 @@ def split_name_and_params(name: str) -> tuple[str, list[str]]:
 
 
 def params_inline_lines(params: list[str]) -> str:
+    """Render params as <br> bullet lines."""
     if not params:
         return ""
     return "".join(f"<br>• {normalize_table_cell(p)}" for p in params)
 
 
 def checks_relative_path(file_path: str) -> str | None:
+    """Return relative path starting at checks/"""
     if not file_path:
         return None
     norm = file_path.replace("\\", "/")
@@ -241,24 +238,46 @@ def category_from_checks_rel(rel: str | None) -> str:
     return "/".join(folders) if folders else "—"
 
 
-def category_cell(category: str) -> str:
+def md_link(text: str, href: str) -> str:
+    """Markdown link helper."""
+    return f"[{text}]({href})"
+
+
+def category_cell(file_path: str | None) -> str:
+    """
+    Category display: subfolders after ../checks (e.g. system/gssr)
+    Hyperlink target: the path currently displayed (../checks/system/gssr/)
+    """
+    rel = checks_relative_path(file_path) if file_path else None
+    category = category_from_checks_rel(rel)
     if not category or category == "—":
         return "—"
+
     href = quote(f"../checks/{category}/", safe="/._-")
-    return href
+    return md_link(normalize_table_cell(category), href)
 
 
-def test_name_cell(name_text: str, file_path: str | None, params: list[str]) -> str:
-    base = normalize_table_cell(name_text)
-    bullets = params_inline_lines(params)
+def test_name_cell(display_name: str, kind: str, file_path: str | None) -> str:
+    """
+    Show actual test name (base) + parameter bullets.
+    Also add a hyperlink to the filename using the displayed relative path.
+    """
+    base, params = split_name_and_params(display_name)
+    prefix = "↳ " if kind == "related" else ""
 
-    if file_path:
-        rel = checks_relative_path(file_path)
-        if rel and rel.startswith("checks/"):
-            href = quote(f"../{rel}", safe="/._-")
-            return f"{href}{bullets}"
+    # Test name should be the actual test name (not the filename)
+    test_text = normalize_table_cell(prefix + base)
+    cell = test_text + params_inline_lines(params)
 
-    return base + bullets
+    # Add file hyperlink using current displayed relative path
+    rel = checks_relative_path(file_path) if file_path else None
+    if rel and rel.startswith("checks/"):
+        href = quote(f"../{rel}", safe="/._-")
+        # Display text is the same relative path currently shown
+        file_text = normalize_table_cell(f"../{rel}")
+        cell += f"<br>file: {md_link(file_text, href)}"
+
+    return cell
 
 
 def build_preamble(system: str, mode: str | None, tag: str | None, found: int | None) -> str:
@@ -294,19 +313,12 @@ def write_markdown(items: list[dict],
         if exclude_related and it["kind"] == "related":
             continue
 
-        display = it["display_name"] or "—"
-        base, params = split_name_and_params(display)
-        prefix = "↳ " if it["kind"] == "related" else ""
-
         file_path = it.get("file")
-        rel = checks_relative_path(file_path) if file_path else None
-        category = category_from_checks_rel(rel)
+        name_cell = test_name_cell(it.get("display_name") or "—", it["kind"], file_path)
+        desc_cell = normalize_table_cell(it.get("description") or "—")
+        cat_cell = category_cell(file_path)
 
-        name = test_name_cell(prefix + base, file_path, params)
-        desc = normalize_table_cell(it.get("description") or "—")
-        cat = category_cell(category)
-
-        lines.append(f"| {name} | {desc} | {cat} |")
+        lines.append(f"| {name_cell} | {desc_cell} | {cat_cell} |")
 
     output_path.write_text("\n".join(lines), encoding="utf-8")
 
@@ -343,22 +355,19 @@ def main():
 
     tag_used = args.tag if args.tag else extract_tag_from_extra(extra)
 
+    # Build ReFrame args
     reframe_args: list[str] = ["-L", args.list_type]
-
     for cf in args.config_files:
         reframe_args.extend(["-C", cf])
     for cp in args.check_paths:
         reframe_args.extend(["-c", cp])
     if args.recursive:
         reframe_args.append("-R")
-
     reframe_args.extend(["--system", args.system])
     if args.mode:
         reframe_args.extend(["--mode", args.mode])
-
     if tag_used:
-        reframe_args.append(f"--tag={tag_used}")
-
+        reframe_args.append(f"--tag={tag_used}")  # preserve regex-like expressions
     reframe_args.extend(extra)
 
     rc, out, err = run_reframe(reframe_args)
@@ -371,11 +380,11 @@ def main():
             f"STDERR:\n{err}"
         )
 
-    # Build output paths with system + mode/tags suffixes
+    # Output paths
     md_path = build_output_path(args.output, args.system, args.mode, tag_used)
     out_path = build_reframe_out_path(md_path)
 
-    # Save raw ReFrame output (stdout+stderr) alongside the Markdown report
+    # Save raw ReFrame output alongside the Markdown report
     out_path.write_text(combined, encoding="utf-8")
 
     found = parse_found_count(combined)
