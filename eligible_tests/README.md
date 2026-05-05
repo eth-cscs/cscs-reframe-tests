@@ -2,14 +2,14 @@
 
 ## Purpose
 
-`list_tests.py` generates a GitHub/GitLab-friendly Markdown report of the checks **selected by ReFrame itself**, by running `reframe -L` (list-detailed) and parsing its output. citeturn84view145  
-This means you **do not re-implement** ReFrame’s selection logic in Python (modes, filtering, dependency inclusion, etc.); you simply format the already-selected tests that ReFrame prints. citeturn84view145
+`list_tests.py` generates a GitHub/GitLab-friendly Markdown report of the checks **selected by ReFrame itself**, by running `reframe -L` (list-detailed) and parsing its output. 
+This means you **do not re-implement** ReFrame’s selection logic in Python (modes, filtering, dependency inclusion, etc.); you simply format the already-selected tests that ReFrame prints. 
 
 ## Why this matches ReFrame
 
-ReFrame’s frontend works in phases: it **discovers** tests, then **filters** them (by system and any other criteria), then performs an action such as listing. citeturn84view145  
-When listing, `-L/--list-detailed` prints details (including unique id and the file where each test is defined) for the **selected** tests. citeturn84view145  
-ReFrame also guarantees that if a test is selected, **its dependencies are selected too**, even if they do not match filtering criteria. citeturn84view145
+ReFrame’s frontend works in phases: it **discovers** tests, then **filters** them (by system and any other criteria), then performs an action such as listing.   
+When listing, `-L/--list-detailed` prints details (including unique id and the file where each test is defined) for the **selected** tests. 
+ReFrame also guarantees that if a test is selected, **its dependencies are selected too**, even if they do not match filtering criteria. 
 
 ## Output
 
@@ -52,11 +52,11 @@ python utility/list_tests.py \
 ```
 
 Notes:
-- `-c/--checkpath` sets the filesystem path where ReFrame searches for tests. citeturn84view145  
-- `-R/--recursive` makes ReFrame search for test files recursively under directories in the check search path. citeturn84view145  
-- `--system` selects the system configuration used for filtering. citeturn84view145  
-- `--mode` activates an execution mode (which may inject additional CLI options). citeturn84view145  
-- `--list-type T|C` chooses between regular (`T`) and concretized (`C`) listing types. citeturn84view145
+- `-c/--checkpath` sets the filesystem path where ReFrame searches for tests.  
+- `-R/--recursive` makes ReFrame search for test files recursively under directories in the check search path.
+- `--system` selects the system configuration used for filtering.
+- `--mode` activates an execution mode (which may inject additional CLI options). 
+- `--list-type T|C` chooses between regular (`T`) and concretized (`C`) listing types.
 
 ### Tag-based selection
 
