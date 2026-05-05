@@ -1,99 +1,148 @@
-# `list_tests.py` — Usage Guide
+# list_tests.py — README
 
-This script generates a GitHub/GitLab-friendly Markdown report of **eligible ReFrame checks** for a given `--system`, using ReFrame’s **Python API** (frontend internals) rather than parsing `reframe -L` output.
+## Purpose
 
-The report is written under `eligible_tests/` and contains **clickable links** to the test sources under `checks/`. Since `eligible_tests/` is a sibling of `checks/`, links use `../checks/...`.
+`list_tests.py` generates a GitHub/GitLab-friendly Markdown report of the checks **selected by ReFrame itself**, by running `reframe -L` (list-detailed) and parsing its output. citeturn84view145  
+This means you **do not re-implement** ReFrame’s selection logic in Python (modes, filtering, dependency inclusion, etc.); you simply format the already-selected tests that ReFrame prints. citeturn84view145
 
----
+## Why this matches ReFrame
 
-## What it produces
+ReFrame’s frontend works in phases: it **discovers** tests, then **filters** them (by system and any other criteria), then performs an action such as listing. citeturn84view145  
+When listing, `-L/--list-detailed` prints details (including unique id and the file where each test is defined) for the **selected** tests. citeturn84view145  
+ReFrame also guarantees that if a test is selected, **its dependencies are selected too**, even if they do not match filtering criteria. citeturn84view145
 
-- A Markdown file in: `eligible_tests/<generated_name>.md`
-- A table with columns:
-  - **Test name** — clickable link to the defining `checks/.../*.py` file
-  - **Description** — table-safe (multi-line descriptions are rendered with `<br>`)
-  - **Category** — clickable link to the `checks/<category>/` folder
+## Output
 
----
+Running the script produces **two files** under the `eligible_tests/` directory:
+
+1. `*.md` — the human-friendly report
+2. `*.reframe.out` — the raw output captured from the `reframe -L` run (stdout + stderr)
+
+Both files share the same base filename.
+
+### Markdown table
+
+The report contains a table with columns:
+
+- **Test name** — clickable link to the defining `checks/.../*.py` file
+- **Description** — table-safe (wrapped output converted to `<br>`)
+- **Category** — clickable link to the `checks/<category>/` folder
+
+Because the report lives in `eligible_tests/` (a sibling of `checks/`), links are written as `../checks/...`.
 
 ## Requirements
 
-- ReFrame **4.9.1** available in your environment (e.g., `rfm-env`, module, or venv).
-- Run the script from a working directory where `checks/` and `eligible_tests/` are siblings (so `../checks/...` links resolve correctly).
+- ReFrame installed and available as `reframe` on `PATH`
+- Run the script from a working directory where `eligible_tests/` can be created and `checks/` is a sibling folder (so relative links resolve)
 
----
+## Usage
 
-## Common usage
+### Mode-based selection (recommended)
 
-### 1) Filter by a single tag
+This mirrors a typical ReFrame selection driven by an execution mode:
 
-Run with a single tag (example: `maintenance`):
+```bash
+python utility/list_tests.py \
+  -C /path/to/config.py \
+  -c /path/to/checks \
+  -R \
+  --system daint \
+  --mode maintenance \
+  --list-type T
+```
 
-    python utility/list_tests.py       -C /path/to/config.py       -c /path/to/checks       -R       --system daint       --tag maintenance
+Notes:
+- `-c/--checkpath` sets the filesystem path where ReFrame searches for tests. citeturn84view145  
+- `-R/--recursive` makes ReFrame search for test files recursively under directories in the check search path. citeturn84view145  
+- `--system` selects the system configuration used for filtering. citeturn84view145  
+- `--mode` activates an execution mode (which may inject additional CLI options). citeturn84view145  
+- `--list-type T|C` chooses between regular (`T`) and concretized (`C`) listing types. citeturn84view145
 
-> **Important:** Use `-R` when `-c` points to the root `checks/` directory; most test suites store checks in nested subfolders.
+### Tag-based selection
 
----
+If you want to pass an explicit tag expression to ReFrame:
 
-### 2) Select an execution mode
+```bash
+python utility/list_tests.py \
+  -C /path/to/config.py \
+  -c /path/to/checks \
+  -R \
+  --system daint \
+  --tag 'maintenance|production'
+```
 
-    python utility/list_tests.py       -C /path/to/config.py       -c /path/to/checks       -R       --system daint       --mode production
+> The script passes tags to ReFrame using the `--tag=<expr>` form to preserve regex-like expressions.
 
-If the installed ReFrame does not support `--mode`, the script will warn and continue.
+### Concretized listing (exact testcase DAG)
 
----
+ReFrame supports two listing types for `-L`:
 
-### 3) Exclude dependency/related rows (`↳`)
-
-By default the report includes “related/dependency” rows (shown with `↳`) because dependencies are part of the eligibility picture.
-
-To remove them from the table:
-
-    python utility/list_tests.py       -C /path/to/config.py       -c /path/to/checks       -R       --system daint       --tag maintenance       --exclude-related
-
----
-
-### 4) Multiple configuration files (repeatable `-C`)
-
-    python utility/list_tests.py       -C /path/to/base_config.py       -C /path/to/site_overrides.py       -c /path/to/checks       -R       --system daint
-
----
-
-## Output naming
-
-The output file name is derived from the base name (default: `eligible_tests.md`) and is automatically suffixed with:
-
-- the system name (always)
-- `mode-<mode>` if `--mode` is set
-- `tags-<tag>` if `--tag/--tags/-t` is set
+- `T` (default): regular test listing
+- `C`: concretized test case listing (exact test cases as expanded for the selected system and environments) citeturn84view145
 
 Example:
 
-- `eligible_tests/eligible_tests_daint_tags-maintenance.md`
+```bash
+python utility/list_tests.py \
+  -C /path/to/config.py \
+  -c /path/to/checks \
+  -R \
+  --system daint \
+  --mode maintenance \
+  --list-type C
+```
 
----
+### Exclude dependency/related rows
 
-## Tips & troubleshooting
+By default, ReFrame lists dependencies/fixtures; the script can hide those rows in the Markdown table:
 
-### “0 checks” in the report
+```bash
+python utility/list_tests.py \
+  -C /path/to/config.py \
+  -c /path/to/checks \
+  -R \
+  --system daint \
+  --mode maintenance \
+  --exclude-related
+```
 
-Most common reasons:
+### Pass-through extra ReFrame arguments
 
-1) You forgot `-R` while pointing `-c` at the root `checks/` folder.
-2) The tag you supplied doesn’t exist on eligible checks for that `--system` selection.
+Anything after `--` is passed directly to ReFrame:
+
+```bash
+python utility/list_tests.py \
+  -C /path/to/config.py \
+  -c /path/to/checks \
+  -R \
+  --system daint \
+  --mode maintenance \
+  -- \
+  -v
+```
+
+## Output filenames
+
+You specify a base output name with `-o/--output` (default: `eligible_tests.md`).
+The script automatically appends:
+
+- the system (always)
+- the mode (if used)
+- the tag expression (if used)
+
+Example:
+
+- Markdown: `eligible_tests/eligible_tests_daint_mode-maintenance.md`
+- Raw output: `eligible_tests/eligible_tests_daint_mode-maintenance.reframe.out`
+
+## Troubleshooting
+
+### 0 checks
+
+- First run the same arguments directly with `reframe -L` to confirm ReFrame selects tests. citeturn84view145  
+- If your checks tree is nested, ensure `-R` is passed so discovery is recursive. citeturn84view145
 
 ### Links don’t resolve
 
-Verify:
-
-- The report file is under `eligible_tests/`
-- `checks/` is a sibling directory of `eligible_tests/`
-- You’re viewing the Markdown in the same repo (so relative links work)
-
----
-
-## Help
-
-Show script options:
-
-    python utility/list_tests.py -h
+- Confirm the report lives in `eligible_tests/` and `checks/` is a sibling directory.
+- Confirm your Markdown renderer resolves repository-relative links.
