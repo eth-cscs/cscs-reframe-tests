@@ -24,7 +24,17 @@ It writes the report under `eligible_tests/` and creates **clickable links** to 
 
 ## Common usage
 
-### 1) Filter by a single tag
+### 1) Filter by mode
+
+```bash
+python utility/list_tests.py \
+  -C /path/to/config.py \
+  -c /path/to/checks \
+  -R \
+  --system daint \
+  --mode production
+
+### 2) Filter by a single tag
 
 ```bash
 python utility/list_tests.py \
