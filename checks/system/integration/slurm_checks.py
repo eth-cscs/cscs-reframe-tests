@@ -10,7 +10,7 @@ import reframe.utility.sanity as sn
 @rfm.simple_test
 class SlurmConfigExists(rfm.RunOnlyRegressionTest):
     descr = 'Slurm check - verify slurm.conf configuration file exists'
-    valid_systems = ['daint', 'eiger']
+    valid_systems = ['daint:normal', 'eiger:normal']
     valid_prog_environs = ['builtin']
     tags = {'production', 'sysint-SLURM'} 
     executable = 'test'
