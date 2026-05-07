@@ -6,64 +6,49 @@
 import reframe as rfm
 import reframe.utility.sanity as sn
 
-
 # --------------------------------------------------
-# GENERIC MOUNT CHECK (replaces several bash tests)
+# MOUNT CHECKS FOR EACH CLUSTER
 # --------------------------------------------------
 
 @rfm.simple_test
-class MountCheck(rfm.RunOnlyRegressionTest):
+class MountCheckBase(rfm.RunOnlyRegressionTest):
     descr = 'Filesystem mount validation'
-    valid_systems = ['daint', 'eiger']
     valid_prog_environs = ['builtin']
     tags = {'production', 'sysint-MOUNTS'}
 
+    mount = parameter([])
+    executable = 'cat'
+    executable_opts = ['/proc/mounts']
+
+    @sanity_function
+    def validate_mount(self):
+        pattern, name = self.mount
+        return sn.assert_found(
+            pattern, self.stdout,
+            msg=f"[ERROR] Mount '{name}' missing or incorrect"
+        )
+
+@rfm.simple_test
+class DaintMountCheck(MountCheckBase):
+    descr = 'Daint filesystem mount validation'
+    valid_systems = ['daint']
     mount = parameter([
         (r'/capstor/scratch/cscs .* lustre', 'scratch'),
         (r'/capstor/store/cscs .* lustre', 'store'),
     ])
 
-    executable = 'cat'
-    executable_opts = ['/proc/mounts']
-
-    @sanity_function
-    def validate_mount(self):
-        pattern, name = self.mount
-        return sn.assert_found(
-            pattern, self.stdout,
-            msg=f"[ERROR] Mount '{name}' missing or incorrect"
-        )
-
-
-# --------------------------------------------------
-# EIGER-SPECIFIC MOUNTS
-# --------------------------------------------------
-
 @rfm.simple_test
-class MountCheckEiger(rfm.RunOnlyRegressionTest):
-    descr = 'Eiger-specific mount validation'
+class EigerMountCheck(MountCheckBase):
+    descr = 'Eiger filesystem mount validation'
     valid_systems = ['eiger']
-    valid_prog_environs = ['builtin']
-    tags = {'production', 'sysint-MOUNTS'}
-
     mount = parameter([
+        (r'/capstor/scratch/cscs .* lustre', 'scratch'),
+        (r'/capstor/store/cscs .* lustre', 'store'),
         (r'/users .* nfs', 'users'),
         (r'pe_opt_cray_pe .* /opt/cray/pe', 'cray-pe'),
         (r'pe_opt_AMD .* /opt/AMD', 'amd'),
         (r'pe_opt_intel .* /opt/intel', 'intel'),
     ])
-
-    executable = 'cat'
-    executable_opts = ['/proc/mounts']
-
-    @sanity_function
-    def validate_mount(self):
-        pattern, name = self.mount
-        return sn.assert_found(
-            pattern, self.stdout,
-            msg=f"[ERROR] Mount '{name}' missing or incorrect"
-        )
-
 
 # --------------------------------------------------
 # ENV VAR EXISTS (replaces 4 separate tests)
@@ -97,7 +82,8 @@ class EnvVarSet(rfm.RunOnlyRegressionTest):
 
 @rfm.simple_test
 class EnvVarPathCheck(rfm.RunOnlyRegressionTest):
-    descr = 'Validate environment variable path prefixes'
+    descr = 'Validate environment variable path prefixes for' \
+    ' SCRATCH, PROJECT, STORE, HOME'
     valid_systems = ['daint', 'eiger']
     valid_prog_environs = ['builtin']
     tags = {'production', 'sysint-MOUNTS'}
