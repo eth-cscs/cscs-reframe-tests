@@ -10,7 +10,7 @@ import reframe.utility.sanity as sn
 @rfm.simple_test
 class FilesystemDfCompletion(rfm.RunOnlyRegressionTest):
     descr = 'Filesystem sanity check - verify df command completes successfully'
-    valid_systems = ['daint', 'eiger']
+    valid_systems = ['*']
     valid_prog_environs = ['builtin']
     tags = {'production', 'sysint-FS'}
     executable = 'timeout'
