@@ -28,7 +28,7 @@ class FilesystemCapacityCheck(rfm.RunOnlyRegressionTest):
     valid_prog_environs = ['builtin']
     tags = {'production', 'sysint-FS'}
 
-    executable = 'timeout'
+    executable = '/usr/bin/timeout'
     executable_opts = ['-v', '-k', '3', '3', 'df']
 
     @sanity_function
