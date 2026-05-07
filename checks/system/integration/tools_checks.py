@@ -13,12 +13,12 @@ class ToolZypperAvailable(rfm.RunOnlyRegressionTest):
     valid_systems = ['daint', 'eiger']
     valid_prog_environs = ['builtin']
     tags = {'production', 'sysint-TOOLS'}
-    executable = 'bash'
-    executable_opts = ['-c', 'which zypper || echo FAILED']
+    executable = 'which'
+    executable_opts = ['zypper']
 
     @sanity_function
     def assert_tool_available(self):
-        return sn.assert_not_found(r'FAILED', self.stdout)
+        return sn.assert_eq(self.job.exitcode, 0)
 
 
 @rfm.simple_test
@@ -27,12 +27,12 @@ class ToolVimAvailable(rfm.RunOnlyRegressionTest):
     valid_systems = ['daint', 'eiger']
     valid_prog_environs = ['builtin']
     tags = {'production', 'sysint-TOOLS'}
-    executable = 'bash'
-    executable_opts = ['-c', 'which vim || echo FAILED']
+    executable = 'which'
+    executable_opts = ['vim']
 
     @sanity_function
     def assert_tool_available(self):
-        return sn.assert_not_found(r'FAILED', self.stdout)
+        return sn.assert_eq(self.job.exitcode, 0)
 
 
 @rfm.simple_test
@@ -41,12 +41,12 @@ class ToolGccAvailable(rfm.RunOnlyRegressionTest):
     valid_systems = ['daint', 'eiger']
     valid_prog_environs = ['builtin']
     tags = {'production', 'sysint-TOOLS'}
-    executable = 'bash'
-    executable_opts = ['-c', 'which gcc || echo FAILED']
+    executable = 'which'
+    executable_opts = ['gcc']
 
     @sanity_function
     def assert_tool_available(self):
-        return sn.assert_not_found(r'FAILED', self.stdout)
+        return sn.assert_eq(self.job.exitcode, 0)
 
 
 @rfm.simple_test
@@ -55,12 +55,12 @@ class ToolGcc12Available(rfm.RunOnlyRegressionTest):
     valid_systems = ['daint', 'eiger']
     valid_prog_environs = ['builtin']
     tags = {'production', 'sysint-TOOLS'}
-    executable = 'bash'
-    executable_opts = ['-c', 'which gcc-12 || echo FAILED']
+    executable = 'which'
+    executable_opts = ['gcc-12']
 
     @sanity_function
     def assert_tool_available(self):
-        return sn.assert_not_found(r'FAILED', self.stdout)
+        return sn.assert_eq(self.job.exitcode, 0)
 
 
 @rfm.simple_test
@@ -69,35 +69,24 @@ class ToolJqAvailable(rfm.RunOnlyRegressionTest):
     valid_systems = ['daint', 'eiger']
     valid_prog_environs = ['builtin']
     tags = {'production', 'sysint-TOOLS'}
-    executable = 'bash'
-    executable_opts = ['-c', 'which jq || echo FAILED']
+    executable = 'which'
+    executable_opts = ['jq']
 
     @sanity_function
     def assert_tool_available(self):
-        return sn.assert_not_found(r'FAILED', self.stdout)
+        return sn.assert_eq(self.job.exitcode, 0)
+
 
 @rfm.simple_test
 class ToolEmacsAvailable(rfm.RunOnlyRegressionTest):
-    descr = 'Tools check - verify emacs is available on Eiger'
-    valid_systems = ['daint', 'eiger']
+    descr = 'Tools check - verify emacs is available'
+    valid_systems = ['eiger']
     valid_prog_environs = ['builtin']
     tags = {'production', 'sysint-TOOLS'}
-    executable = 'bash'
-    executable_opts = ['-c', 'which emacs || echo FAILED']
+    executable = 'which'
+    executable_opts = ['emacs']
 
     @sanity_function
     def assert_tool_available(self):
-        return sn.assert_not_found(r'FAILED', self.stdout)
+        return sn.assert_eq(self.job.exitcode, 0)
     
-@rfm.simple_test
-class ToolEmacsAvailable(rfm.RunOnlyRegressionTest):
-    descr = 'Tools check - verify emacs is available on Eiger'
-    valid_systems = ['daint', 'eiger']
-    valid_prog_environs = ['builtin']
-    tags = {'production', 'sysint-TOOLS'}
-    executable = 'bash'
-    executable_opts = ['-c', 'which emacs || echo FAILED']
-
-    @sanity_function
-    def assert_tool_available(self):
-        return sn.assert_not_found(r'FAILED', self.stdout)
