@@ -34,6 +34,7 @@ class FilesystemCapacityCheck(rfm.RunOnlyRegressionTest):
     @sanity_function
     def assert_no_full_filesystems(self):
         return sn.all([
-            sn.assert_not_found(r'100%', self.stdout),
+            # check for any filesystem at 100% capacity, excluding devtmpfs and similar virtual filesystems
+            sn.assert_not_found(r'(?m)^(?!.*dev).*100%.*$', self.stdout),
             sn.assert_not_found(r'sending signal', self.stderr)
         ])
