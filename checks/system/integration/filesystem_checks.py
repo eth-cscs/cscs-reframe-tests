@@ -13,7 +13,7 @@ class FilesystemDfCompletion(rfm.RunOnlyRegressionTest):
     valid_systems = ['*']
     valid_prog_environs = ['builtin']
     tags = {'production', 'sysint-FS'}
-    executable = 'timeout'
+    executable = '/usr/bin/timeout'
     executable_opts = ['-v', '-k', '5', '3', 'df']
 
     @sanity_function
