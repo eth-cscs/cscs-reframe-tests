@@ -20,11 +20,14 @@ class PingCheck(rfm.RunOnlyRegressionTest):
     descr = 'Network connectivity check (ping)'
     valid_systems = ['daint', 'eiger']
     valid_prog_environs = ['builtin']
+    tags = {'production', 'sysint-net'}
+
 
     target = parameter([
         ('localhost', '127.0.0.1'),
         ('external-ip', '8.8.8.8'),
-        ('external-dns', 'www.google.com')
+        ('external-dns', 'www.google.com'),
+        ('ldap', 'ldap.cscs.ch')
     ])
 
     executable = 'ping'
