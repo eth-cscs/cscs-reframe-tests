@@ -17,7 +17,7 @@ class MountCheckBase(rfm.RunOnlyRegressionTest):
     tags = {'production', 'sysint-MOUNTS'}
 
     mount = parameter([])
-    executable = 'cat'
+    executable = '/bin/cat'
     executable_opts = ['/proc/mounts']
 
     @sanity_function
@@ -63,7 +63,7 @@ class EnvVarSet(rfm.RunOnlyRegressionTest):
 
     var = parameter(['SCRATCH', 'PROJECT', 'STORE', 'HOME'])
 
-    executable = 'printenv'
+    executable = '/usr/bin/printenv'
 
     def __init__(self):
         self.executable_opts = [self.var]

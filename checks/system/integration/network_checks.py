@@ -30,7 +30,7 @@ class PingCheck(rfm.RunOnlyRegressionTest):
         ('ldap', 'ldap.cscs.ch')
     ])
 
-    executable = 'ping'
+    executable = '/bin/ping'
 
     def __init__(self):
         self.executable_opts = ['-n', '-q', '-c', '5', self.target[1]]
