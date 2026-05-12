@@ -13,6 +13,7 @@ import copy
 base_config = {
     'modules_system': 'lmod',
     'resourcesdir': '/capstor/store/cscs/cscs/public/reframe/resources',
+    'max_local_jobs': 20,
     'partitions': [
         {
             'name': 'login',
@@ -30,7 +31,7 @@ base_config = {
                 'cpeIntel'
             ],
             'descr': 'Login nodes',
-            'max_jobs': 4,
+            'max_jobs': 20,
             'launcher': 'local'
         },
         {

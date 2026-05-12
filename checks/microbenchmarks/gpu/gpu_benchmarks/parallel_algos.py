@@ -23,14 +23,31 @@ class GPUBenchmarks(rfm.RegressionTest):
     ]
     time_limit = '2m'
     build_locally = False
-    tags = {'production', 'uenv'}
+    tags = {'production', 'uenv', 'bencher'}
 
 
 @rfm.simple_test
 class ParallelAlgos(GPUBenchmarks):
     benchmark = 'parallel_algos'
     algo = parameter(['radix-sort', 'scan', 'reduce'])
-    _executable_opts = parameter(['6', '12', '27'])
+    _executable_opts = parameter(['21', '24', '26', '27', '29', '30', '31'])
+
+    # input values are specific to the algorithm for gpu saturation
+    # - Column 1: saturates 95% of faster GPU (GH200)
+    # - Column 2: saturates 95% of slowest GPU (MI300A)
+    # - Column 3: saturates 50% of the bandwidth of first column
+    _valid_inputs = {
+        'radix-sort': ['27', '30', '21'],
+        'scan': ['29', '26', '24'],
+        'reduce': ['31', '29', '26']
+    }
+
+    @run_after('init')
+    def filter_combinations(self):
+        self.skip_if(
+            self._executable_opts not in self._valid_inputs.get(self.algo, []),
+            f'Input {self._executable_opts} is not relevant for {self.algo}'
+        )
 
     _algo_specs = {
         'radix-sort': {

@@ -9,10 +9,6 @@
             "fstype": "lustre"
         },
         {
-            "mount_point": "/users.OLD",
-            "fstype": "lustre"
-        },
-        {
             "mount_point": "iopsstor/scratch/cscs",
             "fstype": "lustre"
         },
@@ -23,9 +19,6 @@
         {
             "mount_point": "/users",
             "fstype": "nfs"
-        },
-        {
-            "mount_point": "/capstor/scratch/cscs"
         }
     ],
     "pkgs": [

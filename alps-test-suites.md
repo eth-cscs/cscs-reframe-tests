@@ -17,20 +17,20 @@
 
 - **Remark:** (*) running tests such as node burn locally (without slurm) would require to maintain the same test twice and, therefore for the moment being, it was agreed that we should find an alternative solution for these tests.  
 
-## Node vetting / Appscheckout test suite 
+## Node vetting (appscheckout) test suite 
 
 * Single and multi-node checks to be performed after interventions 
   * To be executed against all nodes in a reservation (such as appscheckout or maintenance)
-  * Tag: appscheckout
+  * Tag: appscheckout (veto mode)
 
 | Category          | Description                                 | All-nodes  | Duration | Test name               |
 |:---               |:---                                         |   ----     |   ----   |:---                     | 
 | HW check          | Run dgemm on all GPUs and CPUs	          |    Y       |  1min    | [node-burn-ce.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/microbenchmarks/cpu_gpu/node_burn/node-burn-ce.py) |     
-|                   | Stream (memory bandwidth test)	          |    Y       |  1min    | [node-burn-ce.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/microbenchmarks/cpu_gpu/node_burn/node-burn-ce.py) |  
-| Network           | Simple MPI (CPI)	                          |    Y       |   5s     | [mpi_cpi.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/prgenv/mpi_cpi.py) | 
-|                   | OSU all-to-all                              |    Y       |   1min?  |  TODO  | 
-|                   | NCCL allreduce (2min)                       |    Y       |   2 min  |  [pytorch_allreduce.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/apps/pytorch/pytorch_allreduce.py#L24) | 
-|                   | Network bandwidth between gpus (per node)   |    Y       |   1min   |  [cxi_gpu_loopback_bw.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/system/network/cxi_gpu_loopback_bw.py) | 
+|                   | Stream (memory bandwidth test)	          |    Y       |  TODO    | [node-burn-ce.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/microbenchmarks/cpu_gpu/node_burn/node-burn-ce.py) |  
+| Network           | Simple MPI (CPI)	                          |    Y       |  TODO    | [mpi_cpi.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/prgenv/mpi_cpi.py) | 
+|                   | OSU all-to-all                              |    Y       |   TODO   |  TODO  | 
+|                   | NCCL allreduce (2min)                       |    Y       |   TODO   |  [pytorch_allreduce.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/apps/pytorch/pytorch_allreduce.py#L24) | 
+|                   | Network bandwidth between gpus (per node)   |    Y       |   TODO   |  [cxi_gpu_loopback_bw.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/system/network/cxi_gpu_loopback_bw.py) | 
 	
 
   
@@ -72,9 +72,9 @@ Single and multi-node checks to be performed regularly (nightly) in production u
 
 ## Maintenance test suite 
 
-Single and multi-node checks to be performed  before & after vCluster interventions (using a reservation)
+Single and multi-node checks to be performed before & after vCluster interventions (using a reservation)
 
-* Tags: appscheckout + production
+* Tags: maintenance + production
   * See: [Test coverage](https://confluence.cscs.ch/spaces/reframe/pages/894965254/Test+coverage) 
 
 - **Remark:** Application checks can be the same as Production, but ideally they should be using more nodes

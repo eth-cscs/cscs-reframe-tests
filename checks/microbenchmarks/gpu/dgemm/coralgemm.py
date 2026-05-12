@@ -12,23 +12,24 @@ from uenv import uarch
 @rfm.simple_test
 class CoralGemm(rfm.RegressionTest):
     descr = 'AMD CoralGemm test'
-    valid_systems = ['+amdgpu +uenv', '+nvgpu +uenv']
-    valid_prog_environs = ['+uenv +prgenv +rocm', '+uenv +prgenv +cuda']
+    valid_systems = ['+amdgpu +uenv']
+    valid_prog_environs = ['+uenv +prgenv +rocm']
     maintainers = ['SSA']
     sourcesdir = None
     build_system = 'CMake'
     prebuild_cmds = [
-        'git clone --depth 1 --branch 2024.12 '
+        'git clone --depth 1 --branch 2025.11 '
         'https://github.com/AMD-HPC/CoralGemm.git'
     ]
     time_limit = '3m'
     build_locally = False
     num_tasks_per_node = 1
-    tags = {'production', 'uenv', 'benchmark'}
+    tags = {'production', 'uenv', 'benchmark', 'bencher'}
 
     # Sweep matrix sizes and precisions
+    # dimensions are in bytes for one dimension of a square matrix
     _size_bytes = parameter([12800, 25600, 51200, 128000])
-    _precisions = parameter(['R_32F', 'R_64F'])
+    _precisions = parameter(['R_16B', 'R_32F', 'R_64F'])
 
     # Data precision for matrix A, B, C and computation
     precision_A = variable(str, value='R_64F')
@@ -120,8 +121,12 @@ class CoralGemm(rfm.RegressionTest):
         self.precision_C = self._precisions
         self.compute_precision = self._precisions
 
+        if self.precision_A == 'R_16B':
+            self.precision_C = 'R_32F'
+            self.compute_precision = 'R_32F'
+
         # Adjust matrix sizes based on the current parameters
-        if self.precision_A == 'R_32F':
+        if self.precision_C == 'R_32F':
             self.M = self._size_bytes // 4
             self.N = self._size_bytes // 4
             self.K = self._size_bytes // 4
@@ -151,6 +156,10 @@ class CoralGemm(rfm.RegressionTest):
             f'{self.batch_count} ',
             f'{self.duration}'
         ]
+
+        # Fix option for BF16 precision
+        if self._precisions == 'R_16B':
+            self.executable_opts.append('ex')
 
         # Set optional arguments of the benchmark
         if self.batched:
@@ -255,14 +264,17 @@ class CoralGemm(rfm.RegressionTest):
         # These are the average GFLOPS observed on the respective systems,
         # sizes are in bytes.
         'mi200': {
+            'R_16B': {12800: 92955, 25600: 108550, 51200: 119803, 128000: 87451},
             'R_32F': {12800: 31598, 25600: 30690, 51200: 32907, 128000: 28638},
             'R_64F': {12800: 19102, 25600: 23178, 51200: 26740, 128000: 23870}
         },
         'mi300': {
+            'R_16B': {12800: 230008, 25600: 428416, 51200: 389497, 128000: 273200},
             'R_32F': {12800: 64777, 25600: 74340, 51200: 80478, 128000: 67092},
             'R_64F': {12800: 25702, 25600: 52668, 51200: 60874, 128000: 53913}
         },
         'gh200': {
+            'R_16B': {12800: 548292, 25600: 570109, 51200: 574525, 128000: 599912},
             'R_32F': {12800: 47849, 25600: 50990, 51200: 52200, 128000: 51011},
             'R_64F': {12800: 42362, 25600: 40700, 51200: 39845, 128000: 51717}
         },

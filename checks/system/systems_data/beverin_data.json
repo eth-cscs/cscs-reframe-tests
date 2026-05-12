@@ -1,0 +1,51 @@
+{
+    "filesystems": [
+        {
+            "mount_point": "capstor/scratch/cscs",
+            "fstype": "lustre"
+        },
+        {
+            "mount_point": "capstor/store/cscs",
+            "fstype": "lustre"
+        },
+        {
+            "mount_point": "iopsstor/scratch/cscs",
+            "fstype": "lustre"
+        },
+        {
+            "mount_point": "iopsstor/store/cscs",
+            "fstype": "lustre"
+        },
+        {
+            "mount_point": "/users",
+            "fstype": "nfs"
+        }
+    ],
+    "pkgs": [
+        "netcat",
+        "gcc12-fortran",
+        "htop",
+        "lsof",
+        "libtool",
+        "ltrace",
+        "ansible",
+        "bubblewrap",
+        "nnn",
+        "wget",
+        "pycxi-utils",
+        "datacenter-gpu-manager",
+        "gcc12-c++",
+        "lua-lmod",
+        "gcc12"
+    ],
+    "cscs_extra_vars": [
+        {
+            "env_var": "STORE",
+            "env_value": "/capstor/store/cscs/cscs"
+        },
+        {
+            "env_var": "SCRATCH",
+            "env_value": "/capstor/scratch/cscs"
+        }
+    ]
+}

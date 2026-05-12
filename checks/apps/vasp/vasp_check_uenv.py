@@ -4,7 +4,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import os
-import shutil
 
 import reframe as rfm
 import reframe.utility.sanity as sn
@@ -118,7 +117,7 @@ class VaspBuildTestUENV(rfm.CompileOnlyRegressionTest):
     maintainers = ['fraschs', 'romeli', 'SSA']
     # run on node to load uenv
     build_locally = False
-    tags = {'uenv'}
+    tags = {'uenv', 'maintenance'}
 
     @run_before('compile')
     def prepare_build(self):
@@ -142,7 +141,7 @@ class VaspBuildTestUENV(rfm.CompileOnlyRegressionTest):
             self.skip(f'No makefile for uarch {self.uarch}')
 
         vasp_download_cmd = (
-            f'curl --retry 5 '
+            f'curl -L --retry 5 '
             f'-u ${{CSCS_REGISTRY_USERNAME}}:${{CSCS_REGISTRY_PASSWORD}} '
             '-X GET https://jfrog.svc.cscs.ch/artifactory'
             f'/uenv-sources/vasp/vasp-{self.version}.tar.bz2 '
@@ -173,7 +172,7 @@ class VaspBuildTestUENV(rfm.CompileOnlyRegressionTest):
 class VaspBuildCheckUENV(VaspCheckUENV):
     valid_prog_environs = ['+vasp-dev']
 
-    tags = {'uenv'}
+    tags = {'uenv', 'maintenance'}
 
     @run_after('init')
     def setup_dependency(self):
