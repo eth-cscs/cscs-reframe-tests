@@ -20,7 +20,7 @@ def create_checks(check):
     # ----------------------------------------------------------------------- #
 
     check.CLASS = 'SLEEP'
-    check.TAGS = {'sysint-SLEEP'}
+    check.TAGS = {'sysint-SLEEP', 'production', 'maintenance'}
 
     check(
         'timeout -v -k 3 3 sleep 1',
@@ -44,7 +44,7 @@ def create_checks(check):
     # ----------------------------------------------------------------------- #
 
     check.CLASS = 'FS'
-    check.TAGS = {'sysint-FS'}
+    check.TAGS = {'sysint-FS', 'production', 'maintenance'}
 
     check(
         'timeout -v -k 5 3 df > /dev/null',
@@ -69,7 +69,7 @@ def create_checks(check):
     # ----------------------------------------------------------------------- #
 
     check.CLASS = 'PING'
-    check.TAGS = {'sysint-PING'}
+    check.TAGS = {'sysint-PING', 'production', 'maintenance'}
 
     check(
         'ping -n -q -c 5 127.0.0.1',
@@ -99,7 +99,7 @@ def create_checks(check):
     # check('ping -n -q -c 5  www.google.com', expected=r'5 packets transmitted, 5 received, 0% packet loss', where='-remote')
 
     check.CLASS = 'PROXY'
-    check.TAGS = {'sysint-PROXY'}
+    check.TAGS = {'sysint-PROXY', 'production', 'maintenance'}
 
     # check('printenv http_proxy',  expected=r'http://proxy.cscs.ch:8080', where='+remote')
     # check('printenv https_proxy', expected=r'http://proxy.cscs.ch:8080', where='+remote')
@@ -118,7 +118,7 @@ def create_checks(check):
     )
 
     check.CLASS = 'DNS'
-    check.TAGS = {'sysint-DNS'}
+    check.TAGS = {'sysint-DNS', 'production', 'maintenance'}
 
     check(
         'nslookup Xgit.cscs.ch    -timeout=5 || echo FAILED',
@@ -143,7 +143,7 @@ def create_checks(check):
     )
 
     check.CLASS = 'NETIFACE'
-    check.TAGS = {'sysint-NETIFACE'}
+    check.TAGS = {'sysint-NETIFACE', 'production', 'maintenance'}
 
     check(
         'ip address show | grep -A6 nmn0: ',
@@ -227,7 +227,7 @@ def create_checks(check):
     # ----------------------------------------------------------------------- #
 
     check.CLASS = 'LDAP'
-    check.TAGS = {'sysint-LDAP'}
+    check.TAGS = {'sysint-LDAP', 'production', 'maintenance'}
 
     check(
         'ping -n -q -c 5  ldap.cscs.ch',
@@ -252,7 +252,7 @@ def create_checks(check):
     # ----------------------------------------------------------------------- #
 
     check.CLASS = 'OSINSTALL'
-    check.TAGS = {'sysint-OSINSTALL'}
+    check.TAGS = {'sysint-OSINSTALL', 'production', 'maintenance'}
 
     check(
         'cat /etc/os-release',
@@ -283,7 +283,7 @@ def create_checks(check):
     # ----------------------------------------------------------------------- #
 
     check.CLASS = 'OSSERVICE'
-    check.TAGS = {'sysint-OSSERVICE'}
+    check.TAGS = {'sysint-OSSERVICE', 'production', 'maintenance'}
 
     check(
         'ps aux | grep /usr/sbin/sshd | grep root || echo FAILED',
@@ -333,7 +333,7 @@ def create_checks(check):
     # ----------------------------------------------------------------------- #
 
     check.CLASS = 'TOOLS'
-    check.TAGS = {'sysint-TOOLS'}
+    check.TAGS = {'sysint-TOOLS', 'production', 'maintenance'}
 
     check(
         'which zypper || echo FAILED',
@@ -390,7 +390,7 @@ def create_checks(check):
     # ----------------------------------------------------------------------- #
 
     check.CLASS = 'MOUNTS'
-    check.TAGS = {'sysint-MOUNTS'}
+    check.TAGS = {'sysint-MOUNTS', 'production', 'maintenance'}
 
     check(
         'grep -q "/users/cscs /users nfs"                 /proc/mounts || echo FAILED',
@@ -543,7 +543,7 @@ def create_checks(check):
     # ----------------------------------------------------------------------- #
 
     check.CLASS = 'SLURM'
-    check.TAGS = {'sysint-SLURM'}
+    check.TAGS = {'sysint-SLURM', 'production', 'maintenance'}
 
     # check('test -e /etc/slurm/slurm.conf      || echo FAILED', not_expected=r'FAILED', where='-remote')
     check(
@@ -588,7 +588,7 @@ def create_checks(check):
     # ----------------------------------------------------------------------- #
 
     check.CLASS = 'VSBASE'
-    check.TAGS = {'sysint-VSBASE'}
+    check.TAGS = {'sysint-VSBASE', 'production', 'maintenance'}
 
     check(
         'which nomad || echo FAILED',
@@ -605,7 +605,7 @@ def create_checks(check):
     # ----------------------------------------------------------------------- #
 
     check.CLASS = 'VSERVICES'
-    check.TAGS = {'sysint-VSERVICES'}
+    check.TAGS = {'sysint-VSERVICES', 'production', 'maintenance'}
 
     check(
         'bash -c "uenv --version" || echo FAILED',
