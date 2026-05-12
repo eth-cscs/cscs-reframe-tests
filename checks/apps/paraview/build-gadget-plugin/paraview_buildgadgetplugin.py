@@ -6,7 +6,6 @@
 import reframe as rfm
 import reframe.utility.sanity as sn
 
-from packaging.version import Version
 from packaging.specifiers import SpecifierSet
 from uenv import uenv_metadata
 
