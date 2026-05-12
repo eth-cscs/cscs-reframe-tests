@@ -8,10 +8,12 @@
 
 
 import os
+import reframe.utility.osext as osext
 
 base_config = {
     'modules_system': 'lmod',
     'resourcesdir': '/capstor/store/cscs/cscs/public/reframe/resources',
+    'max_local_jobs': 20,
     'partitions': [
         {
             'name': 'login',
@@ -19,14 +21,9 @@ base_config = {
             'time_limit': '10m',
             'environs': [
                 'builtin',
-                'PrgEnv-cray',
-                'PrgEnv-gnu',
-                # FIXME: Problem loading the following environments
-                # 'PrgEnv-nvidia',
-                # 'PrgEnv-nvhpc'
             ],
             'descr': 'Login nodes',
-            'max_jobs': 4,
+            'max_jobs': 20,
             'launcher': 'local'
         },
         {
@@ -36,20 +33,16 @@ base_config = {
             'time_limit': '10m',
             'environs': [
                 'builtin',
-                'PrgEnv-cray',
-                'PrgEnv-gnu',
                 'PrgEnv-ce',
-                # FIXME: Problem loading the following environments
-                # 'PrgEnv-nvidia',
-                # 'PrgEnv-nvhpc'
             ],
-            'max_jobs': 100,
+            'max_jobs': 1000,
             'extras': {
-                'cn_memory': 825,
+                'cn_memory': 854,
             },
             'features': [
                 'ce', 'gpu', 'nvgpu', 'remote', 'scontrol', 'uenv',
                 'hugepages_slurm'],
+            'access': [f'--account={osext.osgroup()}'],
             'resources': [
                 {
                     'name': 'switches',
@@ -109,18 +102,6 @@ site_configuration = {
     ],
     'environments': [
         {
-            'name': 'PrgEnv-cray',
-            'features': [
-                'cpe',
-                'serial', 'openmp', 'mpi', 'cuda', 'openacc', 'hdf5',
-                # 'netcdf-hdf5parallel',
-                # FIXME MPI Error when using pnetcdf
-                # 'pnetcdf'
-            ],
-            'target_systems': ['daint'],
-            'modules': ['cray', 'PrgEnv-cray', 'craype-arm-grace'],
-        },
-        {
             'name': 'PrgEnv-ce',
             'features': [
                 'cpe', 'prgenv',
@@ -134,36 +115,6 @@ site_configuration = {
                         ).replace(r'#', r'\#')
                 }
              }
-        },
-        {
-            'name': 'PrgEnv-gnu',
-            'target_systems': ['daint'],
-            'features': [
-                'cpe',
-                'serial', 'openmp', 'mpi', 'cuda', 'alloc_speed', 'hdf5'
-                # 'netcdf-hdf5parallel',
-                # FIXME MPI Error when using pnetcdf
-                # 'pnetcdf'
-            ],
-            'modules': ['cray', 'PrgEnv-gnu', 'craype-arm-grace']
-        },
-        {
-            'name': 'PrgEnv-nvidia',
-            'target_systems': ['daint'],
-            'features': [
-                'cpe',
-                'serial', 'openmp', 'mpi', 'cuda', 'alloc_speed', 'hdf5',
-                'netcdf-hdf5parallel', 'pnetcdf'],
-            'modules': ['cray', 'PrgEnv-nvidia', 'craype-arm-grace']
-        },
-        {
-            'name': 'PrgEnv-nvhpc',
-            'target_systems': ['daint'],
-            'features': [
-                'cpe',
-                'serial', 'openmp', 'mpi', 'cuda', 'alloc_speed', 'hdf5',
-                'netcdf-hdf5parallel', 'pnetcdf'],
-            'modules': ['cray', 'PrgEnv-nvhpc', 'craype-arm-grace']
         },
     ],
 }

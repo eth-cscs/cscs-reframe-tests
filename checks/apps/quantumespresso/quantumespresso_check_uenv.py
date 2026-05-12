@@ -4,7 +4,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import os
-import shutil
 
 import reframe as rfm
 import reframe.utility.sanity as sn
@@ -14,7 +13,7 @@ import uenv
 
 qe_references = {
     "Au surf": {
-        "gh200": {"time_run": (14.02, None, 0.05, "s")},
+        "gh200": {"time_run": (8.74, None, 0.05, "s")},
         "zen2": {"time_run": (99.45, None, 0.1, "s")},  # 1m44s
     },
 }
@@ -80,7 +79,7 @@ class QeBuildTestUENV(rfm.CompileOnlyRegressionTest):
     maintainers = ['simonpi', 'antonk', 'SSA']
     qe_sources = fixture(qe_download, scope="environment")
     build_locally = False
-    tags = {"uenv"}
+    tags = {"uenv", "maintenance"}
     build_time_limit = "0d0h30m0s"
     pwx_executable = None
 
@@ -197,7 +196,7 @@ class QeCheckAuSurfUENV(QeCheckUENV):
 @rfm.simple_test
 class QeCheckAuSurfUENVExec(QeCheckAuSurfUENV):
     valid_prog_environs = ["+qe"]
-    tags = {"uenv", "production"}
+    tags = {"uenv", "production", "maintenance"}
 
     @run_after("setup")
     def setup_executable(self):
@@ -214,7 +213,7 @@ class QeCheckAuSurfCustomExecUENV(QeCheckAuSurfUENV):
     """
 
     valid_prog_environs = ["+qe-dev"]
-    tags = {"uenv"}
+    tags = {"uenv", "maintenance"}
 
     @run_after("init")
     def setup_dependency(self):

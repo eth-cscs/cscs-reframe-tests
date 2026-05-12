@@ -32,7 +32,7 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
     model = parameter(['llama3-8b', 'llama3-70b'])
 
     # Exit after iteration is divisible by the following number
-    exit_interval = variable(int, value=10)
+    exit_interval = variable(int, value=5)
 
     # The checkpoint directory
     checkpoint_dir = variable(str, type(None), value=None)
@@ -44,14 +44,14 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
     nccl_debug = variable(bool, value=False)
 
     # The number of checkpoint steps
-    checkpoint_steps = variable(int, value=10)
+    checkpoint_steps = variable(int, value=5)
 
     hf_home = variable(
-        str, value=str(pathlib.Path.home() / '.cache' / 'huggingface')
+        str, value=str(pathlib.Path(os.environ['SCRATCH']) / '.cache' / 'huggingface')
     )
 
     # The number of training steps
-    training_steps = variable(int, value=50)
+    training_steps = variable(int, value=20)
 
     # Use WANDB logging
     wandb_logging = variable(bool, value=False)
@@ -145,8 +145,8 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
             'defer_embedding_wgrad_compute': True,
             'overlap_p2p_communication_warmup_flush': True,
 
-            'ref_tokens_per_sec_per_gpu': 850.0,
-            'ref_throughput_per_gpu': 410.0,
+            'ref_tokens_per_sec_per_gpu': 870.0,
+            'ref_throughput_per_gpu': 420.0,
 
             'activation': 'swiglu',
             'optimizer': 'adam',
@@ -190,8 +190,8 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
             'defer_embedding_wgrad_compute': False,
             'overlap_p2p_communication_warmup_flush': False,
 
-            'ref_tokens_per_sec_per_gpu': 7000.0,
-            'ref_throughput_per_gpu': 400.0,
+            'ref_tokens_per_sec_per_gpu': 7600.0,
+            'ref_throughput_per_gpu': 440.0,
 
             'activation': 'swiglu',
             'optimizer': 'adam',
@@ -224,7 +224,7 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
     sourcesdir = None
     executable = 'bash'
 
-    tags = {'maintenance', 'production', 'ml'}
+    tags = {'maintenance', 'production', 'ml', 'bencher'}
 
     @run_after('setup')
     def setup_test(self):
@@ -488,50 +488,27 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
 
     @performance_function('tokens/sec/gpu')
     def tokens_per_sec_per_gpu(self):
-        return sn.avg(
-            sn.extractall(r'tokens/sec/gpu:\s*(?P<tokens>\S+)',
-                          self.stdout, tag='tokens', conv=float)
-        )
+        return sn.avg(sn.extractall(
+            r'tokens/sec/gpu:\s*(?P<tokens>\S+)',
+            self.stdout, tag='tokens', conv=float
+        )[1:])  # Skip first entry as warmup
 
     @performance_function('TFLOP/s/GPU')
     def throughput_per_gpu(self):
         return sn.avg(sn.extractall(
             r'throughput per GPU \(TFLOP/s/GPU\):\s*(?P<throughput>\S+)',
             self.stdout, tag='throughput', conv=float
-        ))
-
-
-class pytorch_image_import(rfm.RunOnlyRegressionTest):
-    image = variable(
-        str,
-        value=('docker://jfrog.svc.cscs.ch#reframe-oci/'
-               'pytorch:25.01-py3_nvrtc-12.9')
-    )
-    archive_name = 'pytorch.sqsh'
-    executable = 'enroot'
-    valid_systems = ['+ce']
-    valid_prog_environs = ['builtin']
-
-    @run_before('run')
-    def set_executable_opts(self):
-        self.executable_opts = ['import', '-o', self.archive_name, self.image]
-
-    @sanity_function
-    def assert_image_imported(self):
-        return sn.path_exists(os.path.join(self.stagedir, self.archive_name))
-
+        )[1:])  # Skip first entry as warmup
 
 @rfm.simple_test
 class PyTorchMegatronLM_CE(PyTorchMegatronLM, ContainerEngineMixin):
     valid_systems = ['+nvgpu +ce']
     valid_prog_environs = ['builtin']
-    maintainers = ['ml-team']
-    pytorch_image = fixture(pytorch_image_import, scope='session')
+    maintainers = ['VCUE', 'SSA']
+    container_image = 'docker://jfrog.svc.cscs.ch#reframe-oci/pytorch:25.01-py3_nvrtc-12.9'
 
     @run_after('setup')
     def set_container_config(self):
-        self.container_image = os.path.join(self.pytorch_image.stagedir,
-                                            self.pytorch_image.archive_name)
         self.container_env_table = {
             'annotations.com.hooks': {
                 'aws_ofi_nccl.enabled': 'true',
@@ -565,7 +542,7 @@ class PyTorchMegatronLM_CE(PyTorchMegatronLM, ContainerEngineMixin):
 class PyTorchMegatronLM_UENV(PyTorchMegatronLM):
     valid_systems = ['+nvgpu +uenv']
     valid_prog_environs = ['+pytorch']
-    maintainers = ['ml-team']
+    maintainers = ['VCUE', 'SSA']
 
     @run_after('setup')
     def patch_numpy(self):

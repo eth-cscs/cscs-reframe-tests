@@ -1,6 +1,7 @@
 import reframe as rfm
 import reframe.utility.sanity as sn
 
+
 @rfm.simple_test
 class cpi_build_test(rfm.RegressionTest):
     descr = 'Simple mpi test'
@@ -19,3 +20,4 @@ class cpi_build_test(rfm.RegressionTest):
     @sanity_function
     def validate(self):
         return sn.assert_found(r'Error is 0.00000000', self.stdout)
+

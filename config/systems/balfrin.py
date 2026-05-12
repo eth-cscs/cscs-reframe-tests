@@ -13,6 +13,7 @@ site_configuration = {
             'descr': 'Balfrin vcluster',
             'hostnames': ['balfrin'],
             'modules_system': 'nomod',
+            'max_local_jobs': 20,
             'partitions': [
                 {
                     'name': 'login',
@@ -25,7 +26,7 @@ site_configuration = {
                         'remote', 'uenv',
                     ],
                     'descr': 'Login nodes',
-                    'max_jobs': 4,
+                    'max_jobs': 20,
                     'launcher': 'local'
                 },
                 {
@@ -36,7 +37,7 @@ site_configuration = {
                         'builtin',
                     ],
                     'container_platforms': [
-                        { 
+                        {
                              'type': 'Sarus',
                         },
                     ],
@@ -96,20 +97,4 @@ site_configuration = {
             ]
         },
     ],
-    'modes': [
-        {
-            'name': 'production',
-            'options': [
-                '--unload-module=reframe',
-                '--exec-policy=async',
-                '-Sstrict_check=1',
-                '--prefix=$SCRATCH/$USER/regression/production',
-                '--report-file=$SCRATCH/$USER/regression/production/reports/prod_report_{sessionid}.json',
-                '--save-log-files',
-                '--tag=production',
-                '--timestamp=%F_%H-%M-%S'
-            ],
-            'target_systems': ['balfrin'],
-        }
-    ]
 }

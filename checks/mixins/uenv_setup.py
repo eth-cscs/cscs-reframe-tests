@@ -6,7 +6,7 @@
 import reframe as rfm
 
 
-class UenvSetup(rfm.RegressionMixin):
+class UenvSetup(rfm.RegressionTestPlugin):
     @run_after('setup')
     def setup_uenv(self):
         pass

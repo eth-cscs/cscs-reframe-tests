@@ -4,16 +4,18 @@ from paraview.simple import *
 from paraview.modules.vtkRemotingCore import vtkProcessModule
 from paraview.modules.vtkRemotingViews import (
     vtkPVOpenGLInformation,
-    vtkPVRenderingCapabilitiesInformation
+    vtkPVRenderingCapabilitiesInformation,
 )
 
 basename = os.getenv('SCRATCH')
 if basename is None:
     basename = "/tmp"
 
-Version = (servermanager.vtkSMProxyManager.GetVersionMajor(),
-           servermanager.vtkSMProxyManager.GetVersionMinor(),
-           servermanager.vtkSMProxyManager.GetVersionPatch())
+Version = (
+    servermanager.vtkSMProxyManager.GetVersionMajor(),
+    servermanager.vtkSMProxyManager.GetVersionMinor(),
+    servermanager.vtkSMProxyManager.GetVersionPatch(),
+)
 
 info = vtkPVOpenGLInformation()
 info.CopyFromObject(None)
@@ -31,29 +33,29 @@ if rank == 0:
     print("Version:  %s" % info.GetVersion())
     print("Renderer: %s" % info.GetRenderer())
 
-if renInfo.Supports(
-    vtkPVRenderingCapabilitiesInformation.HEADLESS_RENDERING_USES_EGL):  # noqa: E125
+if renInfo.Supports(vtkPVRenderingCapabilitiesInformation.HEADLESS_RENDERING_USES_EGL):  # noqa: E125
     Vendor = "EGL"
-elif renInfo.Supports(
-    vtkPVRenderingCapabilitiesInformation.HEADLESS_RENDERING_USES_OSMESA):  # noqa: E125
+elif renInfo.Supports(vtkPVRenderingCapabilitiesInformation.HEADLESS_RENDERING_USES_OSMESA):  # noqa: E125
     Vendor = "OSMESA"
 else:
     Vendor = ""
 
 view = GetRenderView()
-view.CameraPosition = [1.642208, 1.973803, 2.14555]
-view.CameraViewUp = [-0.410182, -0.492857, 0.76736]
+view.CameraPosition = [0, 0, 1]
 view.CameraFocalPoint = [0.0, 0.0, 0.0]
+view.CameraViewUp = [0.0, 1.0, 0.0]
 view.OrientationAxesVisibility = 0
 
 sphere = Sphere()
 sphere.ThetaResolution = 1024
 sphere.PhiResolution = 1024
 
-if Version <= (5, 11, 2):
-    pidscal = ProcessIdScalars(sphere)
-else:
+if Version >= (6, 0, 0):
+    pidscal = ProcessIds(Input=sphere)
+elif Version >= (5, 12, 0):
     pidscal = GenerateProcessIds(Input=sphere)
+else:
+    pidscal = ProcessIdScalars(sphere)
 
 rep = Show(pidscal, view)
 
@@ -101,8 +103,11 @@ processIdLUTColorBar.Visibility = 1
 # show color legend
 rep.SetScalarBarVisibility(view, True)
 
-view.Background = [.7, .7, .7]
+view.Background = [0.7, 0.7, 0.7]
 view.ViewSize = [1024, 1024]
+view.UseLight = False
+
+Render(view)
 
 # change the pathname to a place where you have write access
 SourceVersion = servermanager.vtkSMProxyManager.GetParaViewSourceVersion()

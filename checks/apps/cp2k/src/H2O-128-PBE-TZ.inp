@@ -2,6 +2,7 @@
   PRINT_LEVEL LOW
   PROJECT H2O-128-PBE-TZ
   RUN_TYPE ENERGY
+  ELPA_KERNEL GENERIC
 &END GLOBAL
 
 &FORCE_EVAL
@@ -17,7 +18,7 @@
       EPS_DEFAULT 1.0E-12
     &END QS
     &SCF
-      EPS_SCF 1.0E-6
+      EPS_SCF 1.0E-9
       MAX_SCF 30
       SCF_GUESS ATOMIC
       &OT
@@ -25,7 +26,7 @@
         PRECONDITIONER FULL_ALL
       &END OT
       &OUTER_SCF
-        EPS_SCF 1.0E-6
+        EPS_SCF 1.0E-9
         MAX_SCF 20
       &END OUTER_SCF
       &PRINT

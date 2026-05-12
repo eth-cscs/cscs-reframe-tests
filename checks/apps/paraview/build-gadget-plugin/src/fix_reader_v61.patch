@@ -1,0 +1,10 @@
+diff --git a/src/Reader/vtk.module b/src/Reader/vtk.module
+index 46b504d..ed640bc 100644
+--- a/src/Reader/vtk.module
++++ b/src/Reader/vtk.module
+@@ -12,4 +12,4 @@ DEPENDS
+ PRIVATE_DEPENDS
+   VTK::vtksys
+   VTK::mpi
+-  VTK::hdf5
++  VTK::hdf5vtk

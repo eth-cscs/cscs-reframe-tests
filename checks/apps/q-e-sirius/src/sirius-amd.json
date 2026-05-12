@@ -1,0 +1,6 @@
+{
+  "control": {
+    "std_evp_solver_name": "magma_gpu",
+    "gen_evp_solver_name": "lapack"
+  }
+}
