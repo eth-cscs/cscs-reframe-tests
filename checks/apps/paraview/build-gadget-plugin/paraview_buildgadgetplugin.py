@@ -6,32 +6,9 @@
 import reframe as rfm
 import reframe.utility.sanity as sn
 
-from textwrap import dedent
-
 from packaging.version import Version
 from packaging.specifiers import SpecifierSet
-
-
-_UENV_CLI = 'uenv'
-
-
-def uenv_metadata():
-    import os
-    import json
-    from reframe.utility import osext
-
-    uenv_label = os.environ['UENV']
-    _uenv_version = osext.run_command(f'{_UENV_CLI} --version').stdout.strip()
-
-    if Version(_uenv_version) >= Version('9.2.0'):
-        _cmd = f"{_UENV_CLI} image inspect --json {uenv_label}"
-        metadata = json.loads(osext.run_command(_cmd, shell=True).stdout)
-        return Version(metadata["version"]), Version(metadata["tag"])
-    else:
-        _cmd = f"{_UENV_CLI} image inspect --format=\'{{version}} {{tag}}\' {uenv_label}"  # noqa E501
-        _version_tag = osext.run_command(_cmd, shell=True).stdout
-        return str(_version_tag.split(" ")[0]), \
-            str(_version_tag.split(" ")[1])
+from uenv import uenv_metadata
 
 
 @rfm.simple_test

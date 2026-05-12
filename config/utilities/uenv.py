@@ -1,3 +1,4 @@
+import json
 import os
 import pathlib
 import yaml
@@ -46,6 +47,25 @@ def uarch(partition):
     return None
 
 
+def uenv_metadata():
+    # import os
+    # import json
+    # from reframe.utility import osext
+
+    uenv_label = os.environ['UENV']
+    _uenv_version = osext.run_command(f'{_UENV_CLI} --version').stdout.strip()
+
+    if Version(_uenv_version) >= Version('9.2.0'):
+        _cmd = f"{_UENV_CLI} image inspect --json {uenv_label}"
+        metadata = json.loads(osext.run_command(_cmd, shell=True).stdout)
+        return Version(metadata["version"]), Version(metadata["tag"])
+    else:
+        _cmd = f"{_UENV_CLI} image inspect --format=\'{{version}} {{tag}}\' {uenv_label}"  # noqa E501
+        _version_tag = osext.run_command(_cmd, shell=True).stdout
+        return str(_version_tag.split(" ")[0]), \
+            str(_version_tag.split(" ")[1])
+
+
 def _get_uenvs():
     uenv = os.environ.get('UENV', None)
     if uenv is None:
@@ -82,11 +102,13 @@ def _get_uenvs():
             image_path = pathlib.Path(image_path)
             # Check that uenv was pulled
             if not image_path.is_file():
-                raise ConfigError(f"{uenv_name} is missing, "
+                raise ConfigError(
+                    f"{uenv_name} is missing, "
                     f"try pulling it with: uenv image pull {uenv_name}")
             try:
                 if image_path.stat().st_size == 0:
-                    raise ConfigError(f"{uenv_name} is empty, "
+                    raise ConfigError(
+                        f"{uenv_name} is empty, "
                         f"try pulling it with: uenv image pull {uenv_name}")
             except FileNotFoundError:
                 raise ConfigError(f"{uenv_name} was not found")
@@ -132,13 +154,15 @@ def _get_uenvs():
                 )
 
             # Replace characters that create problems in environment names
-            uenv_name_pretty = uenv_name.replace(":", "_").replace("/", "_").replace("%", "_")
+            uenv_name_pretty = \
+                uenv_name.replace(":", "_").replace("/", "_").replace("%", "_")
             env['name'] = f'{uenv_name_pretty}_{k}'
             env['resources'] = {
                 'uenv': {
                     'file': str(image_path),
                     'mount': image_mount,
-                    'uenv': f'{image_path}:{image_mount}' if image_mount else str(image_path)
+                    'uenv': f'{image_path}:{image_mount}' if image_mount
+                            else str(image_path)
                 }
             }
             if len(views) > 0:
