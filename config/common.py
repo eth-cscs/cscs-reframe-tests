@@ -1,13 +1,89 @@
-# Copyright 2016 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright ETH Zurich/Swiss National Supercomputing Centre (CSCS)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
-#
-# ReFrame CSCS settings
-#
 
 import json
 import os
+
+
+def _format_victoriametrics(record, extras, ignore_keys):
+    """
+    From httpjson formatting:
+      httpjson_record_1.json: {check_name:.._A, check_perf_var:A, check_perf_value:3.2, check_perf_ref:3.0}
+      httpjson_record_2.json: {check_name:.._A, check_perf_var:B, check_perf_value:4.2, check_perf_ref:4.0}
+      etc...
+
+    to victoriametrics formatting:
+      {metric:{__name__:check_name_A, check_perf_type:value, check_system:daint}, values:[3.2], timestamps:[1778457600000]}
+      {metric:{__name__:check_name_A, check_perf_type:ref, check_system:daint}, values:[3.0], timestamps:[1778457600000]}
+      and
+      {metric:{__name__:check_name_A, check_perf_type:value, check_system:daint}, values:[4.2], timestamps:[1778457600000]}
+      {metric:{__name__:check_name_A, check_perf_type:ref, check_system:daint}, values:[4.0], timestamps:[1778457600000]}
+      etc...
+    """
+    _ = extras, ignore_keys
+    selected_fields = {
+        'check_name', 'check_perf_var', 'check_perf_unit', 'check_result', 'hostname',
+        'check_partition', 'check_environ', 'check_perf_result', 'check_jobid',
+        'check_system', 'check_executable', 'check_hashcode',
+        'check_short_name', 'check_unique_name',
+        'check_job_completion_time_unix', 'check_perf_value', 'check_perf_ref'
+    }
+
+    values = {
+        key: value for key, value in vars(record).items()
+        if key in selected_fields
+    }
+
+    def _or_default(field, default='x'):
+        value = values.get(field)
+        return value if value is not None else default
+
+    base_metric = {
+        "__name__": _or_default("check_unique_name"),
+        "check_perf_var": _or_default("check_perf_var"),
+        "check_perf_unit": _or_default("check_perf_unit"),
+        "check_result": _or_default("check_result"),
+        "hostname": _or_default("hostname"),
+        "check_partition": _or_default("check_partition"),
+        "check_environ": _or_default("check_environ"),
+        "check_perf_result": _or_default("check_perf_result"),
+        "check_jobid": _or_default("check_jobid"),
+        "check_system": _or_default("check_system"),
+        "check_executable": _or_default("check_executable"),
+        "check_hashcode": _or_default("check_hashcode"),
+        "data_stream_type": "logs",
+        "data_stream_dataset": "performance_values",
+        "data_stream_namespace": "reframe"
+    }
+
+    timestamp = values.get("check_job_completion_time_unix")
+    timestamps = [1000 * int(timestamp)] if timestamp is not None else []
+
+    payloads = []
+    for perf_type, perf_key in (
+        ("perf_ref", "check_perf_ref"),
+        ("perf_value", "check_perf_value"),
+    ):
+        perf_value = values.get(perf_key)
+        if perf_value is None:
+            continue
+
+        payload = {
+            "metric": {**base_metric, "check_perf_type": perf_type},
+            "values": [float(perf_value)],
+        }
+        if timestamps:
+            payload["timestamps"] = timestamps
+        payloads.append(payload)
+
+    if not payloads:
+        return None
+
+    vm_data = "\n".join(json.dumps(payload) for payload in payloads)
+
+    return vm_data
 
 
 def _format_httpjson(record, extras, ignore_keys):
@@ -96,19 +172,24 @@ site_configuration = {
                     # We are setting this from the environment
                     # to avoid polluting the logs from tests in the
                     # login nodes
+                    # export RFM_HTTPJSON_URL='http://vminsert.o11y.cscs.ch:8480/insert/0/prometheus/api/v1/import'
                     'url': 'http://httpjson-server:12345/rfm',
                     'level': 'info',
-                    'extras': {
-                        'data_stream': {
-                            'type': 'logs',
-                            'dataset': 'performance_values',
-                            'namespace': 'reframe'
-                        },
-                        'rfm_ci_pipeline': os.getenv("CI_PIPELINE_URL", "#"),
-                        'rfm_ci_project': os.getenv("CI_PROJECT_PATH", "Unknown CI Project")
+                    'extra_headers': {
+                        'Content-Type': 'application/x-ndjson'
                     },
+                    # 'extras': {
+                    #     'data_stream': {
+                    #         'type': 'logs',
+                    #         'dataset': 'performance_values',
+                    #         'namespace': 'reframe'
+                    #     },
+                    #     'rfm_ci_pipeline': os.getenv("CI_PIPELINE_URL", "#"),
+                    #     'rfm_ci_project': os.getenv("CI_PROJECT_PATH", "Unknown CI Project")
+                    # },
                     # 'debug': True,
-                    "json_formatter": _format_httpjson,
+                    # "json_formatter": _format_httpjson,
+                    "json_formatter": _format_victoriametrics,
                     'ignore_keys': ['check_perfvalues']
                 }
             ]
@@ -267,7 +348,7 @@ site_configuration = {
             'check_search_recursive': True,
             'remote_detect': True,
             'resolve_module_conflicts': False,
-            'pipeline_timeout': 1000 # https://reframe-hpc.readthedocs.io/en/stable/pipeline.html#tweaking-the-throughput-and-interactivity-of-test-jobs-in-the-asynchronous-execution-policy
+            'pipeline_timeout': 1000  # https://reframe-hpc.readthedocs.io/en/stable/pipeline.html#tweaking-the-throughput-and-interactivity-of-test-jobs-in-the-asynchronous-execution-policy
         }
     ],
 #     'autodetect_methods': [
