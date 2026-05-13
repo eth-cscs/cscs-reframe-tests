@@ -400,13 +400,6 @@ def create_checks(check):
         not_expected=r'FAILED'
     )
     check(
-        'grep -q "/capstor/store/cscs /capstor/store/cscs lustre"         /proc/mounts || echo FAILED',
-        name='mount-store',
-        descr='Verify /capstor/store Lustre mount',
-        valid_systems=['daint', 'eiger'],
-        not_expected=r'FAILED'
-    )
-    check(
         'grep -q "pe_opt_cray_pe /opt/cray/pe"  /proc/mounts || echo FAILED',
         name='mount-cray-pe-eiger',
         descr='Verify Cray PE mount (Eiger)',
@@ -429,16 +422,16 @@ def create_checks(check):
     )
     check(
         'grep -q "/capstor/scratch/cscs /capstor/scratch/cscs lustre"     /proc/mounts || echo FAILED',
-        name='mount-scratch-daint',
-        descr='Verify scratch filesystem is mounted (Daint)',
-        valid_systems=['daint'],
+        name='mount-scratch',
+        descr='Verify scratch filesystem is mounted',
+        valid_systems=['daint', 'eiger'],
         not_expected=r'FAILED'
     )
     check(
         'grep -q "/capstor/store/cscs /capstor/store/cscs lustre"         /proc/mounts || echo FAILED',
-        name='mount-store-daint',
+        name='mount-store',
         descr='Verify store filesystem is mounted (Daint)',
-        valid_systems=['daint'],
+        valid_systems=['daint', 'eiger'],
         not_expected=r'FAILED'
     )
 
@@ -482,35 +475,21 @@ def create_checks(check):
         'bash -c "[[ $SCRATCH == /capstor/scratch/cscs/*  ]] || echo FAILED"',
         name='scratch-path-check',
         descr='Verify SCRATCH path is under /capstor/scratch/cscs',
-        valid_systems=['daint'],
+        valid_systems=['daint', 'eiger'],
         not_expected=r'FAILED'
     )
     check(
         'bash -c "[[ $PROJECT == /capstor/store/cscs/*    ]] || echo FAILED"',
-        name='project-path-check-daint',
+        name='project-path-check',
         descr='Verify PROJECT path is under /capstor/store/cscs (Daint)',
-        valid_systems=['daint'],
-        not_expected=r'FAILED'
-    )
-    check(
-        'bash -c "[[ $PROJECT == /capstor/store/*         ]] || echo FAILED"',
-        name='project-path-check-eiger',
-        descr='Verify PROJECT path is under /capstor/store (Eiger)',
-        valid_systems=['eiger'],
+        valid_systems=['daint', 'eiger'],
         not_expected=r'FAILED'
     )
     check(
         'bash -c "[[ $STORE   == /capstor/store/cscs/*    ]] || echo FAILED"',
-        name='store-path-check-daint',
+        name='store-path-check',
         descr='Verify STORE path is under /capstor/store/cscs (Daint)',
-        valid_systems=['daint'],
-        not_expected=r'FAILED'
-    )
-    check(
-        'bash -c "[[ $STORE   == /capstor/store/*         ]] || echo FAILED"',
-        name='store-path-check-eiger',
-        descr='Verify STORE path is under /capstor/store (Eiger)',
-        valid_systems=['eiger'],
+        valid_systems=['daint', 'eiger'],
         not_expected=r'FAILED'
     )
     check(
