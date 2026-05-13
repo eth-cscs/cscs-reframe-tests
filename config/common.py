@@ -70,11 +70,13 @@ def _format_victoriametrics(record, extras, ignore_keys):
         if perf_value is None:
             continue
 
-        payloads.append({
+        payload = {
             "metric": {**base_metric, "check_perf_type": perf_type},
             "values": [float(perf_value)],
-            "timestamps": timestamps,
-        })
+        }
+        if timestamps:
+            payload["timestamps"] = timestamps
+        payloads.append(payload)
 
     if not payloads:
         return None
