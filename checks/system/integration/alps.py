@@ -26,14 +26,14 @@ def create_checks(check):
         'timeout -v -k 3 3 sleep 1',
         name='timeout-completes',
         descr='Verify timeout completes successfully',
-        valid_systems=['daint', 'eiger'],
+        valid_systems=['daint', 'eiger', 'santis'],
         expected=[r'', 'stderr'],
     )
     check(
         'timeout -v -k 3 2 sleep 4',
         name='timeout-signal-term',
         descr='Verify timeout delivers TERM after expiry',
-        valid_systems=['daint', 'eiger'],
+        valid_systems=['daint', 'eiger', 'santis'],
         expected=[r'sending signal TERM', 'stderr'],
     )
 
@@ -50,14 +50,14 @@ def create_checks(check):
         'timeout -v -k 5 3 df > /dev/null',
         name='df-command-timeout',
         descr='Verify df command completes without timeout',
-        valid_systems=['daint', 'eiger'],
+        valid_systems=['daint', 'eiger', 'santis'],
         not_expected=[r'sending signal',  'stderr']
     )
     check(
         'timeout -v -k 3 3 df | grep -v /dev | grep 100%',
         name='fs-no-full',
         descr='Verify filesystem is not at 100% capacity',
-        valid_systems=['daint', 'eiger'],
+        valid_systems=['daint', 'eiger', 'santis'],
         expected=r'',
         not_expected=[r'sending signal',  'stderr']
     )
@@ -75,14 +75,14 @@ def create_checks(check):
         'ping -n -q -c 5 127.0.0.1',
         name='ping-localhost',
         descr='Verify localhost ping is successful',
-        valid_systems=['daint', 'eiger'],
+        valid_systems=['daint', 'eiger', 'santis'],
         expected=r'5 packets transmitted, 5 received, 0% packet loss',
     )
     check(
         'ping -n -q -c 5 8.8.8.8',
         name='ping-remote-dns',
         descr='Verify remote internet ping routing via DNS',
-        valid_systems=['daint', 'eiger'],
+        valid_systems=['daint', 'eiger', 'santis'],
         expected=r'5 packets transmitted, 5 received, 0% packet loss',
         where='+remote',
     )
@@ -90,7 +90,7 @@ def create_checks(check):
         'ping -n -q -c 5 www.google.com',
         name='ping-remote-http',
         descr='Verify remote HTTP hostname resolves and responds to ping',
-        valid_systems=['daint', 'eiger'],
+        valid_systems=['daint', 'eiger', 'santis'],
         expected=r'5 packets transmitted, 5 received, 0% packet loss',
         where='+remote',
     )
@@ -113,7 +113,7 @@ def create_checks(check):
         'curl -s www.google.com -o /dev/null || echo FAILED',
         name='curl-external-access',
         descr='Verify external internet connectivity via curl',
-        valid_systems=['daint', 'eiger'],
+        valid_systems=['daint', 'eiger', 'santis'],
         not_expected=r'FAILED'
     )
 
@@ -124,21 +124,21 @@ def create_checks(check):
         'nslookup Xgit.cscs.ch    -timeout=5 || echo FAILED',
         name='dns-invalid-hostname',
         descr='Verify DNS lookup fails for invalid hostname',
-        valid_systems=['daint', 'eiger'],
+        valid_systems=['daint', 'eiger', 'santis'],
         expected=r'FAILED'
     )
     check(
         'nslookup  git.cscs.ch    -timeout=5 || echo FAILED',
         name='dns-internal-host',
         descr='Verify DNS resolution for internal CSCS host',
-        valid_systems=['daint', 'eiger'],
+        valid_systems=['daint', 'eiger', 'santis'],
         not_expected=r'FAILED'
     )
     check(
         'nslookup  www.google.com -timeout=5 || echo FAILED',
         name='dns-external-host',
         descr='Verify DNS resolution for external internet host',
-        valid_systems=['daint', 'eiger'],
+        valid_systems=['daint', 'eiger', 'santis'],
         not_expected=r'FAILED'
     )
 
@@ -149,14 +149,14 @@ def create_checks(check):
         'ip address show | grep -A6 nmn0: ',
         name='netiface-nmn0-up',
         descr='Verify nmn0 network interface is up',
-        valid_systems=['daint', 'eiger'],
+        valid_systems=['daint', 'eiger', 'santis'],
         expected=r'nmn0.*state UP'
     )
     check(
         'ip address show | grep -A6 nmn0: ',
         name='netiface-nmn0-ip',
         descr='Verify nmn0 has expected IP address range',
-        valid_systems=['daint', 'eiger'],
+        valid_systems=['daint', 'eiger', 'santis'],
         expected=r'inet 10.100.*.*/22 brd 10.100.*.255 scope global nmn0'
     )
 
@@ -164,14 +164,14 @@ def create_checks(check):
         'ip address show | grep -A6 hsn0: ',
         name='netiface-hsn0-up',
         descr='Verify hsn0 network interface is up',
-        valid_systems=['daint', 'eiger'],
+        valid_systems=['daint', 'eiger', 'santis'],
         expected=r'hsn0.*state UP'
     )
     check(
         'ip address show | grep -A6 hsn0: ',
         name='netiface-hsn0-ip',
         descr='Verify hsn0 has expected IP address range',
-        valid_systems=['daint', 'eiger'],
+        valid_systems=['daint', 'eiger', 'santis'],
         expected=r'inet 172.28.*.*/16 brd 172.28.255.255 scope global hsn0'
     )
 
@@ -179,14 +179,14 @@ def create_checks(check):
         'ip address show | grep -A6 hsn1: ',
         name='netiface-hsn1-up',
         descr='Verify hsn1 network interface is up (Daint only)',
-        valid_systems=['daint'],
+        valid_systems=['daint', 'santis'],
         expected=r'hsn1.*state UP'
     )
     check(
         'ip address show | grep -A6 hsn1: ',
         name='netiface-hsn1-ip',
         descr='Verify hsn1 has expected IP address range (Daint only)',
-        valid_systems=['daint'],
+        valid_systems=['daint', 'santis'],
         expected=r'inet 172.28.*.*/16 brd 172.28.255.255 scope global hsn1'
     )
 
@@ -194,14 +194,14 @@ def create_checks(check):
         'ip address show | grep -A6 hsn2: ',
         name='netiface-hsn2-up',
         descr='Verify hsn2 network interface is up (Daint only)',
-        valid_systems=['daint'],
+        valid_systems=['daint', 'santis'],
         expected=r'hsn2.*state UP'
     )
     check(
         'ip address show | grep -A6 hsn2: ',
         name='netiface-hsn2-ip',
         descr='Verify hsn2 has expected IP address range (Daint only)',
-        valid_systems=['daint'],
+        valid_systems=['daint', 'santis'],
         expected=r'inet 172.28.*.*/16 brd 172.28.255.255 scope global hsn2'
     )
 
@@ -209,14 +209,14 @@ def create_checks(check):
         'ip address show | grep -A6 hsn3: ',
         name='netiface-hsn3-up',
         descr='Verify hsn3 network interface is up (Daint only)',
-        valid_systems=['daint'],
+        valid_systems=['daint', 'santis'],
         expected=r'hsn3.*state UP'
     )
     check(
         'ip address show | grep -A6 hsn3: ',
         name='netiface-hsn3-ip',
         descr='Verify hsn3 has expected IP address range (Daint only)',
-        valid_systems=['daint'],
+        valid_systems=['daint', 'santis'],
         expected=r'inet 172.28.*.*/16 brd 172.28.255.255 scope global hsn3'
     )
 
@@ -233,14 +233,14 @@ def create_checks(check):
         'ping -n -q -c 5  ldap.cscs.ch',
         name='ldap-server-reachable',
         descr='Verify LDAP server is reachable',
-        valid_systems=['daint', 'eiger'],
+        valid_systems=['daint', 'eiger', 'santis'],
         expected=r'5 packets transmitted, 5 received, 0% packet loss'
     )
     check(
         'timeout -v -k 3 3 getent hosts',
         name='ldap-getent-hosts',
         descr='Verify getent hosts command works for LDAP',
-        valid_systems=['daint', 'eiger'],
+        valid_systems=['daint', 'eiger', 'santis'],
         expected=r'localhost',
         not_expected=r'sending signal'
     )
@@ -258,7 +258,7 @@ def create_checks(check):
         'cat /etc/os-release',
         name='os-version-check-daint',
         descr='Verify SUSE Linux Enterprise Server 15 SP6 is installed (Daint)',
-        valid_systems=['daint'],
+        valid_systems=['daint', 'santis'],
         expected=r'PRETTY_NAME="SUSE Linux Enterprise Server 15 SP6"'
     )
     check(
@@ -272,7 +272,7 @@ def create_checks(check):
         'cat /etc/locale.conf',
         name='locale-check',
         descr='Verify locale is set to en_US.UTF-8',
-        valid_systems=['daint', 'eiger'],
+        valid_systems=['daint', 'eiger', 'santis'],
         expected=r'LANG=en_US.UTF-8'
     )
 
@@ -289,14 +289,14 @@ def create_checks(check):
         'ps aux | grep /usr/sbin/sshd | grep root || echo FAILED',
         name='sshd-running',
         descr='Verify SSH daemon is running',
-        valid_systems=['daint', 'eiger'],
+        valid_systems=['daint', 'eiger', 'santis'],
         not_expected=r'FAILED'
     )
     check(
         '/usr/bin/ss -ltup | grep :ssh  || echo FAILED',
         name='ssh-port-listening',
         descr='Verify SSH port is listening',
-        valid_systems=['daint', 'eiger'],
+        valid_systems=['daint', 'eiger', 'santis'],
         not_expected=r'FAILED'
     )
 
@@ -307,7 +307,7 @@ def create_checks(check):
         '/usr/bin/ss -ltup | grep :http || echo FAILED',
         name='http-port-not-listening',
         descr='Verify HTTP port is not listening',
-        valid_systems=['daint', 'eiger'],
+        valid_systems=['daint', 'eiger', 'santis'],
         expected=r'FAILED'
     )
 
@@ -339,28 +339,28 @@ def create_checks(check):
         'which zypper || echo FAILED',
         name='tool-zypper',
         descr='Verify zypper package manager is available',
-        valid_systems=['daint', 'eiger'],
+        valid_systems=['daint', 'eiger', 'santis'],
         not_expected=r'FAILED'
     )
     check(
         'which vim    || echo FAILED',
         name='tool-vim',
         descr='Verify vim editor is available',
-        valid_systems=['daint', 'eiger'],
+        valid_systems=['daint', 'eiger', 'santis'],
         not_expected=r'FAILED'
     )
     check(
         'which gcc    || echo FAILED',
         name='tool-gcc',
         descr='Verify gcc compiler is available',
-        valid_systems=['daint', 'eiger'],
+        valid_systems=['daint', 'eiger', 'santis'],
         not_expected=r'FAILED'
     )
     check(
         'which gcc-12 || echo FAILED',
         name='tool-gcc-12',
         descr='Verify gcc-12 compiler is available',
-        valid_systems=['daint', 'eiger'],
+        valid_systems=['daint', 'eiger', 'santis'],
         not_expected=r'FAILED'
     )
     check(
@@ -376,7 +376,7 @@ def create_checks(check):
         'which jq     || echo FAILED',
         name='tool-jq',
         descr='Verify jq JSON processor is available',
-        valid_systems=['daint', 'eiger'],
+        valid_systems=['daint', 'eiger', 'santis'],
         not_expected=r'FAILED'
     )
 
@@ -424,14 +424,14 @@ def create_checks(check):
         'grep -q "/capstor/scratch/cscs /capstor/scratch/cscs lustre"     /proc/mounts || echo FAILED',
         name='mount-scratch',
         descr='Verify scratch filesystem is mounted',
-        valid_systems=['daint', 'eiger'],
+        valid_systems=['daint', 'eiger', 'santis'],
         not_expected=r'FAILED'
     )
     check(
         'grep -q "/capstor/store/cscs /capstor/store/cscs lustre"         /proc/mounts || echo FAILED',
         name='mount-store',
         descr='Verify store filesystem is mounted (Daint)',
-        valid_systems=['daint', 'eiger'],
+        valid_systems=['daint', 'eiger', 'santis'],
         not_expected=r'FAILED'
     )
 
@@ -439,21 +439,21 @@ def create_checks(check):
         'printenv SCRATCH || echo FAILED',
         name='env-scratch',
         descr='Verify SCRATCH environment variable is set',
-        valid_systems=['daint', 'eiger'],
+        valid_systems=['daint', 'eiger', 'santis'],
         not_expected=r'FAILED'
     )
     check(
         'printenv PROJECT || echo FAILED',
         name='env-project',
         descr='Verify PROJECT environment variable is set',
-        valid_systems=['daint', 'eiger'],
+        valid_systems=['daint', 'eiger', 'santis'],
         not_expected=r'FAILED'
     )
     check(
         'printenv STORE   || echo FAILED',
         name='env-store',
         descr='Verify STORE environment variable is set',
-        valid_systems=['daint', 'eiger'],
+        valid_systems=['daint', 'eiger', 'santis'],
         not_expected=r'FAILED'
     )
     check(
@@ -467,7 +467,7 @@ def create_checks(check):
         'printenv HOME    || echo FAILED',
         name='env-home',
         descr='Verify HOME environment variable is set',
-        valid_systems=['daint', 'eiger'],
+        valid_systems=['daint', 'eiger', 'santis'],
         not_expected=r'FAILED'
     )
 
@@ -475,21 +475,21 @@ def create_checks(check):
         'bash -c "[[ $SCRATCH == /capstor/scratch/cscs/*  ]] || echo FAILED"',
         name='scratch-path-check',
         descr='Verify SCRATCH path is under /capstor/scratch/cscs',
-        valid_systems=['daint', 'eiger'],
+        valid_systems=['daint', 'eiger', 'santis'],
         not_expected=r'FAILED'
     )
     check(
         'bash -c "[[ $PROJECT == /capstor/store/cscs/*    ]] || echo FAILED"',
         name='project-path-check',
         descr='Verify PROJECT path is under /capstor/store/cscs (Daint)',
-        valid_systems=['daint', 'eiger'],
+        valid_systems=['daint', 'eiger', 'santis'],
         not_expected=r'FAILED'
     )
     check(
         'bash -c "[[ $STORE   == /capstor/store/cscs/*    ]] || echo FAILED"',
         name='store-path-check',
         descr='Verify STORE path is under /capstor/store/cscs (Daint)',
-        valid_systems=['daint', 'eiger'],
+        valid_systems=['daint', 'eiger', 'santis'],
         not_expected=r'FAILED'
     )
     check(
@@ -503,7 +503,7 @@ def create_checks(check):
         'bash -c "[[ $HOME    == /users/*                 ]] || echo FAILED"',
         name='home-path-check',
         descr='Verify HOME path is under /users',
-        valid_systems=['daint', 'eiger'],
+        valid_systems=['daint', 'eiger', 'santis'],
         not_expected=r'FAILED'
     )
 
@@ -511,7 +511,7 @@ def create_checks(check):
         'printenv TMP || echo FAILED',
         name='env-tmp-not-set',
         descr='Verify TMP environment variable is not set',
-        valid_systems=['daint', 'eiger'],
+        valid_systems=['daint', 'eiger', 'santis'],
         expected=r'FAILED'
     )
 
@@ -529,7 +529,7 @@ def create_checks(check):
         'test -e /run/slurm/conf/slurm.conf || echo FAILED',
         name='slurm-config-exists',
         descr='Verify Slurm configuration file exists',
-        valid_systems=['daint', 'eiger'],
+        valid_systems=['daint', 'eiger', 'santis'],
         not_expected=r'FAILED',
         where='+remote'
     )
@@ -538,21 +538,21 @@ def create_checks(check):
         'which sinfo || echo FAILED',
         name='slurm-sinfo-tool',
         descr='Verify Slurm sinfo tool is available',
-        valid_systems=['daint', 'eiger'],
+        valid_systems=['daint', 'eiger', 'santis'],
         not_expected=r'FAILED'
     )
     check(
         'ps aux | grep munge',
         name='slurm-munge-daemon',
         descr='Verify Munge daemon is running',
-        valid_systems=['daint', 'eiger'],
+        valid_systems=['daint', 'eiger', 'santis'],
         expected=r'/usr/sbin/munged'
     )
     check(
         'scontrol ping',
         name='slurm-slurmctld-ping',
         descr='Verify Slurm controller is responsive',
-        valid_systems=['daint', 'eiger'],
+        valid_systems=['daint', 'eiger', 'santis'],
         expected=r'Slurmctld\(primary\) at .* is UP'
     )
     # no need of a backup on daint thanks to kubernetes
@@ -573,7 +573,7 @@ def create_checks(check):
         'which nomad || echo FAILED',
         name='vsbase-nomad',
         descr='Verify Nomad orchestrator is available',
-        valid_systems=['daint', 'eiger'],
+        valid_systems=['daint', 'eiger', 'santis'],
         not_expected=r'FAILED'
     )
 
@@ -590,7 +590,7 @@ def create_checks(check):
         'bash -c "uenv --version" || echo FAILED',
         name='vservices-uenv-version',
         descr='Verify uenv command is available and works',
-        valid_systems=['daint', 'eiger'],
+        valid_systems=['daint', 'eiger', 'santis'],
         not_expected=r'FAILED'
     )
     # https://confluence.cscs.ch/display/KB/Scientific+Applications:
@@ -627,7 +627,7 @@ def create_checks(check):
         'bash -c "uenv image find"',
         name='vservices-image-quantumespresso',
         descr='Verify QuantumESPRESSO image available for GH200',
-        valid_systems=['daint'],
+        valid_systems=['daint', 'santis'],
         expected=r'quantumespresso/.*gh200'
     )
     check(
@@ -641,7 +641,7 @@ def create_checks(check):
         'bash -c "uenv image find"',
         name='vservices-image-linaro-forge',
         descr='Verify Linaro Forge image available for GH200',
-        valid_systems=['daint'],
+        valid_systems=['daint', 'santis'],
         expected=r'linaro-forge/.*gh200'
     )
 
@@ -649,7 +649,7 @@ def create_checks(check):
         'bash -c "uenv image find"',
         name='vservices-image-pytorch',
         descr='Verify PyTorch image available for GH200',
-        valid_systems=['daint'],
+        valid_systems=['daint', 'santis'],
         expected=r'pytorch/.*gh200'
     )
     check(
@@ -663,7 +663,7 @@ def create_checks(check):
         'bash -c "uenv image find"',
         name='vservices-image-prgenv-nvidia-not-available',
         descr='Verify PrgEnv-nvidia image is not available for GH200',
-        valid_systems=['daint'],
+        valid_systems=['daint', 'santis'],
         not_expected=r'prgenv-nvidia/.*gh200'
     )
 
@@ -671,21 +671,21 @@ def create_checks(check):
         'bash -c "uenv image find"',
         name='vservices-image-prgenv-gnu',
         descr='Verify PrgEnv-gnu image available for GH200',
-        valid_systems=['daint'],
+        valid_systems=['daint', 'santis'],
         expected=r'prgenv-gnu/.*gh200'
     )
     check(
         'bash -c "uenv image find"',
         name='vservices-image-netcdf-tools',
         descr='Verify NetCDF tools image available for GH200',
-        valid_systems=['daint'],
+        valid_systems=['daint', 'santis'],
         expected=r'netcdf-tools/.*gh200'
     )
     check(
         'bash -c "uenv image find"',
         name='vservices-image-editors',
         descr='Verify editors image available for GH200',
-        valid_systems=['daint'],
+        valid_systems=['daint', 'santis'],
         expected=r'editors/.*gh200'
     )
 
