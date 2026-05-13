@@ -12,7 +12,7 @@ To run the test suite you need first to clone and bootstrap ReFrame and then thi
  
 ### Install ReFrame
 
-see https://github.com/reframe-hpc/reframe#installation
+See [ReFrame installation instructions](https://github.com/reframe-hpc/reframe#installation).
 
 ### Clone the tests
 
