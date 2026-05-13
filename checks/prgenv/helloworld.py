@@ -130,7 +130,7 @@ class HelloWorldTestOpenMP(HelloWorldBaseTest):
             'c_openmp_flags', ['-fopenmp'])
         self.build_system.cxxflags = self.build_system.cflags
         self.build_system.fflags = self.current_environ.extras.get(
-            'f_openmp_flags', self.build_system.cflags )
+            'f_openmp_flags', self.build_system.cflags)
 
     @run_after('init')
     def update_description(self):
