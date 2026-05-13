@@ -15,11 +15,11 @@ def _format_victoriametrics(record, extras, ignore_keys):
       etc...
 
     to victoriametrics formatting:
-      {metric:{__name__:check_name_A, check_perf_type:value, check_system:daint}, values:[3.2], timestamps:[2026-05-11]}
-      {metric:{__name__:check_name_A, check_perf_type:ref, check_system:daint}, values:[3.0], timestamps:[2026-05-11]}
+      {metric:{__name__:check_name_A, check_perf_type:value, check_system:daint}, values:[3.2], timestamps:[1778457600000]}
+      {metric:{__name__:check_name_A, check_perf_type:ref, check_system:daint}, values:[3.0], timestamps:[1778457600000]}
       and
-      {metric:{__name__:check_name_A, check_perf_type:value, check_system:daint}, values:[4.2], timestamps:[2026-05-11]}
-      {metric:{__name__:check_name_A, check_perf_type:ref, check_system:daint}, values:[4.0], timestamps:[2026-05-11]}
+      {metric:{__name__:check_name_A, check_perf_type:value, check_system:daint}, values:[4.2], timestamps:[1778457600000]}
+      {metric:{__name__:check_name_A, check_perf_type:ref, check_system:daint}, values:[4.0], timestamps:[1778457600000]}
       etc...
     """
     _ = extras, ignore_keys
