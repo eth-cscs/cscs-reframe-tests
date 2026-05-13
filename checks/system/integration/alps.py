@@ -376,7 +376,7 @@ def create_checks(check):
         'which jq     || echo FAILED',
         name='tool-jq',
         descr='Verify jq JSON processor is available',
-        valid_systems=['daint'],
+        valid_systems=['daint', 'eiger'],
         not_expected=r'FAILED'
     )
 
@@ -482,7 +482,7 @@ def create_checks(check):
         'bash -c "[[ $SCRATCH == /capstor/scratch/cscs/*  ]] || echo FAILED"',
         name='scratch-path-check',
         descr='Verify SCRATCH path is under /capstor/scratch/cscs',
-        valid_systems=['daint', 'eiger'],
+        valid_systems=['daint'],
         not_expected=r'FAILED'
     )
     check(
@@ -594,7 +594,7 @@ def create_checks(check):
         'which nomad || echo FAILED',
         name='vsbase-nomad',
         descr='Verify Nomad orchestrator is available',
-        valid_systems=['daint'],
+        valid_systems=['daint', 'eiger'],
         not_expected=r'FAILED'
     )
 
