@@ -51,23 +51,33 @@ def uarch(partition):
     return None
 
 
-def uenv_metadata():
-    # import os
-    # import json
-    # from reframe.utility import osext
+def _uenv_version_and_tag_from_label(
+    uenv_label: Optional[str],
+) -> Tuple[Optional[str], Optional[str]]:
+    """
+    Given a uenv label "{name}/{ver}:{tag} it returns the tuple (ver, tag).
 
-    uenv_label = os.environ['UENV']
-    _uenv_version = osext.run_command(f'{_UENV_CLI} --version').stdout.strip()
+    Values are returned as str and any semantic is left to the user.
+    The only required component is the name; if any (or both) of the two is missing,
+    the related tuple component is considered not specified and set to None.
+    """
 
-    if Version(_uenv_version) >= Version('9.2.0'):
-        _cmd = f"{_UENV_CLI} image inspect --json {uenv_label}"
-        metadata = json.loads(osext.run_command(_cmd, shell=True).stdout)
-        return Version(metadata["version"]), Version(metadata["tag"])
+    if uenv_label is None or ("/" not in uenv_label and ":" not in uenv_label):
+        return (None, None)
+
+    if "/" not in uenv_label:
+        ver = None
+        rem = uenv_label
     else:
-        _cmd = f"{_UENV_CLI} image inspect --format=\'{{version}} {{tag}}\' {uenv_label}"  # noqa E501
-        _version_tag = osext.run_command(_cmd, shell=True).stdout
-        return str(_version_tag.split(" ")[0]), \
-            str(_version_tag.split(" ")[1])
+        _, rem = uenv_label.split("/")
+
+    if ":" not in rem:
+        ver = rem
+        tag = None
+    else:
+        ver, tag = rem.split(":")
+
+    return ver, tag
 
 
 def _parse_uenv_identifier(
@@ -186,6 +196,9 @@ def _get_uenvs() -> Optional[List]:
                 .replace("%", "_")
             )
             env['name'] = f'{uenv_name_pretty}_{k}'
+
+            env.setdefault("extras", {})["version"] = _uenv_version_and_tag_from_label(uenv_name)
+
             env['resources'] = {
                 'uenv': {
                     'file': str(image_path),
