@@ -25,7 +25,7 @@ class SphExa_CE(rfm.RunOnlyRegressionTest, ContainerEngineMixin, SlurmMpiPmi2Mix
     valid_systems = ['+ce +nvgpu']
     valid_prog_environs = ['builtin']
     maintainers = ['VCUE']
-    tags = {'ce_dev'}
+    tags = {'production', 'ce_dev', 'maintenance'}
 
     container_image = 'jfrog.svc.cscs.ch/ghcr/sarus-suite/containerfiles-ci/sphexa:0.96.2-mpich4.3.2-ofi1.22-cuda12.8.1'
     sph_infile = parameter(['/sphexa/50c.h5'])

@@ -27,7 +27,7 @@ class PyFR_CE(rfm.RunOnlyRegressionTest, ContainerEngineMixin, SlurmMpiPmixMixin
     backend = parameter(['cuda'])
     test_name = parameter(['3d-taylor-green-ci'])
     maintainers = ['VCUE']
-    tags = {'ce_dev'}
+    tags = {'production', 'ce_dev', 'maintenance'}
 
     num_tasks = 2
     num_tasks_per_node = 1
