@@ -7,7 +7,6 @@ import reframe as rfm
 import reframe.utility.sanity as sn
 
 from packaging.specifiers import SpecifierSet
-from uenv import uenv_metadata
 
 
 @rfm.simple_test
@@ -32,7 +31,7 @@ class ParaviewBuildGadgetPlugin(rfm.CompileOnlyRegressionTest):
 
     @run_before("compile")
     def set_version(self):
-        self.uenv_version = uenv_metadata()
+        self.uenv_version = self.current_environ.extras["version"]
 
     @run_before('compile')
     def prepare_build(self):
@@ -76,14 +75,10 @@ def need_fix_hdf5vtk(test):
     """
     version, _ = test.uenv_version
 
-    if version in SpecifierSet("~=6.1"):
-        _patch_cmd = [
-            'patch -p 1 -d gadget-plugin.git -i ../fix_reader_v61.patch'
-        ]
+    if version is None or version in SpecifierSet("~=6.1"):
+        _patch_cmd = ['patch -p 1 -d gadget-plugin.git -i ../fix_reader_v61.patch']
     elif version in SpecifierSet("~=6.0"):
-        _patch_cmd = [
-            'patch -p 1 -d gadget-plugin.git -i ../fix_reader_v60.patch'
-        ]
+        _patch_cmd = ['patch -p 1 -d gadget-plugin.git -i ../fix_reader_v60.patch']
     else:
         _patch_cmd = None
 

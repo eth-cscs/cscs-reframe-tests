@@ -1,7 +1,8 @@
-import json
 import os
 import pathlib
 import yaml
+
+from typing import List, Optional, Tuple
 
 import reframe.utility.osext as osext
 from reframe.core.exceptions import ConfigError
@@ -12,6 +13,8 @@ _UENV_MOUNT_DEFAULT = '/user-environment'
 _UENV_CLI = 'uenv'
 _UENV_DELIMITER = ','
 _UENV_MOUNT_DELIMITER = '@'
+_UENV_LABEL_DELIMITER = '|'
+_UENV_NOLABEL = "nolabel"
 _RFM_META = pathlib.Path('extra') / 'reframe.yaml'
 _RFM_META_DIR = pathlib.Path('meta')
 
@@ -47,46 +50,82 @@ def uarch(partition):
     return None
 
 
-def uenv_metadata():
-    # import os
-    # import json
-    # from reframe.utility import osext
+def _uenv_version_and_tag_from_label(
+    uenv_label: Optional[str],
+) -> Tuple[Optional[str], Optional[str]]:
+    """
+    Given a uenv label "{name}/{ver}:{tag} it returns the tuple (ver, tag).
 
-    uenv_label = os.environ['UENV']
-    _uenv_version = osext.run_command(f'{_UENV_CLI} --version').stdout.strip()
+    Values are returned as str and any semantic is left to the user.
+    The only required component is the name; if any (or both) of the two is missing,
+    the related tuple component is considered not specified and set to None.
+    """
 
-    if Version(_uenv_version) >= Version('9.2.0'):
-        _cmd = f"{_UENV_CLI} image inspect --json {uenv_label}"
-        metadata = json.loads(osext.run_command(_cmd, shell=True).stdout)
-        return Version(metadata["version"]), Version(metadata["tag"])
+    if uenv_label is None or ("/" not in uenv_label and ":" not in uenv_label):
+        return (None, None)
+
+    if "/" not in uenv_label:
+        ver = None
+        rem = uenv_label
     else:
-        _cmd = f"{_UENV_CLI} image inspect --format=\'{{version}} {{tag}}\' {uenv_label}"  # noqa E501
-        _version_tag = osext.run_command(_cmd, shell=True).stdout
-        return str(_version_tag.split(" ")[0]), \
-            str(_version_tag.split(" ")[1])
+        _, rem = uenv_label.split("/")
+
+    if ":" not in rem:
+        ver = rem
+        tag = None
+    else:
+        ver, tag = rem.split(":")
+
+    return ver, tag
 
 
-def _get_uenvs():
+def _parse_uenv_identifier(
+    uenv_identifier: str,
+) -> Tuple[Optional[str], Optional[pathlib.Path]]:
+    """
+    return: (name, path)
+    """
+
+    # uenv identifier can be either:
+    # - squashfs_path|uenv_label
+    # - squashfs_path
+    # - uenv_label
+    if "|" in uenv_identifier:
+        uenv_path, uenv_name = uenv_identifier.split(_UENV_LABEL_DELIMITER)
+        uenv_path = pathlib.Path(uenv_path)
+    elif pathlib.Path(uenv_identifier).is_file():
+        uenv_path = pathlib.Path(uenv_identifier)
+        uenv_name = None
+    else:
+        uenv_name = uenv_identifier
+        uenv_path = None
+
+    return (uenv_name, uenv_path)
+
+
+def _get_uenvs() -> Optional[List]:
     uenv = os.environ.get('UENV', None)
     if uenv is None:
         return uenv
 
     uenv_environments = []
     uenv_list = uenv.split(_UENV_DELIMITER)
-    uenv_version = osext.run_command(
-        f'{_UENV_CLI} --version', shell=True
-    ).stdout.strip()
+    uenv_version = osext.run_command(f'{_UENV_CLI} --version', shell=True).stdout.strip()
 
     for uenv in uenv_list:
-        uenv_name, *image_mount = uenv.split(_UENV_MOUNT_DELIMITER)
-        if len(image_mount) > 0:
-            image_mount = image_mount[0]
+        uenv_identifier, *uenv_mountpoint = uenv.split(_UENV_MOUNT_DELIMITER)
+        uenv_name, uenv_path = _parse_uenv_identifier(uenv_identifier)
+
+        if len(uenv_mountpoint) > 0:
+            uenv_mountpoint = uenv_mountpoint[0]
         else:
-            image_mount = None
+            uenv_mountpoint = None
 
         # Check if given uenv_name is a path to a squashfs archive
-        uenv_path = pathlib.Path(uenv_name)
-        if uenv_path.is_file():
+        if uenv_path:
+            if not uenv_path.is_file():
+                raise ConfigError(f"{uenv_name} is not a valid path to a squashfs uenv image")
+
             # We cannot inspect for target systems
             target_system = '*'
             image_path = uenv_path
@@ -94,22 +133,22 @@ def _get_uenvs():
         else:
             inspect_cmd = f'{_UENV_CLI} image inspect {uenv_name} --format'
 
-            image_path = osext.run_command(
-                f"{inspect_cmd}='{{sqfs}}'", shell=True).stdout.strip()
+            image_path = osext.run_command(f"{inspect_cmd}='{{sqfs}}'", shell=True).stdout.strip()
             target_system = osext.run_command(
-                f"{inspect_cmd}='{{system}}'", shell=True).stdout.strip()
+                f"{inspect_cmd}='{{system}}'", shell=True
+            ).stdout.strip()
 
             image_path = pathlib.Path(image_path)
             # Check that uenv was pulled
             if not image_path.is_file():
                 raise ConfigError(
-                    f"{uenv_name} is missing, "
-                    f"try pulling it with: uenv image pull {uenv_name}")
+                    f"{uenv_name} is missing, try pulling it with: uenv image pull {uenv_name}"
+                )
             try:
                 if image_path.stat().st_size == 0:
                     raise ConfigError(
-                        f"{uenv_name} is empty, "
-                        f"try pulling it with: uenv image pull {uenv_name}")
+                        f"{uenv_name} is empty, try pulling it with: uenv image pull {uenv_name}"
+                    )
             except FileNotFoundError:
                 raise ConfigError(f"{uenv_name} was not found")
 
@@ -124,12 +163,9 @@ def _get_uenvs():
 
         try:
             with open(rfm_meta) as image_envs:
-                image_environments = yaml.load(
-                    image_envs.read(), Loader=yaml.BaseLoader)
+                image_environments = yaml.load(image_envs.read(), Loader=yaml.BaseLoader)
         except OSError as err:
-            print(f'Skipping uenv `{uenv}`, there was an error '
-                  f'reading the metadata: {err}')
-
+            print(f'Skipping uenv `{uenv}`, there was an error reading the metadata: {err}')
             continue
 
         for k, v in image_environments.items():
@@ -137,9 +173,7 @@ def _get_uenvs():
             activation = v.pop('activation', [])
             views = v.pop('views', [])
 
-            env = {
-                'target_systems': [target_system]
-            }
+            env = {'target_systems': [target_system]}
             env.update(v)
 
             if isinstance(activation, list):
@@ -154,15 +188,24 @@ def _get_uenvs():
                 )
 
             # Replace characters that create problems in environment names
-            uenv_name_pretty = \
-                uenv_name.replace(":", "_").replace("/", "_").replace("%", "_")
+            uenv_name_pretty = (
+                (uenv_name if uenv_name else str(uenv_path))
+                .replace(":", "_")
+                .replace("/", "_")
+                .replace("%", "_")
+            )
             env['name'] = f'{uenv_name_pretty}_{k}'
+
+            env.setdefault("extras", {})["version"] = _uenv_version_and_tag_from_label(uenv_name)
+
             env['resources'] = {
                 'uenv': {
                     'file': str(image_path),
-                    'mount': image_mount,
-                    'uenv': f'{image_path}:{image_mount}' if image_mount
-                            else str(image_path)
+                    'mount': uenv_mountpoint,
+                    'uenv': (
+                        f'{str(image_path)}'
+                        f':{uenv_mountpoint if uenv_mountpoint else _UENV_MOUNT_DEFAULT}'
+                    ),
                 }
             }
             if len(views) > 0:
