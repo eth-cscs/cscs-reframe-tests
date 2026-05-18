@@ -2,6 +2,10 @@
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
+#
+# The Containerfiles for the images used in these checks can be found at the following locations:
+# - OMB MPICH: https://github.com/sarus-suite/containerfiles-ci/tree/main/hpc/benchmarks/omb-mpich
+# - OMB OMPI: https://github.com/sarus-suite/containerfiles-ci/tree/main/hpc/benchmarks/omb-openmpi
 
 import pathlib
 import sys

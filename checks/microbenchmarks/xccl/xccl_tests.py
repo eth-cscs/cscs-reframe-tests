@@ -156,6 +156,7 @@ def _set_xccl_uenv_env_vars(env_vars):
 
 @rfm.simple_test
 class NCCLTestsCE(XCCLTestsBaseCE):
+    # The Containerfiles for the images used in NCCL CE checks can be found at https://github.com/sarus-suite/containerfiles-ci/tree/main/hpc/benchmarks/nccl-tests
     descr = 'Point-to-Point and All-Reduce NCCL tests with CE'
     valid_systems = ['+ce +nvgpu']
     tags.add('ce_dev')
