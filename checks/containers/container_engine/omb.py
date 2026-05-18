@@ -16,8 +16,8 @@ import reframe.utility.sanity as sn
 sys.path.append(str(pathlib.Path(__file__).parent.parent.parent / 'mixins'))
 
 from container_engine import ContainerEngineMixin  # noqa: E402
-from slurm_mpi_pmi2 import SlurmMpiPmi2Mixin
-from slurm_mpi_pmix import SlurmMpiPmixMixin
+from slurm_mpi_pmi2 import SlurmMpiPmi2Mixin       # noqa: E402
+from slurm_mpi_pmix import SlurmMpiPmixMixin       # noqa: E402
 
 
 class OMB_Base_CE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
@@ -74,7 +74,7 @@ class OMB_Base_CE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
             },
             'collective/osu_alltoall': {
                 'latency_1M': sn.extractsingle(r'1048576\s+(?P<latency_1M>\S+)',
-                                     self.stdout, 'latency_1M', float)
+                                               self.stdout, 'latency_1M', float)
             }
         }
         self.perf_patterns = self.patterns_per_test[self.test_name]

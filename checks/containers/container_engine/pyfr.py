@@ -14,9 +14,9 @@ import reframe.utility.sanity as sn
 sys.path.append(str(pathlib.Path(__file__).parent.parent.parent / 'mixins'))
 sys.path.append(str(pathlib.Path(__file__).parent.parent.parent.parent / 'config' / 'utilities'))
 
-from uenv import uarch
+from uenv import uarch                             # noqa: E402
 from container_engine import ContainerEngineMixin  # noqa: E402
-from slurm_mpi_pmix import SlurmMpiPmixMixin
+from slurm_mpi_pmix import SlurmMpiPmixMixin       # noqa: E402
 
 
 @rfm.simple_test

@@ -88,8 +88,7 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
             gpu_arch != 'sm_90', 'test tuned only for 8xGH200'
         )
         self.num_cpus_per_task = model_config.get(
-            'cpus_per_task', (curr_part.processor.num_cpus //
-                              self.num_tasks_per_node)
+            'cpus_per_task', (curr_part.processor.num_cpus // self.num_tasks_per_node)
         )
         self.reference = {
             '*': {
@@ -228,9 +227,10 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
     @performance_function('TFLOP/s/GPU')
     def throughput_per_gpu(self):
         # Discard the first 2 iterations as warmup
-        return sn.avg(sn.extractall(
-            r'throughput per GPU \(TFLOP/s/GPU\):\s*(?P<throughput>\S+)',
-            self.stdout, tag='throughput', conv=float
+        return sn.avg(
+            sn.extractall(
+                r'throughput per GPU \(TFLOP/s/GPU\):\s*(?P<throughput>\S+)',
+                self.stdout, tag='throughput', conv=float
             )[2:]
         )
 

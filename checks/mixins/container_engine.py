@@ -72,7 +72,7 @@ class ContainerEngineMixin(rfm.RegressionTestPlugin):
 
         self.env_file = f'{self.stagedir}/rfm_env.toml'
         with open(self.env_file, 'w') as f:
-            f.write('\n'.join(l for l in toml_lines if l))
+            f.write('\n'.join(ln for ln in toml_lines if ln))
 
     @run_before('run')
     def set_container_engine_env_launcher_options(self):

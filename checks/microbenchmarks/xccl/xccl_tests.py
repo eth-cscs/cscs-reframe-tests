@@ -12,10 +12,10 @@ import reframe.utility.sanity as sn
 sys.path.append(str(pathlib.Path(__file__).parent.parent.parent / 'mixins'))
 sys.path.append(str(pathlib.Path(__file__).parent.parent.parent.parent / 'config' / 'utilities'))
 
-from uenv import uarch
-from container_engine import ContainerEngineMixin  # noqa: E402
-from slurm_mpi_pmix import SlurmMpiPmixMixin
-from uenv_slurm_mpi_options import UenvSlurmMpiOptionsMixin
+from uenv import uarch                                       # noqa: E402
+from container_engine import ContainerEngineMixin            # noqa: E402
+from slurm_mpi_pmix import SlurmMpiPmixMixin                 # noqa: E402
+from uenv_slurm_mpi_options import UenvSlurmMpiOptionsMixin  # noqa: E402
 
 
 class XCCLTestsBase(rfm.RunOnlyRegressionTest):
@@ -49,7 +49,7 @@ class XCCLTestsBase(rfm.RunOnlyRegressionTest):
             'a100': {
                 'GB/s': (19.0, -0.05, 0.05, 'GB/s')
             }
-         },
+        },
         'all_reduce': {
             'gh200': {
                 'GB/s': (150.0, -0.10, 0.10, 'GB/s')
@@ -98,7 +98,7 @@ class XCCLTestsBase(rfm.RunOnlyRegressionTest):
             sn.assert_found(
                 r'NCCL INFO NET/OFI Selected [pP]rovider is cxi', self.stdout
             )
-         ])
+        ])
 
     @run_before('performance')
     def set_reference(self):
@@ -186,7 +186,7 @@ class NCCLTestsSkybox(NCCLTestsCE):
 
     @run_after('init')
     def setup_ce(self):
-        nccl_plugin_variant = 'cuda-dl' # not used by Skybox right now but kept for consistency
+        nccl_plugin_variant = 'cuda-dl'  # not used by Skybox right now but kept for consistency
 
 
 @rfm.simple_test
