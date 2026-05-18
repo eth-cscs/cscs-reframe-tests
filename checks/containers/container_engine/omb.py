@@ -127,6 +127,16 @@ class OMB_OMPI_CE(OMB_Base_CE, SlurmMpiPmixMixin):
 
 
 @rfm.simple_test
+class OMB_MPICH_Skybox(OMB_MPICH_CE):
+    descr = 'OSU Micro-benchmarks for MPICH/CE/Skybox (Point-to-Point and All-to-All)'
+    tags = {'ce_dev', 'skybox'}
+    spank_option = 'edf'
+    container_env_key_values = {
+        'devices': ["alps.cscs/cxi=all", "nvidia.com/gpu=all", "/dev/gdrdrv"]
+    }
+
+
+@rfm.simple_test
 class OMB_OMPI_Skybox(OMB_OMPI_CE):
     descr = 'OSU Micro-benchmarks for OpenMPI/CE/Skybox (Point-to-Point and All-to-All)'
     tags = {'ce_dev', 'skybox'}
