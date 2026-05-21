@@ -1,4 +1,4 @@
-# Copyright ETH Zurich/Swiss National Supercomputing Centre (CSCS)
+# Copyright Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -43,7 +43,8 @@ class ParaviewBuildGadgetPlugin(rfm.CompileOnlyRegressionTest):
             f"git reset --hard FETCH_HEAD", "cd .."
         ]
 
-        if (fix_actions := need_fix_hdf5vtk(self)) is not None:
+        fix_actions = need_fix_hdf5vtk(self)
+        if fix_actions is not None:
             self.prebuild_cmds.extend(fix_actions)
 
         self.build_system.cc = "gcc"
