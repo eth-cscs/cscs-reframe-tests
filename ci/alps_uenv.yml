@@ -80,7 +80,7 @@ reframe:
 #   stage: status
 #   needs: ['reframe']
 #   extends: .container-runner-lightweight-zen2
-#   image: python:3.9
+#   image: python
 #   script:
 #     - pwd
 #     - ls -a
@@ -92,7 +92,7 @@ notify_slack:
   stage: notify
   needs: ['reframe']
   extends: .container-runner-lightweight-zen2
-  image: python:3.9
+  image: python
   script:
     - pwd
     - ls -a
