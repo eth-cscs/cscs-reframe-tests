@@ -6,7 +6,11 @@
 import reframe as rfm
 
 
-class UenvSetup(rfm.RegressionTestPlugin):
+class SlurmMpiPmi2Mixin(rfm.RegressionTestPlugin):
+    """
+    Set slurm --mpi flags for jobs that require PMI-2.
+    """
+
     @run_after('setup')
-    def setup_uenv(self):
-        pass
+    def set_slurm_mpi_pmi2(self):
+        self.job.launcher.options += ['--mpi=pmi2']
