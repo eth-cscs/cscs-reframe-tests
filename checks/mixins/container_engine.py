@@ -12,6 +12,11 @@ from reframe.core.exceptions import EnvironError
 
 
 class ContainerEngineMixin(rfm.RegressionTestPlugin):
+    #: Slurm option to activate the SPANK plugin for container integration.
+    #:
+    #: :default: ``environment``
+    spank_option = variable(str, value='environment')
+
     #: The container image to use.
     #:
     #: :default: ``required``
@@ -32,15 +37,16 @@ class ContainerEngineMixin(rfm.RegressionTestPlugin):
     container_mounts = variable(typ.List[str], value=[])
 
     #: A dictionary of key/values to pass to the container environment.
+    #: Useful for setting arbitrary parameters in the EDF.
     #:
     #: :default: ``{}``
-    container_env_key_values = variable(typ.Dict[str, str], value={})
+    container_env_key_values = variable(typ.Dict[str, object], value={})
 
     #: A dictionary of tables to pass to the container environment.
     #: For each key, a dictionary of key/value pairs is given.
     #:
     #: :default: ``{}``
-    container_env_table= variable(typ.Dict[str, typ.Dict[str, str]], value={})
+    container_env_table = variable(typ.Dict[str, typ.Dict[str, str]], value={})
 
     @run_before('run')
     def create_env_file(self):
@@ -56,7 +62,7 @@ class ContainerEngineMixin(rfm.RegressionTestPlugin):
             toml_lines += [f'workdir = "{self.container_workdir}"']
 
         for k, v in self.container_env_key_values.items():
-            toml_lines.append(f'{k} = "{v}"')
+            toml_lines.append(f'{k} = {v}')
 
         for table_name, values in self.container_env_table.items():
             if values:
@@ -66,24 +72,24 @@ class ContainerEngineMixin(rfm.RegressionTestPlugin):
 
         self.env_file = f'{self.stagedir}/rfm_env.toml'
         with open(self.env_file, 'w') as f:
-            f.write('\n'.join(l for l in toml_lines if l))
+            f.write('\n'.join(ln for ln in toml_lines if ln))
 
     @run_before('run')
     def set_container_engine_env_launcher_options(self):
-        self.job.launcher.options += [f'--environment={self.env_file}']
+        self.job.launcher.options += [f'--{self.spank_option}={self.env_file}']
 
 
 class ContainerEngineCPEMixin(rfm.RegressionTestPlugin):
     @run_after('setup')
     def set_container_mounts(self):
-       current_environ = self.current_environ
-       self.build_locally = False
-       if 'cpe_ce_image' in current_environ.resources:
-           if os.environ.get('CPE_CE', None) is not None:
-               self.extra_resources = {
-                   'cpe_ce_mount': {
-                       'stagedir': self.stagedir
-                   }
-               }
-           else:
-               raise EnvironError("enviroment variable 'CPE_CE' is undefined")
+        current_environ = self.current_environ
+        self.build_locally = False
+        if 'cpe_ce_image' in current_environ.resources:
+            if os.environ.get('CPE_CE', None) is not None:
+                self.extra_resources = {
+                    'cpe_ce_mount': {
+                        'stagedir': self.stagedir
+                    }
+                }
+            else:
+                raise EnvironError("enviroment variable 'CPE_CE' is undefined")
