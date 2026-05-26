@@ -186,6 +186,11 @@ class MemoryOverconsumptionCheck(SlurmCompiledBaseCheck):
     sourcepath = 'eatmem/eatmemory.c'
     executable_opts = ['4000M']
 
+    @run_before('compile')
+    def oneapi_compilers(self):
+        if 'oneapi' in self.current_environ.features:
+            self.build_system.cflags += ['-g']
+
     @run_before('run')
     def set_memory_limit(self):
         self.job.options = ['--mem=2000']
@@ -199,8 +204,8 @@ class MemoryOverconsumptionCheck(SlurmCompiledBaseCheck):
 @rfm.simple_test
 class MemoryOverconsumptionCheckMPI(SlurmCompiledBaseCheck,
                                     UenvSlurmMpiOptionsMixin):
-    # TODO: maintainers = ['@jgphpc', '@ekouts']
-    descr = 'Tests for max allocatable memory'
+    descr = 'Testing max "allocatable" memory'
+    maintainers = ['@jgphpc', '@ekouts']
     valid_systems = ['+remote']
     valid_prog_environs = ['+uenv -cpe +prgenv +mpi']
     time_limit = '4m'
@@ -208,6 +213,11 @@ class MemoryOverconsumptionCheckMPI(SlurmCompiledBaseCheck,
     sourcepath = 'eatmem/eatmemory_mpi.c'
     # env_vars = {'MPICH_GPU_SUPPORT_ENABLED': 0}
     tags.add('mem')
+
+    @run_before('compile')
+    def oneapi_compilers(self):
+        if 'oneapi' in self.current_environ.features:
+            self.build_system.cflags += ['-g']
 
     @run_before('run')
     def set_num_tasks(self):
@@ -241,10 +251,22 @@ class MemoryOverconsumptionCheckMPI(SlurmCompiledBaseCheck,
 
     @run_before('performance')
     def set_reference_from_config_systems_file(self):
-        reference_mem = self.current_partition.extras['cn_memory'] - 3
+        """
+                    ref-1%< ref <ref+1%
+        beverin/mi200: 498< 503 <508
+        beverin/mi300: 496< 501 <506
+        daint:         845< 854 <863
+        clariden:      514< 519 <524 # grep MaxMemPerNode /etc/slurm/slurm.conf
+        santis:        845< 854 <863
+        starlex:       847< 856 <865
+        and eiger is a special case with 2 type of nodes: std=256G, large=512G
+        """
+        reference_mem = self.current_partition.extras['cn_memory']
+        lower = -0.51 if self.current_system.name == 'eiger' else -0.01
+        upper = 0.03 if 'openmpi' in self.current_environ.features else 0.01
         self.reference = {
             '*': {
-                'cn_max_allocated_memory': (reference_mem, -0.10, None, 'GB'),
+                'cn_max_allocated_memory': (reference_mem, lower, upper, 'GB')
             }
         }
 
@@ -269,7 +291,6 @@ class slurm_response_check(rfm.RunOnlyRegressionTest):
     }
     executable = 'time -p'
     tags = {'diagnostic', 'health'}
-    # TODO: maintainers = ['CB', 'VH']
 
     @run_before('run')
     def set_exec_opts(self):
@@ -307,7 +328,7 @@ class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
     valid_systems = ['-remote']
     valid_prog_environs = ['builtin']
     maintainers = ['VCUE', 'PA']
-    tags = {'slurm', 'ops', 'production', 'single-node'}
+    tags = {'slurm', 'ops', 'single-node'}
     min_avail_nodes = variable(int, value=1)
     ratio_minavail_nodes = variable(float, value=0.1)
     local = True
@@ -512,7 +533,7 @@ class SlurmTransparentHugepagesCheck(rfm.RunOnlyRegressionTest):
 class SlurmParanoidCheck(rfm.RunOnlyRegressionTest):
     valid_systems = ['+remote +scontrol']
     valid_prog_environs = ['builtin']
-    maintainers = ['piccinal', 'PA']
+    maintainers = ['PA', '@jgphpc']
     descr = (
         'Check that perf_event_paranoid enables per-process and system wide'
         'performance monitoring')
@@ -552,25 +573,72 @@ class SlurmNoIsolCpus(rfm.RunOnlyRegressionTest):
 
 
 @rfm.simple_test
-class SlurmNoUvmPerfAccessCounterMigration(rfm.RunOnlyRegressionTest):
+class NVreg_RestrictProfilingToAdminUsers(rfm.RunOnlyRegressionTest):
+    valid_systems = ['+remote +nvgpu']
+    valid_prog_environs = ['builtin']
+    maintainers = ['PA', '@jgphpc']
+    descr = '''
+    Allow access to the GPU Performance Counters for NVIDIA tools:
+    https://developer.nvidia.com/nvidia-development-tools-solutions-err_nvgpuctrperm-permission-issue-performance-counters
+    '''
+    time_limit = '1m'
+    num_tasks_per_node = 1
+    sourcesdir = None
+    executable = 'hostname'
+    tags = {'production', 'maintenance', 'slurm'}
+
+    @run_before('run')
+    def test_settings(self):
+        self.postrun_cmds = [
+            'grep ^NVRM /proc/driver/nvidia/version',
+            'grep -H RmProfilingAdminOnly /proc/driver/nvidia/params',
+            'grep NVreg_RestrictProfilingToAdminUsers /etc/modprobe.d/*'
+        ]
+
+    @sanity_function
+    def validate(self):
+        regex1 = r'RmProfilingAdminOnly: (?P<adminonly>\d+)'
+        sanity1 = sn.extractsingle(regex1, self.stdout, 'adminonly')
+        expected1 = '0'
+
+        regex2 = r'NVreg_RestrictProfilingToAdminUsers=(?P<adminonly>\d+)'
+        sanity2 = sn.extractsingle(regex2, self.stdout, 'adminonly')
+        expected2 = '0'
+
+        return sn.all([
+            sn.assert_eq(sanity1, expected1),
+            sn.assert_eq(sanity2, expected2)
+        ])
+
+
+@rfm.simple_test
+class SlurmUvmPerfAccessCounterMigration(rfm.RunOnlyRegressionTest):
     valid_systems = ['+remote +scontrol +nvgpu']
     valid_prog_environs = ['builtin']
     maintainers = ['msimberg', 'SSA']
     descr = '''
     Check that uvm_perf_access_counter_mimc_migration_enable is set to 0
-    as it is buggy in older drivers.
+    as it is buggy in older drivers. If the driver is at least version 565, the
+    name of the option is different and should be set to the default (-1).
     '''
     time_limit = '1m'
     num_tasks_per_node = 1
-    sourcesdir = None
-    executable = 'cat'
-    executable_opts = [('/sys/module/nvidia_uvm/parameters/'
-                        'uvm_perf_access_counter_mimc_migration_enable')]    
+    executable = 'bash'
+    executable_opts = ['check_uvm_perf_access_counter_migration.sh']
     tags = {'production', 'maintenance', 'slurm'}
 
     @sanity_function
     def validate(self):
-        return sn.assert_found(r'0', self.stdout)
+        driver_ver = sn.extractsingle(r'driver_version=(\d+)', self.stdout, 1,
+                                      int)
+        if driver_ver >= 565:
+            param = 'uvm_perf_access_counter_migration_enable'
+            expected = '-1'
+        else:
+            param = 'uvm_perf_access_counter_mimc_migration_enable'
+            expected = '0'
+        value = sn.extractsingle(rf'{param}=(.+)', self.stdout, 1)
+        return sn.assert_eq(value, expected)
 
 
 @rfm.simple_test

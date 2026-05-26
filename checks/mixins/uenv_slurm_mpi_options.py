@@ -1,4 +1,4 @@
-# Copyright 2016-2023 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -32,6 +32,8 @@ class UenvSlurmMpiOptionsMixin(rfm.RegressionTestPlugin):
             )
         elif "cray-mpich" in features:
             self.job.launcher.options += ['--mpi=cray_shasta']
+        elif "mpich" in features:
+            self.job.launcher.options += ['--mpi=pmi2']
         else:
             # Assume cray-mpich is used if nothing is specified.
             self.job.launcher.options += ['--mpi=cray_shasta']

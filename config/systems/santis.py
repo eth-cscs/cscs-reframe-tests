@@ -6,6 +6,8 @@
 # ReFrame CSCS settings
 #
 
+import reframe.utility.osext as osext
+
 site_configuration = {
     'systems': [
         {
@@ -15,6 +17,7 @@ site_configuration = {
             'modules_system': 'nomod',
             'resourcesdir':
                 '/capstor/store/cscs/cscs/public/reframe/resources',
+            'max_local_jobs': 20,
             'partitions': [
                 {
                     'name': 'login',
@@ -24,7 +27,7 @@ site_configuration = {
                         'builtin',
                     ],
                     'descr': 'Login nodes',
-                    'max_jobs': 4,
+                    'max_jobs': 20,
                     'launcher': 'local'
                 },
                 {
@@ -34,9 +37,9 @@ site_configuration = {
                     'environs': [
                         'builtin',
                     ],
-                    'max_jobs': 100,
+                    'max_jobs': 1000,
                     'extras': {
-                        'cn_memory': 500,
+                        'cn_memory': 854,
                     },
                     'resources': [
                         {
@@ -49,6 +52,7 @@ site_configuration = {
                         },
                     ],
                     'features': ['ce', 'gpu', 'nvgpu', 'remote', 'scontrol', 'uenv', 'hugepages_slurm'],
+                    'access': [f'--account={osext.osgroup()}'],
                     'devices': [
                         {
                             'type': 'gpu',

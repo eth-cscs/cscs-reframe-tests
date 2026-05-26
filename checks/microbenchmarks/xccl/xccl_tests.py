@@ -1,4 +1,4 @@
-# Copyright 2024 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -29,6 +29,9 @@ class XCCLTestsBase(rfm.RunOnlyRegressionTest):
     env_vars = {
         'NCCL_DEBUG': 'Info',
         'FI_LOG_LEVEL': 'Info',
+        # Make sure hwloc doesn't try to load GL components, which would make
+        # the tests hang if there's no display.
+        'HWLOC_COMPONENTS': '-gl',
     }
 
     reference_per_test = {
@@ -40,7 +43,7 @@ class XCCLTestsBase(rfm.RunOnlyRegressionTest):
                 'GB/s': (24.0, -0.05, 0.05, 'GB/s')
             },
             'mi200': {
-                'GB/s': (15.0, -0.05, 0.05, 'GB/s')
+                'GB/s': (13.5, -0.15, 0.15, 'GB/s')
             }
          },
         'all_reduce': {
@@ -135,8 +138,8 @@ def _set_xccl_uenv_env_vars(env_vars):
             'FI_CXI_DISABLE_HOST_REGISTER': '1',
             'FI_CXI_RX_MATCH_MODE': 'software',
             'FI_MR_CACHE_MONITOR': 'userfaultfd',
-            # The following have been found to help avoid hangs, but are not yet
-            # documented elsewhere
+            # The following have been found to help avoid hangs, but are not
+            # yet documented elsewhere
             'FI_CXI_RDZV_EAGER_SIZE': '0',
             'FI_CXI_RDZV_GET_MIN': '0',
             'FI_CXI_RDZV_THRESHOLD': '0',
@@ -148,7 +151,7 @@ def _set_xccl_uenv_env_vars(env_vars):
 class NCCLTestsCE(XCCLTestsBaseCE):
     descr = 'Point-to-Point and All-Reduce NCCL tests with CE'
     valid_systems = ['+ce +nvgpu']
-    image_tag = parameter(['cuda12.9.1'])
+    image_tag = parameter(['cuda12.9.1-ubuntu24.04'])
 
     # Disable Nvidia Driver requirement
     env_vars['NVIDIA_DISABLE_REQUIRE'] = 1
@@ -167,7 +170,7 @@ class NCCLTestsCE(XCCLTestsBaseCE):
 class NCCLTestsUENV(XCCLTestsBaseUENV):
     descr = 'Point-to-Point and All-Reduce NCCL tests with uenv'
     valid_systems = ['+nvgpu']
-    valid_prog_environs = ['+uenv +prgenv +nccl-tests']
+    valid_prog_environs = ['+uenv +nccl-tests']
 
     @run_after('setup')
     def set_env_vars(self):
@@ -184,7 +187,7 @@ def _set_rccl_min_nchannels(gpu_devices, env_vars):
 class RCCLTestsCE(XCCLTestsBaseCE):
     descr = 'Point-to-Point and All-Reduce RCCL tests with CE'
     valid_systems = ['+ce +amdgpu']
-    image_tag = parameter(['rocm6.3.4'])
+    image_tag = parameter(['rocm6.4.3-ubuntu24.04'])
 
     @run_after('init')
     def setup_ce(self):
@@ -215,7 +218,7 @@ def _set_rccl_uenv_env_vars(env_vars):
 class RCCLTestsUENV(XCCLTestsBaseUENV):
     descr = 'Point-to-Point and All-Reduce RCCL tests with uenv'
     valid_systems = ['+amdgpu']
-    valid_prog_environs = ['+uenv +prgenv +rccl-tests']
+    valid_prog_environs = ['+uenv +rccl-tests']
 
     @run_after('setup')
     def set_env_vars(self):

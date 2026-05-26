@@ -5,8 +5,10 @@
 
 import reframe as rfm
 import reframe.utility.sanity as sn
+from reframe.core.builtins import xfail
 
 
+@rfm.xfail('ICON uenvs are based on old versions of spack that don\'t fix GCC\'s includes', lambda self: 'icon' in self.current_environ.features)
 @rfm.simple_test
 class UenvFixincludes(rfm.RunOnlyRegressionTest):
     descr = '''
@@ -25,7 +27,7 @@ class UenvFixincludes(rfm.RunOnlyRegressionTest):
     executable = 'find'
     executable_opts = ["/user-environment", "/user-tools", "-type", "f",
                        "-name", "pthread.h"]
-    tags = {'production', 'maintenance', 'uenv'}
+    tags = {'maintenance', 'uenv'}
 
     @sanity_function
     def validate(self):

@@ -1,0 +1,25 @@
+name: github-pr-stats
+
+on:
+  schedule:
+    # every sunday
+    - cron: "0 0 * * 0"
+  workflow_dispatch: # Allow for running this manually.
+  #pull_request:
+  #  types: [opened]
+
+jobs:
+  stats:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run pull request stats
+        uses: flowwer-dev/pull-request-stats@main
+        with:
+          token: ${{ secrets.ghrs_github_api_token }}
+          # organization: 'piedpiper'
+          period: 30
+          limit: 0
+          charts: true
+          disableLinks: false
+          sortBy: 'totalComments'
+          stats: 'totalComments,openedPullRequests,totalReviews'

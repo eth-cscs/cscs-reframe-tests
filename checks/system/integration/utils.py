@@ -1,4 +1,4 @@
-# Copyright 2024 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -26,10 +26,14 @@ class Check:
         self.DEBUG         = False
         # The computing system we expect to run on.
         self.SYSTEM        = None
+        # Default extra tags to apply when tags are not provided explicitly.
+        self.TAGS          = set()
         # The name of the calling module. Should be set from the caller.
         self.MODULE_NAME   = __name__
 
-    def __call__(self, cmd, expected=None, not_expected=None, where=''):
+    def __call__(self, cmd, expected=None, not_expected=None, where='', *,
+                 name=None, descr=None, valid_systems=None,
+                 valid_prog_environs=None, tags=None):
         """
         Create a test of 'cmd'. A regex describing the expected output
 
@@ -45,6 +49,13 @@ class Check:
                                 be performed.
         :param not_expected:    Similar to 'expected', but what should not be
                                 found.
+        :param where:           Legacy ReFrame feature selector for this check.
+                                If omitted, the check is valid everywhere.
+        :param name:            Optional explicit test name.
+        :param descr:           Optional description for the generated test.
+        :param valid_systems:   Optional explicit list of valid systems.
+        :param valid_prog_environs: Optional explicit list of valid prog envs.
+        :param tags:            Optional additional tags for the test.
         """
 
         def debuginfo():
@@ -80,15 +91,26 @@ class Check:
                 if where[0][0] not in ['-', '+']:
                     where[0] = f'+{where[0]}'
 
-        #
-        # Get our properties ready.
-        #
+        if valid_systems is None:
+            valid_systems = where
+        elif isinstance(valid_systems, str):
+            valid_systems = [valid_systems]
 
-        name                = f'Check_{Check.check_id:04}_{self.CLASS}'
-        tag                 = f'sysint-{self.CLASS}'
-        valid_systems       = where
-        valid_prog_environs = ['builtin']
-        time_limit          = '2m'
+        if valid_prog_environs is None:
+            valid_prog_environs = ['builtin']
+        elif isinstance(valid_prog_environs, str):
+            valid_prog_environs = [valid_prog_environs]
+
+        if tags is None:
+            tags = set(self.TAGS)
+        elif isinstance(tags, str):
+            tags = {tags}
+        elif isinstance(tags, list):
+            tags = set(tags)
+
+        name = name or f'Check_{Check.check_id:04}_{self.CLASS}'
+        descr = descr or ''
+        time_limit = '2m'
 
         if self.DEBUG:
             exp_str, nexp_str = '', ''
@@ -163,11 +185,16 @@ class Check:
 
         def check_system(test):
             """Check that the system we require is the system we are on,
-            otherwise skip the test."""
+            otherwise skip the test. If SYSTEM is not set or is '*', allow any."""
 
+            # If no specific system is required, allow any system
+            if not self.SYSTEM or self.SYSTEM == '*':
+                return
+
+            # Otherwise, check that we're on the required system
             test.skip_if(
                 test.current_system.name != self.SYSTEM,
-                msg=f'Required sytem {self.SYSTEM} ' +
+                msg=f'Required system {self.SYSTEM} ' +
                     f'but found {test.current_system.name}.')
 
         #
@@ -178,13 +205,14 @@ class Check:
             (rfm.RunOnlyRegressionTest,),
             {
                 'cmd': cmd,
+                'descr': descr,
                 'expected': expected,
                 'not_expected': not_expected,
                 'valid_systems': valid_systems,
                 'valid_prog_environs': valid_prog_environs,
                 'time_limit': time_limit,
                 'caller': debuginfo(),
-                'tags': {'production', tag},
+                'tags': tags,
             },
             [
                 builtins.run_after('setup')(set_command_options),

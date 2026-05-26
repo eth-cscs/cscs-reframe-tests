@@ -1,5 +1,7 @@
-# ReFrame test suite of CSCS
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/eth-cscs/cscs-reframe-tests)
+![GitHub contributors](https://img.shields.io/github/contributors-anon/eth-cscs/cscs-reframe-tests)<br/>
 
+# ReFrame test suite of CSCS
 
 The tests are daily checked against the tip of the `master` branch of [ReFrame](https://github.com/reframe-hpc/reframe/). 
 Several tests are built on top of the `hpctestlib` library that is provided with ReFrame.

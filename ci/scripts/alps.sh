@@ -320,12 +320,12 @@ uenv_pull_sqfs() {
 install_reframe() {
     # rm -fr rfm_venv reframe
     vname=$CLUSTER_NAME
-    varch=$(uname -m)
-    vdir="$HOME/ci/rfmvenv.$vname.$varch"
+    # varch=$(uname -m)
+    # vdir="$HOME/ci/rfmvenv.$vname.$varch"
+    vdir="/capstor/store/cscs/cscs/public/reframe/.venv_alps/$vname"
     [[ -d "$vdir" ]] || { echo "Virtual environment directory $vdir not found"; exit 1; }
     source "$vdir/bin/activate"
     echo "$vdir/bin # HERE"
-
     # python3.11 -m venv --system-site-packages rfm_venv
     # source rfm_venv/bin/activate
     # pip install --upgrade pip

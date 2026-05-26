@@ -13,6 +13,7 @@ site_configuration = {
             'descr': 'Balfrin vcluster',
             'hostnames': ['balfrin'],
             'modules_system': 'nomod',
+            'max_local_jobs': 20,
             'partitions': [
                 {
                     'name': 'login',
@@ -25,7 +26,7 @@ site_configuration = {
                         'remote', 'uenv',
                     ],
                     'descr': 'Login nodes',
-                    'max_jobs': 4,
+                    'max_jobs': 20,
                     'launcher': 'local'
                 },
                 {
