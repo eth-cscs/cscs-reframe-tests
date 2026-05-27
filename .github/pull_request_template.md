@@ -9,8 +9,9 @@ $ reframe -r ...
 ```shell
 cscs-ci run alps-eiger-uenv;MY_UENV=[build::|service::]prgenv-gnu/25.11:v1
 
-cscs-ci run alps-daint-uenv;MY_UENV=prgenv-gnu/25.11:v1
-cscs-ci run alps-santis-uenv;MY_UENV=prgenv-gnu/25.11:v1
+cscs-ci run alps-daint-uenv;MY_UENV=prgenv-gnu/26.3:v1
+cscs-ci run alps-santis-uenv;MY_UENV=prgenv-gnu/26.3:v1
+cscs-ci run alps-clariden-uenv;MY_UENV=prgenv-gnu/26.3:v1
 cscs-ci run alps-starlex-uenv;MY_UENV=prgenv-gnu/25.11:v1
 
 cscs-ci run alps-beverin-uenv;MY_UENV=prgenv-gnu/25.07-6.3.3:v12
