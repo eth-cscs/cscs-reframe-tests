@@ -364,6 +364,7 @@ launch_reframe_1arg() {
     echo "# args=$@"
     reframe -C ./config/cscs.py \
         --report-junit=report.xml \
+        --report-file latest.json \
         $@ \
         --system=$system \
         --prefix=$SCRATCH/rfm-$CI_JOB_ID \
