@@ -1,1 +1,2 @@
 reframe-hpc>=4.9.0
+packaging
