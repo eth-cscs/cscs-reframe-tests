@@ -59,7 +59,7 @@ def _format_victoriametrics(record, extras, ignore_keys):
     }
 
     timestamp = values.get('check_job_completion_time_unix')
-    timestamps = [1000 * int(timestamp)] if timestamp is not None else []
+    timestamps = [int(1000 * (timestamp))] if timestamp is not None else []
 
     payloads = []
     for perf_type, perf_key in (
