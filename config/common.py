@@ -41,47 +41,47 @@ def _format_victoriametrics(record, extras, ignore_keys):
         return value if value is not None else default
 
     base_metric = {
-        "__name__": _or_default("check_unique_name"),
-        "check_perf_var": _or_default("check_perf_var"),
-        "check_perf_unit": _or_default("check_perf_unit"),
-        "check_result": _or_default("check_result"),
-        "hostname": _or_default("hostname"),
-        "check_partition": _or_default("check_partition"),
-        "check_environ": _or_default("check_environ"),
-        "check_perf_result": _or_default("check_perf_result"),
-        "check_jobid": _or_default("check_jobid"),
-        "check_system": _or_default("check_system"),
-        "check_executable": _or_default("check_executable"),
-        "check_hashcode": _or_default("check_hashcode"),
-        "data_stream_type": "logs",
-        "data_stream_dataset": "performance_values",
-        "data_stream_namespace": "reframe"
+        '__name__': _or_default('check_unique_name'),
+        'check_perf_var': _or_default('check_perf_var'),
+        'check_perf_unit': _or_default('check_perf_unit'),
+        'check_result': _or_default('check_result'),
+        'hostname': _or_default('hostname'),
+        'check_partition': _or_default('check_partition'),
+        'check_environ': _or_default('check_environ'),
+        'check_perf_result': _or_default('check_perf_result'),
+        'check_jobid': _or_default('check_jobid'),
+        'check_system': _or_default('check_system'),
+        'check_executable': _or_default('check_executable'),
+        'check_hashcode': _or_default('check_hashcode'),
+        'data_stream_type': 'logs',
+        'data_stream_dataset': 'performance_values',
+        'data_stream_namespace': 'reframe'
     }
 
-    timestamp = values.get("check_job_completion_time_unix")
+    timestamp = values.get('check_job_completion_time_unix')
     timestamps = [1000 * int(timestamp)] if timestamp is not None else []
 
     payloads = []
     for perf_type, perf_key in (
-        ("perf_ref", "check_perf_ref"),
-        ("perf_value", "check_perf_value"),
+        ('perf_ref', 'check_perf_ref'),
+        ('perf_value', 'check_perf_value'),
     ):
         perf_value = values.get(perf_key)
         if perf_value is None:
             continue
 
         payload = {
-            "metric": {**base_metric, "check_perf_type": perf_type},
-            "values": [float(perf_value)],
+            'metric': {**base_metric, 'check_perf_type': perf_type},
+            'values': [float(perf_value)],
         }
         if timestamps:
-            payload["timestamps"] = timestamps
+            payload['timestamps'] = timestamps
         payloads.append(payload)
 
     if not payloads:
         return None
 
-    vm_data = "\n".join(json.dumps(payload) for payload in payloads)
+    vm_data = '\n'.join(json.dumps(payload) for payload in payloads)
 
     return vm_data
 
@@ -95,9 +95,9 @@ def _format_httpjson(record, extras, ignore_keys):
         if attr in ignore_keys or attr.startswith('_'):
             continue
 
-        if attr == "check_perf_value" and val is not None:
+        if attr == 'check_perf_value' and val is not None:
             data[attr] = float(val)
-        elif attr == "check_perf_ref" and val is not None:
+        elif attr == 'check_perf_ref' and val is not None:
             data[attr] = float(val)
         else:
             data[attr] = val
@@ -184,12 +184,12 @@ site_configuration = {
                     #         'dataset': 'performance_values',
                     #         'namespace': 'reframe'
                     #     },
-                    #     'rfm_ci_pipeline': os.getenv("CI_PIPELINE_URL", "#"),
-                    #     'rfm_ci_project': os.getenv("CI_PROJECT_PATH", "Unknown CI Project")
+                    #     'rfm_ci_pipeline': os.getenv('CI_PIPELINE_URL', '#'),
+                    #     'rfm_ci_project': os.getenv('CI_PROJECT_PATH', 'Unknown CI Project')
                     # },
                     # 'debug': True,
-                    # "json_formatter": _format_httpjson,
-                    "json_formatter": _format_victoriametrics,
+                    # 'json_formatter': _format_httpjson,
+                    'json_formatter': _format_victoriametrics,
                     'ignore_keys': ['check_perfvalues']
                 }
             ]
