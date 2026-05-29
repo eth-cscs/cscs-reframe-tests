@@ -11,8 +11,8 @@ class cpi_build_test(rfm.RegressionTest):
     sourcesdir = 'src/mpi_cpi'
     sourcepath = 'cpi.c'
     executable = './cpi.x'
-    _num_tasks = -2
-    # num_tasks_per_node = 1
+    num_tasks = -2
+    num_tasks_per_node = 1
     build_locally = False
     env_vars = {'MPICH_GPU_SUPPORT_ENABLED': 0}
     tags = {'appscheckout', 'uenv', 'flexible'}
@@ -21,11 +21,7 @@ class cpi_build_test(rfm.RegressionTest):
 
     @run_before('run')
     def setup_job(self):
-        self.num_tasks = 0 if self.flexible else self._num_tasks
-        # if self.flexible:
-        #     self.num_tasks = 0
-        # else:
-        #     self.num_tasks = self.num_tasks_per_node
+        self.num_tasks = 0 if self.flexible else self.num_tasks_per_node
 
     @sanity_function
     def validate(self):

@@ -316,34 +316,6 @@ uenv_pull_sqfs() {
     ls -l $squashfs_path/
 }
 # }}}
-# {{{ install_reframe
-install_reframe() {
-    # rm -fr rfm_venv reframe
-    vname=$CLUSTER_NAME
-    # varch=$(uname -m)
-    # vdir="$HOME/ci/rfmvenv.$vname.$varch"
-    vdir="/capstor/store/cscs/cscs/public/reframe/.venv_alps/$vname"
-    [[ -d "$vdir" ]] || { echo "Virtual environment directory $vdir not found"; exit 1; }
-    source "$vdir/bin/activate"
-    echo "$vdir/bin # HERE"
-    # python3.11 -m venv --system-site-packages rfm_venv
-    # source rfm_venv/bin/activate
-    # pip install --upgrade pip
-    # pip install --upgrade ReFrame-HPC
-    # # git clone --depth 1 https://github.com/reframe-hpc/reframe.git
-    # pip install -r ./config/utilities/requirements.txt
-    # return the PATH to the calling function:
-    # echo "$PWD/rfm_venv/bin # HERE"
-}
-# }}}
-# {{{ install_reframe_tests (alps branch)
-install_reframe_tests() {
-    rm -fr cscs-reframe-tests
-    git clone -b alps https://github.com/eth-cscs/cscs-reframe-tests.git
-    # TODO: pyfirecrest requires python>=3.7
-    # cscs-reframe-tests/config/utilities/requirements.txt
-}
-# }}}
 # {{{ uenv_sqfs_fullpath
 uenv_sqfs_fullpath() {
     img="$1"
@@ -392,6 +364,7 @@ launch_reframe_1arg() {
     echo "# args=$@"
     reframe -C ./config/cscs.py \
         --report-junit=report.xml \
+        --report-file latest.json \
         $@ \
         --system=$system \
         --prefix=$SCRATCH/rfm-$CI_JOB_ID \
@@ -550,8 +523,6 @@ case $in in
     remove_last_comma_from_variable) remove_last_comma_from_variable "$myvar";;
     oras_pull_sqfs) oras_pull_sqfs;;
     uenv_pull_sqfs) uenv_pull_sqfs "$img";;
-    install_reframe) install_reframe;;
-    install_reframe_tests) install_reframe_tests;;
     uenv_sqfs_fullpath) uenv_sqfs_fullpath "$img";;
     launch_reframe_1img) launch_reframe_1img "$img";;
     launch_reframe) launch_reframe;;
