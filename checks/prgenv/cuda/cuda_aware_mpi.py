@@ -4,17 +4,14 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import os
-import sys
 
 import reframe as rfm
 import reframe.utility.sanity as sn
-import reframe.utility as rfm_util
 
-# keeping as reference
+# keeping as reference:
+# import reframe.utility as rfm_util
 # sys.path.append(os.path.abspath(os.path.join(__file__, '../../..')))
 # import microbenchmarks.gpu.hooks as hooks
-
-from uenv import uarch
 
 
 @rfm.simple_test
