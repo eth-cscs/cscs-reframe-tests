@@ -467,14 +467,14 @@ class SlurmPrologEpilogCheck(rfm.RunOnlyRegressionTest):
         for file in os.listdir(epilog_dir):
             if os.path.isfile(os.path.join(epilog_dir, file)):
                 test_files.append(os.path.join(epilog_dir, file))
-    except PermissionError:
+    except (PermissionError, FileNotFoundError):
         pass
 
     try:
         for file in os.listdir(prolog_dir):
             if os.path.isfile(os.path.join(prolog_dir, file)):
                 test_files.append(os.path.join(prolog_dir, file))
-    except PermissionError:
+    except (PermissionError, FileNotFoundError):
         pass
 
     test_file = parameter(test_files)
