@@ -464,16 +464,19 @@ class SlurmPrologEpilogCheck(rfm.RunOnlyRegressionTest):
     prerun_cmds = [f'ln -s {kafka_logger} ./kafka_logger']
     test_files = []
 
-    for directory in (epilog_dir, prolog_dir):
-        try:
-            if not os.path.isdir(directory):
-                continue
-            for file in os.listdir(directory):
-                file_path = os.path.join(directory, file)
-                if os.path.isfile(file_path):
-                    test_files.append(file_path)
-        except PermissionError:
-            pass
+    try:
+        for file in os.listdir(epilog_dir):
+            if os.path.isfile(os.path.join(epilog_dir, file)):
+                test_files.append(os.path.join(epilog_dir, file))
+    except (PermissionError, FileNotFoundError):
+        pass
+
+    try:
+        for file in os.listdir(prolog_dir):
+            if os.path.isfile(os.path.join(prolog_dir, file)):
+                test_files.append(os.path.join(prolog_dir, file))
+    except (PermissionError, FileNotFoundError):
+        pass
 
     if test_files:
         test_file = parameter(test_files)
