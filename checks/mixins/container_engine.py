@@ -85,7 +85,7 @@ class ContainerEngineCPEMixin(rfm.RegressionTestPlugin):
         current_environ = self.current_environ
         self.build_locally = False
         if 'cpe_ce_image' in current_environ.resources:
-            if os.environ.get('CPE_CE', None) is not None:
+            if os.environ.get('CSCS_RFM_CPE_CE', None) is not None:
                 self.extra_resources = {
                     'cpe_ce_mount': {
                         'stagedir': self.stagedir

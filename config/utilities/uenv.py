@@ -52,7 +52,7 @@ def uenv_metadata():
     # import json
     # from reframe.utility import osext
 
-    uenv_label = os.environ['UENV']
+    uenv_label = os.environ['CSCS_RFM_UENV']
     _uenv_version = osext.run_command(f'{_UENV_CLI} --version').stdout.strip()
 
     if Version(_uenv_version) >= Version('9.2.0'):
@@ -67,7 +67,7 @@ def uenv_metadata():
 
 
 def _get_uenvs():
-    uenv = os.environ.get('UENV', None)
+    uenv = os.environ.get('CSCS_RFM_UENV', None)
     if uenv is None:
         return uenv
 

@@ -59,7 +59,7 @@ slurm_config = {
 
 
 def uenv_uarch():
-    uenv_name = os.environ.get("UENV", None)
+    uenv_name = os.environ.get("CSCS_RFM_UENV", None)
     if not uenv_name:
         return uenv_name
     uenv_inspect_cmd = f"uenv image inspect --format={{uarch}} {uenv_name}"

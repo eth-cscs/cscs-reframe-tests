@@ -108,21 +108,21 @@ site_configuration = {
             'name': 'PrgEnv-gnu',
             'variables': [
                 ['USER_ENV_IMAGE',
-                 os.environ.get('USER_ENV_IMAGE', user_env_image)],
+                 os.environ.get('CSCS_RFM_USER_ENV_IMAGE', user_env_image)],
                 ['USER_ENV_ROOT',
-                 os.environ.get('USER_ENV_ROOT', user_env_root)],
+                 os.environ.get('CSCS_RFM_USER_ENV_ROOT', user_env_root)],
                 ['USER_ENV_CUDA_VISIBLE',
-                 os.environ.get('USER_ENV_CUDA_VISIBLE',
+                 os.environ.get('CSCS_RFM_USER_ENV_CUDA_VISIBLE',
                                 '$HOME/cuda_visible_devices.sh')],
                 ['MODULEPATH',
-                 os.path.join(os.environ.get('USER_ENV_ROOT', user_env_root),
+                 os.path.join(os.environ.get('CSCS_RFM_USER_ENV_ROOT', user_env_root),
                               'modules')],
             ],
             'modules': [
                 {
                     'name': 'cray-mpich-binary/8.1.18.4-gcc',
                     'path': os.path.join(
-                        os.environ.get('USER_ENV_ROOT', user_env_root),
+                        os.environ.get('CSCS_RFM_USER_ENV_ROOT', user_env_root),
                         'modules'
                     ),
                 },
@@ -139,21 +139,21 @@ site_configuration = {
             'name': 'PrgEnv-nvidia',
             'variables': [
                 ['USER_ENV_IMAGE',
-                 os.environ.get('USER_ENV_IMAGE', user_env_image)],
+                 os.environ.get('CSCS_RFM_USER_ENV_IMAGE', user_env_image)],
                 ['USER_ENV_ROOT',
-                 os.environ.get('USER_ENV_ROOT', user_env_root)],
+                 os.environ.get('CSCS_RFM_USER_ENV_ROOT', user_env_root)],
                 ['USER_ENV_CUDA_VISIBLE',
-                 os.environ.get('USER_ENV_CUDA_VISIBLE',
+                 os.environ.get('CSCS_RFM_USER_ENV_CUDA_VISIBLE',
                                 '$HOME/cuda_visible_devices.sh')],
                 ['MODULEPATH',
-                 os.path.join(os.environ.get('USER_ENV_ROOT', user_env_root),
+                 os.path.join(os.environ.get('CSCS_RFM_USER_ENV_ROOT', user_env_root),
                               'modules')],
             ],
             'modules': [
                 {
                     'name': 'cray-mpich-binary/8.1.18.4-nvhpc',
                     'path': os.path.join(
-                        os.environ.get('USER_ENV_ROOT', user_env_root),
+                        os.environ.get('CSCS_RFM_USER_ENV_ROOT', user_env_root),
                         'modules'
                     ),
                 },
