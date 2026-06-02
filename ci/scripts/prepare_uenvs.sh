@@ -15,6 +15,6 @@ for img in $imgs; do
 	fi
 done
 UENVA=${UENVA%?}
-UENV=`echo ${UENVA} | sed 's-,,-,-g' | sort -u`
-echo "UENV=$UENV" > rfm_uenv.env
+CSCS_RFM_UENV=`echo ${UENVA} | sed 's-,,-,-g' | sort -u`
+echo "CSCS_RFM_UENV=$CSCS_RFM_UENV" > rfm_uenv.env
 cat rfm_uenv.env | tr , "\n"

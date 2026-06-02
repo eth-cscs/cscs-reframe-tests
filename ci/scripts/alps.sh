@@ -326,7 +326,7 @@ uenv_sqfs_fullpath() {
 launch_reframe_1img() {
     img=$1
     # export UENV="${squashfs_path}:${mount}"
-    export UENV="$img"
+    export CSCS_RFM_UENV="$img"
     export RFM_AUTODETECT_METHODS="cat /etc/xthostname,hostname"
     export RFM_USE_LOGIN_SHELL=1
     # export RFM_AUTODETECT_XTHOSTNAME=1
@@ -343,7 +343,7 @@ launch_reframe() {
     export RFM_USE_LOGIN_SHELL=1
     # export RFM_AUTODETECT_XTHOSTNAME=1
     # reframe -V
-    echo "UENV=$UENV"
+    echo "CSCS_RFM_UENV=$CSCS_RFM_UENV"
     reframe -C ./config/cscs.py \
         --report-junit=report.xml \
         -c ./checks/ \
