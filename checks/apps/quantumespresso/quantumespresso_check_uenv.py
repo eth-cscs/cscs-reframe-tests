@@ -1,4 +1,4 @@
-# Copyright 2016-2024 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -13,7 +13,7 @@ import uenv
 
 qe_references = {
     "Au surf": {
-        "gh200": {"time_run": (14.02, None, 0.05, "s")},
+        "gh200": {"time_run": (8.74, None, 0.05, "s")},
         "zen2": {"time_run": (99.45, None, 0.1, "s")},  # 1m44s
     },
 }

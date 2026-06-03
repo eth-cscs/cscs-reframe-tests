@@ -13,6 +13,7 @@ site_configuration = {
             'descr': 'Balfrin vcluster',
             'hostnames': ['balfrin'],
             'modules_system': 'nomod',
+            'max_local_jobs': 20,
             'partitions': [
                 {
                     'name': 'login',
