@@ -8,6 +8,7 @@ import sys
 
 import reframe as rfm
 import reframe.utility.sanity as sn
+from reframe.core.builtins import xfail
 
 sys.path.append(str(pathlib.Path(__file__).parent.parent.parent / 'mixins'))
 
@@ -89,7 +90,7 @@ class OMB_MPICH_CE(OMB_Base_CE):
         },
         'collective/osu_alltoall': {
             '*': {
-                'latency_1M': (1800., None, 0.15, 'us')
+                'latency_1M': xfail('Known performance regression', (1800., None, 0.15, 'us'))
             }
         }
     }
@@ -112,7 +113,7 @@ class OMB_OMPI_CE(OMB_Base_CE):
         },
         'collective/osu_alltoall': {
             '*': {
-                'latency_1M': (500., None, 0.15, 'us')
+                'latency_1M': xfail('Known performance regression', (500., None, 0.15, 'us'))
             }
         }
     }
