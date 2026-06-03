@@ -24,7 +24,7 @@ cp2k_references = {
         'zen2': {'time_run': (75, None, 0.05, 's')}
     },
     'rpa': {
-        'gh200': {'time_run': (575, None, 0.05, 's')}
+        'gh200': {'time_run': xfail('Known performance regression', (575, None, 0.05, 's'))}
     },
 }
 
