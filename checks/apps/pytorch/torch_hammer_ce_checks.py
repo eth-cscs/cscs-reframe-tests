@@ -17,12 +17,7 @@ from container_engine import ContainerEngineMixin  # noqa: E402
 class TorchHammerBase(rfm.RunOnlyRegressionTest):
     descr = 'Base class for all Torch Hammer benchmarks'
     sourcesdir = None
-    # valid_systems = ['*']
-    # valid_prog_environs = ['*']
-    # num_gpus_per_node = 1
-    # time_limit = '30m'
     torch_hammer_script = variable(str, value='torch-hammer.py')
-
     repo = variable(
         str,
         value='https://raw.githubusercontent.com/HPE/torch-hammer')
@@ -39,7 +34,6 @@ class TorchHammerBase(rfm.RunOnlyRegressionTest):
 
     @run_before('run')
     def set_executable(self):
-        # script_dir = os.path.dirname(os.path.abspath(__file__))
         self.executable = self.torch_hammer_script
         self.executable_opts = [
             f'--device-index={self.device_index}',
@@ -47,11 +41,7 @@ class TorchHammerBase(rfm.RunOnlyRegressionTest):
         ]
         if self.duration > 0:
             self.executable_opts.append(f'--duration={self.duration}')
-            self.time_limit = self.duration
-
-#todo     @sanity_function
-#todo     def validate_run(self):
-#todo         return sn.assert_found(r'\[OK\] Benchmark run finished', self.stdout)
+            self.time_limit = self.duration * 2.5
 
 
 @rfm.simple_test
@@ -61,35 +51,32 @@ class TorchHammerCEMultiGPU(TorchHammerBase, ContainerEngineMixin):
     valid_prog_environs = ['builtin']
     tags = {'gpu', 'multi-gpu', 'parallel', 'production'}
     maintainers = ['VCUE']
-    num_gpus = variable(int, value=4)
-    time_limit = '4m'
+    pytorch_version = variable(str, value='26.05-py3')
 
     @run_after('init')
     def set_container_image(self):
-        self.container_image = 'nvcr.io#nvidia/pytorch:25.06-py3'
+        self.container_image = f'nvcr.io#nvidia/pytorch:{self.pytorch_version}'
         self.container_env_table = {
             'annotations.com.hooks': {
                     'aws_ofi_nccl.enabled': 'true',
-                    'aws_ofi_nccl.variant': 'cuda12',
+                    'aws_ofi_nccl.variant': 'cuda13',
             },
         }
 
     @run_before('run')
     def set_multigpu_test(self):
-        # self.executable = f'python3 {self.torch_hammer_script}'
-
-        # Remove single device index
+        # Remove single --device-index
         self.executable_opts = [
             opt for opt in self.executable_opts
             if not opt.startswith('--device-index')
         ]
 
         # Add multi-GPU options
+        self.num_gpus = \
+            self.current_partition.select_devices('gpu')[0].num_devices
         gpu_list = ','.join(str(i) for i in range(self.num_gpus))
         self.executable_opts.extend([
-            f'--gpu-list={gpu_list}',
-            '--batched-gemm',
-            '--cpu-affinity',
+            f'--gpu-list={gpu_list}', '--batched-gemm', '--cpu-affinity',
         ])
 
     @sanity_function
