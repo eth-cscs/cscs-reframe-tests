@@ -3,7 +3,6 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-import os  # del
 import pathlib
 import sys
 
@@ -17,7 +16,7 @@ from container_engine import ContainerEngineMixin  # noqa: E402
 class TorchHammerBase(rfm.RunOnlyRegressionTest):
     descr = 'Base class for all Torch Hammer benchmarks'
     sourcesdir = None
-    torch_hammer_script = variable(str, value='torch-hammer.py')
+    script = variable(str, value='torch-hammer.py')
     repo = variable(
         str,
         value='https://raw.githubusercontent.com/HPE/torch-hammer')
@@ -28,20 +27,20 @@ class TorchHammerBase(rfm.RunOnlyRegressionTest):
     @run_after('setup')
     def setup_code(self):
         self.prerun_cmds = [
-            f'wget --quiet {self.repo}/refs/heads/main/torch-hammer.py',
-            f'chmod +x torch-hammer.py'
+            f'wget --quiet {self.repo}/refs/heads/main/{self.script}',
+            f'chmod +x {self.script}'
         ]
 
     @run_before('run')
     def set_executable(self):
-        self.executable = self.torch_hammer_script
+        self.executable = self.script
         self.executable_opts = [
             f'--device-index={self.device_index}',
             f'--warmup={self.warmup}',
         ]
         if self.duration > 0:
             self.executable_opts.append(f'--duration={self.duration}')
-            self.time_limit = self.duration * 2.5
+            self.time_limit = int(self.duration * 2.5)
 
 
 @rfm.simple_test
