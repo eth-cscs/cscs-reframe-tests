@@ -1,88 +1,71 @@
-#!/usr/bin/env python3
-"""
-ReFrame regression tests for Torch Hammer GPU benchmarks.
+# Copyright Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# ReFrame Project Developers. See the top-level LICENSE file for details.
+#
+# SPDX-License-Identifier: BSD-3-Clause
 
-This module provides ReFrame-compatible tests wrapping torch-hammer.py
-for HPC system validation and performance regression testing.
-
-Usage:
-    reframe -c reframe/torch_hammer_checks.py -r
-
-Configuration:
-    Set valid_systems and valid_prog_environs in your ReFrame config
-    to match your HPC system partitions and programming environments.
-"""
+import os  # del
 import pathlib
-import re  # noqa: F401
 import sys
 
-import os
 import reframe as rfm
-from reframe.core.builtins import run_after
 import reframe.utility.sanity as sn
 
 sys.path.append(str(pathlib.Path(__file__).parent.parent.parent / 'mixins'))
-
 from container_engine import ContainerEngineMixin  # noqa: E402
 
+
 class TorchHammerBase(rfm.RunOnlyRegressionTest):
-    """Base class for all Torch Hammer benchmarks."""
-    
-    # Override these in your site config
-    valid_systems = ['*']
-    valid_prog_environs = ['*']
-    
-    # Common settings
-    num_gpus_per_node = 1
-    time_limit = '30m'
-    
-    # Torch Hammer script location (relative to test file)
+    descr = 'Base class for all Torch Hammer benchmarks'
+    sourcesdir = None
+    # valid_systems = ['*']
+    # valid_prog_environs = ['*']
+    # num_gpus_per_node = 1
+    # time_limit = '30m'
     torch_hammer_script = variable(str, value='torch-hammer.py')
-    
-    # Common benchmark parameters
-    duration = variable(int, value=60)  # seconds
-    warmup = variable(int, value=10)
-    
-    # Device selection
+
+    repo = variable(
+        str,
+        value='https://raw.githubusercontent.com/HPE/torch-hammer')
     device_index = variable(int, value=0)
-    
+    warmup = variable(int, value=10)
+    duration = variable(int, value=60)  # seconds
+
+    @run_after('setup')
+    def setup_code(self):
+        self.prerun_cmds = [
+            f'wget --quiet {self.repo}/refs/heads/main/torch-hammer.py',
+            f'chmod +x torch-hammer.py'
+        ]
+
     @run_before('run')
     def set_executable(self):
-        """Set up the torch-hammer executable and common options."""
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        self.executable = f'python3 {os.path.join(script_dir, self.torch_hammer_script)}'
-
-        # Common options
+        # script_dir = os.path.dirname(os.path.abspath(__file__))
+        self.executable = self.torch_hammer_script
         self.executable_opts = [
             f'--device-index={self.device_index}',
             f'--warmup={self.warmup}',
         ]
-        
-        # Add duration if specified
         if self.duration > 0:
             self.executable_opts.append(f'--duration={self.duration}')
-    
-    @sanity_function
-    def validate_run(self):
-        """Validate that the benchmark completed successfully."""
-        return sn.assert_found(r'\[OK\] Benchmark run finished', self.stdout)
+            self.time_limit = self.duration
 
-# ============================================================================
-# CE MULTI-GPU BENCHMARK
-# ============================================================================
+#todo     @sanity_function
+#todo     def validate_run(self):
+#todo         return sn.assert_found(r'\[OK\] Benchmark run finished', self.stdout)
+
+
 @rfm.simple_test
 class TorchHammerCEMultiGPU(TorchHammerBase, ContainerEngineMixin):
-    """Multi-GPU CE parallel benchmark."""
-    
     descr = 'Torch Hammer CE Multi-GPU Benchmark'
-    tags = {'gpu', 'multi-gpu', 'parallel'}
-    
-    num_gpus = variable(int, value=4)
-    time_limit = '10m'
+    valid_systems = ['+ce +nvgpu']
     valid_prog_environs = ['builtin']
-    
+    tags = {'gpu', 'multi-gpu', 'parallel', 'production'}
+    maintainers = ['VCUE']
+    num_gpus = variable(int, value=4)
+    time_limit = '4m'
+
     @run_after('init')
-    def set_image(self):
+    def set_container_image(self):
         self.container_image = 'nvcr.io#nvidia/pytorch:25.06-py3'
         self.container_env_table = {
             'annotations.com.hooks': {
@@ -91,21 +74,16 @@ class TorchHammerCEMultiGPU(TorchHammerBase, ContainerEngineMixin):
             },
         }
 
-    @run_after('setup')
-    def setup_test(self):
-        self.prerun_cmds = ['wget https://raw.githubusercontent.com/HPE/torch-hammer/refs/heads/main/torch-hammer.py ']  
-
     @run_before('run')
-    def set_multi_gpu_options(self):
-        """Configure for multi-GPU execution."""
-        self.executable = f'python3 {self.torch_hammer_script}'
+    def set_multigpu_test(self):
+        # self.executable = f'python3 {self.torch_hammer_script}'
 
         # Remove single device index
         self.executable_opts = [
-            opt for opt in self.executable_opts 
+            opt for opt in self.executable_opts
             if not opt.startswith('--device-index')
         ]
-        
+
         # Add multi-GPU options
         gpu_list = ','.join(str(i) for i in range(self.num_gpus))
         self.executable_opts.extend([
@@ -113,14 +91,18 @@ class TorchHammerCEMultiGPU(TorchHammerBase, ContainerEngineMixin):
             '--batched-gemm',
             '--cpu-affinity',
         ])
-    
+
     @sanity_function
-    def validate_multi_gpu(self):
-        """Validate all GPUs completed."""
-        # Check that we see output from all GPUs
-        checks = [
-            #sn.assert_found(rf'\[GPU{i}\]', self.stdout) 
-            sn.assert_found(rf'\[OK] Benchmark run finished on GPU{i}', self.stdout)
-            for i in range(self.num_gpus)
+    def validate_test(self):
+        sanity_checks = [
+            sn.assert_found(rf'\[OK] Benchmark run finished on GPU{ii}',
+                            self.stdout)
+            for ii in range(self.num_gpus)
         ]
-        return sn.all(checks)
+
+        return sn.all(sanity_checks)
+
+    @performance_function('GFLOP/s')
+    def torch_hammer_ce_gflops(self):
+        regex = r'^.*\s+Aggregate: (?P<flops>\S+) GFLOP\/s across \d+ GPUs'
+        return sn.extractsingle(regex, self.stdout, 'flops', float)
