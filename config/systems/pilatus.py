@@ -1,4 +1,4 @@
-# Copyright 2016-2023 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright 2026 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -6,138 +6,96 @@
 # ReFrame CSCS settings
 #
 
+import os
+
 import reframe.utility.osext as osext
-import copy
 
-
-base_config = {
-    'modules_system': 'lmod',
-    'resourcesdir': '/capstor/store/cscs/cscs/public/reframe/resources',
-    'max_local_jobs': 20,
-    'partitions': [
-        {
-            'name': 'login',
-            'scheduler': 'local',
-            'time_limit': '10m',
-            'environs': [
-                'builtin',
-                'PrgEnv-aocc',
-                'PrgEnv-cray',
-                'PrgEnv-gnu',
-                'PrgEnv-intel',
-                'cpeAMD',
-                'cpeCray',
-                'cpeGNU',
-                'cpeIntel'
-            ],
-            'descr': 'Login nodes',
-            'max_jobs': 20,
-            'launcher': 'local'
-        },
-        {
-            'name': 'mc',
-            'descr': 'Multicore nodes (AMD EPYC 7742, 256|512GB/cn)',
-            'scheduler': 'slurm',
-            'time_limit': '10m',
-            'container_platforms': [
-                {
-                    'type': 'Sarus',
-                },
-                {
-                    'type': 'Singularity',
-                    'modules': ['cray', 'singularity/3.6.4-eiger']
-                }
-            ],
-            'environs': [
-                'builtin',
-                'PrgEnv-aocc',
-                'PrgEnv-cray',
-                'PrgEnv-gnu',
-                'PrgEnv-intel',
-                'cpeAMD',
-                'cpeCray',
-                'cpeGNU',
-                'cpeIntel'
-            ],
-            'max_jobs': 100,
-            'extras': {
-                'cn_memory': 256,
-            },
-            'features': ['remote', 'sarus', 'singularity', 'uenv'],
-            'access': ['-Cmc', f'--account={osext.osgroup()}'],
-            'resources': [
-                {
-                    'name': 'switches',
-                    'options': ['--switches={num_switches}']
-                },
-                {
-                    'name': 'memory',
-                    'options': ['--mem={mem_per_node}']
-                },
-            ],
-            'launcher': 'srun'
-        },
-    ]
-}
-
-pilatus_sys = copy.deepcopy(base_config)
-pilatus_sys['name'] = 'pilatus'
-pilatus_sys['descr'] = 'Alps Cray EX Supercomputer TDS'
-pilatus_sys['hostnames'] = ['pilatus']
-# pilatus_sys['partitions'].append(...)
 
 site_configuration = {
     'systems': [
-        pilatus_sys
+        {
+            'name': 'pilatus',
+            'descr': 'Alps Pilatus vcluster',
+            'hostnames': ['pilatus'],
+            'modules_system': 'lmod',
+            'resourcesdir':
+                '/capstor/store/cscs/cscs/public/reframe/resources',
+            'max_local_jobs': 20,
+            'partitions': [
+                {
+                    'name': 'login',
+                    'scheduler': 'local',
+                    'time_limit': '10m',
+                    'environs': [
+                        'builtin',
+                    ],
+                    'descr': 'Login nodes',
+                    'max_jobs': 20,
+                    'launcher': 'local'
+                },
+                {
+                    'name': 'normal',
+                    'scheduler': 'slurm',
+                    'time_limit': '10m',
+                    'environs': [
+                        'builtin',
+                        'PrgEnv-ce',
+                    ],
+                    'max_jobs': 1000,
+                    'extras': {
+                        'cn_memory': 503,
+                    },
+                    'resources': [
+                        {
+                            'name': 'memory',
+                            'options': ['--mem={mem_per_node}']
+                        },
+                        {
+                            'name': 'cpe_ce_image',
+                            'options': [
+                                '--container-image={image}',
+                             ]
+                        },
+                        {
+                            'name': 'cpe_ce_mount',
+                            'options': [
+                                # Mount both the stagedir and the directory related
+                                # used 3 levels above (the one related to the system)
+                                # to be able to find fixtures
+                                '--container-mounts={stagedir}/../../../,'  # split
+                                '{stagedir}:/rfm_workdir',
+                                '--container-workdir=/rfm_workdir'
+                             ]
+                        },
+                        {
+                            'name': 'cpe_ce_extra_mounts',
+                            'options': [
+                                '--container-mounts={mount}:{mount}',
+                             ]
+                        }
+                    ],
+                    'access': [f'--account={osext.osgroup()}'],
+                    'features': ['ce', 'remote', 'scontrol', 'uenv'],
+                    'launcher': 'srun'
+                },
+            ]
+        },
     ],
     'environments': [
         {
-            'name': 'PrgEnv-aocc',
-            'target_systems': ['pilatus'],
-            'modules': ['cray', 'PrgEnv-aocc'],
-            'features': ['serial', 'openmp', 'mpi', 'cuda',
-                         'hdf5', 'netcdf-hdf5parallel', 'pnetcdf', 'openmp']
-        },
-        {
-            'name': 'PrgEnv-cray',
-            'features': ['serial', 'openmp', 'mpi', 'cuda', 'openacc', 'hdf5',
-                         'netcdf-hdf5parallel', 'pnetcdf', 'openmp', 'opencl'],
-            'target_systems': ['pilatus'],
-            'modules': ['cray', 'PrgEnv-cray']
-        },
-        {
-            'name': 'PrgEnv-gnu',
-            'target_systems': ['pilatus'],
-            'features': ['serial', 'openmp', 'mpi', 'cuda', 'alloc_speed',
-                         'hdf5', 'netcdf-hdf5parallel', 'pnetcdf', 'openmp'],
-            'modules': ['cray', 'PrgEnv-gnu']
-        },
-        {
-            'name': 'PrgEnv-intel',
-            'target_systems': ['pilatus'],
-            'modules': ['cray', 'PrgEnv-intel'],
-            'features': ['serial', 'openmp', 'mpi', 'cuda', 'alloc_speed',
-                         'hdf5', 'netcdf-hdf5parallel', 'pnetcdf', 'openmp']
-        },
-        {
-            'name': 'cpeAMD',
-            'target_systems': ['pilatus'],
-            'modules': ['cray', 'cpeAMD']
-        },
-        {
-            'name': 'cpeCray',
-            'target_systems': ['pilatus'],
-            'modules': ['cray', 'cpeCray']
-        },
-        {
-            'name': 'cpeGNU',
-            'target_systems': ['pilatus'],
-            'modules': ['cray', 'cpeGNU']
-        },
-        {
-            'name': 'cpeIntel',
-            'target_systems': ['pilatus'],
-            'modules': ['cray', 'cpeIntel']
+            'name': 'PrgEnv-ce',
+            'features': [
+                'cpe', 'prgenv',
+                'serial', 'openmp', 'mpi', 'containerized_cpe'],
+            'resources': {
+                'cpe_ce_image': {
+                    'image':
+                        # Avoid interpretting '#' as a start of a comment
+                        os.environ.get(
+                            'CPE_CE', ''
+                        ).replace(r'#', r'\#')
+                }
+             }
         },
     ],
 }
