@@ -17,7 +17,7 @@ from uenv_slurm_mpi_options import UenvSlurmMpiOptionsMixin
 dlaf_references = {
     "eigensolver": {
         "gh200": {
-            "time_run": xfail("Known performance regression", (26.0, -0.1, 0.1, "s")),
+            "time_run": xfail("Known performance regression", (24.0, -0.1, 0.1, "s")),
         },
         "mi300": {
             "time_run": (36.0, -0.1, 0.1, "s"),
@@ -31,7 +31,7 @@ dlaf_references = {
     },
     "gen_eigensolver": {
         "gh200": {
-            "time_run": xfail("Known performance regression", (29.0, -0.1, 0.1, "s"))
+            "time_run": xfail("Known performance regression", (26.0, -0.1, 0.1, "s"))
         },
         "mi300": {
             "time_run": (47.0, -0.1, 0.1, "s")
@@ -41,6 +41,19 @@ dlaf_references = {
         },
         "zen2": {
             "time_run": (210.0, -0.1, 0.1, "s"),
+        }
+    },
+}
+
+dlaf_cupointergetattribute_references = {
+    "eigensolver": {
+        "gh200": {
+            "time_run": (26.0, -0.1, 0.1, "s"),
+        }
+    },
+    "gen_eigensolver": {
+        "gh200": {
+            "time_run": (29.0, -0.1, 0.1, "s")
         }
     },
 }
@@ -196,9 +209,9 @@ class dlaf_base(rfm.RunOnlyRegressionTest, UenvSlurmMpiOptionsMixin):
         else:
             self.executable_opts.append("--block-size=512")
 
-        # set performance reference
-        if self.uarch is not None and \
-           self.uarch in dlaf_references[self.test_name]:
+    @run_before("run")
+    def set_perf_reference(self):
+        if self.uarch in dlaf_references[self.test_name]:
             self.reference = {
                 self.current_partition.fullname:
                     dlaf_references[self.test_name][self.uarch]
@@ -250,3 +263,11 @@ class dlaf_check_uenv_cupointergetattributed_workaround(dlaf_base):
         if uarch(self.current_partition) == "gh200":
             self.env_vars["LD_PRELOAD"] = \
                 "/capstor/store/cscs/cscs/public/temp/cuptrgetattr_override.so"
+
+    @run_before("run")
+    def set_perf_reference(self):
+        if self.uarch in dlaf_references[self.test_name]:
+            self.reference = {
+                self.current_partition.fullname:
+                    dlaf_cupointergetattribute_references[self.test_name][self.uarch]
+            }
