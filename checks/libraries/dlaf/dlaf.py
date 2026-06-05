@@ -17,7 +17,7 @@ from uenv_slurm_mpi_options import UenvSlurmMpiOptionsMixin
 dlaf_references = {
     "eigensolver": {
         "gh200": {
-            "time_run": xfail("Known performance regression", (24.0, -0.1, 0.1, "s")),
+            "time_run": xfail("Known performance regression", (26.0, -0.1, 0.1, "s")),
         },
         "mi300": {
             "time_run": (36.0, -0.1, 0.1, "s"),
@@ -31,7 +31,7 @@ dlaf_references = {
     },
     "gen_eigensolver": {
         "gh200": {
-            "time_run": xfail("Known performance regression", (26.0, -0.1, 0.1, "s"))
+            "time_run": xfail("Known performance regression", (29.0, -0.1, 0.1, "s"))
         },
         "mi300": {
             "time_run": (47.0, -0.1, 0.1, "s")
@@ -118,9 +118,19 @@ slurm_config = {
 
 
 class dlaf_base(rfm.RunOnlyRegressionTest, UenvSlurmMpiOptionsMixin):
+    tags = {"uenv", "production", "bencher"}
     valid_systems = ['+uenv']
     valid_prog_environs = ['+dlaf -cp2k -cp2k-dev']
     maintainers = ['simbergm', 'rasolca', 'SSA']
+
+    test_name = parameter(["gen_eigensolver", "eigensolver"])
+    executable_opts = [
+        "--type=d",
+        "--matrix-size=40960",
+        "--check=last",
+        "--nwarmups=1",
+        "--nruns=1",
+    ]
 
     def _sq_factor(self, n):
         """
@@ -155,11 +165,10 @@ class dlaf_base(rfm.RunOnlyRegressionTest, UenvSlurmMpiOptionsMixin):
                 str((self.num_cpus_per_task // 2) - 1)
         else:
             self.env_vars["PIKA_THREADS"] = str(self.num_cpus_per_task - 1)
-        # This generally gives better performance, but causes:
-        # create_endpoint(1391).......: OFI EP enable failed (ofi_init.c:1391:create_endpoint:Invalid resource domain)
-        # on GH200 since the SLES 15 SP6 update.
-        # self.env_vars["MIMALLOC_ALLOW_LARGE_OS_PAGES"] = "1"
+        self.env_vars["MIMALLOC_ALLOW_LARGE_OS_PAGES"] = "1"
         self.env_vars["MIMALLOC_EAGER_COMMIT_DELAY"] = "0"
+        self.env_vars["MIMALLOC_ARENA_EAGER_COMMIT"] = "0"
+        self.env_vars["MIMALLOC_PURGE_DELAY"] = "-1"
         if self.uarch in ("gh200", "mi300", "mi200"):
             self.env_vars["FI_MR_CACHE_MONITOR"] = "disabled"
             self.env_vars["MPICH_GPU_SUPPORT_ENABLED"] = "1"
@@ -215,22 +224,29 @@ class dlaf_base(rfm.RunOnlyRegressionTest, UenvSlurmMpiOptionsMixin):
         regex = r"^\[0\]\s+(?P<perf>\S+)s\s+"
         return sn.extractsingle(regex, self.stdout, "perf", float)
 
-
-@rfm.simple_test
-class dlaf_check_uenv(dlaf_base):
-    tags = {"uenv", "production", "bencher"}
-    test_name = parameter(["gen_eigensolver", "eigensolver"])
-    executable_opts = [
-        "--type=d",
-        "--matrix-size=40960",
-        "--check=last",
-        "--nwarmups=1",
-        "--nruns=1",
-    ]
-
     @run_before("run")
     def set_executable(self):
         if uarch(self.current_partition) in ("mi300", "mi200"):
             self.executable = f"./rocr_wrapper.sh miniapp_{self.test_name}"
         else:
             self.executable = f"miniapp_{self.test_name}"
+
+
+@rfm.simple_test
+class dlaf_check_uenv(dlaf_base):
+    ...
+
+
+@rfm.simple_test
+class dlaf_check_uenv_cupointergetattributed_workaround(dlaf_base):
+    valid_systems += ['+nvgpu']
+
+    @run_before("run")
+    def ld_preload(self):
+        # CUDA driver 590 introduces a performance regression to
+        # cuPointerGetAttribute which slows down host buffer communication. The
+        # cuptrgetattr_override.so library overrides cuPointerGetAttribute and
+        # routes it to cuPointerGetAttributes which is faster.
+        if uarch(self.current_partition) == "gh200":
+            self.env_vars["LD_PRELOAD"] = \
+                "/capstor/store/cscs/cscs/public/temp/cuptrgetattr_override.so"
