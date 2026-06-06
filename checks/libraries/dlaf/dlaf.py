@@ -173,6 +173,7 @@ class dlaf_base(rfm.RunOnlyRegressionTest, UenvSlurmMpiOptionsMixin):
         self.ntasks_per_core = 1
         self.time_limit = config["walltime"]
         self.job.launcher.options += ["--cpu-bind=cores"]
+
         if self.uarch == "gh200":
             self.job.launcher.options += ["--gpus-per-task=1"]
 
@@ -182,10 +183,12 @@ class dlaf_base(rfm.RunOnlyRegressionTest, UenvSlurmMpiOptionsMixin):
                 str((self.num_cpus_per_task // 2) - 1)
         else:
             self.env_vars["PIKA_THREADS"] = str(self.num_cpus_per_task - 1)
+
         self.env_vars["MIMALLOC_ALLOW_LARGE_OS_PAGES"] = "1"
         self.env_vars["MIMALLOC_EAGER_COMMIT_DELAY"] = "0"
         self.env_vars["MIMALLOC_ARENA_EAGER_COMMIT"] = "0"
         self.env_vars["MIMALLOC_PURGE_DELAY"] = "-1"
+
         if self.uarch in ("gh200", "mi300", "mi200"):
             self.env_vars["FI_MR_CACHE_MONITOR"] = "disabled"
             self.env_vars["MPICH_GPU_SUPPORT_ENABLED"] = "1"
@@ -195,7 +198,7 @@ class dlaf_base(rfm.RunOnlyRegressionTest, UenvSlurmMpiOptionsMixin):
                 str(2**21)
 
         if self.uarch in ("mi300", "mi200"):
-            self.env_vars["MIMALLOC_ALLOW_LARGE_OS_PAGES"] = "1"
+            # self.env_vars["MIMALLOC_ALLOW_LARGE_OS_PAGES"] = "1"
             self.env_vars["PIKA_MPI_ENABLE_POOL"] = "1"
             self.env_vars["PIKA_MPI_COMPLETION_MODE"] = "28"
             self.env_vars["DLAF_BAND_TO_TRIDIAG_1D_BLOCK_SIZE_BASE"] = "2048"
@@ -247,7 +250,8 @@ class dlaf_base(rfm.RunOnlyRegressionTest, UenvSlurmMpiOptionsMixin):
             self.executable = f"./rocr_wrapper.sh miniapp_{self.test_name}"
         else:
             self.executable = f"miniapp_{self.test_name}"
-            self.prerun_cmds = ['cat /proc/driver/nvidia/version']
+            if uarch(self.current_partition) == 'gh200':
+                self.prerun_cmds += ['cat /proc/driver/nvidia/version']
 
 
 @rfm.simple_test
@@ -256,7 +260,7 @@ class dlaf_check_uenv(dlaf_base):
 
 
 @rfm.simple_test
-class dlaf_check_uenv_cupointergetattributed_workaround(dlaf_base):
+class dlaf_check_uenv_cupointergetattribute_workaround(dlaf_base):
     valid_systems += ['+nvgpu']
 
     @run_before("run")
