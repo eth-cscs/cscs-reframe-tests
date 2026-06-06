@@ -12,18 +12,20 @@ from uenv import uarch
 
 sys.path.append(str(pathlib.Path(__file__).parent.parent.parent / 'mixins'))
 
-from uenv_slurm_mpi_options import UenvSlurmMpiOptionsMixin
+from uenv_slurm_mpi_options import UenvSlurmMpiOptionsMixin  # noqa:E402
 
 dlaf_references = {
     "eigensolver": {
         "gh200": {
-            "time_run": xfail("Known performance regression", (24.0, -0.1, 0.1, "s")),
+            "time_run":
+                xfail("Known performance regression", (24.0, -0.1, 0.1, "s")),
         },
         "mi300": {
             "time_run": (36.0, -0.1, 0.1, "s"),
         },
         "mi200": {
-            "time_run": xfail("Known performance regression", (41.0, -0.1, 0.1, "s")),
+            "time_run":
+                xfail("Known performance regression", (41.0, -0.1, 0.1, "s")),
         },
         "zen2": {
             "time_run": (170.0, -0.1, 0.1, "s"),
@@ -31,13 +33,15 @@ dlaf_references = {
     },
     "gen_eigensolver": {
         "gh200": {
-            "time_run": xfail("Known performance regression", (26.0, -0.1, 0.1, "s"))
+            "time_run":
+                xfail("Known performance regression", (26.0, -0.1, 0.1, "s"))
         },
         "mi300": {
             "time_run": (47.0, -0.1, 0.1, "s")
         },
         "mi200": {
-            "time_run": xfail("Known performance regression", (54.0, -0.1, 0.1, "s"))
+            "time_run":
+                xfail("Known performance regression", (54.0, -0.1, 0.1, "s"))
         },
         "zen2": {
             "time_run": (210.0, -0.1, 0.1, "s"),
@@ -243,6 +247,7 @@ class dlaf_base(rfm.RunOnlyRegressionTest, UenvSlurmMpiOptionsMixin):
             self.executable = f"./rocr_wrapper.sh miniapp_{self.test_name}"
         else:
             self.executable = f"miniapp_{self.test_name}"
+            self.prerun_cmds = ['cat /proc/driver/nvidia/version']
 
 
 @rfm.simple_test
@@ -268,6 +273,11 @@ class dlaf_check_uenv_cupointergetattributed_workaround(dlaf_base):
     def set_perf_reference(self):
         if self.uarch in dlaf_references[self.test_name]:
             self.reference = {
-                self.current_partition.fullname:
-                    dlaf_cupointergetattribute_references[self.test_name][self.uarch]
+                    self.current_partition.fullname: dlaf_cupointergetattribute_references[self.test_name][self.uarch]  # noqa:E501
             }
+
+    @performance_function('')
+    def nvidia_driver_version(self):
+        regex = r'^NVRM version: NVIDIA \w+( \w+){5}\s+(?P<version>\S+)'
+        return sn.extractsingle(regex, self.stdout, 'version',
+                                conv=lambda x: int(x.replace('.', '')))
