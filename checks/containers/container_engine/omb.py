@@ -12,7 +12,7 @@ import sys
 
 import reframe as rfm
 import reframe.utility.sanity as sn
-from reframe.core.builtins import xfail
+# from reframe.core.builtins import xfail
 
 sys.path.append(str(pathlib.Path(__file__).parent.parent.parent / 'mixins'))
 
