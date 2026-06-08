@@ -54,7 +54,8 @@ class OMB_Base_CE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
 
     @sanity_function
     def assert_sanity(self):
-        return sn.assert_found(self.sanity_per_test[self.test_name], self.stdout)
+        return sn.assert_found(self.sanity_per_test[self.test_name],
+                               self.stdout)
 
     @run_before('performance')
     def set_reference(self):
@@ -68,16 +69,17 @@ class OMB_Base_CE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
                                           self.stdout, 'bw_4M', float)
             },
             'collective/osu_alltoall': {
-                'latency_1M': sn.extractsingle(r'1048576\s+(?P<latency_1M>\S+)',
-                                     self.stdout, 'latency_1M', float)
-            }
+                'latency_1M': sn.extractsingle(
+                    r'1048576\s+(?P<latency_1M>\S+)', self.stdout,
+                    'latency_1M', float)
+                }
         }
         self.perf_patterns = self.patterns_per_test[self.test_name]
 
 
 @rfm.simple_test
 class OMB_MPICH_CE(OMB_Base_CE):
-    descr = 'OSU Micro-benchmarks for MPICH/CE (Point-to-Point and All-to-All)'
+    descr = 'OSU Micro-benchmarks for MPICH/CE (Point2Point and All2All)'
     container_image = (
         'jfrog.svc.cscs.ch#reframe-oci/osu-mb:7.5-mpich4.3.0-ofi1.15-cuda12.8'
     )
@@ -91,7 +93,6 @@ class OMB_MPICH_CE(OMB_Base_CE):
         'collective/osu_alltoall': {
             '*': {
                 'latency_1M': (1800., None, 0.15, 'us')
-                # 'latency_1M': xfail('Known performance regression', (1800., None, 0.15, 'us'))
             }
         }
     }
@@ -108,8 +109,10 @@ class OMB_MPICH_CE(OMB_Base_CE):
 
 @rfm.simple_test
 class OMB_OMPI_CE(OMB_Base_CE):
-    descr = 'OSU Micro-benchmarks for OpenMPI/CE (Point-to-Point and All-to-All)'
-    container_image = (f'jfrog.svc.cscs.ch#reframe-oci/osu-mb:7.5-ompi5.0.7-ofi1.15-cuda12.8')
+    descr = 'OSU Micro-benchmarks for OpenMPI/CE (Point2Point and All2All)'
+    container_image = (
+        'jfrog.svc.cscs.ch#reframe-oci/osu-mb:7.5-ompi5.0.7-ofi1.15-cuda12.8'
+    )
     valid_systems = ['+ce +nvgpu']
     reference_per_test = {
         'pt2pt/osu_bw': {
@@ -120,7 +123,6 @@ class OMB_OMPI_CE(OMB_Base_CE):
         'collective/osu_alltoall': {
             '*': {
                 'latency_1M': (500., None, 0.15, 'us')
-                # 'latency_1M': xfail('Known performance regression', (500., None, 0.15, 'us'))
             }
         }
     }
