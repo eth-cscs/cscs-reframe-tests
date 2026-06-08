@@ -90,10 +90,16 @@ class OMB_MPICH_CE(OMB_Base_CE):
         },
         'collective/osu_alltoall': {
             '*': {
-                'latency_1M': xfail('Known performance regression', (1800., None, 0.15, 'us'))
+                'latency_1M': (1800., None, 0.15, 'us')
+                # 'latency_1M': xfail('Known performance regression', (1800., None, 0.15, 'us'))
             }
         }
     }
+
+    @run_after('init')
+    def skip_xfail_test(self):
+        self.skip_if(self.test_name == 'collective/osu_alltoall',
+                     'skipping Known performance regression')
 
     @run_before('run')
     def set_pmi2(self):
@@ -113,10 +119,16 @@ class OMB_OMPI_CE(OMB_Base_CE):
         },
         'collective/osu_alltoall': {
             '*': {
-                'latency_1M': xfail('Known performance regression', (500., None, 0.15, 'us'))
+                'latency_1M': (500., None, 0.15, 'us')
+                # 'latency_1M': xfail('Known performance regression', (500., None, 0.15, 'us'))
             }
         }
     }
+
+    @run_after('init')
+    def skip_xfail_test(self):
+        self.skip_if(self.test_name == 'collective/osu_alltoall',
+                     'skipping Known performance regression')
 
     @run_before('run')
     def set_pmix(self):
