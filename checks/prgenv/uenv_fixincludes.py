@@ -8,7 +8,7 @@ import reframe.utility.sanity as sn
 from reframe.core.builtins import xfail
 
 
-@rfm.xfail('ICON uenvs are based on old versions of spack that don\'t fix GCC\'s includes', lambda self: self.current_environ.name.startswith('icon'))
+@rfm.xfail('ICON uenvs are based on old versions of spack that don\'t fix GCC\'s includes', lambda self: self.current_environ.name.startswith('icon'))  # noqa:E501
 @rfm.simple_test
 class UenvFixincludes(rfm.RunOnlyRegressionTest):
     descr = '''
