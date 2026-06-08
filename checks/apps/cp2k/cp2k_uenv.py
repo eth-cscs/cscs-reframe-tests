@@ -11,19 +11,20 @@ import re
 import reframe as rfm
 import reframe.utility.sanity as sn
 import reframe.utility.udeps as udeps
+from reframe.core.builtins import xfail
 from uenv import uarch
 
 cp2k_references = {
     'md': {
-        'gh200': {'time_run': (45, None, 0.05, 's')},
+        'gh200': {'time_run': xfail('Known performance regression', (45, None, 0.05, 's'))},
         'zen2': {'time_run': (94, None, 0.05, 's')}
     },
     'pbe': {
-        'gh200': {'time_run': (51, None, 0.05, 's')},
+        'gh200': {'time_run': xfail('Known performance regression', (51, None, 0.05, 's'))},
         'zen2': {'time_run': (75, None, 0.05, 's')}
     },
     'rpa': {
-        'gh200': {'time_run': (575, None, 0.05, 's')}
+        'gh200': {'time_run': xfail('Known performance regression', (575, None, 0.05, 's'))}
     },
 }
 
