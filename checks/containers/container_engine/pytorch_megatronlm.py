@@ -102,7 +102,8 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
         model_config = self.configurations[self.model]
         self.env_vars = {
             'CUDA_DEVICE_MAX_CONNECTIONS': 1,
-            'MASTER_ADDRESS': '$(srun -A csstaff -N1 hostname)',
+            'MASTER_ADDRESS':
+                '$(scontrol show hostnames "$SLURM_JOB_NODELIST" | head -n 1)',
             'MASTER_PORT': '28400',
             'WORLD_SIZE': f'{self.num_nodes * self.num_gpus_per_node}',
             'OMP_NUM_THREADS': '72'
