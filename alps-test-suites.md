@@ -17,20 +17,20 @@
 
 - **Remark:** (*) running tests such as node burn locally (without slurm) would require to maintain the same test twice and, therefore for the moment being, it was agreed that we should find an alternative solution for these tests.  
 
-## Node vetting / Appscheckout test suite 
+## Node vetting (appscheckout) test suite 
 
 * Single and multi-node checks to be performed after interventions 
   * To be executed against all nodes in a reservation (such as appscheckout or maintenance)
-  * Tag: appscheckout
+  * Tag: appscheckout (veto mode)
 
 | Category          | Description                                 | All-nodes  | Duration | Test name               |
 |:---               |:---                                         |   ----     |   ----   |:---                     | 
 | HW check          | Run dgemm on all GPUs and CPUs	          |    Y       |  1min    | [node-burn-ce.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/microbenchmarks/cpu_gpu/node_burn/node-burn-ce.py) |     
-|                   | Stream (memory bandwidth test)	          |    Y       |  1min    | [node-burn-ce.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/microbenchmarks/cpu_gpu/node_burn/node-burn-ce.py) |  
-| Network           | Simple MPI (CPI)	                          |    Y       |   5s     | [mpi_cpi.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/prgenv/mpi_cpi.py) | 
-|                   | OSU all-to-all                              |    Y       |   1min?  |  TODO  | 
-|                   | NCCL allreduce (2min)                       |    Y       |   2 min  |  [pytorch_allreduce.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/apps/pytorch/pytorch_allreduce.py#L24) | 
-|                   | Network bandwidth between gpus (per node)   |    Y       |   1min   |  [cxi_gpu_loopback_bw.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/system/network/cxi_gpu_loopback_bw.py) | 
+|                   | Stream (memory bandwidth test)	          |    Y       |  TODO    | [node-burn-ce.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/microbenchmarks/cpu_gpu/node_burn/node-burn-ce.py) |  
+| Network           | Simple MPI (CPI)	                          |    Y       |  TODO    | [mpi_cpi.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/prgenv/mpi_cpi.py) | 
+|                   | OSU all-to-all                              |    Y       |   TODO   |  TODO  | 
+|                   | NCCL allreduce (2min)                       |    Y       |   TODO   |  [pytorch_allreduce.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/apps/pytorch/pytorch_allreduce.py#L24) | 
+|                   | Network bandwidth between gpus (per node)   |    Y       |   TODO   |  [cxi_gpu_loopback_bw.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/system/network/cxi_gpu_loopback_bw.py) | 
 	
 
   
@@ -61,20 +61,41 @@ Single and multi-node checks to be performed regularly (nightly) in production u
 |                   | Slurm: number of nodes available per partition | [SlurmQueueStatusCheck](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/system/slurm/slurm.py#L285) | 
 |                   | Slurm: Check if Gres is properly configured on Slurm | [SlurmGPUGres](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/system/slurm/gres_gpu.py#L11)     |
 |                   | Slurm: new features                           | TODO                    |
-| Containers        |  Test OSU benchmarsk with CE	            | [OMB_MPICH_CE](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/containers/container_engine/omb.py#L77), [OMB_OMPI_CE](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/containers/container_engine/omb.py#L101) |
-|                   |  Stream benchmark with ce	                    | RunNVGPUJobCE - [ce_import_run_image.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/system/ce/ce_import_run_image.py#L64)  |
+| Containers        | Test OSU benchmarks with CE	            | [OMB_MPICH_CE](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/containers/container_engine/omb.py#L80), [OMB_OMPI_CE](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/containers/container_engine/omb.py#L102) |
+|                   | Stream benchmark with CE	                    | RunNVGPUJobCE - [ce_import_run_image.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/system/ce/ce_import_run_image.py#L64)  |
 |                   | Verify simple container runs	            | RunJobCE - [ce_import_run_image.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/system/ce/ce_import_run_image.py#L44)  |
-|                   | 	Test SSH to a container	                    |  [ssh.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/containers/container_engine/ssh.py) |
-|                   | 	CUDA nbody with CE                          |  [check_cuda_nbody.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/containers/container_engine/check_cuda_nbody.py) |
+|                   | Test SSH to a container	                    |  [ssh.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/containers/container_engine/ssh.py) |
+|                   | PyFR with CE (Multi-node GPU application with OpenMPI)  |  [pyfr.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/containers/container_engine/pyfr.py#L20) |
+|                   | SPH-EXA with CE (Multi-node, multi-GPU application with MPICH)  |  [sphexa.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/containers/container_engine/sphexa.py#L20) |
 
 
 
 
 ## Maintenance test suite 
 
-Single and multi-node checks to be performed  before & after vCluster interventions (using a reservation)
+Single and multi-node checks to be performed before & after vCluster interventions (using a reservation)
 
-* Tags: appscheckout + production
+* Tags: maintenance + production
   * See: [Test coverage](https://confluence.cscs.ch/spaces/reframe/pages/894965254/Test+coverage) 
 
 - **Remark:** Application checks can be the same as Production, but ideally they should be using more nodes
+
+
+## Container Engine test suites
+
+Synthetic and real-world tests checking the Container Engine functionality and performance
+
+### Developer tests
+Checks used by the CE development team to validate new features and vService deployments. Features a subset of production CE checks and may include experimental checks/features.
+* Tag: `ce_dev`
+
+### Skybox tests
+Checks using Skybox, the Slurm plugin for Podman integration, slated to replace Pyxis. Currently in internal testing and pre-production phase, these checks are intended to be used only by the dev-team.
+These checks are a subset of the `ce_dev` tag.
+As Skybox matures and the CE transitions to Podman, these checks will be integrated into production and eventually this tag will be retired (once Skybox is be the only Slurm plugin in operation).
+* Tag: `skybox`
+
+### All tests
+Runs *all* checks involving the CE, regardless of features, maintainers, scope or purpose (e.g. may include also developer tests and non-production features).
+* Tag: `ce` (because of ReFrame tag matching rules, `ce` also matches `ce_dev`)
+* **Remarks**: Documented here for clarity, likely of scarse use due to large number of tests and mix of purposes. Maintenance and production runs should rely on the dedicated, respective tags.

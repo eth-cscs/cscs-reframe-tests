@@ -4,11 +4,9 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 from utils import *
-from constants import *
+import sys
 import os
-import reframe as rfm
-import reframe.utility.sanity as sn
-import json
+
 
 # ---------------------------------------------------------------------------
 #                READ THE CONFIGURATION FROM THE YAML FILES
@@ -16,11 +14,28 @@ import json
 #                structure of the V-Clusters config files
 # ---------------------------------------------------------------------------
 
+# Add the current directory to sys.path to ensure local imports work
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+from constants import *
+import reframe as rfm
+import reframe.utility.sanity as sn
+import json
+
+
 system_data_file = "cluster_data.json"
 
 # Read the extracted info from the json file
-with open(os.path.join(json_file_path, system_data_file), 'r') as json_file:
-    config_yaml_data = json.load(json_file)
+config_file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                json_file_path,
+                                system_data_file)
+
+try:
+    with open(config_file_path, 'r') as json_file:
+        config_yaml_data = json.load(json_file)
+except FileNotFoundError as exc:
+    print(f"WARNING: V-Cluster config file not found: {config_file_path}: {exc}")
+    config_yaml_data = {}
 
 # Check for mount points to be checked
 mount_info = config_yaml_data.get(MOUNT_VARS[0])

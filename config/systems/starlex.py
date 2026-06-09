@@ -6,6 +6,18 @@
 # ReFrame CSCS settings
 #
 
+import os
+import reframe.utility.osext as osext
+
+reframe_dir = os.getenv(
+    'REFRAME_DIR',
+    '/capstor/store/cscs/cscs/public/reframe/reframe-stable/$CLUSTER_NAME'
+)
+target_dir_var_exists = bool(os.getenv('TARGET_DIR'))
+target_dir_base = (
+    '$SCRATCH/reframe/$CLUSTER_NAME' if not target_dir_var_exists else ''
+)
+
 site_configuration = {
     'systems': [
         {
@@ -15,6 +27,7 @@ site_configuration = {
             'modules_system': 'lmod',
             'resourcesdir':
                 '/capstor/store/cscs/cscs/public/reframe/resources',
+            'max_local_jobs': 20,
             'partitions': [
                 {
                     'name': 'login',
@@ -24,7 +37,7 @@ site_configuration = {
                         'builtin',
                     ],
                     'descr': 'Login nodes',
-                    'max_jobs': 4,
+                    'max_jobs': 20,
                     'launcher': 'local'
                 },
                 {
@@ -34,9 +47,9 @@ site_configuration = {
                     'environs': [
                         'builtin',
                     ],
-                    'max_jobs': 100,
+                    'max_jobs': 1000,
                     'extras': {
-                        'cn_memory': 850,
+                        'cn_memory': 856,
                     },
                     'resources': [
                         {
@@ -50,6 +63,7 @@ site_configuration = {
                     ],
                     'features': ['ce', 'gpu', 'nvgpu', 'remote', 'scontrol',
                                  'uenv', 'hugepages_slurm'],
+                    'access': [f'--account={osext.osgroup()}'],
                     'devices': [
                         {
                             'type': 'gpu',
@@ -62,20 +76,4 @@ site_configuration = {
             ]
         },
     ],
-    'modes': [
-        {
-            'name': 'production',
-            'options': [
-                '--unload-module=reframe',
-                '--exec-policy=async',
-                '-Sstrict_check=1',
-                '--prefix=$SCRATCH/regression/production',
-                '--report-file=$SCRATCH/regression/production/reports/prod_report_{sessionid}.json',
-                '--save-log-files',
-                '--tag=production',
-                '--timestamp=%F_%H-%M-%S'
-            ],
-            'target_systems': ['starlex'],
-        }
-    ]
 }

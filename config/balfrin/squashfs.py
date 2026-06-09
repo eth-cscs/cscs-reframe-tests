@@ -9,7 +9,7 @@ import json
 import os
 
 import reframe.core.launchers.mpi as mpi
-import reframe.utility.osext as osext
+# import reframe.utility.osext as osext
 
 
 @mpi.register_launcher('squashfs-run')
@@ -39,6 +39,7 @@ site_configuration = {
             'modules_system': 'tmod',
             # TODO: use jfrog
             'resourcesdir': '/scratch/e1000/piccinal/resources',
+            'max_local_jobs': 20,
             'partitions': [
                 {
                     'name': 'login',
@@ -50,7 +51,7 @@ site_configuration = {
                         'PrgEnv-nvidia'
                     ],
                     'descr': 'Login nodes',
-                    'max_jobs': 4,
+                    'max_jobs': 20,
                     'launcher': 'local',
                 },
                 {

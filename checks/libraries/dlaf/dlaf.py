@@ -2,25 +2,62 @@
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
+import sys
+import pathlib
+
 import reframe as rfm
 import reframe.utility.sanity as sn
+from reframe.core.builtins import xfail
 from uenv import uarch
+
+sys.path.append(str(pathlib.Path(__file__).parent.parent.parent / 'mixins'))
+
+from uenv_slurm_mpi_options import UenvSlurmMpiOptionsMixin  # noqa:E402
 
 dlaf_references = {
     "eigensolver": {
         "gh200": {
-            "time_run": (24.0, -1.0, 0.1, "s"),
+            "time_run":
+                xfail("Known performance regression", (24.0, -0.1, 0.1, "s")),
+        },
+        "mi300": {
+            "time_run": (36.0, -0.1, 0.1, "s"),
+        },
+        "mi200": {
+            "time_run":
+                xfail("Known performance regression", (41.0, -0.1, 0.1, "s")),
         },
         "zen2": {
-            "time_run": (170.0, -1.0, 0.1, "s"),
+            "time_run": (170.0, -0.1, 0.1, "s"),
         }
     },
     "gen_eigensolver": {
         "gh200": {
-            "time_run": (26.0, -1.0, 0.1, "s")
+            "time_run":
+                xfail("Known performance regression", (26.0, -0.1, 0.1, "s"))
+        },
+        "mi300": {
+            "time_run": (47.0, -0.1, 0.1, "s")
+        },
+        "mi200": {
+            "time_run":
+                xfail("Known performance regression", (54.0, -0.1, 0.1, "s"))
         },
         "zen2": {
-            "time_run": (210.0, -1.0, 0.1, "s"),
+            "time_run": (210.0, -0.1, 0.1, "s"),
+        }
+    },
+}
+
+dlaf_cupointergetattribute_references = {
+    "eigensolver": {
+        "gh200": {
+            "time_run": (26.0, -0.1, 0.1, "s"),
+        }
+    },
+    "gen_eigensolver": {
+        "gh200": {
+            "time_run": (29.0, -0.1, 0.1, "s")
         }
     },
 }
@@ -33,6 +70,23 @@ slurm_config = {
             "cpus-per-task": 72,
             "walltime": "0d0h5m0s",
             "gpu": True,
+            "extra_job_options": [],
+        },
+        "mi300": {
+            "nodes": 2,
+            "ntasks-per-node": 12,
+            "cpus-per-task": 16,
+            "walltime": "0d0h10m0s",
+            "gpu": True,
+            "extra_job_options": ["--constraint=amdgpu_tpx"],
+        },
+        "mi200": {
+            "nodes": 2,
+            "ntasks-per-node": 8,
+            "cpus-per-task": 16,
+            "walltime": "0d0h10m0s",
+            "gpu": True,
+            "extra_job_options": [],
         },
         "zen2": {
             "nodes": 2,
@@ -40,6 +94,7 @@ slurm_config = {
             "cpus-per-task": 16,
             "walltime": "0d0h10m0s",
             "gpu": True,
+            "extra_job_options": [],
         }
     },
     "gen_eigensolver": {
@@ -49,6 +104,23 @@ slurm_config = {
             "cpus-per-task": 72,
             "walltime": "0d0h5m0s",
             "gpu": True,
+            "extra_job_options": [],
+        },
+        "mi300": {
+            "nodes": 2,
+            "ntasks-per-node": 12,
+            "cpus-per-task": 16,
+            "walltime": "0d0h10m0s",
+            "gpu": True,
+            "extra_job_options": ["--constraint=amdgpu_tpx"],
+        },
+        "mi200": {
+            "nodes": 2,
+            "ntasks-per-node": 8,
+            "cpus-per-task": 16,
+            "walltime": "0d0h20m0s",
+            "gpu": True,
+            "extra_job_options": [],
         },
         "zen2": {
             "nodes": 2,
@@ -56,15 +128,26 @@ slurm_config = {
             "cpus-per-task": 16,
             "walltime": "0d0h10m0s",
             "gpu": True,
+            "extra_job_options": [],
         }
     },
 }
 
 
-class dlaf_base(rfm.RunOnlyRegressionTest):
+class dlaf_base(rfm.RunOnlyRegressionTest, UenvSlurmMpiOptionsMixin):
+    tags = {"uenv", "production", "bencher"}
     valid_systems = ['+uenv']
     valid_prog_environs = ['+dlaf -cp2k -cp2k-dev']
     maintainers = ['simbergm', 'rasolca', 'SSA']
+
+    test_name = parameter(["gen_eigensolver", "eigensolver"])
+    executable_opts = [
+        "--type=d",
+        "--matrix-size=40960",
+        "--check=last",
+        "--nwarmups=1",
+        "--nruns=1",
+    ]
 
     def _sq_factor(self, n):
         """
@@ -83,23 +166,30 @@ class dlaf_base(rfm.RunOnlyRegressionTest):
         # slurm configuration
         config = slurm_config[self.test_name][self.uarch]
         self.job.options = [f'--nodes={config["nodes"]}']
+        self.job.options += config["extra_job_options"]
         self.num_tasks_per_node = config["ntasks-per-node"]
         self.num_tasks = config["nodes"] * self.num_tasks_per_node
         self.num_cpus_per_task = config["cpus-per-task"]
         self.ntasks_per_core = 1
         self.time_limit = config["walltime"]
-        self.job.launcher.options = ["--cpu-bind=cores"]
+        self.job.launcher.options += ["--cpu-bind=cores"]
+
         if self.uarch == "gh200":
             self.job.launcher.options += ["--gpus-per-task=1"]
 
         # environment variables
-        if self.uarch == "zen2":
-            self.env_vars["PIKA_THREADS"] = str((self.num_cpus_per_task // 2) - 1)
+        if self.uarch in ("mi300", "mi200", "zen2"):
+            self.env_vars["PIKA_THREADS"] = \
+                str((self.num_cpus_per_task // 2) - 1)
         else:
             self.env_vars["PIKA_THREADS"] = str(self.num_cpus_per_task - 1)
+
         self.env_vars["MIMALLOC_ALLOW_LARGE_OS_PAGES"] = "1"
         self.env_vars["MIMALLOC_EAGER_COMMIT_DELAY"] = "0"
-        if self.uarch == "gh200":
+        self.env_vars["MIMALLOC_ARENA_EAGER_COMMIT"] = "0"
+        self.env_vars["MIMALLOC_PURGE_DELAY"] = "-1"
+
+        if self.uarch in ("gh200", "mi300", "mi200"):
             self.env_vars["FI_MR_CACHE_MONITOR"] = "disabled"
             self.env_vars["MPICH_GPU_SUPPORT_ENABLED"] = "1"
             self.env_vars["DLAF_BT_BAND_TO_TRIDIAG_HH_APPLY_GROUP_SIZE"] = \
@@ -107,20 +197,28 @@ class dlaf_base(rfm.RunOnlyRegressionTest):
             self.env_vars["DLAF_UMPIRE_DEVICE_MEMORY_POOL_ALIGNMENT_BYTES"] = \
                 str(2**21)
 
+        if self.uarch in ("mi300", "mi200"):
+            # self.env_vars["MIMALLOC_ALLOW_LARGE_OS_PAGES"] = "1"
+            self.env_vars["PIKA_MPI_ENABLE_POOL"] = "1"
+            self.env_vars["PIKA_MPI_COMPLETION_MODE"] = "28"
+            self.env_vars["DLAF_BAND_TO_TRIDIAG_1D_BLOCK_SIZE_BASE"] = "2048"
+            self.env_vars["DLAF_NUM_NP_GPU_STREAMS"] = "4"
+            self.env_vars["DLAF_NUM_HP_GPU_STREAMS"] = "4"
+
         # executable options
         grid_cols, grid_rows = self._sq_factor(self.num_tasks)
         self.executable_opts += [
             f"--grid-cols={grid_cols}",
             f"--grid-rows={grid_rows}"
         ]
-        if self.uarch == "gh200":
+        if self.uarch in ("gh200", "mi300", "mi200"):
             self.executable_opts.append("--block-size=1024")
         else:
             self.executable_opts.append("--block-size=512")
 
-        # set performance reference
-        if self.uarch is not None and \
-           self.uarch in dlaf_references[self.test_name]:
+    @run_before("run")
+    def set_perf_reference(self):
+        if self.uarch in dlaf_references[self.test_name]:
             self.reference = {
                 self.current_partition.fullname:
                     dlaf_references[self.test_name][self.uarch]
@@ -146,22 +244,44 @@ class dlaf_base(rfm.RunOnlyRegressionTest):
         regex = r"^\[0\]\s+(?P<perf>\S+)s\s+"
         return sn.extractsingle(regex, self.stdout, "perf", float)
 
+    @run_before("run")
+    def set_executable(self):
+        if uarch(self.current_partition) in ("mi300", "mi200"):
+            self.executable = f"./rocr_wrapper.sh miniapp_{self.test_name}"
+        else:
+            self.executable = f"miniapp_{self.test_name}"
+            if uarch(self.current_partition) == 'gh200':
+                self.prerun_cmds += ['cat /proc/driver/nvidia/version']
+
 
 @rfm.simple_test
 class dlaf_check_uenv(dlaf_base):
-    tags = {"uenv", "production"}
-    test_name = parameter(["gen_eigensolver", "eigensolver"])
-    executable_opts = [
-        "--type=d",
-        "--matrix-size=40960",
-        "--check=last",
-        "--nwarmups=1",
-        "--nruns=1",
-    ]
+    ...
+
+
+@rfm.simple_test
+class dlaf_check_uenv_cupointergetattribute_workaround(dlaf_base):
+    valid_systems += ['+nvgpu']
 
     @run_before("run")
-    def set_executable(self):
-        self.executable = (
-            "miniapp_gen_eigensolver" if self.test_name == "gen_eigensolver"
-            else "miniapp_eigensolver"
-        )
+    def ld_preload(self):
+        # CUDA driver 590 introduces a performance regression to
+        # cuPointerGetAttribute which slows down host buffer communication. The
+        # cuptrgetattr_override.so library overrides cuPointerGetAttribute and
+        # routes it to cuPointerGetAttributes which is faster.
+        if uarch(self.current_partition) == "gh200":
+            self.env_vars["LD_PRELOAD"] = \
+                "/capstor/store/cscs/cscs/public/temp/cuptrgetattr_override.so"
+
+    @run_before("run")
+    def set_perf_reference(self):
+        if self.uarch in dlaf_references[self.test_name]:
+            self.reference = {
+                    self.current_partition.fullname: dlaf_cupointergetattribute_references[self.test_name][self.uarch]  # noqa:E501
+            }
+
+    @performance_function('')
+    def nvidia_driver_version(self):
+        regex = r'^NVRM version: NVIDIA \w+( \w+){5}\s+(?P<version>\S+)'
+        return sn.extractsingle(regex, self.stdout, 'version',
+                                conv=lambda x: int(x.replace('.', '')))

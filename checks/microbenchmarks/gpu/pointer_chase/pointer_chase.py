@@ -1,4 +1,4 @@
-# Copyright 2016-2020 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -14,7 +14,7 @@ sys.path.append(os.path.abspath(os.path.join(__file__, '../../../..')))
 import microbenchmarks.gpu.hooks as hooks
 
 
-class SystemConfigCSCS(rfm.RegressionMixin):
+class SystemConfigCSCS(rfm.RegressionTestPlugin):
     '''CSCS system settings shared across all pointer chase tests.'''
 
     single_device_systems = variable(

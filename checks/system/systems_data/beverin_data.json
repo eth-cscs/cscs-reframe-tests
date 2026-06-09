@@ -1,0 +1,29 @@
+{
+    "filesystems": [
+        {
+            "mount_point": "/capstor/scratch/cscs"
+        }
+    ],
+    "pkgs": [
+        "bubblewrap",
+        "datacenter-gpu-manager",
+        "gcc12",
+        "gcc12-c++",
+        "gcc12-fortran",
+        "htop",
+        "libtool",
+        "lsof",
+        "ltrace",
+        "lua-lmod",
+        "netcat",
+        "nnn",
+        "pycxi-utils",
+        "wget"
+    ],
+    "cscs_extra_vars": [
+        {
+            "env_var": "SCRATCH",
+            "env_value": "/capstor/scratch/cscs"
+        }
+    ]
+}

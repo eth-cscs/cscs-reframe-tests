@@ -6,9 +6,9 @@
     ],
     "pkgs": [
         "htop",
-        "wget",
+        "libtool",
         "netcat",
-        "libtool"
+        "wget"
     ],
     "cscs_extra_vars": [
         {

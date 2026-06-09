@@ -1,13 +1,31 @@
 - [ ] Describe the purpose of this pull request (Add a link to the jira issue when possible)
-- [ ] Share the command line used to run the test
-```console
-$ reframe -r ...
+- [ ] When ready, manually trigger 1 (or more) CI pipelines by writing a cscs-ci comment inside this Pull Request.
+For instance:
+
+```shell
+cscs-ci run alps-daint-uenv;MY_UENV=prgenv-gnu/26.3:v1
+cscs-ci run alps-santis-uenv;MY_UENV=prgenv-gnu/26.3:v1
+cscs-ci run alps-clariden-uenv;MY_UENV=prgenv-gnu/26.3:v1
+
+cscs-ci run alps-starlex-uenv;MY_UENV=prgenv-gnu/25.11:v1
+cscs-ci run alps-beverin-uenv;MY_UENV=prgenv-gnu/25.07-6.3.3:v12
+
+cscs-ci run alps-eiger-uenv;MY_UENV=[build::|service::]prgenv-gnu/25.11:v1
 ```
 
-- You can manually trigger 1 (or more) CI pipelines by writing a comment in this Pull Request. For example:
-  - CPE testing:  add `cscs-ci run alps-daint-cpe`
-  - UENV testing: add `cscs-ci run alps-daint-uenv;MY_UENV=prgenv-gnu/25.06:rc5`
-  - By default all UENVs will be tested: this is no longer true
-  - Tested platforms: daint, santis, clariden, eiger, bristen, beverin
+- You can also test from your terminal:
+    - install: https://confluence.cscs.ch/spaces/reframe/pages/886276110/Installing+ReFrame
+    - run test: for example, cp2k on beverin:
+
+```shell
+UENV=prgenv-gnu/25.07-6.3.3:v8 \
+    reframe -C \
+    -C ./cscs-reframe-tests.git/config/cscs.py \
+    --keep-stage-files \
+    -c checks/microbenchmarks/gpu/gpu_benchmarks/icon4py.py \
+    -c ./cscs-reframe-tests.git/checks/apps/cp2k/cp2k_uenv.py \
+    --system beverin:mi300
+```
 
 Thank you for taking the time to contribute to `cscs-reframe-tests` !
+- CSCS staff: More info in https://confluence.cscs.ch/spaces/reframe --> Contributing+Pull+Requests

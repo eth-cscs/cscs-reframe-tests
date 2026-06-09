@@ -14,6 +14,7 @@ site_configuration = {
             'hostnames': ['ault'],
             'modules_system': 'lmod',
             'resourcesdir': '/apps/common/UES/reframe/resources',
+            'max_local_jobs': 20,
             'partitions': [
                 {
                     'name': 'login',
@@ -21,7 +22,7 @@ site_configuration = {
                     'time_limit': '10m',
                     'environs': ['gnu'],
                     'descr': 'Login nodes',
-                    'max_jobs': 4,
+                    'max_jobs': 20,
                     'launcher': 'local'
                 },
                 {

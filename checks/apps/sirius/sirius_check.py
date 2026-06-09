@@ -167,3 +167,4 @@ class UENV_sirius_scf_check(SIRIUSBase,
                             CudaVisibleDevicesAllMixin):
     valid_systems = ['-amdgpu']
     valid_prog_environs = ['+sirius +mpi +openmp +uenv']
+    tags = {'uenv', 'production', 'maintenance'}

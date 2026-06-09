@@ -20,6 +20,7 @@ site_configuration = {
             'modules_system': 'lmod',
             'resourcesdir':
                 '/capstor/store/cscs/cscs/public/reframe/resources',
+            'max_local_jobs': 20,
             'partitions': [
                 {
                     'name': 'login',
@@ -29,7 +30,7 @@ site_configuration = {
                         'builtin',
                     ],
                     'descr': 'Login nodes',
-                    'max_jobs': 4,
+                    'max_jobs': 20,
                     'launcher': 'local'
                 },
                 {
@@ -40,9 +41,9 @@ site_configuration = {
                         'builtin',
                         'PrgEnv-ce',
                     ],
-                    'max_jobs': 100,
+                    'max_jobs': 1000,
                     'extras': {
-                        'cn_memory': 256,
+                        'cn_memory': 503,
                     },
                     'resources': [
                         {
@@ -97,19 +98,4 @@ site_configuration = {
              }
         },
     ],
-    'modes': [
-        {
-            'name': 'production',
-            'options': [
-                '--exec-policy=async',
-                '-Sstrict_check=1',
-                '--prefix=$SCRATCH/regression/production',
-                '--report-file=$SCRATCH/regression/production/reports/prod_report_{sessionid}.json',
-                '--save-log-files',
-                '--tag=production',
-                '--timestamp=%F_%H-%M-%S'
-            ],
-            'target_systems': ['eiger'],
-        },
-    ]
 }

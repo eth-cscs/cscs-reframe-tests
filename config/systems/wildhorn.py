@@ -13,6 +13,7 @@ import copy
 base_config = {
     'modules_system': 'lmod',
     'resourcesdir': '/capstor/apps/cscs/common/regression/resources',
+    'max_local_jobs': 20,
     'partitions': [
         {
             'name': 'login',
@@ -22,7 +23,7 @@ base_config = {
                 'builtin',
             ],
             'descr': 'Login nodes',
-            'max_jobs': 4,
+            'max_jobs': 20,
             'launcher': 'local'
         },
         {
@@ -33,7 +34,7 @@ base_config = {
             'environs': [
                 'builtin',
             ],
-            'max_jobs': 100,
+            'max_jobs': 1000,
             'extras': {
                 'cn_memory': 256,
             },
@@ -64,6 +65,6 @@ site_configuration = {
         wildhorn_sys
     ],
     'environments': [
-     
+
     ],
 }

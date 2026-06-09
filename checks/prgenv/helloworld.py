@@ -1,4 +1,4 @@
-# Copyright 2016-2023 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -11,10 +11,11 @@ import reframe.utility.sanity as sn
 sys.path.append(str(pathlib.Path(__file__).parent.parent / 'mixins'))
 from extra_launcher_options import ExtraLauncherOptionsMixin
 from container_engine import ContainerEngineCPEMixin
+from uenv_slurm_mpi_options import UenvSlurmMpiOptionsMixin
 
 
 class HelloWorldBaseTest(rfm.RegressionTest, ExtraLauncherOptionsMixin,
-                         ContainerEngineCPEMixin):
+                         ContainerEngineCPEMixin, UenvSlurmMpiOptionsMixin):
     linking = parameter(['dynamic'])
     lang = parameter(['c', 'cpp', 'F90'])
     sourcesdir = 'src/hello'

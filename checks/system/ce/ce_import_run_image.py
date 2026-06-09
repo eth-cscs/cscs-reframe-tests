@@ -1,4 +1,4 @@
-# Copyright 2024 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -32,7 +32,7 @@ class enroot_import_image(rfm.RunOnlyRegressionTest):
 
 
 class enroot_import_image_dockerhub(enroot_import_image):
-    image = variable(str, value='docker://index.docker.io#ubuntu:latest')
+    image = variable(str, value='docker://index.docker.io#library/ubuntu:latest')
 
 
 class enroot_import_image_ngc(enroot_import_image):
