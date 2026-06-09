@@ -3,18 +3,10 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-import os
 import pathlib
 import sys
-
 import reframe as rfm
 import reframe.utility.sanity as sn
-
-sys.path.append(
-    str(pathlib.Path(__file__).parent.parent.parent / 'mixins')
-)
-from container_engine import ContainerEngineCPEMixin  # noqa: E402
-
 
 class CudaSamplesBase(rfm.RegressionTest):
     sourcesdir = 'https://github.com/NVIDIA/cuda-samples.git'
