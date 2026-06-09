@@ -65,8 +65,7 @@ class CudaSamplesBase(rfm.RegressionTest):
 
     @run_before('run')
     def set_executable(self):
-        self.executable = (f'./Samples/{self.sample_dir[self.sample]}/'
-                           f'{self.sample}/{self.sample}')
+        self.executable = f'$(find . -type f -name {self.sample} -executable)'
 
     @run_before('sanity')
     def set_sanity_patterns(self):
