@@ -7,8 +7,8 @@ import reframe.utility.sanity as sn
 
 @rfm.simple_test
 class slurm_jg(rfm.RunOnlyRegressionTest):
-    valid_prog_environs = ['*']
-    valid_systems = ['*']
+    valid_systems = ['+nvgpu']
+    valid_prog_environs = ['+prgenv']
     executable = 'echo'
     time_limit = '1m'
     num_tasks = 1
