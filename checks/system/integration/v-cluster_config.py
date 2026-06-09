@@ -26,8 +26,16 @@ import json
 system_data_file = "cluster_data.json"
 
 # Read the extracted info from the json file
-with open(os.path.join(json_file_path, system_data_file), 'r') as json_file:
-    config_yaml_data = json.load(json_file)
+config_file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                json_file_path,
+                                system_data_file)
+
+try:
+    with open(config_file_path, 'r') as json_file:
+        config_yaml_data = json.load(json_file)
+except FileNotFoundError as exc:
+    print(f"WARNING: V-Cluster config file not found: {config_file_path}: {exc}")
+    config_yaml_data = {}
 
 # Check for mount points to be checked
 mount_info = config_yaml_data.get(MOUNT_VARS[0])
