@@ -24,7 +24,7 @@ class slurm_jg(rfm.RunOnlyRegressionTest):
 
     @run_before('run')
     def set_runtime_args(self):
-        # self.prerun_cmds = ["python --version |awk '{print $2}'"]
+        self.prerun_cmds = ['echo XX=$XX']
         self.executable_opts = ['A']
 #            f"--nodes={config['nodes']}",                                       
 #            "--ntasks-per-core=1",                                              
