@@ -1,4 +1,4 @@
-# Copyright 2024 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -37,4 +37,5 @@ class CUDA_MPS_CE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
 
     @sanity_function
     def assert_sanity(self):
-        return sn.assert_found(r'^\d+ nvidia-cuda-mps-control -d$', self.stdout)
+        return sn.assert_found(r'^\d+ nvidia-cuda-mps-control -d$',
+                               self.stdout)

@@ -1,5 +1,5 @@
-# Copyright 2026 ETHZ/CSCS
-# See the top-level LICENSE file for details.
+# Copyright Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
@@ -118,7 +118,7 @@ class stuck_gpu_mem_test(rfm.RunOnlyRegressionTest):
     engine = "sync"
     num_jobs = 1
     iodepth = 1
-    filename = variable(str, value="/iopsstor/scratch/cscs/$USER/gpu-stuckmem.tmp")
+    filename = variable(str, value="$SCRATCH/gpu-stuckmem.tmp")
 
     @run_after("init")
     def set_parent(self):

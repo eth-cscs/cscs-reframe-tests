@@ -61,11 +61,12 @@ Single and multi-node checks to be performed regularly (nightly) in production u
 |                   | Slurm: number of nodes available per partition | [SlurmQueueStatusCheck](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/system/slurm/slurm.py#L285) | 
 |                   | Slurm: Check if Gres is properly configured on Slurm | [SlurmGPUGres](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/system/slurm/gres_gpu.py#L11)     |
 |                   | Slurm: new features                           | TODO                    |
-| Containers        |  Test OSU benchmarsk with CE	            | [OMB_MPICH_CE](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/containers/container_engine/omb.py#L77), [OMB_OMPI_CE](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/containers/container_engine/omb.py#L101) |
-|                   |  Stream benchmark with ce	                    | RunNVGPUJobCE - [ce_import_run_image.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/system/ce/ce_import_run_image.py#L64)  |
+| Containers        | Test OSU benchmarks with CE	            | [OMB_MPICH_CE](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/containers/container_engine/omb.py#L80), [OMB_OMPI_CE](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/containers/container_engine/omb.py#L102) |
+|                   | Stream benchmark with CE	                    | RunNVGPUJobCE - [ce_import_run_image.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/system/ce/ce_import_run_image.py#L64)  |
 |                   | Verify simple container runs	            | RunJobCE - [ce_import_run_image.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/system/ce/ce_import_run_image.py#L44)  |
-|                   | 	Test SSH to a container	                    |  [ssh.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/containers/container_engine/ssh.py) |
-|                   | 	CUDA nbody with CE                          |  [check_cuda_nbody.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/containers/container_engine/check_cuda_nbody.py) |
+|                   | Test SSH to a container	                    |  [ssh.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/containers/container_engine/ssh.py) |
+|                   | PyFR with CE (Multi-node GPU application with OpenMPI)  |  [pyfr.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/containers/container_engine/pyfr.py#L20) |
+|                   | SPH-EXA with CE (Multi-node, multi-GPU application with MPICH)  |  [sphexa.py](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/checks/containers/container_engine/sphexa.py#L20) |
 
 
 
@@ -78,3 +79,23 @@ Single and multi-node checks to be performed before & after vCluster interventio
   * See: [Test coverage](https://confluence.cscs.ch/spaces/reframe/pages/894965254/Test+coverage) 
 
 - **Remark:** Application checks can be the same as Production, but ideally they should be using more nodes
+
+
+## Container Engine test suites
+
+Synthetic and real-world tests checking the Container Engine functionality and performance
+
+### Developer tests
+Checks used by the CE development team to validate new features and vService deployments. Features a subset of production CE checks and may include experimental checks/features.
+* Tag: `ce_dev`
+
+### Skybox tests
+Checks using Skybox, the Slurm plugin for Podman integration, slated to replace Pyxis. Currently in internal testing and pre-production phase, these checks are intended to be used only by the dev-team.
+These checks are a subset of the `ce_dev` tag.
+As Skybox matures and the CE transitions to Podman, these checks will be integrated into production and eventually this tag will be retired (once Skybox is be the only Slurm plugin in operation).
+* Tag: `skybox`
+
+### All tests
+Runs *all* checks involving the CE, regardless of features, maintainers, scope or purpose (e.g. may include also developer tests and non-production features).
+* Tag: `ce` (because of ReFrame tag matching rules, `ce` also matches `ce_dev`)
+* **Remarks**: Documented here for clarity, likely of scarse use due to large number of tests and mix of purposes. Maintenance and production runs should rely on the dedicated, respective tags.

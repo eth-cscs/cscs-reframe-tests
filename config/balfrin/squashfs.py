@@ -39,6 +39,7 @@ site_configuration = {
             'modules_system': 'tmod',
             # TODO: use jfrog
             'resourcesdir': '/scratch/e1000/piccinal/resources',
+            'max_local_jobs': 20,
             'partitions': [
                 {
                     'name': 'login',
