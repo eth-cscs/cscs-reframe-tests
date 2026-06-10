@@ -110,7 +110,9 @@ def _get_uenvs() -> Optional[List]:
 
     uenv_environments = []
     uenv_list = uenv.split(_UENV_DELIMITER)
-    uenv_version = osext.run_command(f'{_UENV_CLI} --version', shell=True).stdout.strip()
+    uenv_version = osext.run_command(
+        f'{_UENV_CLI} --version', shell=True
+    ).stdout.strip()
 
     for uenv in uenv_list:
         uenv_identifier, *uenv_mountpoint = uenv.split(_UENV_MOUNT_DELIMITER)
@@ -141,13 +143,13 @@ def _get_uenvs() -> Optional[List]:
             # Check that uenv was pulled
             if not image_path.is_file():
                 raise ConfigError(
-                    f"{uenv_name} is missing, try pulling it with: uenv image pull {uenv_name}"
-                )
+                    f"{uenv_name} is missing, "
+                    f"try pulling it with: uenv image pull {uenv_name}")
             try:
                 if image_path.stat().st_size == 0:
                     raise ConfigError(
-                        f"{uenv_name} is empty, try pulling it with: uenv image pull {uenv_name}"
-                    )
+                        f"{uenv_name} is empty, "
+                        f"try pulling it with: uenv image pull {uenv_name}")
             except FileNotFoundError:
                 raise ConfigError(f"{uenv_name} was not found")
 
@@ -162,9 +164,12 @@ def _get_uenvs() -> Optional[List]:
 
         try:
             with open(rfm_meta) as image_envs:
-                image_environments = yaml.load(image_envs.read(), Loader=yaml.BaseLoader)
+                image_environments = yaml.load(
+                    image_envs.read(), Loader=yaml.BaseLoader)
         except OSError as err:
-            print(f'Skipping uenv `{uenv}`, there was an error reading the metadata: {err}')
+            print(f'Skipping uenv `{uenv}`, there was an error '
+                  f'reading the metadata: {err}')
+
             continue
 
         for k, v in image_environments.items():
@@ -172,7 +177,9 @@ def _get_uenvs() -> Optional[List]:
             activation = v.pop('activation', [])
             views = v.pop('views', [])
 
-            env = {'target_systems': [target_system]}
+            env = {
+                'target_systems': [target_system]
+            }
             env.update(v)
 
             if isinstance(activation, list):
