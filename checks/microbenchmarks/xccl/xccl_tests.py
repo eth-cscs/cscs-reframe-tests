@@ -8,13 +8,14 @@ import sys
 
 import reframe as rfm
 import reframe.utility.sanity as sn
-from uenv import uarch
 
 sys.path.append(str(pathlib.Path(__file__).parent.parent.parent / 'mixins'))
+sys.path.append(str(pathlib.Path(__file__).parent.parent.parent.parent / 'config' / 'utilities'))  # noqa: E501
 
-from container_engine import ContainerEngineMixin  # noqa: E402
-from slurm_mpi_pmix import SlurmMpiPmixMixin
-from uenv_slurm_mpi_options import UenvSlurmMpiOptionsMixin
+from uenv import uarch                                       # noqa: E402
+from container_engine import ContainerEngineMixin            # noqa: E402
+from slurm_mpi_pmix import SlurmMpiPmixMixin                 # noqa: E402
+from uenv_slurm_mpi_options import UenvSlurmMpiOptionsMixin  # noqa: E402
 
 
 class XCCLTestsBase(rfm.RunOnlyRegressionTest):
@@ -44,8 +45,11 @@ class XCCLTestsBase(rfm.RunOnlyRegressionTest):
             },
             'mi200': {
                 'GB/s': (13.5, -0.15, 0.15, 'GB/s')
+            },
+            'a100': {
+                'GB/s': (19.0, -0.05, 0.05, 'GB/s')
             }
-         },
+        },
         'all_reduce': {
             'gh200': {
                 'GB/s': (150.0, -0.10, 0.10, 'GB/s')
@@ -55,6 +59,9 @@ class XCCLTestsBase(rfm.RunOnlyRegressionTest):
             },
             'mi200': {
                 'GB/s': (105.0, -0.05, 0.05, 'GB/s')
+            },
+            'a100': {
+                'GB/s': (31.0, -0.05, 0.05, 'GB/s')
             }
         }
     }
@@ -91,7 +98,7 @@ class XCCLTestsBase(rfm.RunOnlyRegressionTest):
             sn.assert_found(
                 r'NCCL INFO NET/OFI Selected [pP]rovider is cxi', self.stdout
             )
-         ])
+        ])
 
     @run_before('performance')
     def set_reference(self):
@@ -149,21 +156,44 @@ def _set_xccl_uenv_env_vars(env_vars):
 
 @rfm.simple_test
 class NCCLTestsCE(XCCLTestsBaseCE):
+    # The Containerfiles for the images used in NCCL CE checks can be found at
+    # https://github.com/sarus-suite/containerfiles-ci/tree/main/hpc/benchmarks
     descr = 'Point-to-Point and All-Reduce NCCL tests with CE'
     valid_systems = ['+ce +nvgpu']
-    image_tag = parameter(['cuda12.9.1-ubuntu24.04'])
+    tags.add('ce_dev')
+    container_image = (
+        'jfrog.svc.cscs.ch/ghcr/sarus-suite/containerfiles-ci/'
+        'nccl-tests:2.17.9-ompi5.0.9-ofi1.22-cuda12.8.1')
+    container_workdir = '/nccl-tests-2.17.9/build/'
 
     # Disable Nvidia Driver requirement
     env_vars['NVIDIA_DISABLE_REQUIRE'] = 1
 
     @run_after('init')
     def setup_ce(self):
-        cuda_major = self.image_tag.split('.')[0]
-        self.container_image = (f'jfrog.svc.cscs.ch#reframe-oci/nccl-tests:'
-                                f'{self.image_tag}')
         self.container_env_table['annotations.com.hooks'].update({
-            'aws_ofi_nccl.variant': cuda_major
+            'aws_ofi_nccl.variant': 'cuda12'
         })
+
+
+@rfm.simple_test
+class NCCLTestsSkybox(NCCLTestsCE):
+    descr = 'Point-to-Point and All-Reduce NCCL tests with CE/Skybox'
+    tags = {'ce_dev', 'skybox'}
+    spank_option = 'edf'
+    container_image = (
+        'jfrog.svc.cscs.ch/ghcr/sarus-suite/containerfiles-ci/'
+        'nccl-tests:2.17.9-ompi5.0.9-ofi1.22-cuda12.8.1')
+    container_workdir = '/nccl-tests-2.17.9/build/'
+    container_env_key_values = {
+        'devices': ["alps.cscs/cxi=all", "nvidia.com/gpu=all",
+                    "alps.cscs/aws-ofi-nccl=cuda-dl", "/dev/gdrdrv"]
+    }
+
+    @run_after('init')
+    def setup_ce(self):
+        nccl_plugin_variant = 'cuda-dl'
+        # not used by Skybox right now but kept for consistency
 
 
 @rfm.simple_test

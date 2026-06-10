@@ -275,6 +275,9 @@ class dlaf_check_uenv_cupointergetattribute_workaround(dlaf_base):
 
     @run_before("run")
     def set_perf_reference(self):
+        if uarch(self.current_partition) != "gh200":
+            self.skip("Workaround tested only on GH200")
+
         if self.uarch in dlaf_references[self.test_name]:
             self.reference = {
                     self.current_partition.fullname: dlaf_cupointergetattribute_references[self.test_name][self.uarch]  # noqa:E501

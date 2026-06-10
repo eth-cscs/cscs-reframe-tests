@@ -28,6 +28,15 @@ cp2k_references = {
     },
 }
 
+# NOTE: Test for cuPointerGetAttribute workaround
+cp2k_references_workaround = {
+    'md': {
+        'gh200': {'time_run': (45, None, 0.05, 's')},
+    },
+    'pbe': {
+        'gh200': {'time_run': (51, None, 0.05, 's')},
+    },
+}
 
 slurm_config = {
     'md': {
@@ -283,6 +292,32 @@ class Cp2kCheckMD_UENVExec(Cp2kCheckMD_UENV):
     valid_prog_environs = ['+cp2k -dlaf']
     tags = {'uenv', 'production', 'maintenance', 'bencher'}
 
+# NOTE: Remove test for workaround
+@rfm.simple_test
+class Cp2kCheckMD_UENVExec_Workaround(Cp2kCheckMD_UENVExec):
+
+    @run_before("run")
+    def ld_preload(self):
+        # CUDA driver 580 introduces a performance regression to
+        # cuPointerGetAttribute which slows down host buffer communication. The
+        # cuptrgetattr_override.so library overrides cuPointerGetAttribute and
+        # routes it to cuPointerGetAttributes which is faster.
+        if uarch(self.current_partition) == "gh200":
+            self.env_vars["LD_PRELOAD"] = \
+                "/capstor/store/cscs/cscs/public/temp/cuptrgetattr_override.so"
+
+    @run_before('run')
+    def prepare_run_workaround(self):
+        if uarch(self.current_partition) != "gh200":
+            self.skip("Workaround tested only on GH200")
+
+        if self.uarch is not None and \
+           self.uarch in cp2k_references[self.test_name]:
+            self.reference = {
+                self.current_partition.fullname:
+                    cp2k_references_workaround[self.test_name][self.uarch]
+            }
+
 
 @rfm.simple_test
 class Cp2kCheckMD_UENVCustomExec(Cp2kCheckMD_UENV):
@@ -338,6 +373,32 @@ class Cp2kCheckPBE_UENVExec(Cp2kCheckPBE_UENV):
     valid_prog_environs = ['+cp2k -dlaf']
     tags = {'uenv', 'production', 'maintenance', 'bencher'}
 
+# NOTE: Remove test for workaround
+@rfm.simple_test
+class Cp2kCheckPBE_UENVExec_Workaround(Cp2kCheckPBE_UENVExec):
+
+    @run_before("run")
+    def ld_preload(self):
+        # CUDA driver 580 introduces a performance regression to
+        # cuPointerGetAttribute which slows down host buffer communication. The
+        # cuptrgetattr_override.so library overrides cuPointerGetAttribute and
+        # routes it to cuPointerGetAttributes which is faster.
+        if uarch(self.current_partition) == "gh200":
+            self.env_vars["LD_PRELOAD"] = \
+                "/capstor/store/cscs/cscs/public/temp/cuptrgetattr_override.so"
+
+    @run_before('run')
+    def prepare_run_workaround(self):
+        if uarch(self.current_partition) != "gh200":
+            self.skip("Workaround tested only on GH200")
+
+        if self.uarch is not None and \
+           self.uarch in cp2k_references[self.test_name]:
+            self.reference = {
+                self.current_partition.fullname:
+                    cp2k_references_workaround[self.test_name][self.uarch]
+            }
+
 
 @rfm.simple_test
 class Cp2kCheckPBE_UENVCustomExec(Cp2kCheckPBE_UENV):
@@ -384,4 +445,5 @@ class Cp2kCheckRPA_UENVExec(Cp2kCheck_UENV):
         src = os.path.join(parent.stagedir, parent.wfn_file)
         dest = os.path.join(self.stagedir, parent.wfn_file)
         shutil.copyfile(src, dest)
+
 # }}}
