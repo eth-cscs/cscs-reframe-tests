@@ -13,6 +13,9 @@ cscs-ci run alps-beverin-uenv;MY_UENV=prgenv-gnu/25.07-6.3.3:v12
 cscs-ci run alps-eiger-uenv;MY_UENV=[build::|service::]prgenv-gnu/25.11:v1
 ```
 
+- You can also pass SLURM flags:
+    - cscs-ci run alps-starlex-uenv;MY_UENV=prgenv-gnu/25.11:v1;RFM_SLURM="-J reservation=uss140-shs131-nv590-staging"
+
 - You can also test from your terminal:
     - install: https://confluence.cscs.ch/spaces/reframe/pages/886276110/Installing+ReFrame
     - run test: for example, cp2k on beverin:
