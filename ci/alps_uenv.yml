@@ -68,7 +68,7 @@ reframe:
           if [ -z $RFM_SLURM ] ;then
             ./ci/scripts/alps.sh launch_reframe_1arg "$tests_pr";
           else
-            ./ci/scripts/alps.sh launch_reframe_1arg "$tests_pr $(echo $RFM_SLURM | tr -d \")";
+            ./ci/scripts/alps.sh launch_reframe_1arg "$tests_pr $(echo $CSCS_RFM_EXTRA | tr -d \")";
           fi
         fi
       fi
