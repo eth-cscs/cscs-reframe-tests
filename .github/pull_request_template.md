@@ -15,6 +15,9 @@ cscs-ci run alps-eiger-uenv;MY_UENV=[build::|service::]prgenv-gnu/25.11:v1
 
 - You can also pass SLURM flags:
     - cscs-ci run alps-starlex-uenv;MY_UENV=prgenv-gnu/25.11:v1;CSCS_RFM_EXTRA="-J reservation=uss140-shs131-nv590-staging"
+    - note:
+        - the group of the reframe user currently is djenkssl, not csstaff, check the allowed groups in the reservation,
+        - the default SLURM_TIMELIMIT is set to 2h, check the allowed MaxTime in the partition.
 
 - You can also test from your terminal:
     - install: https://confluence.cscs.ch/spaces/reframe/pages/886276110/Installing+ReFrame
