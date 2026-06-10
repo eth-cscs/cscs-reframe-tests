@@ -65,7 +65,7 @@ reframe:
           exit 0
         else
           echo "tests_pr=$tests_pr";
-          ./ci/scripts/alps.sh launch_reframe_1arg "$tests_pr $RFM_SLURM";
+          ./ci/scripts/alps.sh launch_reframe_1arg "$tests_pr $(echo $RFM_SLURM)";
         fi
       fi
   artifacts:
