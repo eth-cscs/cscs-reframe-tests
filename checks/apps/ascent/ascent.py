@@ -557,7 +557,7 @@ class uenv_ascent_cloverleaf3d(rfm.RegressionTest):
     descr = "Build and Run Ascent test: CloverLeaf3D (F90)"
     maintainers = ['SSA']
     tags = {'uenv', 'production'}
-    valid_systems = ['+uenv']
+    valid_systems = ['+uenv +nvgpu']
     valid_prog_environs = ['+uenv +ascent -cpe']
     sourcesdir = None
     ascent_v = variable(str, value='0.9.5')
@@ -604,7 +604,11 @@ class uenv_ascent_cloverleaf3d(rfm.RegressionTest):
         self.env_vars['OMP_NUM_THREADS'] = '16'
         ref_dir = os.path.join(self.current_system.resourcesdir,
                                'ascent/reference/cloverleaf3d')
+        ref_exe = os.path.join(self.current_system.resourcesdir,
+                               'ascent/reference/pHash', 'pHash_aarch64.exe')
+        # A Hamming distance != 0 means the images are not identical
         self.postrun_cmds = [
+            f'{ref_exe} {self.png1} {ref_dir}/{self.png1}',
             f'diff -s {self.png1} {ref_dir}/{self.png1}',
             f'diff -s {self.png2} {ref_dir}/{self.png2}',
             f'diff -s {self.png3} {ref_dir}/{self.png3}',
@@ -614,7 +618,7 @@ class uenv_ascent_cloverleaf3d(rfm.RegressionTest):
     def validate_test(self):
         regexes = [
             r'This test is considered NOT PASSED',  # ok as long as .png exist
-            f'{self.png1} are identical',
+            f'Hamming distance 0 / 64',
             f'{self.png2} are identical',
             f'{self.png3} are identical',
         ]
