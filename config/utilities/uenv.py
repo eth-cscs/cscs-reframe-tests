@@ -13,8 +13,7 @@ _UENV_MOUNT_DEFAULT = '/user-environment'
 _UENV_CLI = 'uenv'
 _UENV_DELIMITER = ','
 _UENV_MOUNT_DELIMITER = '@'
-_UENV_LABEL_DELIMITER = '|'
-_UENV_NOLABEL = "nolabel"
+_UENV_LABEL_DELIMITER = '^'
 _RFM_META = pathlib.Path('extra') / 'reframe.yaml'
 _RFM_META_DIR = pathlib.Path('meta')
 
@@ -87,10 +86,10 @@ def _parse_uenv_identifier(
     """
 
     # uenv identifier can be either:
-    # - squashfs_path|uenv_label
+    # - squashfs_path^uenv_label (see _UENV_LABEL_DELIMITER)
     # - squashfs_path
     # - uenv_label
-    if "|" in uenv_identifier:
+    if _UENV_LABEL_DELIMITER in uenv_identifier:
         uenv_path, uenv_name = uenv_identifier.split(_UENV_LABEL_DELIMITER)
         uenv_path = pathlib.Path(uenv_path)
     elif pathlib.Path(uenv_identifier).is_file():
