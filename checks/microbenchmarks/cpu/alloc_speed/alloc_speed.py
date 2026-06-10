@@ -12,8 +12,9 @@ class AllocSpeedTest(rfm.RegressionTest):
     hugepages = parameter(['no', '2M'])
     sourcepath = 'alloc_speed.cpp'
     valid_systems = ['+remote']
-    valid_prog_environs = ['+alloc_speed']
+    valid_prog_environs = ['+uenv +prgenv']
     build_system = 'SingleSource'
+    build_locally = False
     tags = {'production', 'craype'}
     maintainers = ['VCUE']
 

@@ -230,7 +230,7 @@ def create_checks(check):
         name='netiface-hsn0-ip',
         descr='Verify hsn0 has expected IP address range',
         valid_systems=['daint', 'eiger', 'santis', 'clariden'],
-        expected=r'inet 172.28.*.*/16 * scope global hsn0'
+        expected=r'inet 172\.28\.\d+\.\d+/16 .* scope global hsn0'
         #expected=r'inet 172.28.*.*/16 brd 172.28.255.255 scope global hsn0'
     )
 
@@ -246,7 +246,7 @@ def create_checks(check):
         name='netiface-hsn1-ip',
         descr='Verify hsn1 has expected IP address range',
         valid_systems=['daint', 'santis', 'clariden'],
-        expected=r'inet 172.28.*.*/16 * scope global hsn1'
+        expected=r'inet 172\.28\.\d+\.\d+/16 .* scope global hsn1'
         #expected=r'inet 172.28.*.*/16 brd 172.28.255.255 scope global hsn1'
     )
 
@@ -262,7 +262,7 @@ def create_checks(check):
         name='netiface-hsn2-ip',
         descr='Verify hsn2 has expected IP address range',
         valid_systems=['daint', 'santis', 'clariden'],
-        expected=r'inet 172.28.*.*/16 * scope global hsn2'
+        expected=r'inet 172\.28\.\d+\.\d+/16 .* scope global hsn2'
         #expected=r'inet 172.28.*.*/16 brd 172.28.255.255 scope global hsn2'
     )
 
@@ -278,7 +278,7 @@ def create_checks(check):
         name='netiface-hsn3-ip',
         descr='Verify hsn3 has expected IP address range',
         valid_systems=['daint', 'santis', 'clariden'],
-        expected=r'inet 172.28.*.*/16 * scope global hsn3'
+        expected=r'inet 172\.28\.\d+\.\d+/16 .* scope global hsn3'
         #expected=r'inet 172.28.*.*/16 brd 172.28.255.255 scope global hsn3'
     )
 
