@@ -308,6 +308,9 @@ class Cp2kCheckMD_UENVExec_Workaround(Cp2kCheckMD_UENVExec):
 
     @run_before('run')
     def prepare_run_workaround(self):
+        if uarch(self.current_partition) != "gh200":
+            self.skip("Workaround tested only on GH200")
+
         if self.uarch is not None and \
            self.uarch in cp2k_references[self.test_name]:
             self.reference = {
@@ -386,6 +389,9 @@ class Cp2kCheckPBE_UENVExec_Workaround(Cp2kCheckPBE_UENVExec):
 
     @run_before('run')
     def prepare_run_workaround(self):
+        if uarch(self.current_partition) != "gh200":
+            self.skip("Workaround tested only on GH200")
+
         if self.uarch is not None and \
            self.uarch in cp2k_references[self.test_name]:
             self.reference = {
