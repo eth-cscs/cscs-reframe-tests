@@ -62,6 +62,64 @@ def create_checks(check):
         not_expected=[r'sending signal',  'stderr']
     )
 
+    check(
+        'findmnt -u -O nosuid /ritom/scratch || echo FAILED',
+        name='ritom-mount-nosuid',
+        descr='Verify ritom nosuid',
+        valid_systems=['eiger', 'daint', 'clariden'],
+        not_expected=r'FAILED'
+    )
+    check(
+        'findmnt -u -O remoteports=172.28.55.1-172.28.55.96 /ritom/scratch || echo FAILED',
+        name='ritom-mount-remoteports',
+        descr='Verify ritom remoteports=172.28.55.1-172.28.55.96',
+        valid_systems=['eiger', 'daint', 'clariden'],
+        not_expected=r'FAILED'
+    )
+    check(
+        'findmnt -u -O nconnect=64 /ritom/scratch || echo FAILED',
+        name='ritom-mount-nconnect',
+        descr='Verify ritom nconnect=64',
+        valid_systems=['daint', 'clariden'],
+        not_expected=r'FAILED'
+    )
+    check(
+        'findmnt -u -O optlockflush /ritom/scratch || echo FAILED',
+        name='ritom-mount-optlockflush',
+        descr='Verify ritom optlockflush',
+        valid_systems=['eiger', 'daint', 'clariden'],
+        not_expected=r'FAILED'
+    )
+    check(
+        'findmnt -u -O noextend /ritom/scratch || echo FAILED',
+        name='ritom-mount-noextend',
+        descr='Verify ritom noextend',
+        valid_systems=['eiger', 'daint', 'clariden'],
+        not_expected=r'FAILED'
+    )
+    check(
+        'findmnt -u -O lookupcache=pos /ritom/scratch || echo FAILED',
+        name='ritom-mount-loopupcache',
+        descr='Verify ritom lookupcache=pos',
+        valid_systems=['daint', 'clariden'],
+        not_expected=r'FAILED'
+    )
+    check(
+        'findmnt -u -O spread_reads /ritom/scratch || echo FAILED',
+        name='ritom-mount-spread_reads',
+        descr='Verify ritom spread_reads',
+        valid_systems=['daint', 'clariden'],
+        not_expected=r'FAILED'
+    )
+    check(
+        'findmnt -u -O spread_writes /ritom/scratch || echo FAILED',
+        name='ritom-mount-spread_writes',
+        descr='Verify ritom spread_writes',
+        valid_systems=['daint', 'clariden'],
+        not_expected=r'FAILED'
+    )
+
+
     # ----------------------------------------------------------------------- #
     #
     #                                   Network
@@ -84,7 +142,7 @@ def create_checks(check):
         descr='Verify remote internet ping routing via DNS',
         valid_systems=['daint', 'eiger', 'santis', 'clariden'],
         expected=r'5 packets transmitted, 5 received, 0% packet loss',
-        where='+remote',
+        #where='+remote',
     )
     check(
         'ping -n -q -c 5 www.google.com',
@@ -92,7 +150,7 @@ def create_checks(check):
         descr='Verify remote HTTP hostname resolves and responds to ping',
         valid_systems=['daint', 'eiger', 'santis', 'clariden'],
         expected=r'5 packets transmitted, 5 received, 0% packet loss',
-        where='+remote',
+        #where='+remote',
     )
 
     # check('ping -n -q -c 5  8.8.8.8',        expected=r'5 packets transmitted, 5 received, 0% packet loss', where='-remote')
@@ -172,52 +230,71 @@ def create_checks(check):
         name='netiface-hsn0-ip',
         descr='Verify hsn0 has expected IP address range',
         valid_systems=['daint', 'eiger', 'santis', 'clariden'],
-        expected=r'inet 172.28.*.*/16 brd 172.28.255.255 scope global hsn0'
+        expected=r'inet 172\.28\.\d+\.\d+/16 .* scope global hsn0'
+        #expected=r'inet 172.28.*.*/16 brd 172.28.255.255 scope global hsn0'
     )
 
     check(
         'ip address show | grep -A6 hsn1: ',
         name='netiface-hsn1-up',
-        descr='Verify hsn1 network interface is up (Daint only)',
+        descr='Verify hsn1 network interface is up',
         valid_systems=['daint', 'santis', 'clariden'],
         expected=r'hsn1.*state UP'
     )
     check(
         'ip address show | grep -A6 hsn1: ',
         name='netiface-hsn1-ip',
-        descr='Verify hsn1 has expected IP address range (Daint only)',
+        descr='Verify hsn1 has expected IP address range',
         valid_systems=['daint', 'santis', 'clariden'],
-        expected=r'inet 172.28.*.*/16 brd 172.28.255.255 scope global hsn1'
+        expected=r'inet 172\.28\.\d+\.\d+/16 .* scope global hsn1'
+        #expected=r'inet 172.28.*.*/16 brd 172.28.255.255 scope global hsn1'
     )
 
     check(
         'ip address show | grep -A6 hsn2: ',
         name='netiface-hsn2-up',
-        descr='Verify hsn2 network interface is up (Daint only)',
+        descr='Verify hsn2 network interface is up',
         valid_systems=['daint', 'santis', 'clariden'],
         expected=r'hsn2.*state UP'
     )
     check(
         'ip address show | grep -A6 hsn2: ',
         name='netiface-hsn2-ip',
-        descr='Verify hsn2 has expected IP address range (Daint only)',
+        descr='Verify hsn2 has expected IP address range',
         valid_systems=['daint', 'santis', 'clariden'],
-        expected=r'inet 172.28.*.*/16 brd 172.28.255.255 scope global hsn2'
+        expected=r'inet 172\.28\.\d+\.\d+/16 .* scope global hsn2'
+        #expected=r'inet 172.28.*.*/16 brd 172.28.255.255 scope global hsn2'
     )
 
     check(
         'ip address show | grep -A6 hsn3: ',
         name='netiface-hsn3-up',
-        descr='Verify hsn3 network interface is up (Daint only)',
+        descr='Verify hsn3 network interface is up',
         valid_systems=['daint', 'santis', 'clariden'],
         expected=r'hsn3.*state UP'
     )
     check(
         'ip address show | grep -A6 hsn3: ',
         name='netiface-hsn3-ip',
-        descr='Verify hsn3 has expected IP address range (Daint only)',
+        descr='Verify hsn3 has expected IP address range',
         valid_systems=['daint', 'santis', 'clariden'],
-        expected=r'inet 172.28.*.*/16 brd 172.28.255.255 scope global hsn3'
+        expected=r'inet 172\.28\.\d+\.\d+/16 .* scope global hsn3'
+        #expected=r'inet 172.28.*.*/16 brd 172.28.255.255 scope global hsn3'
+    )
+
+    check(
+        'slingshot-show-cxi-iommu-group | grep type=identity | wc -l',
+        name='slingshot-iommu-group',
+        descr='Verify CXI IOMMU group is set to identity on all NICs',
+        valid_systems=['daint', 'santis', 'clariden'],
+        expected=r'4'
+    )
+    check(
+        'grep -q "iommu.passthrough=y"  /proc/cmdline || echo FAILED',
+        name='slingshot-iommu-passthrough',
+        descr='Verify IOMMU pass through is enabled on Eiger',
+        valid_systems=['eiger'],
+        not_expected=r'FAILED'
     )
 
     # ----------------------------------------------------------------------- #
@@ -257,7 +334,7 @@ def create_checks(check):
     check(
         'cat /etc/os-release',
         name='os-version-check-daint',
-        descr='Verify SUSE Linux Enterprise Server 15 SP6 is installed (Daint)',
+        descr='Verify SUSE Linux Enterprise Server 15 SP6 is installed',
         valid_systems=['daint', 'santis', 'clariden'],
         expected=r'PRETTY_NAME="SUSE Linux Enterprise Server 15 SP6"'
     )
@@ -495,14 +572,14 @@ def create_checks(check):
     check(
         'bash -c "[[ $PROJECT == /capstor/store/cscs/*    ]] || echo FAILED"',
         name='project-path-check',
-        descr='Verify PROJECT path is under /capstor/store/cscs (Daint)',
+        descr='Verify PROJECT path is under /capstor/store/cscs',
         valid_systems=['daint', 'eiger', 'santis', 'clariden'],
         not_expected=r'FAILED'
     )
     check(
         'bash -c "[[ $STORE   == /capstor/store/cscs/*    ]] || echo FAILED"',
         name='store-path-check',
-        descr='Verify STORE path is under /capstor/store/cscs (Daint)',
+        descr='Verify STORE path is under /capstor/store/cscs',
         valid_systems=['daint', 'eiger', 'santis', 'clariden'],
         not_expected=r'FAILED'
     )
@@ -540,12 +617,13 @@ def create_checks(check):
 
     # check('test -e /etc/slurm/slurm.conf      || echo FAILED', not_expected=r'FAILED', where='-remote')
     check(
-        'test -e /run/slurm/conf/slurm.conf || echo FAILED',
+        #'test -e /run/slurm/conf/slurm.conf || echo FAILED',
+        '(test -e /run/slurm/conf/slurm.conf -o -e /etc/slurm/slurm.conf) || echo FAILED',
         name='slurm-config-exists',
         descr='Verify Slurm configuration file exists',
         valid_systems=['daint', 'eiger', 'santis', 'clariden'],
         not_expected=r'FAILED',
-        where='+remote'
+        where='+remote',
     )
 
     check(
@@ -703,6 +781,47 @@ def create_checks(check):
         expected=r'editors/.*gh200'
     )
 
+    # ----------------------------------------------------------------------- #
+    #
+    #                               Libraries
+    #
+    # ----------------------------------------------------------------------- #
+
+    check(
+        'test -e /opt/cray/libfabric/ || echo FAILED',
+        name='libfabric-installed',
+        descr='Verify system libfabric directory is available',
+        valid_systems=['daint', 'eiger', 'santis', 'clariden'],
+        not_expected=r'FAILED',
+    )
+    check(
+        'test -e /opt/cray/libfabric/1.22.0/ || echo FAILED',
+        name='libfabric-1_22_0-installed',
+        descr='Verify system libfabric v1.22.0 is available',
+        valid_systems=['daint', 'eiger', 'santis', 'clariden'],
+        not_expected=r'FAILED',
+    )
+    check(
+        'test -e /opt/cray/libfabric/host/ || echo FAILED',
+        name='libfabric-host-directory',
+        descr='Verify system libfabric host directory is present',
+        valid_systems=['daint', 'eiger', 'santis', 'clariden'],
+        not_expected=r'FAILED',
+    )
+
+    # ----------------------------------------------------------------------- #
+    #
+    #                               Workarounds
+    #
+    # ----------------------------------------------------------------------- #
+
+    check(
+        'test -e /capstor/store/cscs/cscs/public/temp/cuptrgetattr_override.so || echo FAILED',
+        name='workaround-cupointers',
+        descr='Verify cuPointerGetAttribute[s] workaround library is present',
+        valid_systems=['daint', 'eiger', 'santis', 'clariden'],
+        not_expected=r'FAILED',
+    )
 
 # --------------------------------------------------------------------------- #
 #                           E N D   O F   C H E C K S
