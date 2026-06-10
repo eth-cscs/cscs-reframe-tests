@@ -6,6 +6,7 @@
 import reframe as rfm
 import reframe.utility.sanity as sn
 
+
 class CudaSamplesBase(rfm.RegressionTest):
     sourcesdir = 'https://github.com/NVIDIA/cuda-samples.git'
     build_system = 'CMake'
@@ -15,14 +16,9 @@ class CudaSamplesBase(rfm.RegressionTest):
     sample = parameter([
         'deviceQuery', 'simpleCUBLAS', 'conjugateGradient'
     ])
-    sample_dir = {
-        'deviceQuery': '1_Utilities',
-        'simpleCUBLAS': '4_CUDA_Libraries',
-        'conjugateGradient': '4_CUDA_Libraries'
-    }
-    # concurrentKernels is osbsolete since cuda/12.8
-    # bandwidthTest is osbsolete since cuda/12.9
     # https://github.com/NVIDIA/cuda-samples/releases/tag/v12.8
+    #   concurrentKernels is osbsolete since cuda/12.8
+    #   bandwidthTest is osbsolete since cuda/12.9
     tags = {'production'}
 
     @run_after('init')
