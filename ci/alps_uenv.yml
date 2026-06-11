@@ -64,8 +64,12 @@ reframe:
           echo "no new/modified test(s) found, exiting";
           exit 0
         else
-          echo "tests_pr=$tests_pr";
-          ./ci/scripts/alps.sh launch_reframe_1arg "$tests_pr";
+          echo "tests_pr=$tests_pr CSCS_RFM_EXTRA=$CSCS_RFM_EXTRA";
+          if [ -z $CSCS_RFM_EXTRA ] ;then
+            ./ci/scripts/alps.sh launch_reframe_1arg "$tests_pr";
+          else
+            ./ci/scripts/alps.sh launch_reframe_1arg "$tests_pr $(echo $CSCS_RFM_EXTRA | tr -d \")";
+          fi
         fi
       fi
   artifacts:
