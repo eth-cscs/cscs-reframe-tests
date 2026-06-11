@@ -204,14 +204,14 @@ def create_checks(check):
     check.TAGS = {'sysint-NETIFACE', 'production', 'maintenance'}
 
     check(
-        'ip address show | grep -A6 nmn0: ',
+        'ip address show nmn0',
         name='netiface-nmn0-up',
         descr='Verify nmn0 network interface is up',
         valid_systems=['daint', 'eiger', 'santis', 'clariden'],
         expected=r'nmn0.*state UP'
     )
     check(
-        'ip address show | grep -A6 nmn0: ',
+        'ip address show nmn0',
         name='netiface-nmn0-ip',
         descr='Verify nmn0 has expected IP address range',
         valid_systems=['daint', 'eiger', 'santis', 'clariden'],
@@ -219,67 +219,63 @@ def create_checks(check):
     )
 
     check(
-        'ip address show | grep -A6 hsn0: ',
+        'ip address show hsn0',
         name='netiface-hsn0-up',
         descr='Verify hsn0 network interface is up',
         valid_systems=['daint', 'eiger', 'santis', 'clariden'],
         expected=r'hsn0.*state UP'
     )
     check(
-        'ip address show | grep -A6 hsn0: ',
+        'ip address show hsn0',
         name='netiface-hsn0-ip',
         descr='Verify hsn0 has expected IP address range',
         valid_systems=['daint', 'eiger', 'santis', 'clariden'],
-        expected=r'inet 172\.28\.\d+\.\d+/16 .* scope global hsn0'
-        #expected=r'inet 172.28.*.*/16 brd 172.28.255.255 scope global hsn0'
+        expected=r'inet 172\.28\.\d+\.\d+/16 .*scope global hsn0'
     )
 
     check(
-        'ip address show | grep -A6 hsn1: ',
+        'ip address show hsn1',
         name='netiface-hsn1-up',
         descr='Verify hsn1 network interface is up',
         valid_systems=['daint', 'santis', 'clariden'],
         expected=r'hsn1.*state UP'
     )
     check(
-        'ip address show | grep -A6 hsn1: ',
+        'ip address show hsn1',
         name='netiface-hsn1-ip',
         descr='Verify hsn1 has expected IP address range',
         valid_systems=['daint', 'santis', 'clariden'],
-        expected=r'inet 172\.28\.\d+\.\d+/16 .* scope global hsn1'
-        #expected=r'inet 172.28.*.*/16 brd 172.28.255.255 scope global hsn1'
+        expected=r'inet 172\.28\.\d+\.\d+/16 .*scope global hsn1'
     )
 
     check(
-        'ip address show | grep -A6 hsn2: ',
+        'ip address show hsn2',
         name='netiface-hsn2-up',
         descr='Verify hsn2 network interface is up',
         valid_systems=['daint', 'santis', 'clariden'],
         expected=r'hsn2.*state UP'
     )
     check(
-        'ip address show | grep -A6 hsn2: ',
+        'ip address show hsn2',
         name='netiface-hsn2-ip',
         descr='Verify hsn2 has expected IP address range',
         valid_systems=['daint', 'santis', 'clariden'],
-        expected=r'inet 172\.28\.\d+\.\d+/16 .* scope global hsn2'
-        #expected=r'inet 172.28.*.*/16 brd 172.28.255.255 scope global hsn2'
+        expected=r'inet 172\.28\.\d+\.\d+/16 .*scope global hsn2'
     )
 
     check(
-        'ip address show | grep -A6 hsn3: ',
+        'ip address show hsn3',
         name='netiface-hsn3-up',
         descr='Verify hsn3 network interface is up',
         valid_systems=['daint', 'santis', 'clariden'],
         expected=r'hsn3.*state UP'
     )
     check(
-        'ip address show | grep -A6 hsn3: ',
+        'ip address show hsn3',
         name='netiface-hsn3-ip',
         descr='Verify hsn3 has expected IP address range',
         valid_systems=['daint', 'santis', 'clariden'],
-        expected=r'inet 172\.28\.\d+\.\d+/16 .* scope global hsn3'
-        #expected=r'inet 172.28.*.*/16 brd 172.28.255.255 scope global hsn3'
+        expected=r'inet 172\.28\.\d+\.\d+/16 .*scope global hsn3'
     )
 
     check(
