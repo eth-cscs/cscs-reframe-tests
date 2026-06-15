@@ -86,10 +86,11 @@ slurm_config = {
 def version_from_uenv():
     uenv_var = os.environ['CSCS_RFM_UENV']
     match = re.search(r'/(\d+\.\d+)', uenv_var)
-    if match: # Return version (YYYY.VV)
+    if match:  # Return version (YYYY.VV)
         return match.group(1)
     else:
         return None
+
 
 @rfm.xfail(
     'CP2K 2025.1 issues with libxc linking.',
@@ -292,6 +293,7 @@ class Cp2kCheckMD_UENVExec(Cp2kCheckMD_UENV):
     valid_prog_environs = ['+cp2k -dlaf']
     tags = {'uenv', 'production', 'maintenance', 'bencher'}
 
+
 # NOTE: Remove test for workaround
 @rfm.simple_test
 class Cp2kCheckMD_UENVExec_Workaround(Cp2kCheckMD_UENVExec):
@@ -340,6 +342,8 @@ class Cp2kCheckMD_UENVCustomExec(Cp2kCheckMD_UENV):
 
 
 # }}}
+
+
 # {{{ PBE
 class Cp2kCheckPBE_UENV(Cp2kCheck_UENV):
     test_name = 'pbe'
@@ -372,6 +376,7 @@ class Cp2kCheckPBE_UENV(Cp2kCheck_UENV):
 class Cp2kCheckPBE_UENVExec(Cp2kCheckPBE_UENV):
     valid_prog_environs = ['+cp2k -dlaf']
     tags = {'uenv', 'production', 'maintenance', 'bencher'}
+
 
 # NOTE: Remove test for workaround
 @rfm.simple_test
@@ -418,9 +423,9 @@ class Cp2kCheckPBE_UENVCustomExec(Cp2kCheckPBE_UENV):
         parent = self.getdep('Cp2kBuildTestUENV')
         self.executable = (
             f'{self.wrapper} ./pika-bind.sh {parent.cp2k_executable}')
-
-
 # }}}
+
+
 # {{{ RPA
 @rfm.simple_test
 class Cp2kCheckRPA_UENVExec(Cp2kCheck_UENV):
