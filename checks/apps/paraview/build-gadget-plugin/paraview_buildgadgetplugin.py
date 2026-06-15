@@ -29,28 +29,28 @@ class ParaviewBuildGadgetPlugin(rfm.CompileOnlyRegressionTest):
 
     uenv_version = variable(tuple, value=(None, None))
 
-    @run_before("compile")
+    @run_before('compile')
     def set_version(self):
-        self.uenv_version = self.current_environ.extras["version"]
+        self.uenv_version = self.current_environ.extras['version']
 
     @run_before('compile')
     def prepare_build(self):
         self.prebuild_cmds = [
-            f"mkdir gadget-plugin.git", "cd gadget-plugin.git",
-            f"git init", f"git remote add origin {self.repo}",
-            f"git fetch --depth 1 origin {self.commit}",
-            f"git reset --hard FETCH_HEAD", "cd .."
+            f'mkdir gadget-plugin.git', 'cd gadget-plugin.git',
+            f'git init', f'git remote add origin {self.repo}',
+            f'git fetch --depth 1 origin {self.commit}',
+            f'git reset --hard FETCH_HEAD', 'cd ..'
         ]
 
         fix_actions = need_fix_hdf5vtk(self)
         if fix_actions is not None:
             self.prebuild_cmds.extend(fix_actions)
 
-        self.build_system.cc = "gcc"
-        self.build_system.cxx = "g++"
-        self.build_system.builddir = "build"
-        self.build_system.configuredir = "gadget-plugin.git"
-        self.env_vars["Python3_ROOT_DIR"] = \
+        self.build_system.cc = 'gcc'
+        self.build_system.cxx = 'g++'
+        self.build_system.builddir = 'build'
+        self.build_system.configuredir = 'gadget-plugin.git'
+        self.env_vars['Python3_ROOT_DIR'] = \
             '$(dirname $(which python3) |xargs dirname)'
 
     @sanity_function
@@ -70,15 +70,15 @@ class ParaviewBuildGadgetPlugin(rfm.CompileOnlyRegressionTest):
 
 
 def need_fix_hdf5vtk(test):
-    """
-    Patch fix code according to ParaView version
-    """
+    """Patch code according to ParaView version"""
     version, _ = test.uenv_version
 
-    if version is None or version in SpecifierSet("~=6.1"):
-        _patch_cmd = ['patch -p 1 -d gadget-plugin.git -i ../fix_reader_v61.patch']
-    elif version in SpecifierSet("~=6.0"):
-        _patch_cmd = ['patch -p 1 -d gadget-plugin.git -i ../fix_reader_v60.patch']
+    if version is None or version in SpecifierSet('~=6.1'):
+        _patch_cmd = [
+            'patch -p 1 -d gadget-plugin.git -i ../fix_reader_v61.patch']
+    elif version in SpecifierSet('~=6.0'):
+        _patch_cmd = [
+            'patch -p 1 -d gadget-plugin.git -i ../fix_reader_v60.patch']
     else:
         _patch_cmd = None
 
