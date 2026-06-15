@@ -6,6 +6,34 @@
 # Definition of Check class and function.
 #
 
+# needed when combining system name and tag in "valid_systems" is supported by ReFrame.
+#from itertools import product
+
+def make_valid_systems(valid_systems, where):
+    if isinstance(valid_systems, str):
+        valid_systems = [valid_systems]
+
+    if where is None and valid_systems is None:
+        valid_systems = ['*']
+    elif valid_systems is None:
+        valid_systems = where.split()
+    elif where is None:
+        pass
+    else:
+        where = where.split()
+        if len(where) > 1:
+            for i, item in enumerate(where):
+                # Be forgiving if the user forgets a leading +.
+                if item[0] not in ['-', '+']:
+                    where[i] = f"+{where[i]}"
+        else:
+            if where[0][0] not in ['-', '+']:
+                where[0] = f'+{where[0]}'
+
+        #valid_systems = list(map(lambda x: ' '.join(x).strip(), product(valid_systems, where)))
+
+    return valid_systems
+
 
 class Check:
 
@@ -31,7 +59,7 @@ class Check:
         # The name of the calling module. Should be set from the caller.
         self.MODULE_NAME   = __name__
 
-    def __call__(self, cmd, expected=None, not_expected=None, where='', *,
+    def __call__(self, cmd, expected=None, not_expected=None, where=None, *,
                  name=None, descr=None, valid_systems=None,
                  valid_prog_environs=None, tags=None):
         """
@@ -73,28 +101,8 @@ class Check:
         #
         Check.check_id += 1
 
-        #
-        # If where is unspecificed we can run with any feature.
-        # Be forgiving if the user forgets a leading +.
-        #
 
-        if not where:
-            where = ['*']
-        else:
-            where = where.split()
-            if len(where) > 1:
-                for i, item in enumerate(where):
-                    if item[0] not in ['-', '+']:
-                        where[i] = f"+{where[i]}"
-                where = [" ".join(where)]
-            else:
-                if where[0][0] not in ['-', '+']:
-                    where[0] = f'+{where[0]}'
-
-        if valid_systems is None:
-            valid_systems = where
-        elif isinstance(valid_systems, str):
-            valid_systems = [valid_systems]
+        valid_systems = make_valid_systems(valid_systems, where)
 
         if valid_prog_environs is None:
             valid_prog_environs = ['builtin']
@@ -188,13 +196,13 @@ class Check:
             otherwise skip the test. If SYSTEM is not set or is '*', allow any."""
 
             # If no specific system is required, allow any system
-            if not self.SYSTEM or self.SYSTEM == '*':
-                return
+            #if not self.SYSTEM or self.SYSTEM == '*':
+                #return
 
             # Otherwise, check that we're on the required system
             test.skip_if(
-                test.current_system.name != self.SYSTEM,
-                msg=f'Required system {self.SYSTEM} ' +
+                test.current_system.name not in test.valid_systems,
+                msg=f'Required system(s) {test.valid_systems} ' +
                     f'but found {test.current_system.name}.')
 
         #
@@ -212,7 +220,7 @@ class Check:
                 'valid_prog_environs': valid_prog_environs,
                 'time_limit': time_limit,
                 'caller': debuginfo(),
-                'tags': tags,
+                'tags': tags
             },
             [
                 builtins.run_after('setup')(set_command_options),
