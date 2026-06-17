@@ -103,7 +103,7 @@ def _parse_uenv_identifier(
 
 
 def _get_uenvs() -> Optional[List]:
-    uenv = os.environ.get('UENV', None)
+    uenv = os.environ.get('CSCS_RFM_UENV', None)
     if uenv is None:
         return uenv
 
