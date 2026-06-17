@@ -87,7 +87,6 @@ def _get_uenvs():
         # Check if given uenv_name is a path to a squashfs archive
         uenv_path = pathlib.Path(uenv_name)
         if uenv_path.is_file():
-            # We cannot inspect for target systems
             target_system = '*'
             image_path = uenv_path
             rfm_meta = image_path.parent / _RFM_META_DIR / _RFM_META
@@ -96,8 +95,7 @@ def _get_uenvs():
 
             image_path = osext.run_command(
                 f"{inspect_cmd}='{{sqfs}}'", shell=True).stdout.strip()
-            target_system = osext.run_command(
-                f"{inspect_cmd}='{{system}}'", shell=True).stdout.strip()
+            target_system = '*'
 
             image_path = pathlib.Path(image_path)
             # Check that uenv was pulled

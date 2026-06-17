@@ -3,17 +3,8 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-import os
-import pathlib
-import sys
-
 import reframe as rfm
 import reframe.utility.sanity as sn
-
-sys.path.append(
-    str(pathlib.Path(__file__).parent.parent.parent / 'mixins')
-)
-from container_engine import ContainerEngineCPEMixin  # noqa: E402
 
 
 class CudaSamplesBase(rfm.RegressionTest):
@@ -25,14 +16,9 @@ class CudaSamplesBase(rfm.RegressionTest):
     sample = parameter([
         'deviceQuery', 'simpleCUBLAS', 'conjugateGradient'
     ])
-    sample_dir = {
-        'deviceQuery': '1_Utilities',
-        'simpleCUBLAS': '4_CUDA_Libraries',
-        'conjugateGradient': '4_CUDA_Libraries'
-    }
-    # concurrentKernels is osbsolete since cuda/12.8
-    # bandwidthTest is osbsolete since cuda/12.9
     # https://github.com/NVIDIA/cuda-samples/releases/tag/v12.8
+    #   concurrentKernels is osbsolete since cuda/12.8
+    #   bandwidthTest is osbsolete since cuda/12.9
     tags = {'production'}
 
     @run_after('init')
@@ -65,8 +51,7 @@ class CudaSamplesBase(rfm.RegressionTest):
 
     @run_before('run')
     def set_executable(self):
-        self.executable = (f'./Samples/{self.sample_dir[self.sample]}/'
-                           f'{self.sample}/{self.sample}')
+        self.executable = f'$(find . -type f -name {self.sample} -executable)'
 
     @run_before('sanity')
     def set_sanity_patterns(self):
