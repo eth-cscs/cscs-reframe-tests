@@ -172,7 +172,18 @@ class NCCLTestsCE(XCCLTestsBaseCE):
     @run_after('init')
     def setup_ce(self):
         self.container_env_table['annotations.com.hooks'].update({
-            'aws_ofi_nccl.variant': 'cuda12'
+            'aws_ofi_nccl.variant': 'cuda-dl'
+        })
+
+
+@rfm.simple_test
+class NCCLTestsCEHost(NCCLTestsCE):
+    descr = 'Point-to-Point and All-Reduce NCCL tests with CE and host netstack'
+
+    @run_after('init')
+    def setup_netstack_source(self):
+        self.container_env_table['annotations.com.hooks'].update({
+            'netstack.source': 'host'
         })
 
 
@@ -181,10 +192,6 @@ class NCCLTestsSkybox(NCCLTestsCE):
     descr = 'Point-to-Point and All-Reduce NCCL tests with CE/Skybox'
     tags = {'ce_dev', 'skybox'}
     spank_option = 'edf'
-    container_image = (
-        'jfrog.svc.cscs.ch/ghcr/sarus-suite/containerfiles-ci/'
-        'nccl-tests:2.17.9-ompi5.0.9-ofi1.22-cuda12.8.1')
-    container_workdir = '/nccl-tests-2.17.9/build/'
     container_env_key_values = {
         'devices': ["alps.cscs/cxi=all", "nvidia.com/gpu=all",
                     "alps.cscs/aws-ofi-nccl=cuda-dl", "/dev/gdrdrv"]
@@ -192,7 +199,9 @@ class NCCLTestsSkybox(NCCLTestsCE):
 
     @run_after('init')
     def setup_ce(self):
-        nccl_plugin_variant = 'cuda-dl'
+        self.container_env_table['annotations.com.hooks'].update({
+            'aws_ofi_nccl.variant': 'cuda-dl'
+        })
         # not used by Skybox right now but kept for consistency
 
 
