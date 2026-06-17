@@ -31,10 +31,10 @@ cp2k_references = {
 # NOTE: Test for cuPointerGetAttribute workaround
 cp2k_references_workaround = {
     'md': {
-        'gh200': {'time_run': (45, None, 0.05, 's')},
+        'gh200': {'time_run': (38, None, 0.05, 's')},
     },
     'pbe': {
-        'gh200': {'time_run': (51, None, 0.05, 's')},
+        'gh200': {'time_run': (44, None, 0.05, 's')},
     },
 }
 
