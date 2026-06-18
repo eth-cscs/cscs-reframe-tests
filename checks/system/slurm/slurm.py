@@ -267,7 +267,7 @@ class MemoryOomMpiCheck(SlurmCompiledBaseCheck, UenvSlurmMpiOptionsMixin):
         regex = r'memory from sysconf: total: \S+ \S+ avail: (?P<mem>\S+) GB'
         return sn.extractsingle(regex, self.stdout, 'mem', float)
 
-    @performance_function('GB')
+    @performance_function('MB')
     def cn_max_allocated_memory(self):
         regex = (r'^Eating \d+ MB\/mpi \*\d+mpi = -\d+ MB memory from \/proc\/'
                  r'meminfo: total: \d+ GB, free: \d+ GB, avail: \d+ GB, using:'
