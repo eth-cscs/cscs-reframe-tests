@@ -61,7 +61,7 @@ class Check:
 
     def __call__(self, cmd, expected=None, not_expected=None, where=None, *,
                  name=None, descr=None, valid_systems=None,
-                 valid_prog_environs=None, tags=None):
+                 valid_prog_environs=None, tags=None, xfail=None):
         """
         Create a test of 'cmd'. A regex describing the expected output
 
@@ -229,4 +229,11 @@ class Check:
             ],
             module=self.MODULE_NAME
         )
+
+        if xfail is not None:
+            if isinstance(xfail, str):
+                t = rfm.xfail(xfail)(t)
+            elif isinstance(xfail, tuple):
+                t = rfm.xfail(xfail[0], xfail[1])(t)
+
         rfm.simple_test(t)

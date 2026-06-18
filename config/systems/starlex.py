@@ -27,7 +27,7 @@ site_configuration = {
             'modules_system': 'lmod',
             'resourcesdir':
                 '/capstor/store/cscs/cscs/public/reframe/resources',
-            'max_local_jobs': 20,
+            'max_local_jobs': 50,
             'partitions': [
                 {
                     'name': 'login',
@@ -37,7 +37,7 @@ site_configuration = {
                         'builtin',
                     ],
                     'descr': 'Login nodes',
-                    'max_jobs': 20,
+                    'max_jobs': 50,
                     'launcher': 'local'
                 },
                 {

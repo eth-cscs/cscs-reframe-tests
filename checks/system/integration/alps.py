@@ -803,6 +803,7 @@ def create_checks(check):
         descr='Verify system libfabric host directory is present',
         valid_systems=['daint', 'eiger', 'santis', 'clariden'],
         not_expected=r'FAILED',
+        xfail=('Missing host directory on Eiger', lambda test: test.current_system.name == 'eiger'),
     )
 
     # ----------------------------------------------------------------------- #
