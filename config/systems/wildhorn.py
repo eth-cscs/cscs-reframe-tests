@@ -36,7 +36,7 @@ base_config = {
             ],
             'max_jobs': 1000,
             'extras': {
-                'cn_memory': 256,
+                'cn_memory': 239000,
             },
             'features': ['remote', 'ce'],
             'access': ['--mem=0', f'--account={osext.osgroup()}'],

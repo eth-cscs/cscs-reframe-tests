@@ -43,7 +43,7 @@ site_configuration = {
                     ],
                     'max_jobs': 1000,
                     'extras': {
-                        'cn_memory': 503,
+                        'cn_memory': 241746,
                     },
                     'resources': [
                         {
