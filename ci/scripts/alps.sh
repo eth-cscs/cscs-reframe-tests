@@ -360,7 +360,8 @@ launch_reframe_1arg() {
     export RFM_USE_LOGIN_SHELL=1
     # export RFM_AUTODETECT_XTHOSTNAME=1
     # reframe -V
-    echo "# UENV=$UENV"
+    export CSCS_RFM_UENV=$UENV
+    echo "# CSCS_RFM_UENV=$CSCS_RFM_UENV"
     echo "# args=$@"
     reframe -C ./config/cscs.py \
         --report-junit=report.xml \

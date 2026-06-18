@@ -152,6 +152,34 @@ class OMB_OMPI_CE(OMB_Base_CE, SlurmMpiPmixMixin):
 
 
 @rfm.simple_test
+class OMB_MPICH_CE_Host(OMB_MPICH_CE):
+    descr = '''
+    OSU Micro-benchmarks for MPICH/CE with host netstack
+    (Point2Point and All2All)
+    '''
+
+    @run_after('init')
+    def setup_netstack_source(self):
+        self.container_env_table['annotations.com.hooks'].update({
+            'netstack.source': 'host'
+        })
+
+
+@rfm.simple_test
+class OMB_OMPI_CE_Host(OMB_OMPI_CE):
+    descr = '''
+    OSU Micro-benchmarks for OpenMPI/CE with host netstack
+    (Point2Point and All2All)
+    '''
+
+    @run_after('init')
+    def setup_netstack_source(self):
+        self.container_env_table['annotations.com.hooks'].update({
+            'netstack.source': 'host'
+        })
+
+
+@rfm.simple_test
 class OMB_MPICH_Skybox(OMB_MPICH_CE):
     descr = '''
     OSU Micro-benchmarks for MPICH/CE/Skybox (Point-to-Point & All-to-All)
