@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <unistd.h>
 
 #define PROC_FILE "/proc/meminfo"
@@ -86,6 +87,7 @@ bool eat(int chunk) {
   MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   // for (i = 0; i < total; i += chunk) {
+  struct timespec sleepdur = {0, 1000*1000}; // 1ms
   for (i = 0; i < total; i++) {
     if (rank == 0) {
       int mb_mpi = chunk / 1048576;
@@ -99,6 +101,7 @@ bool eat(int chunk) {
       return false;
     }
     memset(buffer, 0, chunk);
+    nanosleep(&sleepdur, 0);
   }
   return true;
 }
