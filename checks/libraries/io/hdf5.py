@@ -49,7 +49,7 @@ class CPE_HDF5Test(HDF5TestBase):
     @run_after('init')
     def skip_uenv_tests(self):
         # it seems that valid_prog_environs ignores -uenv
-        self.skip_if(os.environ.get("UENV") is not None)
+        self.skip_if(os.environ.get("CSCS_RFM_UENV") is not None)
 
 
 @rfm.simple_test
