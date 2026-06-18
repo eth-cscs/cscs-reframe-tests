@@ -243,15 +243,20 @@ class MemoryOomMpiCheck(SlurmCompiledBaseCheck, UenvSlurmMpiOptionsMixin):
 
     @run_before('run')
     def set_num_tasks(self):
+        """
+        Limit number of tasks because PMIx/OpenMPI can take very long to
+        initialize with e.g. 288 ranks on one GH200 node. The test still
+        fails in a reasonable time with a limited number of ranks.
+        """
         self.skip_if_no_procinfo()
         cpu = self.current_partition.processor
-        # Limit number of tasks because PMIx/OpenMPI can take very long to
-        # initialize with e.g. 288 ranks on one GH200 node. The test still
-        # fails in a reasonable time with a limited number of ranks.
         self.num_tasks_per_node = min(16, int(
             cpu.info['num_cpus'] / cpu.info['num_cpus_per_core']))
         self.num_tasks = self.num_tasks_per_node
         self.job.launcher.options += ['-u']
+        reference_mem = self.current_partition.extras['cn_memory']
+        self.job.options += [f'--mem={reference_mem}']
+
 
     @sanity_function
     def assert_found_oom(self):
