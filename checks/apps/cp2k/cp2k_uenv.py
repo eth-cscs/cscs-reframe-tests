@@ -84,7 +84,7 @@ slurm_config = {
 
 
 def version_from_uenv():
-    uenv_var = os.environ['UENV']
+    uenv_var = os.environ['CSCS_RFM_UENV']
     match = re.search(r'/(\d+\.\d+)', uenv_var)
     if match: # Return version (YYYY.VV)
         return match.group(1)
