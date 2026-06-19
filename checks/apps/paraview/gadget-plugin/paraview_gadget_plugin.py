@@ -53,9 +53,6 @@ class ParaviewGadgetPlugin(rfm.RegressionTest):
         self.build_system.cxx = 'g++'
         self.build_system.builddir = 'build'
         self.build_system.configuredir = 'gadget-plugin.git'
-        self.env_vars = {
-            'Python3_ROOT_DIR': '$(dirname $(which python3) |xargs dirname)'
-        }
 
     @run_before('run')
     def prepare_postproc(self):
