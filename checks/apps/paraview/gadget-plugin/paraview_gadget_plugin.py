@@ -12,7 +12,7 @@ from packaging.specifiers import SpecifierSet
 
 
 @rfm.simple_test
-class ParaviewBuildGadgetPlugin(rfm.RegressionTest):
+class ParaviewGadgetPlugin(rfm.RegressionTest):
     valid_systems = ['+uenv']
     valid_prog_environs = ['+paraview']
 
@@ -21,6 +21,7 @@ class ParaviewBuildGadgetPlugin(rfm.RegressionTest):
     repo = variable(str,
                     value='https://github.com/jfavre/ParaViewGadgetPlugin.git')
     commit = variable(str, value='da0e244a23adeb3d38c87d0ac2479c38a9c83c90')
+    executable = 'echo'
 
     num_tasks = 1
     num_tasks_per_node = 1
@@ -59,23 +60,16 @@ class ParaviewBuildGadgetPlugin(rfm.RegressionTest):
     @run_before('run')
     def prepare_postproc(self):
         _vv = '_venv'
-        test_file = './gadget-plugin.git/src/Testing/Python/pvReadIsothermalCollapse.py'  # noqa: E501
+        test_file = f'{self.build_system.configuredir}/src/Testing/Python/pvReadIsothermalCollapse.py'  # noqa: E501
         self.postrun_cmds = [
-            f'python -m venv --system-site-packages {_vv}',
-            f'source {_vv}/bin/activate',
-            f'pip install requests',
+            f'pvpython -m venv {_vv}',
+            f'{_vv}/bin/pip install requests',
             f'ln -s {test_file}',
-            f'pvbatch {test_file}'
+            f'pvbatch --venv {_vv} {test_file}'
         ]
 
         self.env_vars.update({
-            'Python3_ROOT_DIR': '$(dirname $(dirname $(which python)))',
-            'PYTHONUSERBASE': '$(dirname $(dirname $(which python)))',
-            'PV_PLUGIN_PATH': '$PWD/build/lib64/paraview/plugins/pvGadgetReader',  # noqa: E501
-            'PYTHONPATH': (
-                f'/user-environment/paraview/lib64/python3.14/site-packages:'
-                f'$PWD/{_vv}/lib/python3.14/site-packages:$PYTHONPATH'
-            ),
+            'PV_PLUGIN_PATH': f'{self.build_system.builddir}/lib64/paraview/plugins',  # noqa: E501
         })
 
     @sanity_function
