@@ -56,8 +56,9 @@ def _uenv_version_and_tag_from_label(
     Given a uenv label "{name}/{ver}:{tag} it returns the tuple (ver, tag).
 
     Values are returned as str and any semantic is left to the user.
-    The only required component is the name; if any (or both) of the two is missing,
-    the related tuple component is considered not specified and set to None.
+    The only required component is the name; if any (or both) of the two is
+    missing, the related tuple component is considered not specified and set to
+    None.
     """
 
     if uenv_label is None or ("/" not in uenv_label and ":" not in uenv_label):
@@ -125,7 +126,9 @@ def _get_uenvs() -> Optional[List]:
         # Check if given uenv_name is a path to a squashfs archive
         if uenv_path:
             if not uenv_path.is_file():
-                raise ConfigError(f"{uenv_name} is not a valid path to a squashfs uenv image")
+                raise ConfigError(
+                    f"{uenv_name} is not a valid path to a squashfs uenv image"
+                )
 
             # We cannot inspect for target systems
             target_system = '*'
@@ -201,14 +204,22 @@ def _get_uenvs() -> Optional[List]:
             )
             env['name'] = f'{uenv_name_pretty}_{k}'
 
-            env.setdefault("extras", {})["version"] = _uenv_version_and_tag_from_label(uenv_name)
+            env.setdefault("extras", {})["version"] = \
+                _uenv_version_and_tag_from_label(uenv_name)
+
+            # if uenv_mountpoint is None:
+            #     uenv_mountpoint = osext.run_command(
+            #         f"{inspect_cmd}='{{mount}}'", shell=True).stdout.strip()
 
             env['resources'] = {
                 'uenv': {
                     'file': str(image_path),
                     'mount': uenv_mountpoint,
+
                     'uenv': (
-                        f'{str(image_path):{uenv_mountpoint}}' if uenv_mountpoint else str(image_path)
+                        f'{str(image_path)}:{uenv_mountpoint}'
+                        if uenv_mountpoint
+                        else str(image_path)
                     ),
                 }
             }
