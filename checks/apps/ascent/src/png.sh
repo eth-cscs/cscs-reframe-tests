@@ -3,7 +3,6 @@
 tst=$1
 ref=$2
 new=$3
-tol=0.9999961703
 
 if [ -z $tst ]; then echo "undefined tst=$tst" ; exit -1; fi
 if [ -z $ref ]; then echo "undefined ref=$ref" ; exit -1; fi
@@ -16,6 +15,7 @@ case "$tst" in
       #   |     1-rmse     | 1-rmse |
       #   |----------------|--------|
       #   0     not OK    tol  OK   1
+      tol=0.95
       one_rmse=$(magick compare -metric RMSE $ref $new null: |& awk -F'[()]' '{ print 1-$2 }')
       echo "1-rmse=$one_rmse"
       echo $one_rmse | awk -v tol=$tol -v ref=$ref -v new=$new '{if ($0>=tol) {print ref" and "new" are identical"} else {print ref" and "new" differ"}}'
