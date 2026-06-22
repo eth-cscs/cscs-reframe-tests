@@ -208,8 +208,7 @@ def _get_uenvs() -> Optional[List]:
                     'file': str(image_path),
                     'mount': uenv_mountpoint,
                     'uenv': (
-                        f'{str(image_path)}'
-                        f':{uenv_mountpoint if uenv_mountpoint else _UENV_MOUNT_DEFAULT}'
+                        f'{str(image_path):{uenv_mountpoint}}' if uenv_mountpoint else str(image_path)
                     ),
                 }
             }
