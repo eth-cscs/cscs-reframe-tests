@@ -14,6 +14,8 @@ _UENV_CLI = 'uenv'
 _UENV_DELIMITER = ','
 _UENV_MOUNT_DELIMITER = '@'
 _UENV_LABEL_DELIMITER = '^'
+_UENV_RFM_SYSTEM_DELIMITER = '+'
+_UENV_CLI_SYSTEM_DELIMITER = '@'
 _RFM_META = pathlib.Path('extra') / 'reframe.yaml'
 _RFM_META_DIR = pathlib.Path('meta')
 
@@ -114,15 +116,14 @@ def _get_uenvs() -> Optional[List]:
     ).stdout.strip()
 
     for uenv in uenv_list:
-        parts = uenv.rsplit(_UENV_MOUNT_DELIMITER, 1)
-        if len(parts) > 1 and parts[1].startswith('/'):
-            uenv_identifier = parts[0]
-            uenv_mountpoint = parts[1]
-        else:
-            uenv_identifier = uenv
-            uenv_mountpoint = None
-
+        uenv_identifier, *uenv_mountpoint = uenv.split(_UENV_MOUNT_DELIMITER)
+        uenv_identifier = uenv_identifier.replace(_UENV_RFM_SYSTEM_DELIMITER, _UENV_CLI_SYSTEM_DELIMITER)
         uenv_name, uenv_path = _parse_uenv_identifier(uenv_identifier)
+
+        if len(uenv_mountpoint) > 0:
+            uenv_mountpoint = uenv_mountpoint[0]
+        else:
+            uenv_mountpoint = None
 
         # Check if given uenv_name is a path to a squashfs archive
         if uenv_path:
