@@ -212,6 +212,7 @@ class MemoryOverconsumptionCheckMPI(SlurmCompiledBaseCheck,
     build_system = 'SingleSource'
     sourcepath = 'eatmem/eatmemory_mpi.c'
     # env_vars = {'MPICH_GPU_SUPPORT_ENABLED': 0}
+    tags -= {'maintenance', 'production'}
     tags.add('mem')
 
     @run_before('compile')
