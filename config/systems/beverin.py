@@ -34,7 +34,7 @@ base_config = {
             ],
             'max_jobs': 1000,
             'extras': {
-                'cn_memory': 501,
+                'cn_memory': 513700,
             },
             'features': ['ce', 'gpu', 'amdgpu', 'remote', 'scontrol', 'uenv'],
             'access': ['-pmi300'],
@@ -73,7 +73,7 @@ base_config = {
             ],
             'max_jobs': 1000,
             'extras': {
-                'cn_memory': 503,
+                'cn_memory': 515208,
             },
             'features': ['ce', 'gpu', 'amdgpu', 'remote', 'scontrol', 'uenv'],
             'access': ['-pmi200'],
