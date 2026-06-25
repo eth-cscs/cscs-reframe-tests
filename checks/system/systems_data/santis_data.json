@@ -1,10 +1,27 @@
 {
     "filesystems": [
         {
+            "mount_point": "/capstor/store/mch",
+            "fstype": "lustre"
+        },
+        {
+            "mount_point": "/capstor/archive/cscs",
+            "fstype": "lustre"
+        },
+        {
+            "mount_point": "/capstor/store1/cscs",
+            "fstype": "lustre"
+        },
+        {
+            "mount_point": "/users",
+            "fstype": "nfs"
+        },
+        {
             "mount_point": "/capstor/scratch/cscs"
         }
     ],
     "pkgs": [
+        "ansible",
         "bubblewrap",
         "datacenter-gpu-manager",
         "gcc12",
@@ -21,6 +38,10 @@
         "wget"
     ],
     "cscs_extra_vars": [
+        {
+            "env_var": "APPS",
+            "env_value": "/capstor/apps/cscs/santis"
+        },
         {
             "env_var": "SCRATCH",
             "env_value": "/capstor/scratch/cscs"

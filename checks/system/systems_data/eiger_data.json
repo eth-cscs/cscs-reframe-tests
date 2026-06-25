@@ -1,58 +1,48 @@
 {
     "filesystems": [
         {
-            "mount_point": "/capstor/scratch/cscs",
-            "fstype": "lustre",
-            "state": "mounted"
+            "mount_point": "/capstor/apps/cscs",
+            "fstype": "lustre"
         },
         {
-            "mount_point": "/capstor/apps/cscs",
-            "fstype": "lustre",
-            "state": "mounted"
+            "mount_point": "/capstor/store/mch",
+            "fstype": "lustre"
+        },
+        {
+            "mount_point": "/capstor/archive/mch",
+            "fstype": "lustre"
+        },
+        {
+            "mount_point": "/ritom/scratch",
+            "fstype": "nfs"
         },
         {
             "mount_point": "/users",
-            "fstype": "lustre",
-            "state": "mounted"
+            "fstype": "nfs"
         },
         {
-            "mount_point": "/store",
-            "fstype": "lustre",
-            "state": "mounted"
-        },
-        {
-            "mount_point": "/mnt",
-            "fstype": "lustre",
-            "state": "mounted"
+            "mount_point": "/capstor/scratch/cscs"
         }
     ],
-    "cscs_cluster_extra_pkgs": [
-        "ltrace",
+    "pkgs": [
         "bubblewrap",
-        "netcat",
         "gcc12",
-        "nnn",
         "gcc12-c++",
         "gcc12-fortran",
+        "htop",
+        "libtool",
+        "lsof",
+        "ltrace",
         "lua-lmod",
+        "netcat",
+        "nnn",
         "pycxi-utils",
-        "datacenter-gpu-manager",
-        "ansible"
+        "wget"
     ],
     "cscs_extra_vars": [
         {
-            "env_var": "APPS",
-            "env_value": "/capstor/apps/cscs/daint"
+            "env_var": "SCRATCH",
+            "env_value": "/capstor/scratch/cscs"
         }
-    ],
-    "proxy_server": "http://proxy.cscs.ch",
-    "proxy_port": 8080,
-    "no_proxy": [
-        ".local",
-        ".cscs.ch",
-        "localhost",
-        "148.187.0.0/16",
-        "10.0.0.0/8",
-        "172.16.0.0/12"
     ]
 }

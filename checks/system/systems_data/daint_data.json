@@ -1,42 +1,41 @@
 {
     "filesystems": [
         {
-            "mount_point": "capstor/scratch/cscs",
+            "mount_point": "/capstor/apps/cscs",
             "fstype": "lustre"
         },
         {
-            "mount_point": "capstor/store/cscs",
+            "mount_point": "/capstor/store/mch",
             "fstype": "lustre"
         },
         {
-            "mount_point": "iopsstor/scratch/cscs",
-            "fstype": "lustre"
-        },
-        {
-            "mount_point": "iopsstor/store/cscs",
-            "fstype": "lustre"
+            "mount_point": "/ritom/scratch",
+            "fstype": "nfs"
         },
         {
             "mount_point": "/users",
             "fstype": "nfs"
+        },
+        {
+            "mount_point": "/capstor/scratch/cscs"
         }
     ],
     "pkgs": [
-        "netcat",
-        "gcc12-fortran",
-        "htop",
-        "lsof",
-        "libtool",
-        "ltrace",
         "ansible",
         "bubblewrap",
-        "nnn",
-        "wget",
-        "pycxi-utils",
         "datacenter-gpu-manager",
+        "gcc12",
         "gcc12-c++",
+        "gcc12-fortran",
+        "htop",
+        "libtool",
+        "lsof",
+        "ltrace",
         "lua-lmod",
-        "gcc12"
+        "netcat",
+        "nnn",
+        "pycxi-utils",
+        "wget"
     ],
     "cscs_extra_vars": [
         {
@@ -45,18 +44,7 @@
         },
         {
             "env_var": "SCRATCH",
-            "env_value": "/capstor/scratch/cscs/"
+            "env_value": "/capstor/scratch/cscs"
         }
-    ],
-    "proxy_server": "http://proxy.cscs.ch",
-    "proxy_port": 8080,
-    "no_proxy": [
-        ".local",
-        ".cscs.ch",
-        "localhost",
-        "148.187.0.0/16",
-        "10.0.0.0/8",
-        "172.16.0.0/12",
-        "192.168.0.0/16"
     ]
 }

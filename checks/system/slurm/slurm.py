@@ -181,7 +181,7 @@ class MemoryOverconsumptionCheck(SlurmCompiledBaseCheck):
     descr = 'Tests if requested memory limit works'
     valid_prog_environs = ['+uenv -cpe +prgenv']
     time_limit = '2m'
-    tags.add('mem')
+    tags = {'slurm', 'maintenance', 'ops', 'mem', 'single-node'}
     build_system = 'SingleSource'
     sourcepath = 'eatmem/eatmemory.c'
     executable_opts = ['4000M']
@@ -212,6 +212,7 @@ class MemoryOverconsumptionCheckMPI(SlurmCompiledBaseCheck,
     build_system = 'SingleSource'
     sourcepath = 'eatmem/eatmemory_mpi.c'
     # env_vars = {'MPICH_GPU_SUPPORT_ENABLED': 0}
+    tags -= {'maintenance', 'production'}
     tags.add('mem')
 
     @run_before('compile')
@@ -463,21 +464,26 @@ class SlurmPrologEpilogCheck(rfm.RunOnlyRegressionTest):
     epilog_dir = '/etc/slurm/node_epilog.d/'
     prerun_cmds = [f'ln -s {kafka_logger} ./kafka_logger']
     test_files = []
+
     try:
         for file in os.listdir(epilog_dir):
             if os.path.isfile(os.path.join(epilog_dir, file)):
                 test_files.append(os.path.join(epilog_dir, file))
-    except PermissionError:
+    except (PermissionError, FileNotFoundError):
         pass
 
     try:
         for file in os.listdir(prolog_dir):
             if os.path.isfile(os.path.join(prolog_dir, file)):
                 test_files.append(os.path.join(prolog_dir, file))
-    except PermissionError:
+    except (PermissionError, FileNotFoundError):
         pass
 
-    test_file = parameter(test_files)
+    if test_files:
+        test_file = parameter(test_files)
+    else:
+        valid_systems = []
+
     tags = {'vs-node-validator'}
 
     @run_after('setup')

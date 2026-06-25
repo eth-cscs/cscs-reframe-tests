@@ -11,22 +11,32 @@ import re
 import reframe as rfm
 import reframe.utility.sanity as sn
 import reframe.utility.udeps as udeps
+from reframe.core.builtins import xfail
 from uenv import uarch
 
 cp2k_references = {
     'md': {
-        'gh200': {'time_run': (45, None, 0.05, 's')},
+        'gh200': {'time_run': xfail('Known performance regression', (45, None, 0.05, 's'))},
         'zen2': {'time_run': (94, None, 0.05, 's')}
     },
     'pbe': {
-        'gh200': {'time_run': (51, None, 0.05, 's')},
+        'gh200': {'time_run': xfail('Known performance regression', (51, None, 0.05, 's'))},
         'zen2': {'time_run': (75, None, 0.05, 's')}
     },
     'rpa': {
-        'gh200': {'time_run': (575, None, 0.05, 's')}
+        'gh200': {'time_run': xfail('Known performance regression', (575, None, 0.05, 's'))}
     },
 }
 
+# NOTE: Test for cuPointerGetAttribute workaround
+cp2k_references_workaround = {
+    'md': {
+        'gh200': {'time_run': (38, None, 0.05, 's')},
+    },
+    'pbe': {
+        'gh200': {'time_run': (44, None, 0.05, 's')},
+    },
+}
 
 slurm_config = {
     'md': {
@@ -74,7 +84,7 @@ slurm_config = {
 
 
 def version_from_uenv():
-    uenv_var = os.environ['UENV']
+    uenv_var = os.environ['CSCS_RFM_UENV']
     match = re.search(r'/(\d+\.\d+)', uenv_var)
     if match: # Return version (YYYY.VV)
         return match.group(1)
@@ -95,7 +105,7 @@ class cp2k_download(rfm.RunOnlyRegressionTest):
     @run_before('run')
     def set_version(self):
         try:
-            uenv_version = self.current_environ.extras['version'][1:]
+            uenv_version = self.current_environ.extras['version'][0]
         except (KeyError, AttributeError):
             uenv_version = version_from_uenv()
 
@@ -282,6 +292,32 @@ class Cp2kCheckMD_UENVExec(Cp2kCheckMD_UENV):
     valid_prog_environs = ['+cp2k -dlaf']
     tags = {'uenv', 'production', 'maintenance', 'bencher'}
 
+# NOTE: Remove test for workaround
+@rfm.simple_test
+class Cp2kCheckMD_UENVExec_Workaround(Cp2kCheckMD_UENVExec):
+
+    @run_before("run")
+    def ld_preload(self):
+        # CUDA driver 580 introduces a performance regression to
+        # cuPointerGetAttribute which slows down host buffer communication. The
+        # cuptrgetattr_override.so library overrides cuPointerGetAttribute and
+        # routes it to cuPointerGetAttributes which is faster.
+        if uarch(self.current_partition) == "gh200":
+            self.env_vars["LD_PRELOAD"] = \
+                "/capstor/store/cscs/cscs/public/temp/cuptrgetattr_override.so"
+
+    @run_before('run')
+    def prepare_run_workaround(self):
+        if uarch(self.current_partition) != "gh200":
+            self.skip("Workaround tested only on GH200")
+
+        if self.uarch is not None and \
+           self.uarch in cp2k_references[self.test_name]:
+            self.reference = {
+                self.current_partition.fullname:
+                    cp2k_references_workaround[self.test_name][self.uarch]
+            }
+
 
 @rfm.simple_test
 class Cp2kCheckMD_UENVCustomExec(Cp2kCheckMD_UENV):
@@ -318,7 +354,7 @@ class Cp2kCheckPBE_UENV(Cp2kCheck_UENV):
         # a different count means a different runtime with the same input file
         # See https://github.com/cp2k/cp2k/pull/4141
         try:
-            uenv_version = self.current_environ.extras['version'][1:]
+            uenv_version = self.current_environ.extras['version'][0]
         except (KeyError, AttributeError):
             uenv_version = version_from_uenv()
 
@@ -336,6 +372,32 @@ class Cp2kCheckPBE_UENV(Cp2kCheck_UENV):
 class Cp2kCheckPBE_UENVExec(Cp2kCheckPBE_UENV):
     valid_prog_environs = ['+cp2k -dlaf']
     tags = {'uenv', 'production', 'maintenance', 'bencher'}
+
+# NOTE: Remove test for workaround
+@rfm.simple_test
+class Cp2kCheckPBE_UENVExec_Workaround(Cp2kCheckPBE_UENVExec):
+
+    @run_before("run")
+    def ld_preload(self):
+        # CUDA driver 580 introduces a performance regression to
+        # cuPointerGetAttribute which slows down host buffer communication. The
+        # cuptrgetattr_override.so library overrides cuPointerGetAttribute and
+        # routes it to cuPointerGetAttributes which is faster.
+        if uarch(self.current_partition) == "gh200":
+            self.env_vars["LD_PRELOAD"] = \
+                "/capstor/store/cscs/cscs/public/temp/cuptrgetattr_override.so"
+
+    @run_before('run')
+    def prepare_run_workaround(self):
+        if uarch(self.current_partition) != "gh200":
+            self.skip("Workaround tested only on GH200")
+
+        if self.uarch is not None and \
+           self.uarch in cp2k_references[self.test_name]:
+            self.reference = {
+                self.current_partition.fullname:
+                    cp2k_references_workaround[self.test_name][self.uarch]
+            }
 
 
 @rfm.simple_test
@@ -383,4 +445,5 @@ class Cp2kCheckRPA_UENVExec(Cp2kCheck_UENV):
         src = os.path.join(parent.stagedir, parent.wfn_file)
         dest = os.path.join(self.stagedir, parent.wfn_file)
         shutil.copyfile(src, dest)
+
 # }}}
