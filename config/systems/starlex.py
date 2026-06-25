@@ -10,10 +10,10 @@ import os
 import reframe.utility.osext as osext
 
 reframe_dir = os.getenv(
-    'REFRAME_DIR',
+    'CSCS_RFM_DIR',
     '/capstor/store/cscs/cscs/public/reframe/reframe-stable/$CLUSTER_NAME'
 )
-target_dir_var_exists = bool(os.getenv('TARGET_DIR'))
+target_dir_var_exists = bool(os.getenv('CSCS_RFM_TARGET_DIR'))
 target_dir_base = (
     '$SCRATCH/reframe/$CLUSTER_NAME' if not target_dir_var_exists else ''
 )

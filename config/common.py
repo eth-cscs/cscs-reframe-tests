@@ -74,10 +74,10 @@ def _format_victoriametrics(record, extras, ignore_keys):
 
 
 reframe_dir = os.getenv(
-    'REFRAME_DIR',
+    'CSCS_RFM_DIR',
     '/capstor/store/cscs/cscs/public/reframe/reframe-stable/$CLUSTER_NAME'
 )
-target_dir_var_exists = bool(os.getenv('TARGET_DIR'))
+target_dir_var_exists = bool(os.getenv('CSCS_RFM_TARGET_DIR'))
 target_dir_base = (
     '$SCRATCH/reframe/$CLUSTER_NAME' if not target_dir_var_exists else ''
 )
@@ -186,8 +186,8 @@ site_configuration = {
                 '--failure-stats',
                 '--tag=maintenance|production',
                 '-p \'(?!PrgEnv-ce)\'',
-                f'--prefix={os.getenv("TARGET_DIR") if target_dir_var_exists else target_dir_base + "/maint"}',  # noqa: E501
-                f'--output={os.getenv("TARGET_DIR") if target_dir_var_exists else target_dir_base + "/maint"}',  # noqa: E501
+                f'--prefix={os.getenv("CSCS_RFM_TARGET_DIR") if target_dir_var_exists else target_dir_base + "/maint"}',  # noqa: E501
+                f'--output={os.getenv("CSCS_RFM_TARGET_DIR") if target_dir_var_exists else target_dir_base + "/maint"}',  # noqa: E501
                 '--timestamp=%F_%H-%M-%S'
             ]
         },
@@ -200,8 +200,8 @@ site_configuration = {
                 '--failure-stats',
                 '--tag=production',
                 '-p \'(?!PrgEnv-ce)\'',
-                f'--prefix={os.getenv("TARGET_DIR") if target_dir_var_exists else target_dir_base + "/prod"}',  # noqa: E501
-                f'--output={os.getenv("TARGET_DIR") if target_dir_var_exists else target_dir_base + "/prod"}',  # noqa: E501
+                f'--prefix={os.getenv("CSCS_RFM_TARGET_DIR") if target_dir_var_exists else target_dir_base + "/prod"}',  # noqa: E501
+                f'--output={os.getenv("CSCS_RFM_TARGET_DIR") if target_dir_var_exists else target_dir_base + "/prod"}',  # noqa: E501
                 '--timestamp=%F_%H-%M-%S'
             ]
         },
@@ -213,8 +213,8 @@ site_configuration = {
                 '--max-retries=1',
                 '-S nb_duration=300',
                 '--distribute=all',
-                f'--prefix={os.getenv("TARGET_DIR") if target_dir_var_exists else target_dir_base + "/veto"}',  # noqa: E501
-                f'--output={os.getenv("TARGET_DIR") if target_dir_var_exists else target_dir_base + "/veto"}',  # noqa: E501
+                f'--prefix={os.getenv("CSCS_RFM_TARGET_DIR") if target_dir_var_exists else target_dir_base + "/veto"}',  # noqa: E501
+                f'--output={os.getenv("CSCS_RFM_TARGET_DIR") if target_dir_var_exists else target_dir_base + "/veto"}',  # noqa: E501
                 '--timestamp=%F_%H-%M-%S'
             ]
         },
@@ -228,8 +228,8 @@ site_configuration = {
                 '-S flexible=True',
                 '--flex-alloc-nodes=avail',
                 '--exec-policy=serial',
-                f'--prefix={os.getenv("TARGET_DIR") if target_dir_var_exists else target_dir_base + "/veto"}',  # noqa: E501
-                f'--output={os.getenv("TARGET_DIR") if target_dir_var_exists else target_dir_base + "/veto"}',  # noqa: E501
+                f'--prefix={os.getenv("CSCS_RFM_TARGET_DIR") if target_dir_var_exists else target_dir_base + "/veto"}',  # noqa: E501
+                f'--output={os.getenv("CSCS_RFM_TARGET_DIR") if target_dir_var_exists else target_dir_base + "/veto"}',  # noqa: E501
                 '--timestamp=%F_%H-%M-%S'
             ]
         },
