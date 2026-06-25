@@ -181,7 +181,7 @@ class MemoryOverconsumptionCheck(SlurmCompiledBaseCheck):
     descr = 'Tests if requested memory limit works'
     valid_prog_environs = ['+uenv -cpe +prgenv']
     time_limit = '2m'
-    tags.add('mem')
+    tags = {'slurm', 'maintenance', 'ops', 'mem', 'single-node'}
     build_system = 'SingleSource'
     sourcepath = 'eatmem/eatmemory.c'
     executable_opts = ['4000M']
@@ -234,6 +234,7 @@ class MemoryOomMpiCheck(SlurmCompiledBaseCheck, UenvSlurmMpiOptionsMixin):
     build_system = 'SingleSource'
     sourcesdir = 'src/eatmem'
     sourcepath = 'eatmemory_mpi.c'
+    tags -= {'maintenance', 'production'}
     tags.add('mem')
 
     @run_before('compile')
@@ -279,8 +280,8 @@ class MemoryOomMpiCheck(SlurmCompiledBaseCheck, UenvSlurmMpiOptionsMixin):
     def set_reference_from_config_systems_file(self):
         reference_mem = self.current_partition.extras['cn_memory']
         lower = -0.51 if self.current_system.name == 'eiger' else -0.01
-        # upper = 0.03 if 'openmpi' in self.current_environ.features else 0.01
         upper = None
+        # upper = 0.03 if 'openmpi' in self.current_environ.features else 0.01
         self.reference = {
             '*': {
                 'cn_max_allocated_memory': (reference_mem, lower, upper, 'GB')
