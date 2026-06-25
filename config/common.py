@@ -135,10 +135,11 @@ site_configuration = {
                 },
                 {
                     'type': 'httpjson',  # ELASTIC
-                    # Enabled only if $RFM_HTTPJSON_URL_ELASTIC is set, to
+                    # Enabled only if $CSCS_RFM_HTTPJSON_URL_ELASTIC is set, to
                     # avoid polluting the logs when not needed: "warning: could
-                    # not initialize the httpjson handler; ignoring"
-                    'url': os.getenv('RFM_HTTPJSON_URL_ELASTIC',
+                    # not initialize the httpjson handler; ignoring". Note that
+                    # in reframe/frontend/cli.py, var is RFM_HTTPJSON_URL 
+                    'url': os.getenv('CSCS_RFM_HTTPJSON_URL_ELASTIC',
                                      'http://dummy:1234/rfm'),
                     'level': 'info',
                     'extras': {
@@ -157,8 +158,8 @@ site_configuration = {
                 },
                 {
                     'type': 'httpjson',  # VICTORIAMETRICS
-                    # Enabled only if $RFM_HTTPJSON_URL_VMETRICS is set
-                    'url': os.getenv('RFM_HTTPJSON_URL_VMETRICS',
+                    # Enabled only if $CSCS_RFM_HTTPJSON_URL_VMETRICS is set
+                    'url': os.getenv('CSCS_RFM_HTTPJSON_URL_VMETRICS',
                                      'http://dummy:1234/rfm'),
                     'level': 'info',
                     'extra_headers': {
