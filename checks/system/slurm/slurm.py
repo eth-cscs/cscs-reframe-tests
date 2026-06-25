@@ -181,7 +181,7 @@ class MemoryOverconsumptionCheck(SlurmCompiledBaseCheck):
     descr = 'Tests if requested memory limit works'
     valid_prog_environs = ['+uenv -cpe +prgenv']
     time_limit = '2m'
-    tags.add('mem')
+    tags = {'slurm', 'maintenance', 'ops', 'mem', 'single-node'}
     build_system = 'SingleSource'
     sourcepath = 'eatmem/eatmemory.c'
     executable_opts = ['4000M']
@@ -212,6 +212,7 @@ class MemoryOverconsumptionCheckMPI(SlurmCompiledBaseCheck,
     build_system = 'SingleSource'
     sourcepath = 'eatmem/eatmemory_mpi.c'
     # env_vars = {'MPICH_GPU_SUPPORT_ENABLED': 0}
+    tags -= {'maintenance', 'production'}
     tags.add('mem')
 
     @run_before('compile')
