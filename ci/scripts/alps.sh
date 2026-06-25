@@ -149,8 +149,9 @@ uenv_pull_meta_dir() {
 
     if [ $sqfs_missing -eq 0 ] ; then
         # 0=missing, !0=not missing
-        echo "# WARNING: $img not found, pulling it..."
-        /usr/bin/time -p uenv image pull $vasp_flag $img &> .uenv_pull_meta_dir.log
+        echo "# WARNING: $img not found, pulling $img_name ..."
+        # /usr/bin/time -p uenv image pull $vasp_flag $img &> .uenv_pull_meta_dir.log
+        /usr/bin/time -p uenv image pull $vasp_flag $img_name &> .uenv_pull_meta_dir.log
         uenv image inspect --format='{sqfs}' "$img_name" 2>&1 |grep -q "error:" ;sqfs_missing=$?
         if [ $sqfs_missing -eq 0 ] ; then
             echo "# WARNING: failed pulling $img (sqfs_missing=$sqfs_missing)"
