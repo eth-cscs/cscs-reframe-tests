@@ -171,7 +171,30 @@ site_configuration = {
                             os.getenv('CI_PROJECT_PATH', 'Unknown CI Project')
                     },
                     'json_formatter': _format_victoriametrics,
-                    'ignore_keys': ['check_perfvalues'],
+                    'ignore_keys': [
+                        'check_perfvalues',
+                        'check_info', 'version', 'check_fail_phase',
+                        'check_fail_reason', 'check_perf_result',
+                        'check_job_exitcode', 'check_job_nodelist',
+                        'check_build_locally', 'check_build_time_limit',
+                        'check_descr', 'check_env_vars',
+                        'check_exclusive_access', 'check_executable',
+                        'check_executable_opts', 'check_extra_resources',
+                        'check_keep_files', 'check_local', 'check_maintainers',
+                        'check_maintainers', 'check_max_pending_time',
+                        'check_modules', 'check_num_cpus_per_task',
+                        'check_num_gpus_per_node', 'check_num_tasks',
+                        'check_num_tasks_per_core', 'check_num_tasks_per_node',
+                        'check_num_tasks_per_socket', 'check_postbuild_cmds',
+                        'check_postrun_cmds', 'check_prebuild_cmds',
+                        'check_prefix', 'check_prerun_cmds',
+                        'check_readonly_files', 'check_short_name',
+                        'check_sourcepath', 'check_sourcesdir',
+                        'check_stagedir', 'check_strict_check', 'check_tags',
+                        'check_time_limit', 'check_use_multithreading',
+                        'check_valid_prog_environs', 'check_valid_systems',
+                        'check_variables'
+                    ],
                     'debug': False
                 },
             ]
