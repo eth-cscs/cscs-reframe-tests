@@ -202,16 +202,38 @@ class MemoryOverconsumptionCheck(SlurmCompiledBaseCheck):
 
 
 @rfm.simple_test
-class MemoryOverconsumptionCheckMPI(SlurmCompiledBaseCheck,
-                                    UenvSlurmMpiOptionsMixin):
+class MemoryOomMpiCheck(SlurmCompiledBaseCheck, UenvSlurmMpiOptionsMixin):
+    """
+    1/ cn_memory is set in the system's config file based on slurm settings:
+    scontrol show conf |grep MemPerNode # man scontrol
+    DefMemPerNode = 460800 # def memory to be allocated per node in megabytes
+    MaxMemPerNode = 850000 # max memory to be allocated per node in megabytes
+    Job Default value is DefMemPerNode and the maximum value is MaxMemPerNode.
+    If the setting is set to UNLIMITED, run: scontrol show nodes |grep RealMem
+    If the setting is not set to UNLIMITED, using --mem=0 will fail.
+    2/ run the test with --mem=cn_memory and see when it runs out of memory
+    3/ compare with the reference, for example:
+                    ref-1%< ref    <ref+1% in MB
+        beverin/mi200:      515208
+        beverin/mi300:      513700
+        bristen:            515229
+        daint:              870000
+        clariden:           850000
+        santis:             870000
+        pilatus:            241746
+        starlex:            870000
+        wildhorn:           239000
+        lys:                ?
+        and eiger is a special case with 2 type of nodes: std=256G, large=512G
+    """
     descr = 'Testing max "allocatable" memory'
     maintainers = ['@jgphpc', '@ekouts']
     valid_systems = ['+remote']
     valid_prog_environs = ['+uenv -cpe +prgenv +mpi']
     time_limit = '4m'
     build_system = 'SingleSource'
-    sourcepath = 'eatmem/eatmemory_mpi.c'
-    # env_vars = {'MPICH_GPU_SUPPORT_ENABLED': 0}
+    sourcesdir = 'src/eatmem'
+    sourcepath = 'eatmemory_mpi.c'
     tags -= {'maintenance', 'production'}
     tags.add('mem')
 
@@ -222,15 +244,20 @@ class MemoryOverconsumptionCheckMPI(SlurmCompiledBaseCheck,
 
     @run_before('run')
     def set_num_tasks(self):
+        """
+        Limit number of tasks because PMIx/OpenMPI can take very long to
+        initialize with e.g. 288 ranks on one GH200 node. The test still
+        fails in a reasonable time with a limited number of ranks.
+        """
         self.skip_if_no_procinfo()
         cpu = self.current_partition.processor
-        # Limit number of tasks because PMIx/OpenMPI can take very long to
-        # initialize with e.g. 288 ranks on one GH200 node. The test still
-        # fails in a reasonable time with a limited number of ranks.
         self.num_tasks_per_node = min(16, int(
             cpu.info['num_cpus'] / cpu.info['num_cpus_per_core']))
         self.num_tasks = self.num_tasks_per_node
         self.job.launcher.options += ['-u']
+        reference_mem = self.current_partition.extras['cn_memory']
+        self.job.options += [f'--mem={reference_mem}']
+
 
     @sanity_function
     def assert_found_oom(self):
@@ -239,32 +266,22 @@ class MemoryOverconsumptionCheckMPI(SlurmCompiledBaseCheck,
     @performance_function('GB')
     def cn_avail_memory_from_sysconf(self):
         regex = r'memory from sysconf: total: \S+ \S+ avail: (?P<mem>\S+) GB'
-        # return float to avoid truncation in Elastic
         return sn.extractsingle(regex, self.stdout, 'mem', float)
 
-    @performance_function('GB')
+    @performance_function('MB')
     def cn_max_allocated_memory(self):
         regex = (r'^Eating \d+ MB\/mpi \*\d+mpi = -\d+ MB memory from \/proc\/'
                  r'meminfo: total: \d+ GB, free: \d+ GB, avail: \d+ GB, using:'
                  r' (\d+) GB')
-        # return float to avoid truncation in Elastic
-        return sn.max(sn.extractall(regex, self.stdout, 1, float))
+        return sn.max(sn.extractall(regex, self.stdout, 1,
+                                    conv=lambda x: int(x) * 1024))
 
     @run_before('performance')
     def set_reference_from_config_systems_file(self):
-        """
-                    ref-1%< ref <ref+1%
-        beverin/mi200: 498< 503 <508
-        beverin/mi300: 496< 501 <506
-        daint:         845< 854 <863
-        clariden:      514< 519 <524 # grep MaxMemPerNode /etc/slurm/slurm.conf
-        santis:        845< 854 <863
-        starlex:       847< 856 <865
-        and eiger is a special case with 2 type of nodes: std=256G, large=512G
-        """
         reference_mem = self.current_partition.extras['cn_memory']
         lower = -0.51 if self.current_system.name == 'eiger' else -0.01
-        upper = 0.03 if 'openmpi' in self.current_environ.features else 0.01
+        upper = None
+        # upper = 0.03 if 'openmpi' in self.current_environ.features else 0.01
         self.reference = {
             '*': {
                 'cn_max_allocated_memory': (reference_mem, lower, upper, 'GB')
