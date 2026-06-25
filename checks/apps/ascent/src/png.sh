@@ -4,9 +4,9 @@ tst=$1
 ref=$2
 new=$3
 
-if [ -z $tst ]; then echo "undefined tst=$tst" ; exit -1; fi
-if [ -z $ref ]; then echo "undefined ref=$ref" ; exit -1; fi
-if [ -z $new ]; then echo "undefined new=$new" ; exit -1; fi
+if [ -z "$tst" ]; then echo "undefined tst=$tst" ; exit 1; fi
+if [ -z "$ref" ]; then echo "undefined ref=$ref" ; exit 1; fi
+if [ -z "$new" ]; then echo "undefined new=$new" ; exit 1; fi
 
 case "$tst" in
   rmse)
