@@ -3,6 +3,8 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
+import os
+
 import reframe as rfm
 import reframe.utility.sanity as sn
 
@@ -10,7 +12,7 @@ from packaging.specifiers import SpecifierSet
 
 
 @rfm.simple_test
-class ParaviewBuildGadgetPlugin(rfm.CompileOnlyRegressionTest):
+class ParaviewGadgetPlugin(rfm.RegressionTest):
     valid_systems = ['+uenv']
     valid_prog_environs = ['+paraview']
 
@@ -18,7 +20,8 @@ class ParaviewBuildGadgetPlugin(rfm.CompileOnlyRegressionTest):
     build_locally = False
     repo = variable(str,
                     value='https://github.com/jfavre/ParaViewGadgetPlugin.git')
-    commit = variable(str, value='d9d12bde19454199b733b4e1285be3dcd1ac5595')
+    commit = variable(str, value='da0e244a23adeb3d38c87d0ac2479c38a9c83c90')
+    executable = 'echo'
 
     num_tasks = 1
     num_tasks_per_node = 1
@@ -50,11 +53,25 @@ class ParaviewBuildGadgetPlugin(rfm.CompileOnlyRegressionTest):
         self.build_system.cxx = 'g++'
         self.build_system.builddir = 'build'
         self.build_system.configuredir = 'gadget-plugin.git'
-        self.env_vars['Python3_ROOT_DIR'] = \
-            '$(dirname $(which python3) |xargs dirname)'
+
+    @run_before('run')
+    def prepare_postproc(self):
+        _vv = '_venv'
+        test_file = f'{self.build_system.configuredir}/src/Testing/Python/pvReadIsothermalCollapse.py'  # noqa: E501
+        self.postrun_cmds = [
+            f'pvpython -m venv {_vv}',
+            f'{_vv}/bin/pip install requests',
+            f'ln -s {test_file}',
+            f'pvbatch --venv {_vv} {test_file}'
+        ]
+
+        self.env_vars.update({
+            'PV_PLUGIN_PATH': f'{self.build_system.builddir}/lib64/paraview/plugins',  # noqa: E501
+        })
 
     @sanity_function
-    def validate_build(self):
+    def validate_test(self):
+
         return sn.all(
             [
                 sn.assert_eq(
@@ -65,6 +82,7 @@ class ParaviewBuildGadgetPlugin(rfm.CompileOnlyRegressionTest):
                     sn.count(sn.glob(r'**/pvGadgetReader.so', recursive=True)),
                     1,
                 ),
+                os.path.isfile('screenshot.png'),
             ]
         )
 
