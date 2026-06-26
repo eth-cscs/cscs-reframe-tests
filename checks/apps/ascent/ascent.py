@@ -127,10 +127,10 @@ class uenv_ascent_intro_cpp(rfm.RunOnlyRegressionTest):
                 f'python3 plot_binning_3d.py'
             ]
 
-        image_test_type = "rmse" if self.exe in [
-                "ascent_first_light_example",
-                "ascent_scene_example1",
-                "ascent_trigger_example1"] else "visual"
+        image_test_type = 'rmse' if self.exe in [
+                'ascent_first_light_example',
+                'ascent_scene_example1',
+                'ascent_trigger_example1'] else 'visual'
 
         self.postrun_cmds += [
             f'file {self.png}',
@@ -162,7 +162,7 @@ class uenv_ascent_doublegyre_python(rfm.RunOnlyRegressionTest):
     tags = {'uenv', 'production'}
     valid_systems = ['+uenv']
     valid_prog_environs = ['+uenv +ascent -cpe']
-    sourcesdir = "src"
+    sourcesdir = 'src'
     png1 = 'velocity_magnitude.00100.png'
     png2 = 'vorticity_magnitude.00100.png'
     png3 = 'Velocity.100.png'
@@ -222,7 +222,7 @@ class uenv_ascent_doublegyre_cpp(rfm.RegressionTest):
     tags = {'uenv', 'production'}
     valid_systems = ['+uenv']
     valid_prog_environs = ['+uenv +ascent -cpe']
-    sourcesdir = "src"
+    sourcesdir = 'src'
     srcdir = 'InSitu-Vis-Tutorial-main/Examples/DoubleGyre/C++'
     png1 = 'velocity_magnitude.00100.png'
     png2 = 'vorticity_magnitude.00100.png'
@@ -287,7 +287,7 @@ class uenv_ascent_heatdiffusion_python(rfm.RunOnlyRegressionTest):
     tags = {'uenv', 'production'}
     valid_systems = ['+uenv']
     valid_prog_environs = ['+uenv +ascent -cpe']
-    sourcesdir = "src"
+    sourcesdir = 'src'
     par_png1 = 'temperature-par.1000.png'
     ser_png1 = 'temperature-ser.0500.png'
     ser_png2 = 'Temperature-iso-contours.0500.png'
@@ -349,7 +349,7 @@ class uenv_ascent_heatdiffusion_cpp(rfm.RegressionTest):
     tags = {'uenv', 'production'}
     valid_systems = ['+uenv']
     valid_prog_environs = ['+uenv +ascent -cpe']
-    sourcesdir = "src"
+    sourcesdir = 'src'
     srcdir = 'InSitu-Vis-Tutorial-main/Examples/HeatDiffusion/C++'
     png1 = 'ascent_temperature_isolines-010000.png'
     build_system = 'CMake'
@@ -414,7 +414,7 @@ class uenv_ascent_noise(rfm.RegressionTest):
     tags = {'uenv', 'production'}
     valid_systems = ['+uenv']
     valid_prog_environs = ['+uenv +ascent -cpe']
-    sourcesdir = "src"
+    sourcesdir = 'src'
     ascent_v = variable(str, value='0.9.5')
     png1 = 's1_0_000005.png'
     build_system = 'CMake'
@@ -459,7 +459,8 @@ class uenv_ascent_noise(rfm.RegressionTest):
         self.env_vars['OMP_NUM_THREADS'] = '16'
         ref_dir = os.path.join(self.current_system.resourcesdir,
                                'ascent/reference/noise')
-        self.postrun_cmds = [f'./png.sh visual {self.png1} {ref_dir}/{self.png1}']
+        self.postrun_cmds = [
+            f'./png.sh visual {self.png1} {ref_dir}/{self.png1}']
 
     @sanity_function
     def validate_test(self):
@@ -564,7 +565,7 @@ class uenv_ascent_cloverleaf3d(rfm.RegressionTest):
     tags = {'uenv', 'production'}
     valid_systems = ['+uenv +nvgpu']
     valid_prog_environs = ['+uenv +ascent -cpe']
-    sourcesdir = "src"
+    sourcesdir = 'src'
     ascent_v = variable(str, value='0.9.5')
     png1 = 'contour_tree_0200.png'
     png2 = 'levels_0200.png'
