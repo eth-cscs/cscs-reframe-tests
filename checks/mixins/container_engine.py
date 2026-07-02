@@ -92,4 +92,5 @@ class ContainerEngineCPEMixin(rfm.RegressionTestPlugin):
                     }
                 }
             else:
-                raise EnvironError("enviroment variable 'CPE_CE' is undefined")
+                raise EnvironError(
+                    "enviroment variable 'CSCS_RFM_CPE_CE' is undefined")
