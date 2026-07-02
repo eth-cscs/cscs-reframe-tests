@@ -28,7 +28,7 @@ site_configuration = {
                     ],
                     'max_jobs': 1000,
                     'extras': {
-                        'cn_memory': 825,
+                        'cn_memory': 870000,
                     },
                     'features': [
                         'ce', 'gpu', 'nvgpu', 'remote', 'scontrol', 'uenv',
