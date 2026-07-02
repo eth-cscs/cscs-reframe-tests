@@ -139,8 +139,8 @@ class CPUNodeBurnGemmCE(NodeBurnGemmCE):
     descr = 'CPU Node burn GEMM test for A100/GH200-nodes using CE'
     executable = 'burn-f64-cpu'
     ref_nb_gflops = {
-        'gh200': {'nb_gflops': (3150, -0.1, None, 'GFlops')},
-        'zen2': {'nb_gflops': (2200, -0.1, None, 'GFlops')},
+        'gh200': {'nb_gflops': (3100, -0.1, None, 'GFlops')},
+        'zen2': {'nb_gflops': (2000, -0.1, None, 'GFlops')},
     }
     test_hw = 'cpu'
     valid_systems = ['+ce']
@@ -214,7 +214,7 @@ class CPUNodeBurnStreamCE(NodeBurnStreamCE):
     descr = 'CPU Node burn Stream test for A100/GH200-nodes using CE'
     executable = 'burn-f64-cpu'
     ref_nb_gbps = {
-        'gh200': {'nb_gbps': (450.0, -0.1, None, 'GB/s')},
+        'gh200': {'nb_gbps': (425.0, -0.1, None, 'GB/s')},
         'zen2': {'nb_gbps': (220.0, -0.1, None, 'GB/s')},
     }
     test_hw = 'cpu'

@@ -31,10 +31,10 @@ cp2k_references = {
 # NOTE: Test for cuPointerGetAttribute workaround
 cp2k_references_workaround = {
     'md': {
-        'gh200': {'time_run': (45, None, 0.05, 's')},
+        'gh200': {'time_run': (38, None, 0.05, 's')},
     },
     'pbe': {
-        'gh200': {'time_run': (51, None, 0.05, 's')},
+        'gh200': {'time_run': (44, None, 0.05, 's')},
     },
 }
 
@@ -106,7 +106,7 @@ class cp2k_download(rfm.RunOnlyRegressionTest):
     @run_before('run')
     def set_version(self):
         try:
-            uenv_version = self.current_environ.extras['version'][1:]
+            uenv_version = self.current_environ.extras['version'][0]
         except (KeyError, AttributeError):
             uenv_version = version_from_uenv()
 
@@ -358,7 +358,7 @@ class Cp2kCheckPBE_UENV(Cp2kCheck_UENV):
         # a different count means a different runtime with the same input file
         # See https://github.com/cp2k/cp2k/pull/4141
         try:
-            uenv_version = self.current_environ.extras['version'][1:]
+            uenv_version = self.current_environ.extras['version'][0]
         except (KeyError, AttributeError):
             uenv_version = version_from_uenv()
 

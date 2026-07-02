@@ -144,13 +144,14 @@ uenv_pull_meta_dir() {
     # # error: no matching uenv
     # uenv image inspect --format='{sqfs}' build::prgenv-gnu/next:2078663062
     # # error: invalid search term: found unexpected ':'
-    img_name=`echo "$img" |sed -e "s/build:://" -e "s/service:://"`
+    img_name=`echo "$img" |sed -e "s/build:://" -e "s/service:://" -e "s-+-@-g"`
     uenv image inspect --format='{sqfs}' "$img_name" 2>&1 |grep -q "error:" ;sqfs_missing=$?
 
     if [ $sqfs_missing -eq 0 ] ; then
         # 0=missing, !0=not missing
-        echo "# WARNING: $img not found, pulling it..."
-        /usr/bin/time -p uenv image pull $vasp_flag $img &> .uenv_pull_meta_dir.log
+        echo "# WARNING: $img not found, pulling $img_name ..."
+        # /usr/bin/time -p uenv image pull $vasp_flag $img &> .uenv_pull_meta_dir.log
+        /usr/bin/time -p uenv image pull $vasp_flag $img_name &> .uenv_pull_meta_dir.log
         uenv image inspect --format='{sqfs}' "$img_name" 2>&1 |grep -q "error:" ;sqfs_missing=$?
         if [ $sqfs_missing -eq 0 ] ; then
             echo "# WARNING: failed pulling $img (sqfs_missing=$sqfs_missing)"
@@ -360,7 +361,8 @@ launch_reframe_1arg() {
     export RFM_USE_LOGIN_SHELL=1
     # export RFM_AUTODETECT_XTHOSTNAME=1
     # reframe -V
-    echo "# UENV=$UENV"
+    export CSCS_RFM_UENV=$UENV
+    echo "# CSCS_RFM_UENV=$CSCS_RFM_UENV"
     echo "# args=$@"
     reframe -C ./config/cscs.py \
         --report-junit=report.xml \
