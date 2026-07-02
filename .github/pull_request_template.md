@@ -24,7 +24,7 @@ cscs-ci run alps-eiger-uenv;CSCS_RFM_UENV=[build::|service::]prgenv-gnu/25.11:v1
     - run test: for example, cp2k on beverin:
 
 ```shell
-UENV=prgenv-gnu/25.07-6.3.3:v8 \
+CSCS_RFM_UENV=prgenv-gnu/25.07-6.3.3:v8 \
     reframe -C \
     -C ./cscs-reframe-tests.git/config/cscs.py \
     --keep-stage-files \
