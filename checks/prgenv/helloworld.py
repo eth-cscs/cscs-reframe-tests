@@ -37,8 +37,7 @@ class HelloWorldBaseTest(rfm.RegressionTest, ExtraLauncherOptionsMixin,
 
     env_vars = {
         'MPICH_GPU_SUPPORT_ENABLED': 0,
-
-         # This is valid only for non-cray MPICH
+        # This is valid only for non-cray MPICH
         'MPIR_CVAR_ENABLE_GPU': 0,
     }
     tags = {'production', 'craype', 'uenv'}
@@ -130,7 +129,7 @@ class HelloWorldTestOpenMP(HelloWorldBaseTest):
             'c_openmp_flags', ['-fopenmp'])
         self.build_system.cxxflags = self.build_system.cflags
         self.build_system.fflags = self.current_environ.extras.get(
-            'f_openmp_flags', self.build_system.cflags )
+            'f_openmp_flags', self.build_system.cflags)
 
     @run_after('init')
     def update_description(self):
