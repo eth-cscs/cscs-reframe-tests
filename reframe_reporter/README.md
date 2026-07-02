@@ -163,8 +163,6 @@ python3 run_report.py \
 | `--matrix-tag` | `str` | Comma-separated list for tag-based coverage matrix (`label:system:tag`). Mutually exclusive with `--matrix-mode`. |
 | `-v`, `--verbose` | *Flag* | Enables verbose logging output. |
 
-> 💡 **Note:** Any arguments provided at the very end of your script invocation following a double-dash (`--`) are cleanly processed, normalized, and seamlessly forwarded right to the underlying ReFrame subprocess.
-
 ---
 
 ## UENV Integration Details
