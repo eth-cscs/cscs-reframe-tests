@@ -33,5 +33,10 @@ CSCS_RFM_UENV=prgenv-gnu/25.07-6.3.3:v8 \
     --system beverin:mi300
 ```
 
+Other variables: CSCS_RFM_CPE_CE, CSCS_RFM_DIR,
+CSCS_RFM_ONEUPTIME_APIKEY, CSCS_RFM_TARGET_DIR,
+CSCS_RFM_USER_ENV_CUDA_VISIBLE, CSCS_RFM_USER_ENV_IMAGE,
+CSCS_RFM_USER_ENV_ROOT
+
 Thank you for taking the time to contribute to `cscs-reframe-tests` !
 - CSCS staff: More info in https://confluence.cscs.ch/spaces/reframe --> Contributing+Pull+Requests

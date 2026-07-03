@@ -16,15 +16,15 @@ from uenv import uarch
 
 cp2k_references = {
     'md': {
-        'gh200': {'time_run': xfail('Known performance regression', (45, None, 0.05, 's'))},
+        'gh200': {'time_run': xfail('Known performance regression', (45, None, 0.05, 's'))},  # noqa:E501
         'zen2': {'time_run': (94, None, 0.05, 's')}
     },
     'pbe': {
-        'gh200': {'time_run': xfail('Known performance regression', (51, None, 0.05, 's'))},
+        'gh200': {'time_run': xfail('Known performance regression', (51, None, 0.05, 's'))},  # noqa:E501
         'zen2': {'time_run': (75, None, 0.05, 's')}
     },
     'rpa': {
-        'gh200': {'time_run': xfail('Known performance regression', (575, None, 0.05, 's'))}
+        'gh200': {'time_run': xfail('Known performance regression', (575, None, 0.05, 's'))}  # noqa:E501
     },
 }
 
@@ -159,7 +159,8 @@ class Cp2kBuildTestUENV(rfm.CompileOnlyRegressionTest):
         ]
 
         try:
-            self.build_system.config_opts = self.current_environ.extras['cmake'].split()
+            self.build_system.config_opts = \
+                self.current_environ.extras['cmake'].split()
         except (KeyError, AttributeError):
             self.build_system.config_opts = [
                 '-DCMAKE_BUILD_TYPE=Release',
@@ -339,8 +340,6 @@ class Cp2kCheckMD_UENVCustomExec(Cp2kCheckMD_UENV):
         parent = self.getdep('Cp2kBuildTestUENV')
         self.executable = (
             f'{self.wrapper} ./pika-bind.sh {parent.cp2k_executable}')
-
-
 # }}}
 
 
@@ -450,5 +449,4 @@ class Cp2kCheckRPA_UENVExec(Cp2kCheck_UENV):
         src = os.path.join(parent.stagedir, parent.wfn_file)
         dest = os.path.join(self.stagedir, parent.wfn_file)
         shutil.copyfile(src, dest)
-
 # }}}
