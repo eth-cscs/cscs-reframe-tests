@@ -291,7 +291,7 @@ class MemoryOomMpiCheck(SlurmCompiledBaseCheck, UenvSlurmMpiOptionsMixin):
         # upper = 0.03 if 'openmpi' in self.current_environ.features else 0.01
         self.reference = {
             '*': {
-                'cn_max_allocated_memory': (reference_mem, lower, upper, 'GB')
+                'cn_max_allocated_memory': (reference_mem, lower, upper, 'MB')
             }
         }
 
