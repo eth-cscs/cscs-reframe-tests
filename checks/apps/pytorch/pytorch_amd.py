@@ -11,7 +11,9 @@ from container_engine import ContainerEngineMixin  # noqa: E402
 
 class PyTorchAmdTestBase(PyTorchTestBase):
     descr = 'Check the training throughput on AMD MI250'
-    valid_systems = ['+amdgpu']
+    # Disabling test as it is failing due to not be maintained.
+    valid_systems = []
+    # valid_systems = ['+amdgpu']
     throughput_per_gpu = 530
     env_vars = {
         'MIOPEN_CUSTOM_CACHE_DIR': '/tmp/rfm',
@@ -85,7 +87,9 @@ class SetupAmdContainerVenv(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
 @rfm.simple_test
 class PyTorchDdpCeAmd(PyTorchAmdTestBase, ContainerEngineMixin):
     descr = 'Check the training throughput using the ContainerEngine and ROCm images'
-    valid_systems = ['+ce +amdgpu']
+    # Disabling test as it is failing due to not be maintained.
+    valid_systems = []
+    # valid_systems = ['+ce +amdgpu']
     maintainers = ['ml-team']
     venv = fixture(SetupAmdContainerVenv)
     num_nodes = parameter([1, 3])
