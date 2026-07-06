@@ -180,7 +180,7 @@ site_configuration = {
                         'check_descr', 'check_env_vars',
                         'check_exclusive_access', 'check_executable',
                         'check_executable_opts', 'check_extra_resources',
-                        'check_keep_files', 'check_local', 'check_maintainers',
+                        'check_keep_files', 'check_local',
                         'check_maintainers', 'check_max_pending_time',
                         'check_modules', 'check_num_cpus_per_task',
                         'check_num_gpus_per_node', 'check_num_tasks',
