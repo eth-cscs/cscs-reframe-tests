@@ -16,15 +16,15 @@ from uenv import uarch
 
 cp2k_references = {
     'md': {
-        'gh200': {'time_run': xfail('Known performance regression', (45, None, 0.05, 's'))},
+        'gh200': {'time_run': xfail('Known performance regression', (45, None, 0.05, 's'))},  # noqa:E501
         'zen2': {'time_run': (94, None, 0.05, 's')}
     },
     'pbe': {
-        'gh200': {'time_run': xfail('Known performance regression', (51, None, 0.05, 's'))},
+        'gh200': {'time_run': xfail('Known performance regression', (51, None, 0.05, 's'))},  # noqa:E501
         'zen2': {'time_run': (75, None, 0.05, 's')}
     },
     'rpa': {
-        'gh200': {'time_run': xfail('Known performance regression', (575, None, 0.05, 's'))}
+        'gh200': {'time_run': xfail('Known performance regression', (575, None, 0.05, 's'))}  # noqa:E501
     },
 }
 
@@ -86,10 +86,11 @@ slurm_config = {
 def version_from_uenv():
     uenv_var = os.environ['CSCS_RFM_UENV']
     match = re.search(r'/(\d+\.\d+)', uenv_var)
-    if match: # Return version (YYYY.VV)
+    if match:  # Return version (YYYY.VV)
         return match.group(1)
     else:
         return None
+
 
 @rfm.xfail(
     'CP2K 2025.1 issues with libxc linking.',
@@ -158,7 +159,8 @@ class Cp2kBuildTestUENV(rfm.CompileOnlyRegressionTest):
         ]
 
         try:
-            self.build_system.config_opts = self.current_environ.extras['cmake'].split()
+            self.build_system.config_opts = \
+                self.current_environ.extras['cmake'].split()
         except (KeyError, AttributeError):
             self.build_system.config_opts = [
                 '-DCMAKE_BUILD_TYPE=Release',
@@ -292,6 +294,7 @@ class Cp2kCheckMD_UENVExec(Cp2kCheckMD_UENV):
     valid_prog_environs = ['+cp2k -dlaf']
     tags = {'uenv', 'production', 'maintenance', 'bencher'}
 
+
 # NOTE: Remove test for workaround
 @rfm.simple_test
 class Cp2kCheckMD_UENVExec_Workaround(Cp2kCheckMD_UENVExec):
@@ -337,9 +340,9 @@ class Cp2kCheckMD_UENVCustomExec(Cp2kCheckMD_UENV):
         parent = self.getdep('Cp2kBuildTestUENV')
         self.executable = (
             f'{self.wrapper} ./pika-bind.sh {parent.cp2k_executable}')
-
-
 # }}}
+
+
 # {{{ PBE
 class Cp2kCheckPBE_UENV(Cp2kCheck_UENV):
     test_name = 'pbe'
@@ -372,6 +375,7 @@ class Cp2kCheckPBE_UENV(Cp2kCheck_UENV):
 class Cp2kCheckPBE_UENVExec(Cp2kCheckPBE_UENV):
     valid_prog_environs = ['+cp2k -dlaf']
     tags = {'uenv', 'production', 'maintenance', 'bencher'}
+
 
 # NOTE: Remove test for workaround
 @rfm.simple_test
@@ -418,9 +422,9 @@ class Cp2kCheckPBE_UENVCustomExec(Cp2kCheckPBE_UENV):
         parent = self.getdep('Cp2kBuildTestUENV')
         self.executable = (
             f'{self.wrapper} ./pika-bind.sh {parent.cp2k_executable}')
-
-
 # }}}
+
+
 # {{{ RPA
 @rfm.simple_test
 class Cp2kCheckRPA_UENVExec(Cp2kCheck_UENV):
@@ -445,5 +449,4 @@ class Cp2kCheckRPA_UENVExec(Cp2kCheck_UENV):
         src = os.path.join(parent.stagedir, parent.wfn_file)
         dest = os.path.join(self.stagedir, parent.wfn_file)
         shutil.copyfile(src, dest)
-
 # }}}

@@ -14,6 +14,8 @@ _UENV_CLI = 'uenv'
 _UENV_DELIMITER = ','
 _UENV_MOUNT_DELIMITER = '@'
 _UENV_LABEL_DELIMITER = '^'
+_UENV_RFM_SYSTEM_DELIMITER = '+'
+_UENV_CLI_SYSTEM_DELIMITER = '@'
 _RFM_META = pathlib.Path('extra') / 'reframe.yaml'
 _RFM_META_DIR = pathlib.Path('meta')
 
@@ -115,6 +117,7 @@ def _get_uenvs() -> Optional[List]:
 
     for uenv in uenv_list:
         uenv_identifier, *uenv_mountpoint = uenv.split(_UENV_MOUNT_DELIMITER)
+        uenv_identifier = uenv_identifier.replace(_UENV_RFM_SYSTEM_DELIMITER, _UENV_CLI_SYSTEM_DELIMITER)
         uenv_name, uenv_path = _parse_uenv_identifier(uenv_identifier)
 
         if len(uenv_mountpoint) > 0:

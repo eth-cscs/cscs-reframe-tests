@@ -69,9 +69,9 @@ def set_monitor_status(monitor_id, status_label):
 
 
 if __name__ == '__main__':
-    api_key = os.environ.get('RFM_ONEUPTIME_APIKEY', None)
+    api_key = os.environ.get('CSCS_RFM_ONEUPTIME_APIKEY', None)
     if api_key is None:
-        print(f'Error: $RFM_ONEUPTIME_APIKEY is not set, exiting...')
+        print(f'Error: $CSCS_RFM_ONEUPTIME_APIKEY is not set, exiting...')
         sys.exit(1)
 
     cluster_name, num_failures, cpe = sys.argv[1:4]

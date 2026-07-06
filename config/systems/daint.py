@@ -37,7 +37,7 @@ base_config = {
             ],
             'max_jobs': 1000,
             'extras': {
-                'cn_memory': 854,
+                'cn_memory': 870000,
             },
             'features': [
                 'ce', 'gpu', 'nvgpu', 'remote', 'scontrol', 'uenv',
@@ -111,7 +111,7 @@ site_configuration = {
                     'image':
                         # Avoid interpretting '#' as a start of a comment
                         os.environ.get(
-                            'CPE_CE', ''
+                            'CSCS_RFM_CPE_CE', ''
                         ).replace(r'#', r'\#')
                 }
              }

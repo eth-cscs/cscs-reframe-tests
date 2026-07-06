@@ -43,7 +43,7 @@ site_configuration = {
                     ],
                     'max_jobs': 1000,
                     'extras': {
-                        'cn_memory': 503,
+                        'cn_memory': 241746,
                     },
                     'resources': [
                         {
@@ -92,7 +92,7 @@ site_configuration = {
                     'image':
                         # Avoid interpretting '#' as a start of a comment
                         os.environ.get(
-                            'CPE_CE', ''
+                            'CSCS_RFM_CPE_CE', ''
                         ).replace(r'#', r'\#')
                 }
              }
