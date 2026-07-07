@@ -67,7 +67,7 @@ graph TD
     end
 
     subgraph "Aggregation & Rendering"
-        O --> R[SingleModeRenderer / MatrixModeRenderer]
+        O --> R[MatrixModeRenderer]
         F -->|Parsed Data| R
         R --> I[Final Markdown Report<br/>with ✅/❌ Compliance]
     end
@@ -101,17 +101,7 @@ reframe_reporter/
 
 Run the reporter using the main entry script (`run_report.py`).
 
-### 1. Single-System Mode
-Analyze a single target system configuration to list matching test profiles.
-```bash
-python3 run_report.py \
-   --system daint \
-   --mode production \
-   -C cscs-reframe-tests/config/cscs.py \
-   -c cscs-reframe-tests/checks
-```
-
-### 2. Matrix Mode 
+### 1. Matrix Mode 
 Provide multiple target entries to generate an aggregated test matrix. The `--matrix-mode` flag accepts a comma-separated list of targets formatted as `label:system:mode`.
 
 **Example with multiple targets:**
@@ -122,7 +112,7 @@ python3 run_report.py \
    -c cscs-reframe-tests/checks
 ```
 
-### 3. Matrix Tag 
+### 2. Matrix Tag 
 Compare test coverage across different tag expressions on one or more systems. The `--matrix-tag` flag accepts a comma-separated list of targets formatted as `label:system:tag`.
 
 ```bash
@@ -132,7 +122,7 @@ python3 run_report.py \
    -c cscs-reframe-tests/checks
 ```
 
-### 4. Metadata Ingestion with User Environments (uenv)
+### 3. Metadata Ingestion with User Environments (uenv)
 Perform uenv-aware test listing using a previously generated uenv image inventory.
 
 ```bash
@@ -207,13 +197,16 @@ python3 ./cscs-reframe-tests/reframe_reporter/generate_uenv_image_inventory.py \
 ```
 ### Single-System Report (Daint)
 
+For a single system, use `--matrix-mode` with one target entry:
+
 ```bash
 python3 cscs-reframe-tests/reframe_reporter/run_report.py \
---system daint --mode production \
+--matrix-mode "daint-prod:daint:production" \
 -C cscs-reframe-tests/config/cscs.py -c cscs-reframe-tests/checks \
 -R --uenv-recipes-dir alps-uenv/recipes \
 --uenv-image-inventory cscs-reframe-tests/reframe_reporter/snapshots/uenv-inventories/uenv_image_inventory_daint.json \
--o cscs-reframe-tests/reframe_reporter/snapshots
+-o cscs-reframe-tests/reframe_reporter/snapshots \
+-f eligible_tests_matrix_mode-daint-production.md
 ```
 
 ### Coverage Matrix for Daint, Eiger, Santis, Clariden & Starlex
