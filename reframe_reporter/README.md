@@ -36,8 +36,8 @@ The reporter follows a multi-stage pipeline to transform raw ReFrame metadata an
 
 #### 2. Enrichment Phase (Environment Injection)
 * **uenv Integration**: Before execution, the `Orchestrator` injects uenv paths into the subprocess environment:
-    * `RFM_UENV_RECIPES_DIR` $\leftarrow$ `--uenv-recipes-dir` (ingests `reframe.yaml` data from the uenv recipes directory)
-    * `RFM_UENV_IMAGE_INVENTORY` $\leftarrow$ `--uenv-image-inventory` (ingests output from `uenv image ls --json`)
+    * `CSCS_RFM_UENV_RECIPES_DIR` $\leftarrow$ `--uenv-recipes-dir` (ingests `reframe.yaml` data from the uenv recipes directory)
+    * `CSCS_RFM_UENV_IMAGE_INVENTORY` $\leftarrow$ `--uenv-image-inventory` (ingests output from `uenv image ls --json`)
 * This ensures that ReFrame's `--describe` output is contextually aware of the available software recipes.
 
 #### 3. Execution & Extraction Phase (ReFrame)
@@ -171,22 +171,22 @@ The reporter enriches ReFrame test listings by integrating with the UENV (User E
 
 | Environment Variable | Source | Purpose |
 | :--- | :--- | :--- |
-| `RFM_UENV_RECIPES_DIR` | `--uenv-recipes-dir` | Path to `alps-uenv/recipes` containing `extra/reframe.yaml` metadata files. |
-| `RFM_UENV_IMAGE_INVENTORY` | `--uenv-image-inventory` | Path to a pre-generated JSON inventory (from `generate_uenv_image_inventory.py`). |
-| `RFM_UENV_TARGET_SYSTEMS` | Inferred from `--matrix-mode` | Comma-separated systems for per-system `uenv image find --json @<system>` queries. |
+| `CSCS_RFM_UENV_RECIPES_DIR` | `--uenv-recipes-dir` | Path to `alps-uenv/recipes` containing `extra/reframe.yaml` metadata files. |
+| `CSCS_RFM_UENV_IMAGE_INVENTORY` | `--uenv-image-inventory` | Path to a pre-generated JSON inventory (from `generate_uenv_image_inventory.py`). |
+| `CSCS_RFM_UENV_TARGET_SYSTEMS` | Inferred from `--matrix-mode` | Comma-separated systems for per-system `uenv image find --json @<system>` queries. |
 
 ### How it works
 
 1. **`_load_uenv_image_inventory(path)`** — Loads the UENV image inventory from either:
-   - A pre-generated JSON file (set via `RFM_UENV_IMAGE_INVENTORY`).
-   - Direct CLI queries (`uenv image find --json @<system>`) per target system when `RFM_UENV_TARGET_SYSTEMS` is set. Results are merged with deduplication.
+   - A pre-generated JSON file (set via `CSCS_RFM_UENV_IMAGE_INVENTORY`).
+   - Direct CLI queries (`uenv image find --json @<system>`) per target system when `CSCS_RFM_UENV_TARGET_SYSTEMS` is set. Results are merged with deduplication.
    - Falls back to `uenv image find --json` with no system filter (or `@$CLUSTER_NAME`).
 
 2. **`_recipe_target_systems(recipe_root, recipe_dir_path, inventory_records)`** — Matches a recipe (by name/version/uarch) against inventory records to determine which systems it is available on.
 
 3. **`_load_uenvs_from_recipes(recipe_dir)`** — Scans the recipes directory for `extra/reframe.yaml` files, resolves target systems via inventory records, and builds structured environment definitions for ReFrame.
 
-When `RFM_UENV_RECIPES_DIR` is set, the existing `CSCS_RFM_UENV` / `RFM_UENV` variable path is bypassed entirely and the recipe-based discovery is used instead.
+When `CSCS_RFM_UENV_RECIPES_DIR` is set, the normal `CSCS_RFM_UENV`-based path is bypassed entirely and recipe-based discovery is used instead. This is intended for listing eligible tests; it does not replace setting `CSCS_RFM_UENV` when actually running uenv tests.
 
 ---
 

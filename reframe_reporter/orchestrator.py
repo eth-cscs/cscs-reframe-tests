@@ -218,10 +218,10 @@ class ReportOrchestrator:
         """Prepares the environment variables."""
         env = os.environ.copy()
         if self.config.uenv_recipes_dir:
-            env["RFM_UENV_RECIPES_DIR"] = str(self.config.uenv_recipes_dir.resolve())
+            env["CSCS_RFM_UENV_RECIPES_DIR"] = str(self.config.uenv_recipes_dir.resolve())
         if self.config.uenv_image_inventory:
-            env["RFM_UENV_IMAGE_INVENTORY"] = str(self.config.uenv_image_inventory.resolve())
+            env["CSCS_RFM_UENV_IMAGE_INVENTORY"] = str(self.config.uenv_image_inventory.resolve())
         if self.config.uenv_recipes_dir or self.config.uenv_image_inventory:
-            env["RFM_UENV_TARGET_SYSTEMS"] = system 
+            env["CSCS_RFM_UENV_TARGET_SYSTEMS"] = system 
         env.update(self.config.uenv_env)
         return env

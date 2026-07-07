@@ -4,6 +4,17 @@ All notable changes to `reframe_reporter` are documented here.
 
 ---
 
+## [1.5.1] - 2026-07-07
+
+### Fixed
+- Aligned reporter-injected uenv environment variables with `config/utilities/uenv.py`:
+  - `RFM_UENV_RECIPES_DIR` → `CSCS_RFM_UENV_RECIPES_DIR`
+  - `RFM_UENV_IMAGE_INVENTORY` → `CSCS_RFM_UENV_IMAGE_INVENTORY`
+  - `RFM_UENV_TARGET_SYSTEMS` → `CSCS_RFM_UENV_TARGET_SYSTEMS`
+- Clarified README description of when the `CSCS_RFM_UENV` runtime path is bypassed.
+
+---
+
 ## [1.5.0] - 2026-06-22
 
 ### Added
@@ -47,7 +58,7 @@ For more details, see [README.md](README.md).
 ## [1.3.0] - 2026-06-03
 
 ### Added
-- Added support for explicit per-system UENV inventory queries via `RFM_UENV_TARGET_SYSTEMS`.
+- Added support for explicit per-system UENV inventory queries via `CSCS_RFM_UENV_TARGET_SYSTEMS`.
 - Added merging of multiple `uenv image find --json @<system>` lookups so multi-system availability can be checked from a single run.
 - Added support for two data retrieval paths: direct UENV output on a target system, or pre-generated inventory JSON from `generate_uenv_image_inventory.py`.
 
@@ -70,7 +81,7 @@ For more details, see [README.md](README.md).
 
 ### Added
 - Added `--uenv-recipes-dir` option to list UENV-enabled tests from local recipe metadata without installed uenv images.
-- Local recipe mode is enabled by setting `RFM_UENV_RECIPES_DIR` for ReFrame subprocesses.
+- Local recipe mode is enabled by setting `CSCS_RFM_UENV_RECIPES_DIR` for ReFrame subprocesses.
 
 ---
 
