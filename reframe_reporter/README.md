@@ -209,7 +209,7 @@ python3 cscs-reframe-tests/reframe_reporter/run_report.py \
 -f eligible_tests_matrix_mode-daint-production.md
 ```
 
-### Coverage Matrix for Daint, Eiger, Santis, Clariden & Starlex
+### Mode-based Coverage Matrix for Daint, Eiger, Santis, Clariden & Starlex
 
 #### Maintenance 
 
@@ -246,7 +246,7 @@ python3 cscs-reframe-tests/reframe_reporter/run_report.py \
 -f eligible_tests_matrix_mode-maintenance-production.md
 ```
 
-## Tag-based Matrix
+## Tag-based Coverage Matrix
 
 ```bash
 python3 cscs-reframe-tests/reframe_reporter/run_report.py \
