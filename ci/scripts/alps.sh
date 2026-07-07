@@ -108,8 +108,8 @@ uenv_image_find() {
 # uf |egrep -v "scorep|prgenv|paraview|netcdf-tools|linaro-forge|linalg|jupyterlab|julia|editors" \
 # |grep -v 'size(MB)' |cut -d/ -f1 |sort -u
     ignore_list="scorep|paraview|netcdf-tools|linaro-forge|jupyterlab|julia|editors"
-    if [ -z $CSCS_RFM_MYUENV ] ;then
-        # -z CSCS_RFM_MYUENV means 
+    if [ -z $CSCS_RFM_UENV ] ;then
+        # -z CSCS_RFM_UENV means 
         # get the list of deployed supported apps (skip header line):
         uenv_apps=$(uenv image find |tail -n +2 |egrep -v "$ignore_list" |cut -d/ -f1 |sort -u)
         for aa in $uenv_apps ;do
@@ -121,11 +121,11 @@ uenv_image_find() {
             uu=$(paste "$tmp_date1" "$tmp_date2" |sort -nk 7 |tail -n 1 |awk '{print $1}')
             echo "$uu"
             rm -f "$tmp_date1" "$tmp_date2"
-        # echo "CSCS_RFM_MYUENV is not set, not sure what uenv to test"
+        # echo "CSCS_RFM_UENV is not set, not sure what uenv to test"
         # exit -1
         done
     else
-        echo "$CSCS_RFM_MYUENV" | tr , "\n"
+        echo "$CSCS_RFM_UENV" | tr , "\n"
     fi
 }
 # }}}
@@ -327,7 +327,7 @@ uenv_sqfs_fullpath() {
 launch_reframe_1img() {
     img=$1
     # export UENV="${squashfs_path}:${mount}"
-    export UENV="$img"
+    export CSCS_RFM_UENV="$img"
     export RFM_AUTODETECT_METHODS="cat /etc/xthostname,hostname"
     export RFM_USE_LOGIN_SHELL=1
     # export RFM_AUTODETECT_XTHOSTNAME=1
@@ -344,7 +344,7 @@ launch_reframe() {
     export RFM_USE_LOGIN_SHELL=1
     # export RFM_AUTODETECT_XTHOSTNAME=1
     # reframe -V
-    echo "UENV=$UENV"
+    echo "CSCS_RFM_UENV=$CSCS_RFM_UENV"
     reframe -C ./config/cscs.py \
         --report-junit=report.xml \
         -c ./checks/ \
@@ -361,7 +361,6 @@ launch_reframe_1arg() {
     export RFM_USE_LOGIN_SHELL=1
     # export RFM_AUTODETECT_XTHOSTNAME=1
     # reframe -V
-    export CSCS_RFM_UENV=$UENV
     echo "# CSCS_RFM_UENV=$CSCS_RFM_UENV"
     echo "# args=$@"
     reframe -C ./config/cscs.py \
