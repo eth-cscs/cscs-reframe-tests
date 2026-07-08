@@ -19,10 +19,12 @@ RFM_RESOLVE_MODULE_CONFLICTS=0
 FIRECREST_CLIENT_ID=
 FIRECREST_CLIENT_SECRET=
 AUTH_TOKEN_URL=
+# The URL of a FirecREST v2 deployment
 FIRECREST_URL=
 
-# You can set optionally the version of the FirecREST API that you are using by setting the variable
-FIRECREST_API_VERSION="1.15.0"
+# You can optionally set the version of the FirecREST v2 API that you are
+# using (by default the client assumes >=2.5.4)
+FIRECREST_API_VERSION="2.5.4"
 
 # This variable defines the name of the system from the point of view of FirecREST
 FIRECREST_SYSTEM=daint
@@ -34,4 +36,4 @@ FIRECREST_BASEDIR=
 reframe -C /path/to/cscs-reframe-tests/config/cscs.py ... -Sbuild_locally=0
 ```
 
-The processor autodetection can be really slow, so we recommend to skip it for now. It also requires a version of Reframe with this bugfix: https://github.com/reframe-hpc/reframe/pull/3094
+The processor autodetection can be really slow, so we recommend to skip it for now.
