@@ -615,7 +615,6 @@ class uenv_ascent_cloverleaf3d(rfm.RegressionTest):
         # A Hamming distance != 0 means the images are not identical
         self.postrun_cmds = [
             f'{ref_exe} {self.png1} {ref_dir}/{self.png1}',
-            f'./png.sh visual {self.png1} {ref_dir}/{self.png1}',
             f'./png.sh visual {self.png2} {ref_dir}/{self.png2}',
             f'./png.sh visual {self.png3} {ref_dir}/{self.png3}',
         ]
