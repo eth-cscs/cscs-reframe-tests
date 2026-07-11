@@ -612,7 +612,7 @@ class uenv_ascent_cloverleaf3d(rfm.RegressionTest):
                                'ascent/reference/cloverleaf3d')
         ref_exe = os.path.join(self.current_system.resourcesdir,
                                'ascent/reference/pHash', 'pHash_aarch64.exe')
-        # A Hamming distance != 0 means the images are not identical
+        # pHash: A Hamming distance != 0 means the images are not identical
         self.rpt1 = 'rpt1'
         self.rpt2 = 'rpt2'
         self.rpt3 = 'rpt3'
@@ -627,7 +627,7 @@ class uenv_ascent_cloverleaf3d(rfm.RegressionTest):
         assert_list = [
             sn.assert_found(r'Hamming distance 0 / 64', self.rpt1),
             sn.assert_found(r'Hamming distance 0 / 64', self.rpt2),
-            sn.assert_found(f'{self.png3} are identical', self.rtp3)
+            sn.assert_found(f'{self.png3} are identical', self.rpt3)
         ]
 
         return sn.all(assert_list)
