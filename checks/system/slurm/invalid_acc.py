@@ -25,7 +25,8 @@ class InvalidAccount(rfm.RunOnlyRegressionTest):
 
     @run_before('setup')
     def skip_on_uenv(self):
-        self.skip_if('CSCS_RFM_UENV' in os.environ, 'Skipping when CSCS_RFM_UENV is set')
+        self.skip_if('CSCS_RFM_UENV' in os.environ,
+                     'Skipping when CSCS_RFM_UENV is set')
 
     @sanity_function
     def validate(self):

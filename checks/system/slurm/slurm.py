@@ -13,6 +13,8 @@ import reframe.core.runtime as rt
 import reframe.utility.osext as osext
 import reframe.utility.sanity as sn
 
+from uenv import uarch
+
 sys.path.append(str(pathlib.Path(__file__).parent.parent.parent / 'mixins'))
 from uenv_slurm_mpi_options import UenvSlurmMpiOptionsMixin  # noqa: E402
 
@@ -135,8 +137,13 @@ class DefaultRequestGPUSetsGRES(SlurmSimpleBaseCheck):
 
     @sanity_function
     def assert_found_resources(self):
-        return sn.assert_found(r'.*(AllocTRES|Gres)=.*gres/gpu=4.*',
-                               self.stdout)
+        self.uarch = uarch(self.current_partition)
+        if self.uarch == 'mi200':
+            return sn.assert_found(r'.*(AllocTRES|Gres)=.*gres/gpu=8.*',
+                                   self.stdout)
+        else:
+            return sn.assert_found(r'.*(AllocTRES|Gres)=.*gres/gpu=4.*',
+                                   self.stdout)
 
 
 @rfm.simple_test
@@ -284,7 +291,7 @@ class MemoryOomMpiCheck(SlurmCompiledBaseCheck, UenvSlurmMpiOptionsMixin):
         # upper = 0.03 if 'openmpi' in self.current_environ.features else 0.01
         self.reference = {
             '*': {
-                'cn_max_allocated_memory': (reference_mem, lower, upper, 'GB')
+                'cn_max_allocated_memory': (reference_mem, lower, upper, 'MB')
             }
         }
 
