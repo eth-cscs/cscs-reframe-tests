@@ -613,24 +613,22 @@ class uenv_ascent_cloverleaf3d(rfm.RegressionTest):
         ref_exe = os.path.join(self.current_system.resourcesdir,
                                'ascent/reference/pHash', 'pHash_aarch64.exe')
         # A Hamming distance != 0 means the images are not identical
+        self.rpt1 = 'rpt1'
+        self.rpt2 = 'rpt2'
+        self.rpt3 = 'rpt3'
         self.postrun_cmds = [
-            f'{ref_exe} {self.png1} {ref_dir}/{self.png1}',
-            f'./png.sh visual {self.png2} {ref_dir}/{self.png2}',
-            f'./png.sh visual {self.png3} {ref_dir}/{self.png3}',
+            f'{ref_exe} {self.png1} {ref_dir}/{self.png1} > {self.rpt1}',
+            f'{ref_exe} {self.png2} {ref_dir}/{self.png2} > {self.rpt2}',
+            f'./png.sh visual {self.png3} {ref_dir}/{self.png3} > {self.rpt3}'
         ]
 
     @sanity_function
     def validate_test(self):
-        regexes = [
-            r'This test is considered NOT PASSED',  # ok as long as .png exist
-            f'Hamming distance 0 / 64',
-            f'{self.png2} are identical',
-            f'{self.png3} are identical',
+        assert_list = [
+            sn.assert_found(r'Hamming distance 0 / 64', self.rpt1),
+            sn.assert_found(r'Hamming distance 0 / 64', self.rpt2),
+            sn.assert_found(f'{self.png3} are identical', self.rtp3)
         ]
-        assert_list = []
-        for regex in regexes:
-            assert_list.append(
-                sn.assert_found(regex, self.stdout, msg=f'found "{regex}"'))
 
         return sn.all(assert_list)
 # }}}
