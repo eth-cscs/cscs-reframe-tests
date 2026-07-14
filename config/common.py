@@ -135,9 +135,9 @@ site_configuration = {
                 },
                 {
                     'type': 'httpjson',
-                    # Push to Elastic when $RFM_HTTPJSON_URL is set (see
+                    # Push to Elastic when $RFM_HTTPJSON_URL_ES is set (see
                     # reframe/frontend/cli.py)
-                    'url': os.getenv('RFM_HTTPJSON_URL',
+                    'url': os.getenv('RFM_HTTPJSON_URL_ES',
                                      'http://dummy:1234/rfm'),
                     'level': 'info',
                     'extras': {
