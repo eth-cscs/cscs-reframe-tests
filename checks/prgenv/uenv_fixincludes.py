@@ -10,8 +10,8 @@ import reframe.utility.sanity as sn
 @rfm.xfail(
     "ICON uenvs are based on old versions of spack that don't fix GCC's includes",
     lambda self: (
-        self.current_environ.name.startswith("icon_25_2_v4")
-        or self.current_environ.name.startswith("icon-dsl_25_12_v2")
+        self.current_environ.name.startswith("icon_25.2_v4")
+        or self.current_environ.name.startswith("icon-dsl_25.12_v2")
     ),
 )  # noqa:E501
 @rfm.simple_test
