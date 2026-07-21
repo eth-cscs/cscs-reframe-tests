@@ -38,26 +38,40 @@ slurm_config = {
     },
 }
 
+def version_from_uenv():
+    uenv_var = os.environ['CSCS_RFM_UENV']
+    match = re.search(r'/(\d+\.\d+)', uenv_var)
+    if match:  # Return version (YYYY.VV)
+        return match.group(1)
+    else:
+        return None
+
 
 class qe_download(rfm.RunOnlyRegressionTest):
     """
     Download QE source code.
     """
 
-    version = variable(str, value="7.3.1")
-    valid_systems = ["*"]
-    valid_prog_environs = ["*"]
+    version = variable(str, value="")
     descr = "Fetch QE source code"
     sourcesdir = None
     executable = "wget"
-    local = True
+    local = False
 
     @run_before('run')
-    def set_args(self):
+    def set_version(self):
+
+        try:
+            uenv_version = self.current_environ.extras['version'][0].lstrip('v')
+        except (KeyError, AttributeError):
+            self.logger.debug("Key ERROR: version from uenv!!")
+            uenv_version = version_from_uenv()
+        self.version = uenv_version
+        url = 'https://gitlab.com/QEF/q-e/-/archive'
+
         self.executable_opts = [
             '--quiet',
-            'https://gitlab.com/QEF/q-e/-/archive/'
-            f'qe-{self.version}/q-e-qe-{self.version}.tar.gz',
+            f'{url}/qe-{self.version}/q-e-qe-{self.version}.tar.gz'
         ]
 
     @sanity_function
@@ -101,21 +115,23 @@ class QeBuildTestUENV(rfm.CompileOnlyRegressionTest):
             f"tar --strip-components=1 -xzf {tarsource} -C {self.stagedir}"
         ]
 
-        # TODO: Use Ninja generator
-        self.build_system.config_opts = [
-            "-DQE_ENABLE_MPI=ON ",
-            "-DQE_ENABLE_OPENMP=ON",
-            "-DQE_ENABLE_SCALAPACK:BOOL=ON",
-            "-DQE_ENABLE_LIBXC=ON",
-            "-DQE_CLOCK_SECONDS:BOOL=OFF",
-        ]
-
-        if self.uarch == "gh200":
-            self.build_system.config_opts += [
-                "-DQE_ENABLE_CUDA=ON",
-                "-DQE_ENABLE_MPI_GPU_AWARE:BOOL=ON",
-                "-DQE_ENABLE_OPENACC=ON",
+        try:
+            self.build_system.config_opts = \
+                self.current_environ.extras['cmake'].split()
+        except(KeyError, AttributeError):
+            self.build_system.config_opts = [
+                "-DQE_ENABLE_MPI=ON ",
+                "-DQE_ENABLE_OPENMP=ON",
+                "-DQE_ENABLE_SCALAPACK:BOOL=ON",
+                "-DQE_ENABLE_LIBXC=ON",
+                "-DQE_CLOCK_SECONDS:BOOL=OFF",
             ]
+            if self.uarch == "gh200":
+                self.build_system.config_opts += [
+                    "-DQE_ENABLE_CUDA=ON",
+                    "-DQE_ENABLE_MPI_GPU_AWARE:BOOL=ON",
+                    "-DQE_ENABLE_OPENACC=ON",
+                ]
 
     @sanity_function
     def validate_test(self):
