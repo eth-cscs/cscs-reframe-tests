@@ -135,9 +135,9 @@ site_configuration = {
                 },
                 {
                     'type': 'httpjson',
-                    # Push to Elastic when $RFM_HTTPJSON_URL_ES is set (see
-                    # reframe/frontend/cli.py)
-                    'url': os.getenv('RFM_HTTPJSON_URL_ES',
+                    # Push to Elastic when $CSCS_RFM_HTTPJSON_URL_ES is set
+                    # (see reframe/frontend/cli.py)
+                    'url': os.getenv('CSCS_RFM_HTTPJSON_URL_ES',
                                      'http://dummy:1234/rfm'),
                     'level': 'info',
                     'extras': {
@@ -156,7 +156,8 @@ site_configuration = {
                 },
                 {
                     'type': 'httpjson',
-                    # Push to VictoriaMetrics when $RFM_HTTPJSON_URL_VM is set
+                    # Push to VictoriaMetrics when $CSCS_RFM_HTTPJSON_URL_VM is
+                    # set (see reframe/frontend/cli.py)
                     'url': os.getenv('RFM_HTTPJSON_URL_VM',
                                      'http://dummy:1234/rfm'),
                     'level': 'info',
