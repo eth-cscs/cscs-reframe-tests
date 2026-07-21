@@ -10,10 +10,10 @@ import os
 import reframe.utility.osext as osext
 
 reframe_dir = os.getenv(
-    'REFRAME_DIR',
+    'CSCS_RFM_DIR',
     '/capstor/store/cscs/cscs/public/reframe/reframe-stable/$CLUSTER_NAME'
 )
-target_dir_var_exists = bool(os.getenv('TARGET_DIR'))
+target_dir_var_exists = bool(os.getenv('CSCS_RFM_TARGET_DIR'))
 target_dir_base = (
     '$SCRATCH/reframe/$CLUSTER_NAME' if not target_dir_var_exists else ''
 )
@@ -27,7 +27,7 @@ site_configuration = {
             'modules_system': 'lmod',
             'resourcesdir':
                 '/capstor/store/cscs/cscs/public/reframe/resources',
-            'max_local_jobs': 20,
+            'max_local_jobs': 50,
             'partitions': [
                 {
                     'name': 'login',
@@ -37,7 +37,7 @@ site_configuration = {
                         'builtin',
                     ],
                     'descr': 'Login nodes',
-                    'max_jobs': 20,
+                    'max_jobs': 50,
                     'launcher': 'local'
                 },
                 {
@@ -49,7 +49,7 @@ site_configuration = {
                     ],
                     'max_jobs': 1000,
                     'extras': {
-                        'cn_memory': 856,
+                        'cn_memory': 870000,
                     },
                     'resources': [
                         {

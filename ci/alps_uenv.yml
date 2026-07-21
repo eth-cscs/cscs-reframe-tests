@@ -46,8 +46,8 @@ reframe:
         fi;
       done;
     - UENVA=${UENVA%?}
-    - export UENV=`echo ${UENVA} | sed -e 's-,,-,-g' -e 's/build:://g' -e 's/service:://g' | sort -u`
-    - echo "UENV=$UENV"
+    - export CSCS_RFM_UENV=`echo ${UENVA} | sed -e 's-,,-,-g' -e 's/build:://g' -e 's/service:://g' | sort -u`
+    - echo "CSCS_RFM_UENV=$CSCS_RFM_UENV"
     # If in a PR, run only the tests modified in the PR, else: in CRONJOB
     - |
       if [ "$CRON_RUN" = "true" ]; then
