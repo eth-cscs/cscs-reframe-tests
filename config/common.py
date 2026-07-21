@@ -158,7 +158,7 @@ site_configuration = {
                     'type': 'httpjson',
                     # Push to VictoriaMetrics when $CSCS_RFM_HTTPJSON_URL_VM is
                     # set (see reframe/frontend/cli.py)
-                    'url': os.getenv('RFM_HTTPJSON_URL_VM',
+                    'url': os.getenv('CSCS_RFM_HTTPJSON_URL_VM',
                                      'http://dummy:1234/rfm'),
                     'level': 'info',
                     'extra_headers': {
