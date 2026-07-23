@@ -1,4 +1,4 @@
-# Proposal: Handling test changes staged on the TDS (starlex)
+# Proposal: Handling test changes staged on the TDS
 
 The admins stage upcoming changes on the TDS (starlex) before a maintenance of the production systems (daint, clariden). The tests must be adapted to validate these changes on starlex, and the same adaptations must be applied to the production systems right after the maintenance.
 
@@ -27,9 +27,6 @@ How it would work:
 
 ## Option 2: staging branch
 
-Test changes are committed to a dedicated branch and the starlex pipeline runs
-that branch with `--system daint`. This offers full flexibility, but the
-branch drifts from `main` until the maintenance, and running starlex as
-`daint` means perf references, partition details and paths may not match the
-actual system. It can still be useful as a fallback for changes too disruptive
-for a toggle (e.g. a full rewrite of a test suite).
+Test changes are committed to a dedicated branch and the starlex pipeline runs that branch with `--system daint`.
+This offers full flexibility, but the branch drifts from `main` until the maintenance, and running starlex as `daint` means perf references, partition details and paths may not match the actual system.
+It can still be useful as a fallback for changes too disruptive for a toggle (e.g. a full rewrite of a test suite).
