@@ -63,7 +63,10 @@ site_configuration = {
                     ],
                     'features': ['ce', 'gpu', 'nvgpu', 'remote', 'scontrol',
                                  'uenv', 'hugepages_slurm'],
-                    'access': [f'--account={osext.osgroup()}'],
+                    'access': [
+                        f'--account={osext.osgroup()}',
+                        f'--gpus-per-node=4'
+                    ],
                     'devices': [
                         {
                             'type': 'gpu',
