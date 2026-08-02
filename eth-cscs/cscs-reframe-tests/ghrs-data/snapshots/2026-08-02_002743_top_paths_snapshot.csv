@@ -1,0 +1,11 @@
+url_path,views_total,views_unique
+/eth-cscs/cscs-reframe-tests/pulls,37,6
+/eth-cscs/cscs-reframe-tests,18,14
+/eth-cscs/cscs-reframe-tests/pull/619,9,3
+/eth-cscs/cscs-reframe-tests/pull/405,9,2
+/eth-cscs/cscs-reframe-tests/pull/627,6,4
+/eth-cscs/cscs-reframe-tests/pull/621,6,3
+/eth-cscs/cscs-reframe-tests/pull/629/changes,5,2
+/eth-cscs/cscs-reframe-tests/pull/630,5,2
+/eth-cscs/cscs-reframe-tests/pull/405/changes,5,1
+/eth-cscs/cscs-reframe-tests/blob/main/checks/microbenchmarks/xccl/xccl_tests.py,4,3
