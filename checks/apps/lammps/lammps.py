@@ -115,7 +115,7 @@ class lammps_gpu_test(rfm.RunOnlyRegressionTest):
         build-kokkos: develop-kokkos
         run-kokkos: kokkos
     """
-    executable = 'gpu-bind.sh lmp'
+    executable = 'lmp'
     valid_prog_environs = ['+lammps-gpu-prod']
     valid_systems = ['+uenv']
     maintainers = ['pkanduri', 'nbrowning', 'romeli', 'SSA']
@@ -136,7 +136,9 @@ class lammps_gpu_test(rfm.RunOnlyRegressionTest):
         if self.uarch == 'gh200':
             self.env_vars['MPICH_GPU_SUPPORT_ENABLED'] = '1'
             self.job.launcher.options += [
-                f'--gpus-per-node={config["gpus-per-node"]}'
+                f'--gpus-per-node={config["gpus-per-node"]}',
+                '--gpus-per-task=1',
+                '--gres-flags=allow-task-sharing',
             ]
             self.executable_opts = [
                 f'-sf gpu -pk gpu 1 -i {self.test_name}.in']
@@ -185,7 +187,7 @@ class lammps_kokkos_test(rfm.RunOnlyRegressionTest):
         build-kokkos: develop-kokkos
         run-gpu: gpu
     """
-    executable = 'gpu-bind.sh lmp'
+    executable = 'lmp'
     valid_prog_environs = ['+lammps-kokkos-prod']
     valid_systems = ['+uenv']
     maintainers = ['SSA']
@@ -210,6 +212,8 @@ class lammps_kokkos_test(rfm.RunOnlyRegressionTest):
             self.env_vars['MPICH_GPU_SUPPORT_ENABLED'] = '1'
             self.job.launcher.options += [
                 f'--gpus-per-node={config["gpus-per-node"]}',
+                '--gpus-per-task=1',
+                '--gres-flags=allow-task-sharing',
             ]
             self.executable_opts = [
                 f'-k on g 1 -sf kk -pk kokkos gpu/aware on -i {self.test_name}.in']
