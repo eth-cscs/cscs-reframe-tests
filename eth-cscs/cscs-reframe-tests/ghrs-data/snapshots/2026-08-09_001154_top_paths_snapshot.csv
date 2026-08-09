@@ -1,0 +1,11 @@
+url_path,views_total,views_unique
+/eth-cscs/cscs-reframe-tests/pulls,26,7
+/eth-cscs/cscs-reframe-tests,18,7
+/eth-cscs/cscs-reframe-tests/pull/631,11,4
+/eth-cscs/cscs-reframe-tests/pull/632,9,2
+/eth-cscs/cscs-reframe-tests/pull/631/changes,6,4
+/eth-cscs/cscs-reframe-tests/pull/630,6,3
+/eth-cscs/cscs-reframe-tests/tree/main/checks,5,5
+/eth-cscs/cscs-reframe-tests/pull/629/changes,5,2
+/eth-cscs/cscs-reframe-tests/tree/main/config,4,4
+/eth-cscs/cscs-reframe-tests/blob/main/checks/system/io/ior_check.py,4,2
