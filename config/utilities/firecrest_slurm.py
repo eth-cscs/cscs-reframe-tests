@@ -294,7 +294,8 @@ class SlurmFirecrestJobScheduler(SlurmJobScheduler):
             # Use ',' to join nodes to be consistent with Slurm syntax
             job._nodespec = ','.join(m['nodes'] for m in jobarr_info)
             self._update_completion_time(
-                job, (m['time'].get('end') for m in jobarr_info)
+                job, (m['time'].get('end') for m in jobarr_info
+                      if m['time'].get('end') is not None)
             )
             reasons = [m['status'].get('stateReason') or ''
                        for m in jobarr_info]
