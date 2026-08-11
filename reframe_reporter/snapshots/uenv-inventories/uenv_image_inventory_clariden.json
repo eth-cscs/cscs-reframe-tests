@@ -1,0 +1,290 @@
+{
+  "records": [
+    {
+      "date": "2024-09-04 07:41:28",
+      "digest": "e7b0d930df729da5e6b7e568d4948f414c51c7b105d2c807668b1b530b47c377",
+      "id": "e7b0d930df729da5",
+      "name": "editors",
+      "size": 1332601422,
+      "system": "clariden",
+      "tag": "v2",
+      "uarch": "gh200",
+      "version": "24.7"
+    },
+    {
+      "date": "2026-02-20 18:13:38",
+      "digest": "0a639182c520acc7db322fa84055085383af4398ae762afad41102ca88aceb1b",
+      "id": "0a639182c520acc7",
+      "name": "editors",
+      "size": 1425769038,
+      "system": "clariden",
+      "tag": "v1",
+      "uarch": "gh200",
+      "version": "25.3"
+    },
+    {
+      "date": "2025-05-22 13:02:13",
+      "digest": "7d7765bcf7f82afaaaf8e1252400b47139e783a37fbc5e156382aea785951d1e",
+      "id": "7d7765bcf7f82afa",
+      "name": "julia",
+      "size": 5077320270,
+      "system": "clariden",
+      "tag": "v1",
+      "uarch": "gh200",
+      "version": "25.5"
+    },
+    {
+      "date": "2026-06-08 15:20:35",
+      "digest": "3232c2fbb534257b2f5f55e851413e53749a99fcaa4e957e460f7abae9b3dc7c",
+      "id": "3232c2fbb534257b",
+      "name": "julia",
+      "size": 6525014606,
+      "system": "clariden",
+      "tag": "v1",
+      "uarch": "gh200",
+      "version": "26.3"
+    },
+    {
+      "date": "2025-01-10 14:51:50",
+      "digest": "e23aa859dd39863755e91038aff1809eb975d38fe2b93cb4719d8c386632477b",
+      "id": "e23aa859dd398637",
+      "name": "jupyterlab",
+      "size": 475390541,
+      "system": "clariden",
+      "tag": "v1",
+      "uarch": "gh200",
+      "version": "v4.1.8"
+    },
+    {
+      "date": "2025-05-19 14:07:42",
+      "digest": "6041fdc9d700f97fabfc085dacc553f7f324ac37b6927bac85a2b37465105392",
+      "id": "6041fdc9d700f97f",
+      "name": "jupyterlab",
+      "size": 472134221,
+      "system": "clariden",
+      "tag": "v2",
+      "uarch": "gh200",
+      "version": "v4.1.8"
+    },
+    {
+      "date": "2026-03-09 13:55:49",
+      "digest": "5fb120301a21977a90571995fa9509f12378d74adb03a8be14fd6398981b7961",
+      "id": "5fb120301a21977a",
+      "name": "jupyterlab",
+      "size": 610345549,
+      "system": "clariden",
+      "tag": "v3",
+      "uarch": "gh200",
+      "version": "v4.1.8"
+    },
+    {
+      "date": "2026-05-21 06:49:36",
+      "digest": "c66ed7c2a5d14e52d9e297c6ccbc7a9f5620fd1bff6f19820c5d7d36aec33d7b",
+      "id": "c66ed7c2a5d14e52",
+      "name": "linaro-forge",
+      "size": 380510797,
+      "system": "clariden",
+      "tag": "v2",
+      "uarch": "gh200",
+      "version": "25.1"
+    },
+    {
+      "date": "2025-10-29 09:14:25",
+      "digest": "2351d01a9f1165c40b738b5f3ba5ffcf5031e3cda67476dab535cff59245e67e",
+      "id": "2351d01a9f1165c4",
+      "name": "netcdf-tools",
+      "size": 1367790158,
+      "system": "clariden",
+      "tag": "v1",
+      "uarch": "gh200",
+      "version": "2025"
+    },
+    {
+      "date": "2025-06-17 13:42:45",
+      "digest": "f560635af8e524fb43f3bcc7788f44f2ece589e6719b4eeaf71c09f32edd893f",
+      "id": "f560635af8e524fb",
+      "name": "paraview",
+      "size": 9129083470,
+      "system": "clariden",
+      "tag": "v2",
+      "uarch": "gh200",
+      "version": "5.13.2"
+    },
+    {
+      "date": "2024-11-27 17:40:39",
+      "digest": "b81fd6ba25e8878265a2930761cbb045042925f9ff2711b8fd0ef7eff801ac58",
+      "id": "b81fd6ba25e88782",
+      "name": "prgenv-gnu",
+      "size": 4395577934,
+      "system": "clariden",
+      "tag": "v1",
+      "uarch": "gh200",
+      "version": "24.11"
+    },
+    {
+      "date": "2025-03-31 06:46:20",
+      "digest": "6068794b820fb4dd91019d020d6d98334a2f9fd23035a5e4a2f72f9dda5f1260",
+      "id": "6068794b820fb4dd",
+      "name": "prgenv-gnu",
+      "size": 4211122766,
+      "system": "clariden",
+      "tag": "v2",
+      "uarch": "gh200",
+      "version": "24.11"
+    },
+    {
+      "date": "2025-11-24 13:51:53",
+      "digest": "7bc77d02c230705725dfc80e95ddf2e2d9054a8297b57787f9e293e450ee7215",
+      "id": "7bc77d02c2307057",
+      "name": "prgenv-gnu",
+      "size": 5795439182,
+      "system": "clariden",
+      "tag": "v1",
+      "uarch": "gh200",
+      "version": "25.11"
+    },
+    {
+      "date": "2025-09-04 08:34:53",
+      "digest": "cd340208d33e7a00cc7fbee69965ad1eb3ad45058fa5e46577c6e65fd2bdc122",
+      "id": "cd340208d33e7a00",
+      "name": "prgenv-gnu",
+      "size": 5757674062,
+      "system": "clariden",
+      "tag": "v1",
+      "uarch": "gh200",
+      "version": "25.6"
+    },
+    {
+      "date": "2025-09-15 07:41:19",
+      "digest": "def4e229c0d0b66bb6e59fdb0ebacf55fadd04ead55afa79452b09038f236efc",
+      "id": "def4e229c0d0b66b",
+      "name": "prgenv-gnu",
+      "size": 5757379150,
+      "system": "clariden",
+      "tag": "v2",
+      "uarch": "gh200",
+      "version": "25.6"
+    },
+    {
+      "date": "2026-04-20 07:56:39",
+      "digest": "ab9810feb2454594caf5531b13749c750a6a1ea1a2b2ed094096f0dd99601a77",
+      "id": "ab9810feb2454594",
+      "name": "prgenv-gnu",
+      "size": 4713558606,
+      "system": "clariden",
+      "tag": "v1",
+      "uarch": "gh200",
+      "version": "26.3"
+    },
+    {
+      "date": "2026-01-08 16:39:01",
+      "digest": "85abf2aaa412e7f91cd5c337ed3a67830f91b4cdb718922a463c31ff3accd2d7",
+      "id": "85abf2aaa412e7f9",
+      "name": "prgenv-gnu-openmpi",
+      "size": 5832983118,
+      "system": "clariden",
+      "tag": "v1",
+      "uarch": "gh200",
+      "version": "25.12"
+    },
+    {
+      "date": "2026-04-20 07:57:26",
+      "digest": "14ea424f7e317a967230acac0a041cd8c7b13cf92c5d3060fba2372e34ff8701",
+      "id": "14ea424f7e317a96",
+      "name": "prgenv-gnu-openmpi",
+      "size": 4730925646,
+      "system": "clariden",
+      "tag": "v1",
+      "uarch": "gh200",
+      "version": "26.3"
+    },
+    {
+      "date": "2025-04-04 14:16:14",
+      "digest": "fca6205ff6eec0e0dc1e05f11e74b0baec2dedb532ace5260f4ebcde5e04c83f",
+      "id": "fca6205ff6eec0e0",
+      "name": "pytorch",
+      "size": 8561373774,
+      "system": "clariden",
+      "tag": "v1",
+      "uarch": "gh200",
+      "version": "v2.6.0"
+    },
+    {
+      "date": "2025-12-04 15:53:50",
+      "digest": "ce9c25489d7ebcace6eae04b6f3740ef12a2c1febe3a7c53373e9ccc63dda18d",
+      "id": "ce9c25489d7ebcac",
+      "name": "pytorch",
+      "size": 19039064655,
+      "system": "clariden",
+      "tag": "v1",
+      "uarch": "gh200",
+      "version": "v2.8.0"
+    },
+    {
+      "date": "2026-02-23 11:43:54",
+      "digest": "cd8e67c54372391c5ed13214560be02e3fcd71b978f656e3fded6980a4e0c11f",
+      "id": "cd8e67c54372391c",
+      "name": "pytorch",
+      "size": 22437573199,
+      "system": "clariden",
+      "tag": "v1",
+      "uarch": "gh200",
+      "version": "v2.9.1"
+    },
+    {
+      "date": "2026-03-02 10:22:14",
+      "digest": "c05f143d5fbf092714650697c821ee9fcf3d00c3580d56dabeacb2370a824b0f",
+      "id": "c05f143d5fbf0927",
+      "name": "pytorch",
+      "size": 22438605391,
+      "system": "clariden",
+      "tag": "v2",
+      "uarch": "gh200",
+      "version": "v2.9.1"
+    },
+    {
+      "date": "2025-05-02 11:43:16",
+      "digest": "c9d72e3e21d6fea2bb03a882accad23197d521747732397e665a16409ab7198e",
+      "id": "c9d72e3e21d6fea2",
+      "name": "scorep",
+      "size": 7971865166,
+      "system": "clariden",
+      "tag": "v1",
+      "uarch": "gh200",
+      "version": "9.0-gcc12"
+    },
+    {
+      "date": "2025-05-02 11:44:02",
+      "digest": "68cf069021ea09a39a0955d61e8861a6bb940e93142e299038b00f12d513f27a",
+      "id": "68cf069021ea09a3",
+      "name": "scorep",
+      "size": 8017535566,
+      "system": "clariden",
+      "tag": "v1",
+      "uarch": "gh200",
+      "version": "9.0-gcc13"
+    },
+    {
+      "date": "2025-07-14 10:26:46",
+      "digest": "bfd3b46d30404f2c99f9e6d0da8ada39c19cf05fc042009dfa30563a78ade0c7",
+      "id": "bfd3b46d30404f2c",
+      "name": "scorep",
+      "size": 7971824206,
+      "system": "clariden",
+      "tag": "v1",
+      "uarch": "gh200",
+      "version": "9.2-gcc12"
+    },
+    {
+      "date": "2025-07-14 10:27:33",
+      "digest": "3c0357a490c81f321d14d62e7b95a5255bc5ac310a1cf6832eb1b8939405898e",
+      "id": "3c0357a490c81f32",
+      "name": "scorep",
+      "size": 8013316686,
+      "system": "clariden",
+      "tag": "v1",
+      "uarch": "gh200",
+      "version": "9.2-gcc13"
+    }
+  ]
+}

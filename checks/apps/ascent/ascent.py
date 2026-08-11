@@ -127,9 +127,14 @@ class uenv_ascent_intro_cpp(rfm.RunOnlyRegressionTest):
                 f'python3 plot_binning_3d.py'
             ]
 
+        image_test_type = 'rmse' if self.exe in [
+                'ascent_first_light_example',
+                'ascent_scene_example1',
+                'ascent_trigger_example1'] else 'visual'
+
         self.postrun_cmds += [
             f'file {self.png}',
-            f'./png.sh {self.exe} {ref_dir}/{self.png} {self.png}'
+            f'./png.sh {image_test_type} {ref_dir}/{self.png} {self.png}'
         ]
 
     @sanity_function
@@ -157,7 +162,7 @@ class uenv_ascent_doublegyre_python(rfm.RunOnlyRegressionTest):
     tags = {'uenv', 'production'}
     valid_systems = ['+uenv']
     valid_prog_environs = ['+uenv +ascent -cpe']
-    sourcesdir = None
+    sourcesdir = 'src'
     png1 = 'velocity_magnitude.00100.png'
     png2 = 'vorticity_magnitude.00100.png'
     png3 = 'Velocity.100.png'
@@ -184,10 +189,10 @@ class uenv_ascent_doublegyre_python(rfm.RunOnlyRegressionTest):
                                'ascent/reference/doublegyre_python')
         self.postrun_cmds = [
             f'file datasets/{self.root}',
-            f'diff -s datasets/{self.png1} {ref_dir}/{self.png1}',
-            f'diff -s datasets/{self.png2} {ref_dir}/{self.png2}',
-            f'diff -s {self.png3} {ref_dir}/{self.png3}',
-            f'diff -s {self.png4} {ref_dir}/{self.png4}'
+            f'./png.sh visual datasets/{self.png1} {ref_dir}/{self.png1}',
+            f'./png.sh visual datasets/{self.png2} {ref_dir}/{self.png2}',
+            f'./png.sh visual {self.png3} {ref_dir}/{self.png3}',
+            f'./png.sh visual {self.png4} {ref_dir}/{self.png4}'
         ]
 
     @sanity_function
@@ -217,7 +222,7 @@ class uenv_ascent_doublegyre_cpp(rfm.RegressionTest):
     tags = {'uenv', 'production'}
     valid_systems = ['+uenv']
     valid_prog_environs = ['+uenv +ascent -cpe']
-    sourcesdir = None
+    sourcesdir = 'src'
     srcdir = 'InSitu-Vis-Tutorial-main/Examples/DoubleGyre/C++'
     png1 = 'velocity_magnitude.00100.png'
     png2 = 'vorticity_magnitude.00100.png'
@@ -254,8 +259,8 @@ class uenv_ascent_doublegyre_cpp(rfm.RegressionTest):
         self.prerun_cmds += [
             f'ln -s {self.srcdir}/save_images_actions.yaml .']
         self.postrun_cmds = [
-            f'diff -s datasets/{self.png1} {ref_dir}/{self.png1}',
-            f'diff -s datasets/{self.png2} {ref_dir}/{self.png2}',
+            f'./png.sh visual datasets/{self.png1} {ref_dir}/{self.png1}',
+            f'./png.sh visual datasets/{self.png2} {ref_dir}/{self.png2}',
         ]
 
     @sanity_function
@@ -282,7 +287,7 @@ class uenv_ascent_heatdiffusion_python(rfm.RunOnlyRegressionTest):
     tags = {'uenv', 'production'}
     valid_systems = ['+uenv']
     valid_prog_environs = ['+uenv +ascent -cpe']
-    sourcesdir = None
+    sourcesdir = 'src'
     par_png1 = 'temperature-par.1000.png'
     ser_png1 = 'temperature-ser.0500.png'
     ser_png2 = 'Temperature-iso-contours.0500.png'
@@ -311,9 +316,9 @@ class uenv_ascent_heatdiffusion_python(rfm.RunOnlyRegressionTest):
                                'ascent/reference/heatdiffusion_py')
         self.postrun_cmds = [
             f'{self.executable} {self.rundir}/{self.serfile} &> ser.rpt',
-            f'diff -s {self.par_png1} {ref_dir}/{self.par_png1}',
-            f'diff -s {self.ser_png1} {ref_dir}/{self.ser_png1}',
-            f'diff -s {self.ser_png2} {ref_dir}/{self.ser_png2}',
+            f'./png.sh visual {self.par_png1} {ref_dir}/{self.par_png1}',
+            f'./png.sh visual {self.ser_png1} {ref_dir}/{self.ser_png1}',
+            f'./png.sh visual {self.ser_png2} {ref_dir}/{self.ser_png2}',
         ]
 
     @sanity_function
@@ -344,7 +349,7 @@ class uenv_ascent_heatdiffusion_cpp(rfm.RegressionTest):
     tags = {'uenv', 'production'}
     valid_systems = ['+uenv']
     valid_prog_environs = ['+uenv +ascent -cpe']
-    sourcesdir = None
+    sourcesdir = 'src'
     srcdir = 'InSitu-Vis-Tutorial-main/Examples/HeatDiffusion/C++'
     png1 = 'ascent_temperature_isolines-010000.png'
     build_system = 'CMake'
@@ -377,7 +382,7 @@ class uenv_ascent_heatdiffusion_cpp(rfm.RegressionTest):
                                'ascent/reference/heatdiffusion_cpp')
         self.postrun_cmds = [
             f'cat Heat.bov',
-            f'diff -s datasets/{self.png1} {ref_dir}/{self.png1}',
+            f'./png.sh visual datasets/{self.png1} {ref_dir}/{self.png1}',
         ]
 
     @sanity_function
@@ -409,7 +414,7 @@ class uenv_ascent_noise(rfm.RegressionTest):
     tags = {'uenv', 'production'}
     valid_systems = ['+uenv']
     valid_prog_environs = ['+uenv +ascent -cpe']
-    sourcesdir = None
+    sourcesdir = 'src'
     ascent_v = variable(str, value='0.9.5')
     png1 = 's1_0_000005.png'
     build_system = 'CMake'
@@ -454,7 +459,8 @@ class uenv_ascent_noise(rfm.RegressionTest):
         self.env_vars['OMP_NUM_THREADS'] = '16'
         ref_dir = os.path.join(self.current_system.resourcesdir,
                                'ascent/reference/noise')
-        self.postrun_cmds = [f'diff -s {self.png1} {ref_dir}/{self.png1}']
+        self.postrun_cmds = [
+            f'./png.sh visual {self.png1} {ref_dir}/{self.png1}']
 
     @sanity_function
     def validate_test(self):
@@ -559,7 +565,7 @@ class uenv_ascent_cloverleaf3d(rfm.RegressionTest):
     tags = {'uenv', 'production'}
     valid_systems = ['+uenv +nvgpu']
     valid_prog_environs = ['+uenv +ascent -cpe']
-    sourcesdir = None
+    sourcesdir = 'src'
     ascent_v = variable(str, value='0.9.5')
     png1 = 'contour_tree_0200.png'
     png2 = 'levels_0200.png'
@@ -606,26 +612,23 @@ class uenv_ascent_cloverleaf3d(rfm.RegressionTest):
                                'ascent/reference/cloverleaf3d')
         ref_exe = os.path.join(self.current_system.resourcesdir,
                                'ascent/reference/pHash', 'pHash_aarch64.exe')
-        # A Hamming distance != 0 means the images are not identical
+        # pHash: A Hamming distance != 0 means the images are not identical
+        self.rpt1 = 'rpt1'
+        self.rpt2 = 'rpt2'
+        self.rpt3 = 'rpt3'
         self.postrun_cmds = [
-            f'{ref_exe} {self.png1} {ref_dir}/{self.png1}',
-            f'diff -s {self.png1} {ref_dir}/{self.png1}',
-            f'diff -s {self.png2} {ref_dir}/{self.png2}',
-            f'diff -s {self.png3} {ref_dir}/{self.png3}',
+            f'{ref_exe} {self.png1} {ref_dir}/{self.png1} > {self.rpt1}',
+            f'{ref_exe} {self.png2} {ref_dir}/{self.png2} > {self.rpt2}',
+            f'./png.sh visual {self.png3} {ref_dir}/{self.png3} > {self.rpt3}'
         ]
 
     @sanity_function
     def validate_test(self):
-        regexes = [
-            r'This test is considered NOT PASSED',  # ok as long as .png exist
-            f'Hamming distance 0 / 64',
-            f'{self.png2} are identical',
-            f'{self.png3} are identical',
+        assert_list = [
+            sn.assert_found(r'Hamming distance 0 / 64', self.rpt1),
+            sn.assert_found(r'Hamming distance 0 / 64', self.rpt2),
+            sn.assert_found(f'{self.png3} are identical', self.rpt3)
         ]
-        assert_list = []
-        for regex in regexes:
-            assert_list.append(
-                sn.assert_found(regex, self.stdout, msg=f'found "{regex}"'))
 
         return sn.all(assert_list)
 # }}}
