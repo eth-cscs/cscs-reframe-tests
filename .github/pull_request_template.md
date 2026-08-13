@@ -1,16 +1,18 @@
 - [ ] Describe the purpose of this pull request (Add a link to the jira issue when possible)
-- [ ] When ready, manually trigger 1 (or more) CI pipelines by writing a cscs-ci comment inside this Pull Request.
-For instance:
+
+When ready, manually trigger 1 (or more) CI pipelines by writing a cscs-ci
+comment inside this Pull Request. For instance:
 
 ```shell
 cscs-ci run alps-daint-uenv;CSCS_RFM_UENV=prgenv-gnu/26.3:v1
 cscs-ci run alps-santis-uenv;CSCS_RFM_UENV=prgenv-gnu/26.3:v1
 cscs-ci run alps-clariden-uenv;CSCS_RFM_UENV=prgenv-gnu/26.3:v1
 
-cscs-ci run alps-starlex-uenv;CSCS_RFM_UENV=prgenv-gnu/25.11:v1
+cscs-ci run alps-starlex-uenv;CSCS_RFM_UENV=prgenv-gnu/26.3:v1
 cscs-ci run alps-beverin-uenv;CSCS_RFM_UENV=prgenv-gnu/25.07-6.3.3:v12
 
-cscs-ci run alps-eiger-uenv;CSCS_RFM_UENV=[build::|service::]prgenv-gnu/25.11:v1
+cscs-ci run alps-eiger-uenv;CSCS_RFM_UENV=[build::|service::]prgenv-gnu/26.3:v1
+cscs-ci run alps-pilatus-uenv;CSCS_RFM_UENV=[build::|service::]prgenv-gnu/26.3:v1
 ```
 
 - You can also pass SLURM flags:
