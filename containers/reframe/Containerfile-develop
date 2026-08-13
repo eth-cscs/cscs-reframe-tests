@@ -1,20 +1,16 @@
 FROM ubuntu:24.04
 
-# Install ca-certificates first using the default Ubuntu sources, so that the
-# subsequent switch to the internal CSCS HTTPS mirror can be verified.
+# Install ca-certificates first using the default Ubuntu sources.
 RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Switch to the internal CSCS Ubuntu mirror for faster package downloads.
+# Switch to the internal CSCS Ubuntu mirror.
 COPY apt-workaround/ubuntu.sources /etc/apt/sources.list.d/ubuntu.sources
 COPY apt-workaround/99-jfrog-proxy /etc/apt/apt.conf.d/99-jfrog-proxy
 
 # Install system dependencies and libraries required by the host's Slurm CLI plugins.
-# The host Slurm plugins (SLES 15 SP6) are linked against OpenLDAP 2.4 and SASL2 .3,
-# while Ubuntu 24.04 ships OpenLDAP 2.5 / SASL2 .2. Compatibility symlinks are added
-# below to allow sbatch/srun to load the host plugins inside the container.
 RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         curl git build-essential lmod less \
@@ -35,12 +31,11 @@ RUN for d in /usr/lib/aarch64-linux-gnu /usr/lib/x86_64-linux-gnu; do \
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 ENV PATH="/root/.local/bin:${PATH}"
 
-# Install ReFrame 4.10.1 from the upstream git tag in editable mode.
-# Editable mode is used so that hpctestlib (which is not shipped in the PyPI
-# wheel) is also importable from /opt/reframe.
-RUN git clone --depth 1 --branch v4.10.1 https://github.com/reframe-hpc/reframe.git /opt/reframe
+# Install the latest ReFrame development version from the upstream repository
+# in editable mode, so hpctestlib is available alongside reframe.
+RUN git clone --depth 1 https://github.com/reframe-hpc/reframe.git /opt/reframe
 
-# Patch ReFrame 4.10.1 scheduler bug (KeyError in _cancel_if_blocked),
+# Patch ReFrame scheduler bug (KeyError in _cancel_if_blocked),
 # fixed upstream in https://github.com/reframe-hpc/reframe/pull/3695.
 # Remove this patch after upgrading to ReFrame >= 4.10.2.
 # Upstream code uses `pending_reasons[pending_job].setdefault([])` which raises
@@ -63,8 +58,7 @@ RUN uv tool install -e /opt/reframe --with packaging
 # declared reframe package, so it is not exposed by the editable install).
 ENV PYTHONPATH=/opt/reframe
 
-# Also make reframe available in a standard PATH location, so the binary is
-# reachable even if the container runtime resets PATH.
+# Also make reframe available in a standard PATH location.
 RUN ln -sf /root/.local/bin/reframe /usr/local/bin/reframe
 
 # Verify installation.
