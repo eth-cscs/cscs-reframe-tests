@@ -8,6 +8,10 @@ import reframe as rfm
 import reframe.utility.sanity as sn
 from uenv import uarch
 
+lammps_versions = {
+        '20230802.3': '2Aug2023'
+}
+
 lammps_references = {
     'lj_gpu': {
         'gh200': {'time_run': (45, None, 0.05, 's')},
@@ -84,13 +88,14 @@ class lammps_build_test(rfm.CompileOnlyRegressionTest):
     @run_before('compile')
     def prepare_build(self):
         self.build_system.builddir = 'build'
+        version = lammps_versions[self.lammps_sources.version]
         self.build_system.config_opts = [
-            f'-C ../lammps-2Aug2023/cmake/presets/kokkos-cuda.cmake',
+            f'-C ../lammps-{version}/cmake/presets/kokkos-cuda.cmake',
             '-DKokkos_ENABLE_IMPL_CUDA_MALLOC_ASYNC=OFF',
             '-DKokkos_ARCH_NATIVE=ON',
             '-DKokkos_ARCH_PASCAL60=OFF',
             '-DKokkos_ARCH_HOPPER90=ON',
-            '../lammps-2Aug2023/cmake/',
+            f'../lammps-{version}/cmake/',
         ]
         self.build_system.max_concurrency = 64
         tarsource = os.path.join(
@@ -131,7 +136,6 @@ class lammps_gpu_test(rfm.RunOnlyRegressionTest):
         self.num_tasks_per_node = config['ntasks-per-node']
         self.num_tasks = config['nodes'] * self.num_tasks_per_node
         self.time_limit = config['walltime']
-        self.executable_opts = [f'-i {self.test_name}.in']
 
         if self.uarch == 'gh200':
             self.env_vars['MPICH_GPU_SUPPORT_ENABLED'] = '1'
@@ -190,7 +194,7 @@ class lammps_kokkos_test(rfm.RunOnlyRegressionTest):
     executable = 'lmp'
     valid_prog_environs = ['+lammps-kokkos-prod']
     valid_systems = ['+uenv']
-    maintainers = ['SSA']
+    maintainers = ['pkanduri', 'nbrowning', 'romeli', 'SSA']
     test_name = variable(str, value='lj_kokkos')
     energy_reference = -4.620456
     tags = {'uenv', 'production', 'maintenance'}
