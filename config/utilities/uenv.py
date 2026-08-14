@@ -403,7 +403,8 @@ def _get_uenvs() -> Optional[List]:
             )
             env['name'] = f'{uenv_name_pretty}_{k}'
 
-            env.setdefault("extras", {})["version"] = _uenv_version_and_tag_from_label(uenv_name)
+            if not env.get('extras', {}).get('version'):
+                env.setdefault("extras", {})["version"] = _uenv_version_and_tag_from_label(uenv_name)
 
             env['resources'] = {
                 'uenv': {
