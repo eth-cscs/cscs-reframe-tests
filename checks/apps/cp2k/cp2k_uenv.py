@@ -4,15 +4,17 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import os
-import shutil
-from packaging.version import Version
 import re
+import shutil
 
 import reframe as rfm
 import reframe.utility.sanity as sn
-import reframe.utility.udeps as udeps
+from packaging.version import Version
 from reframe.core.builtins import xfail
+from reframe.utility import udeps
 from uenv import uarch
+
+# import reframe.utility.udeps as udeps
 
 cp2k_references = {
     'md': {
