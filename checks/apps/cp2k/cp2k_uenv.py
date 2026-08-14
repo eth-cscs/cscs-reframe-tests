@@ -348,12 +348,13 @@ class Cp2kCheckMD_UENVCustomExec(Cp2kCheckMD_UENV):
 # {{{ PBE
 class Cp2kCheckPBE_UENV(Cp2kCheck_UENV):
     """
-cp2k/2024.2:v1 no rfm
-cp2k/2024.3:v1 no rfm
-cp2k/2024.3:v2 env.extras.version=('2024.3', 'v2')
-cp2k/2025.1:v2 env.extras.version=('2025.1', 'v2')
-cp2k/2026.1:v1 env.extras.version=v2026.1
-cp2k/2026.1:v2 env.extras.version=v2026.1
+Included versions:
+    cp2k/2024.2:v1 no rfm
+    cp2k/2024.3:v1 no rfm
+    cp2k/2024.3:v2 env.extras.version=('2024.3', 'v2')
+    cp2k/2025.1:v2 env.extras.version=('2025.1', 'v2')
+    cp2k/2026.1:v1 env.extras.version=v2026.1
+    cp2k/2026.1:v2 env.extras.version=v2026.1
     """
     test_name = 'pbe'
     valid_prog_environs = ['+cp2k -dlaf']
@@ -371,12 +372,12 @@ cp2k/2026.1:v2 env.extras.version=v2026.1
             uenv_version = (
                 uenv_version[0]
                 if isinstance(uenv_version, tuple)
-                else uenv_version.replace('v', '')
+                else uenv_version.lstrip('v')
             )
         except (KeyError, AttributeError):
             uenv_version = version_from_uenv()
 
-        if Version(uenv_version[1:]) > Version('2025.1'):
+        if Version(uenv_version) > Version('2025.1'):
             # Reduce max_scf to 16 to reproduce previous behaviour
             self.executable_opts = ['-i', 'H2O-128-PBE-TZ-max_scf_16.inp']
         else:
