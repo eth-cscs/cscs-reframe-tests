@@ -11,10 +11,8 @@ import reframe as rfm
 import reframe.utility.sanity as sn
 from packaging.version import Version
 from reframe.core.builtins import xfail
-from reframe.utility import udeps
+import reframe.utility.udeps as udeps
 from uenv import uarch
-
-# import reframe.utility.udeps as udeps
 
 cp2k_references = {
     'md': {
