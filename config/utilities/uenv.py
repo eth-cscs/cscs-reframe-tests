@@ -400,6 +400,7 @@ def _get_uenvs() -> Optional[List]:
                 .replace(":", "_")
                 .replace("/", "_")
                 .replace("%", "_")
+                .replace(".", "_")
             )
             env['name'] = f'{uenv_name_pretty}_{k}'
 
