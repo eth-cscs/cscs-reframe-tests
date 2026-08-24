@@ -11,6 +11,26 @@ import os
 import reframe.utility.osext as osext
 
 
+def _cpe_ce_env():
+    return {
+        'name': 'PrgEnv-ce',
+        'features': [
+            'cpe', 'prgenv',
+            'serial', 'openmp', 'mpi', 'containerized_cpe'],
+        'resources': {
+            'cpe_ce_image': {
+                'image':
+                    # Avoid interpreting '#' as a start of a comment
+                    os.environ['CSCS_RFM_CPE_CE'].replace(r'#', r'\#')
+            }
+        }
+    }
+
+_cpe_ce_environs = (
+    ['builtin', 'PrgEnv-ce'] if 'CSCS_RFM_CPE_CE' in os.environ else ['builtin']
+)
+
+
 site_configuration = {
     'systems': [
         {
@@ -37,10 +57,7 @@ site_configuration = {
                     'name': 'normal',
                     'scheduler': 'slurm',
                     'time_limit': '10m',
-                    'environs': [
-                        'builtin',
-                        'PrgEnv-ce',
-                    ],
+                    'environs': _cpe_ce_environs,
                     'max_jobs': 1000,
                     'extras': {
                         'cn_memory': 241746,
@@ -81,21 +98,7 @@ site_configuration = {
             ]
         },
     ],
-    'environments': [
-        {
-            'name': 'PrgEnv-ce',
-            'features': [
-                'cpe', 'prgenv',
-                'serial', 'openmp', 'mpi', 'containerized_cpe'],
-            'resources': {
-                'cpe_ce_image': {
-                    'image':
-                        # Avoid interpretting '#' as a start of a comment
-                        os.environ.get(
-                            'CSCS_RFM_CPE_CE', ''
-                        ).replace(r'#', r'\#')
-                }
-             }
-        },
-    ],
+    'environments': (
+        [_cpe_ce_env()] if 'CSCS_RFM_CPE_CE' in os.environ else []
+    ),
 }
