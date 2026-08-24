@@ -135,6 +135,7 @@ site_configuration = {
                 },
                 {
                     'type': 'httpjson',
+                    'authorization_header': {},
                     # Push to Elastic when $CSCS_RFM_HTTPJSON_URL_ES is set
                     # (see reframe/frontend/cli.py)
                     'url': os.getenv('CSCS_RFM_HTTPJSON_URL_ES',
@@ -156,6 +157,7 @@ site_configuration = {
                 },
                 {
                     'type': 'httpjson',
+                    'authorization_header': {},
                     # Push to VictoriaMetrics when $CSCS_RFM_HTTPJSON_URL_VM is
                     # set (see reframe/frontend/cli.py)
                     'url': os.getenv('CSCS_RFM_HTTPJSON_URL_VM',
