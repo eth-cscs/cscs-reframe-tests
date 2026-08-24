@@ -4,14 +4,14 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import os
-import shutil
-from packaging.version import Version
 import re
+import shutil
 
 import reframe as rfm
 import reframe.utility.sanity as sn
-import reframe.utility.udeps as udeps
+from packaging.version import Version
 from reframe.core.builtins import xfail
+import reframe.utility.udeps as udeps
 from uenv import uarch
 
 cp2k_references = {
@@ -345,6 +345,15 @@ class Cp2kCheckMD_UENVCustomExec(Cp2kCheckMD_UENV):
 
 # {{{ PBE
 class Cp2kCheckPBE_UENV(Cp2kCheck_UENV):
+    """
+Included versions:
+    cp2k/2024.2:v1 no rfm
+    cp2k/2024.3:v1 no rfm
+    cp2k/2024.3:v2 env.extras.version=('2024.3', 'v2')
+    cp2k/2025.1:v2 env.extras.version=('2025.1', 'v2')
+    cp2k/2026.1:v1 env.extras.version=v2026.1
+    cp2k/2026.1:v2 env.extras.version=v2026.1
+    """
     test_name = 'pbe'
     valid_prog_environs = ['+cp2k -dlaf']
     energy_reference = -2206.2426491358
@@ -357,7 +366,12 @@ class Cp2kCheckPBE_UENV(Cp2kCheck_UENV):
         # a different count means a different runtime with the same input file
         # See https://github.com/cp2k/cp2k/pull/4141
         try:
-            uenv_version = self.current_environ.extras['version'][0]
+            uenv_version = self.current_environ.extras['version']
+            uenv_version = (
+                uenv_version[0]
+                if isinstance(uenv_version, tuple)
+                else uenv_version.lstrip('v')
+            )
         except (KeyError, AttributeError):
             uenv_version = version_from_uenv()
 
