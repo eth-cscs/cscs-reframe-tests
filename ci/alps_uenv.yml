@@ -26,7 +26,8 @@ reframe:
     - hostname
 
     # use system provided python venv with reframe
-    - source /capstor/store/cscs/cscs/public/reframe/reframe-stable/${CLUSTER_NAME}/rfm-env/bin/activate
+    # - source /capstor/store/cscs/cscs/public/reframe/reframe-stable/${CLUSTER_NAME}/rfm-env/bin/activate
+    - source /capstor/store/cscs/cscs/public/reframe/.venv_alps/${CLUSTER_NAME}/bin/activate
     - python --version
     - which reframe && reframe --version
   script:

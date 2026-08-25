@@ -15,7 +15,8 @@ from uenv_slurm_mpi_options import UenvSlurmMpiOptionsMixin  # noqa: E402
 
 
 @rfm.simple_test
-class MpiInitTest(rfm.RegressionTest, ContainerEngineCPEMixin, UenvSlurmMpiOptionsMixin):
+class MpiInitTest(rfm.RegressionTest, ContainerEngineCPEMixin,
+                  UenvSlurmMpiOptionsMixin):
     '''
     This test checks the value returned by calling MPI_Init_thread.
     '''
@@ -58,7 +59,7 @@ class MpiInitTest(rfm.RegressionTest, ContainerEngineCPEMixin, UenvSlurmMpiOptio
         # - 8.1.4.31,8.1.5.32,8.1.18.4,8.1.21.11,8.1.25.17 (ANL base 3.4a2)
         # OpenMPI version:
         # - MPI-3.1 = Open MPI v5.0.9
-        regex = r'= (MPI VERSION\s+: CRAY MPICH version \S+ \(ANL base |Open MPI v)([\S^\)]+)'
+        regex = r'= (MPI VERSION\s+: CRAY MPICH version \S+ \(ANL base |Open MPI v)([\S^\)]+)'  # noqa: E501
         stdout = os.path.join(self.stagedir, sn.evaluate(self.stdout))
         mpich_version = sn.extractsingle(regex, stdout, 2)
         self.mpithread_version = {
@@ -128,7 +129,8 @@ class MpiInitTest(rfm.RegressionTest, ContainerEngineCPEMixin, UenvSlurmMpiOptio
 
 
 @rfm.simple_test
-class MpiGpuDirectOOM(rfm.RegressionTest, ContainerEngineCPEMixin, UenvSlurmMpiOptionsMixin):
+class MpiGpuDirectOOM(rfm.RegressionTest, ContainerEngineCPEMixin,
+                      UenvSlurmMpiOptionsMixin):
     '''
     This test checks the issue reported in:
     https://github.com/eth-cscs/alps-gh200-reproducers/tree/main/gpudirect-oom
