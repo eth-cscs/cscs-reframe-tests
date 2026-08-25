@@ -63,7 +63,11 @@ class qe_download(rfm.RunOnlyRegressionTest):
     def set_version(self):
 
         try:
-            uenv_version = self.current_environ.extras['version'][0].lstrip('v')
+            uenv_version = self.current_environ.extras['version']
+            if isinstance(uenv_version, tuple):
+                uenv_version = uenv_version[0]
+            if isinstance(uenv_version, str):
+                uenv_version = uenv_version.lstrip('v')
         except (KeyError, AttributeError):
             self.logger.debug("Key ERROR: version from uenv!!")
             uenv_version = version_from_uenv()
