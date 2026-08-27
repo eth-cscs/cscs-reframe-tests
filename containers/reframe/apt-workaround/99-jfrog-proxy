@@ -1,0 +1,2 @@
+Acquire::http::AllowRedirect "true";
+Acquire::http::Pipeline-Depth "0";

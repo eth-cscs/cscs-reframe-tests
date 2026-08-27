@@ -81,7 +81,7 @@ class SphExa_CE(rfm.RunOnlyRegressionTest, ContainerEngineMixin,
                                  float)
         return sec / steps
 
-    _ref_sec_per_step = {'evrard': {'gh200': 1.7, 'a100':  1.9}}
+    _ref_sec_per_step = {'evrard': {'gh200': 1.7, 'a100': 1.9}}
 
     @run_before('performance')
     def set_perf_reference(self):
@@ -101,6 +101,9 @@ class SphExa_Skybox(SphExa_CE):
     descr = 'SPH-EXA for CE/Skybox'
     tags = {'ce_dev', 'skybox'}
     spank_option = 'edf'
-    container_env_key_values = {
-        'devices': ["alps.cscs/cxi=all", "nvidia.com/gpu=all", "/dev/gdrdrv"]
-    }
+
+    @run_after('init')
+    def setup_hooks(self):
+        self.container_env_table['annotations.com.hooks'] = {
+            'cxi.enabled': 'true'
+        }

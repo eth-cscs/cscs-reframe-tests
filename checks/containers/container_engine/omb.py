@@ -12,7 +12,6 @@ import sys
 
 import reframe as rfm
 import reframe.utility.sanity as sn
-# from reframe.core.builtins import xfail
 
 sys.path.append(str(pathlib.Path(__file__).parent.parent.parent / 'mixins'))
 
@@ -112,10 +111,6 @@ class OMB_MPICH_CE(OMB_Base_CE, SlurmMpiPmi2Mixin):
         self.skip_if(self.test_name == 'collective/osu_alltoall',
                      'skipping Known performance regression')
 
-    @run_before('run')
-    def set_pmi2(self):
-        self.job.launcher.options += ['--mpi=pmi2']
-
 
 @rfm.simple_test
 class OMB_OMPI_CE(OMB_Base_CE, SlurmMpiPmixMixin):
@@ -123,7 +118,7 @@ class OMB_OMPI_CE(OMB_Base_CE, SlurmMpiPmixMixin):
     container_image = (
         'jfrog.svc.cscs.ch/ghcr/sarus-suite/containerfiles-ci/'
         'omb:7.5.2-ompi5.0.9-ofi1.22-cuda12.8.1'
-        )
+    )
     valid_systems = ['+ce +nvgpu']
     reference_per_test = {
         'pt2pt/osu_bw': {
@@ -145,10 +140,6 @@ class OMB_OMPI_CE(OMB_Base_CE, SlurmMpiPmixMixin):
     def skip_xfail_test(self):
         self.skip_if(self.test_name == 'collective/osu_alltoall',
                      'skipping Known performance regression')
-
-    @run_before('run')
-    def set_pmix(self):
-        self.job.launcher.options += ['--mpi=pmix']
 
 
 @rfm.simple_test
@@ -186,9 +177,6 @@ class OMB_MPICH_Skybox(OMB_MPICH_CE):
     '''
     tags = {'ce_dev', 'skybox'}
     spank_option = 'edf'
-    container_env_key_values = {
-        'devices': ["alps.cscs/cxi=all", "nvidia.com/gpu=all", "/dev/gdrdrv"]
-    }
 
 
 @rfm.simple_test
@@ -198,6 +186,3 @@ class OMB_OMPI_Skybox(OMB_OMPI_CE):
     '''
     tags = {'ce_dev', 'skybox'}
     spank_option = 'edf'
-    container_env_key_values = {
-        'devices': ["alps.cscs/cxi=all", "nvidia.com/gpu=all", "/dev/gdrdrv"]
-    }
