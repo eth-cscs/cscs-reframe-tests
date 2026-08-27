@@ -1,3 +1,4 @@
+# opencode
 See https://confluence.cscs.ch/spaces/reframe/pages/924943293/Contributing+Pull+Requests
 
 Stored keys:
