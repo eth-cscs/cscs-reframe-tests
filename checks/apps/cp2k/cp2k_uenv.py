@@ -106,7 +106,11 @@ class cp2k_download(rfm.RunOnlyRegressionTest):
     @run_before('run')
     def set_version(self):
         try:
-            uenv_version = self.current_environ.extras['version'][0]
+            uenv_version = self.current_environ.extras['version']
+            if isinstance(uenv_version, tuple):
+                uenv_version = uenv_version[0]
+            if isinstance(uenv_version, str):
+                uenv_version = uenv_version.lstrip('v')
         except (KeyError, AttributeError):
             uenv_version = version_from_uenv()
 
