@@ -4,7 +4,7 @@ The admins stage upcoming changes on the TDS (starlex) before a maintenance of t
 
 ## Feature/extras toggles in the system config
 
-Each change staged on the TDS is expressed as a partition `features` entry (or `extras` for values) added **only to the starlex config**. Tests change their behaviour based on it, more info in [portable_tests.md](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/portable_tests.md).
+Each change staged on the TDS is expressed as a partition `features` entry (or `extras` for values) added **only to the [starlex config](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/config/systems/starlex.py)**. Tests change their behaviour based on it, more info in [portable_tests.md](https://github.com/eth-cscs/cscs-reframe-tests/blob/main/portable_tests.md).
 
 How it works:
 
@@ -27,7 +27,7 @@ How it works:
 
 3. **Preparing the maintenance PR**
 
-   Shortly before the maintenance, a branch (e.g. `maint/2026-08-daint`) is cut from the current `main`. Its only diff is adding the features listed in `pending-maintenance-features.md` to the production system's config. It is opened as a PR and reviewed in advance, so nothing needs to be written on the day itself. The branch must be pushed to the `eth-cscs/cscs-reframe-tests` repository itself, not to a fork, because the pipeline clones the branch directly from there.
+   Shortly before the maintenance, a branch (e.g. `maint/2026-08-daint`) is cut from the current `main`. Its only diff is adding the features/extras listed in `pending-maintenance-features.md` to the production system's config. It is opened as a PR and reviewed in advance, so nothing needs to be written on the day itself. The branch must be pushed to the `eth-cscs/cscs-reframe-tests` repository itself, not to a fork, because the pipeline clones the branch directly from there.
 
 4. **On the maintenance day**
 
