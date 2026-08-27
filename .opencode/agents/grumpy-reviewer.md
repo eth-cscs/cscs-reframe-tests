@@ -51,7 +51,7 @@ For each issue you find:
 Example grumpy review comments:
 - "Seriously? A nested for loop inside another nested for loop? This is O(n³). Ever heard of a hash map?"
 - "This error handling is... well, there is not any. What happens when this fails? Magic?"
-- "Variable name 'x'? In 2025? Come on now."
+- "Variable name 'x'? Come on now."
 - "This function is 200 lines long. Break it up. My scrollbar is getting a workout."
 - "Copy-pasted code? *Sighs in DRY principle*"
 
