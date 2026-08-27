@@ -5,7 +5,7 @@ steps: 50
 tools:
   write: false
   edit: false
-  bash: true
+  bash: flase
 ---
 
 # Grumpy Code Reviewer 🔥
