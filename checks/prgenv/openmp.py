@@ -7,7 +7,7 @@ import reframe as rfm
 import reframe.utility.sanity as sn
 
 
-class openmp_offload_base(rfm.RegressionTest):
+class _openmp_offload_base(rfm.RegressionTest):
     descr = 'Simple openmp offload GPU test'
     valid_systems = ['+nvgpu']
     build_system = 'SingleSource'
@@ -24,21 +24,23 @@ class openmp_offload_base(rfm.RegressionTest):
 
     @sanity_function
     def validate(self):
-        """
-         ndev=           4 gpu= T
-        """
-        isgpu = sn.assert_found(r' ndev=\s+\d gpu=\s+T', self.stdout)
-        _ngpu = sn.extractsingle(r' ndev=\s+(?P<ngpu>\d)', self.stdout,
+        isgpu = sn.assert_found(r' ndev=\d+ gpu=T', self.stdout)
+        ngpus = sn.extractsingle(r'ndev=(?P<ngpu>\d+)', self.stdout,
                                  'ngpu', int)
-        ngpu = sn.assert_eq(
-            _ngpu,
-            self.current_partition.select_devices('gpu')[0].num_devices)
+        gpuconfig = self.current_partition.select_devices('gpu')
+        if not gpuconfig:
+            raise ValueError(
+                    f"no GPU devices configured for partition "
+                    f"'{self.current_partition.fullname}'"
+            )
+        else:
+            ngpu = sn.assert_eq(ngpus, gpuconfig[0].num_devices)
 
         return sn.all([isgpu, ngpu])
 
 
 @rfm.simple_test
-class openmp_offload_gfortran_test(openmp_offload_base):
+class openmp_offload_gfortran_test(_openmp_offload_base):
     valid_prog_environs = ['+openmp +offload_gnu']
 
     @run_before('compile')
@@ -48,11 +50,20 @@ class openmp_offload_gfortran_test(openmp_offload_base):
 
 
 @rfm.simple_test
-class openmp_offload_nvfortran_test(openmp_offload_base):
+class openmp_offload_nvfortran_test(_openmp_offload_base):
     valid_prog_environs = ['+openmp +offload_nvhpc']
 
     @run_before('compile')
     def set_fflags(self):
-        gpu_arch = self.current_partition.select_devices('gpu')[0].arch[3:]
+        # gpu_arch = self.current_partition.select_devices('gpu')[0].arch[3:]
+        gpuconfig = self.current_partition.select_devices('gpu')
+        if not gpuconfig:
+            raise ValueError(
+                    f"no GPU devices configured for partition "
+                    f"'{self.current_partition.fullname}'"
+            )
+        else:
+            gpu_arch = gpuconfig[0].arch.strip('sm_')
+
         self.build_system.ftn = 'nvfortran'
         self.build_system.fflags = ['-mp=gpu', f'-gpu=cc{gpu_arch}']
