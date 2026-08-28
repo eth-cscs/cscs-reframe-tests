@@ -62,7 +62,7 @@ class openmp_offload_nvfortran_test(_openmp_offload_base):
                     f"'{self.current_partition.fullname}'"
             )
 
-        gpu_arch = gpuconfig[0].arch.replace('sm_', '')
+        gpu_arch = gpuconfig[0].arch.removeprefix('sm_')
 
         self.build_system.ftn = 'nvfortran'
         self.build_system.fflags = ['-mp=gpu', f'-gpu=cc{gpu_arch}']
