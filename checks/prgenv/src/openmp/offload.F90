@@ -5,10 +5,13 @@ program offload_f
 
     integer, parameter :: n = 1048576
     real(real64), allocatable :: a(:)
-    integer :: i
+    integer :: i, ierr
     logical :: gpu = .false.
 
-    allocate(a(n), stat=)
+    allocate(a(n), stat=ierr)
+    if (ierr /= 0) then
+        error stop 'allocation of a failed'
+    end if
 
     !$omp target teams distribute parallel do map(from:a) map(tofrom:gpu)
     do i = 1, n
