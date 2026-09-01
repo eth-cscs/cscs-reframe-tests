@@ -136,7 +136,8 @@ def _set_xccl_uenv_env_vars(env_vars):
         {
             # These variables are documented on
             # https://docs.cscs.ch/software/communication/nccl/#using-nccl
-            'NCCL_CROSS_NIC': '1',
+            'NCCL_CROSS_NIC': '0',
+            'NCCL_PXN_DISABLE': '1',
             'NCCL_NET': '\'AWS Libfabric\'',
             'NCCL_NET_GDR_LEVEL': 'PHB',
             'NCCL_PROTO': '^LL128',
