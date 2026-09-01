@@ -282,8 +282,15 @@ def create_checks(check):
         'slingshot-show-cxi-iommu-group | grep type=identity | wc -l',
         name='slingshot-iommu-group',
         descr='Verify CXI IOMMU group is set to identity on all NICs',
-        valid_systems=['daint', 'santis', 'clariden', 'eiger'],
+        valid_systems=['daint', 'santis', 'clariden'],
         expected=r'4'
+    )
+    check(
+        'slingshot-show-cxi-iommu-group | grep type=identity | wc -l',
+        name='slingshot-iommu-group',
+        descr='Verify CXI IOMMU group is set to identity on all NICs',
+        valid_systems=['eiger'],
+        expected=r'1'
     )
 
     # ----------------------------------------------------------------------- #
