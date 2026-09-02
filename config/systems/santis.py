@@ -1,4 +1,4 @@
- Copyright 2024 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -34,9 +34,7 @@ site_configuration = {
                     'name': 'normal',
                     'scheduler': 'slurm',
                     'time_limit': '10m',
-                    'envir,
-                        f'--gpus-per-node=4'
-                    ons': [
+                    'environs': [
                         'builtin',
                     ],
                     'max_jobs': 1000,
@@ -54,7 +52,8 @@ site_configuration = {
                         },
                     ],
                     'features': ['ce', 'gpu', 'nvgpu', 'remote', 'scontrol', 
-                                 'uenv', 'hugepages_slurm'],
+                                 'uenv', 'hugepages_slurm'
+                    ],
                     'access': [
                         f'--account={osext.osgroup()}',
                         f'--gpus-per-node=4'
