@@ -287,7 +287,7 @@ def create_checks(check):
     )
     check(
         'slingshot-show-cxi-iommu-group-eiger | grep type=identity | wc -l',
-        name='slingshot-iommu-group',
+        name='slingshot-iommu-group-eiger',
         descr='Verify CXI IOMMU group is set to identity on all NICs',
         valid_systems=['eiger'],
         expected=r'1'
