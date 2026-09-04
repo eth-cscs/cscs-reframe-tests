@@ -20,7 +20,7 @@ class CudaSamplesBase(rfm.RegressionTest):
     @run_after('init')
     def set_descr(self):
         self.descr = f'CUDA {self.sample} test'
-        self.keep_files = {
+        self.keep_files_d = {
             'deviceQuery': 'cuda-samples/Samples/1_Utilities/deviceQuery',
             'simpleCUBLAS':
                 'cuda-samples/Samples/4_CUDA_Libraries/simpleCUBLAS'
@@ -30,7 +30,7 @@ class CudaSamplesBase(rfm.RegressionTest):
     def set_gpu_arch(self):
         gpu_arch = self.current_partition.select_devices('gpu')[0].arch[3:]
         self.build_system.srcdir = 'cuda-samples'
-        self.build_system.configuredir = self.keep_files[self.sample]
+        self.build_system.configuredir = self.keep_files_d[self.sample]
         self.build_system.builddir = f'_build'
         self.build_system.config_opts += [
             f'-DCMAKE_CUDA_ARCHITECTURES={gpu_arch}',
@@ -44,7 +44,7 @@ class CudaSamplesBase(rfm.RegressionTest):
             rf'git clone --quiet {self.repo}',
             rf'./_git_checkout.sh {self.build_system.srcdir}',
             # trying to save disk space for daily runs:
-            rf'./_clean.sh {self.keep_files[self.sample]}'
+            rf'./_clean.sh {self.keep_files_d[self.sample]}'
         ]
 
     @run_before('run')
