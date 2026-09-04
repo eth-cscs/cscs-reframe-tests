@@ -1,8 +1,11 @@
 #!/bin/bash
 
+# this script will keep the minimum amount of files,
+# it can be improved but this will do the job as is.
+
 dirn=$1
 # example: 'cuda-samples/Samples/1_Utilities/deviceQuery'
-if [ -z $dirn ] ; then exit -1 ; else echo "cleaning $dirn" ; fi
+if [ -z "$dirn" ] ; then exit -1 ; else echo "cleaning $dirn" ; fi
 
 rm -fr cuda-samples/bin/win64
 
