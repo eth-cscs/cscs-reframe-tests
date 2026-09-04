@@ -16,14 +16,15 @@ class CudaSamplesBase(rfm.RegressionTest):
     maintainers = ['PA', 'SSA']
     sample = parameter(['deviceQuery', 'simpleCUBLAS'])
     tags = {'production'}
-    keep_files = {
-        'deviceQuery': 'cuda-samples/Samples/1_Utilities/deviceQuery',
-        'simpleCUBLAS': 'cuda-samples/Samples/4_CUDA_Libraries/simpleCUBLAS'
-    }
 
     @run_after('init')
     def set_descr(self):
         self.descr = f'CUDA {self.sample} test'
+        self.keep_files = {
+            'deviceQuery': 'cuda-samples/Samples/1_Utilities/deviceQuery',
+            'simpleCUBLAS':
+                'cuda-samples/Samples/4_CUDA_Libraries/simpleCUBLAS'
+        }
 
     @run_before('compile')
     def set_gpu_arch(self):
