@@ -156,9 +156,11 @@ class QeBuildTestUENV(rfm.CompileOnlyRegressionTest):
                         '-DQE_GPU="openacc;cuda"',
                         "-DQE_GPU_ARCHS=sm_90",
                         # CMake's FindSCALAPACK cannot auto-detect the
-                        # nvpl-scalapack library shipped in this uenv, so
-                        # point it there explicitly.
-                        "-DSCALAPACK_LIBRARIES=/user-environment/env/develop/lib/libnvpl_scalapack_lp64.so",
+                        # nvpl-scalapack/nvpl-blacs libraries shipped in
+                        # this uenv, so point it there explicitly.
+                        '-DSCALAPACK_LIBRARIES='
+                        '"/user-environment/env/develop/lib/libnvpl_scalapack_lp64.so;'
+                        '/user-environment/env/develop/lib/libnvpl_blacs_lp64_mpich.so"',
                     ]
                 else:
                     self.build_system.config_opts += [
