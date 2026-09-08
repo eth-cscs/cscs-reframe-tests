@@ -134,7 +134,7 @@ class uenv_ascent_intro_cpp(rfm.RunOnlyRegressionTest):
                 'ascent_trigger_example1'] else 'visual'
 
         self.postrun_cmds += [
-            f'file {self.png}',
+            f'file -L {self.png}',
             f'./png.sh {image_test_type} {ref_dir}/{self.png} {self.png}'
         ]
 
