@@ -48,6 +48,19 @@ def version_from_uenv():
         return None
 
 
+def parse_qe_version(version_str):
+    """Parse a QE version string (e.g. '7.6', '7.4.1') into a comparable
+    tuple of ints, ignoring any trailing non-numeric suffix.
+    """
+    parts = []
+    for tok in (version_str or "").split('.'):
+        match = re.match(r'\d+', tok)
+        if not match:
+            break
+        parts.append(int(match.group()))
+    return tuple(parts)
+
+
 class qe_download(rfm.RunOnlyRegressionTest):
     """
     Download QE source code.
@@ -133,10 +146,21 @@ class QeBuildTestUENV(rfm.CompileOnlyRegressionTest):
             ]
             if self.uarch == "gh200":
                 self.build_system.config_opts += [
-                    "-DQE_ENABLE_CUDA=ON",
                     "-DQE_ENABLE_MPI_GPU_AWARE:BOOL=ON",
-                    "-DQE_ENABLE_OPENACC=ON",
                 ]
+                # QE >= 7.6 replaced QE_ENABLE_CUDA/QE_ENABLE_OPENACC with
+                # a single QE_GPU switch (plus QE_GPU_ARCHS), see the
+                # quantum_espresso spack recipe for v7.6.
+                if parse_qe_version(self.qe_sources.version) >= (7, 6):
+                    self.build_system.config_opts += [
+                        '-DQE_GPU="openacc;cuda"',
+                        "-DQE_GPU_ARCHS=sm_90",
+                    ]
+                else:
+                    self.build_system.config_opts += [
+                        "-DQE_ENABLE_CUDA=ON",
+                        "-DQE_ENABLE_OPENACC=ON",
+                    ]
 
     @sanity_function
     def validate_test(self):
