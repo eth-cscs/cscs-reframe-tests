@@ -8,6 +8,7 @@ import sys
 
 import reframe.utility.typecheck as typ
 import reframe as rfm
+sys.path.insert(0, os.path.abspath(os.path.join(__file__, '../../../../..')))
 from hpctestlib.microbenchmarks.gpu.pointer_chase import *
 
 sys.path.append(os.path.abspath(os.path.join(__file__, '../../../..')))

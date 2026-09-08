@@ -7,6 +7,7 @@ import os
 import sys
 import reframe as rfm
 
+sys.path.insert(0, os.path.abspath(os.path.join(__file__, '../../../../..')))
 from hpctestlib.microbenchmarks.gpu.dgemm import DgemmGpu
 
 sys.path.append(os.path.abspath(os.path.join(__file__, '../../../..')))
