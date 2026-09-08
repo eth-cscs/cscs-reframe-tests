@@ -130,6 +130,7 @@ class uenv_ascent_intro_cpp(rfm.RunOnlyRegressionTest):
         image_test_type = 'rmse' if self.exe in [
                 'ascent_first_light_example',
                 'ascent_scene_example1',
+                'ascent_extract_example4',
                 'ascent_trigger_example1'] else 'visual'
 
         self.postrun_cmds += [
@@ -188,7 +189,7 @@ class uenv_ascent_doublegyre_python(rfm.RunOnlyRegressionTest):
         ref_dir = os.path.join(self.current_system.resourcesdir,
                                'ascent/reference/doublegyre_python')
         self.postrun_cmds = [
-            f'file datasets/{self.root}',
+            f'file -L datasets/{self.root}',
             f'./png.sh visual datasets/{self.png1} {ref_dir}/{self.png1}',
             f'./png.sh visual datasets/{self.png2} {ref_dir}/{self.png2}',
             f'./png.sh visual {self.png3} {ref_dir}/{self.png3}',
@@ -541,7 +542,7 @@ class uenv_ascent_kripke(rfm.RegressionTest):
         # ref_dir = os.path.join(self.current_system.resourcesdir,
         #                        'ascent/reference/kripke')
         self.postrun_cmds = [
-            f'file {self.png1}',
+            f'file -L {self.png1}',
             # .png may vary between identical jobs, can't use 'diff -s' here
         ]
 
