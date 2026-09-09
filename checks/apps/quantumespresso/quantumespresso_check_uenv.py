@@ -39,6 +39,7 @@ slurm_config = {
     },
 }
 
+
 def version_from_uenv():
     uenv_var = os.environ['CSCS_RFM_UENV']
     match = re.search(r'/(\d+\.\d+)', uenv_var)
@@ -50,7 +51,7 @@ def version_from_uenv():
 
 def parse_qe_version(version_str):
     """Parse a QE version string (e.g. '7.6', '7.4.1') into a comparable
-    tuple of ints, ignoring any trailing non-numeric suffix.
+    tuple of ints, ignoring first non-numeric suffix.
     """
     parts = []
     for tok in (version_str or "").split('.'):
@@ -84,6 +85,7 @@ class qe_download(rfm.RunOnlyRegressionTest):
         except (KeyError, AttributeError):
             self.logger.debug("Key ERROR: version from uenv!!")
             uenv_version = version_from_uenv()
+
         self.version = uenv_version
         url = 'https://gitlab.com/QEF/q-e/-/archive'
 
@@ -136,7 +138,7 @@ class QeBuildTestUENV(rfm.CompileOnlyRegressionTest):
         try:
             self.build_system.config_opts = \
                 self.current_environ.extras['cmake'].split()
-        except(KeyError, AttributeError):
+        except (KeyError, AttributeError):
             self.build_system.config_opts = [
                 "-DQE_ENABLE_MPI=ON ",
                 "-DQE_ENABLE_OPENMP=ON",
@@ -148,19 +150,21 @@ class QeBuildTestUENV(rfm.CompileOnlyRegressionTest):
                 self.build_system.config_opts += [
                     "-DQE_ENABLE_MPI_GPU_AWARE:BOOL=ON",
                 ]
+                gpu_arch = self.current_partition.select_devices('gpu')[0].arch
                 # QE >= 7.6 replaced QE_ENABLE_CUDA/QE_ENABLE_OPENACC with
                 # a single QE_GPU switch (plus QE_GPU_ARCHS), see the
                 # quantum_espresso spack recipe for v7.6.
                 if parse_qe_version(self.qe_sources.version) >= (7, 6):
+                    uenv_dev_dir = '/user-environment/env/develop'
                     self.build_system.config_opts += [
                         '-DQE_GPU="openacc;cuda"',
-                        "-DQE_GPU_ARCHS=sm_90",
+                        f'-DQE_GPU_ARCHS={gpu_arch}',
                         # CMake's FindSCALAPACK cannot auto-detect the
                         # nvpl-scalapack/nvpl-blacs libraries shipped in
                         # this uenv, so point it there explicitly.
-                        '-DSCALAPACK_LIBRARIES='
-                        '"/user-environment/env/develop/lib/libnvpl_scalapack_lp64.so;'
-                        '/user-environment/env/develop/lib/libnvpl_blacs_lp64_mpich.so"',
+                        f'-DSCALAPACK_LIBRARIES='
+                        f'"{uenv_dev_dir}/lib/libnvpl_scalapack_lp64.so;'
+                        f'{uenv_dev_dir}/lib/libnvpl_blacs_lp64_mpich.so"',
                     ]
                 else:
                     self.build_system.config_opts += [
