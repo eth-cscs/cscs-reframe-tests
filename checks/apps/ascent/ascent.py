@@ -130,10 +130,11 @@ class uenv_ascent_intro_cpp(rfm.RunOnlyRegressionTest):
         image_test_type = 'rmse' if self.exe in [
                 'ascent_first_light_example',
                 'ascent_scene_example1',
+                'ascent_extract_example4',
                 'ascent_trigger_example1'] else 'visual'
 
         self.postrun_cmds += [
-            f'file {self.png}',
+            f'file -L {self.png}',
             f'./png.sh {image_test_type} {ref_dir}/{self.png} {self.png}'
         ]
 
@@ -188,7 +189,7 @@ class uenv_ascent_doublegyre_python(rfm.RunOnlyRegressionTest):
         ref_dir = os.path.join(self.current_system.resourcesdir,
                                'ascent/reference/doublegyre_python')
         self.postrun_cmds = [
-            f'file datasets/{self.root}',
+            f'file -L datasets/{self.root}',
             f'./png.sh visual datasets/{self.png1} {ref_dir}/{self.png1}',
             f'./png.sh visual datasets/{self.png2} {ref_dir}/{self.png2}',
             f'./png.sh visual {self.png3} {ref_dir}/{self.png3}',
@@ -224,6 +225,7 @@ class uenv_ascent_doublegyre_cpp(rfm.RegressionTest):
     valid_prog_environs = ['+uenv +ascent -cpe']
     sourcesdir = 'src'
     srcdir = 'InSitu-Vis-Tutorial-main/Examples/DoubleGyre/C++'
+    builddir = variable(str, value='_build')
     png1 = 'velocity_magnitude.00100.png'
     png2 = 'vorticity_magnitude.00100.png'
     build_system = 'CMake'
@@ -235,16 +237,15 @@ class uenv_ascent_doublegyre_cpp(rfm.RegressionTest):
         src = os.path.join(self.current_system.resourcesdir,
                            f'github/InSitu-Vis-Tutorial/main.zip')
         self.build_system.max_concurrency = 5
-        self.build_system.srcdir = (
-                'InSitu-Vis-Tutorial-main/Examples/DoubleGyre/C++')
         self.prebuild_cmds += [f'ls -l {src}', f'unzip -q {src}']
+        gpu_arch = self.current_partition.select_devices('gpu')[0].arch[3:]
+        self.build_system.configuredir = self.srcdir
+        self.build_system.builddir = self.builddir
         self.build_system.config_opts = [
-            f'-S {self.srcdir}',
-            f'-DCMAKE_BUILD_TYPE=Debug',  # Release
+            f'-DCMAKE_BUILD_TYPE=Debug',
             f'-DINSITU=Ascent',
             f'-DAscent_DIR=$(find /user-tools/ -name ascent |grep ascent- |grep cmake)',  # noqa: E501
-            f'-DCMAKE_CUDA_ARCHITECTURES='
-            f'{self.current_partition.devices[0].arch[-2:]}',
+            f'-DCMAKE_CUDA_ARCHITECTURES={gpu_arch}',
             f'-DCMAKE_CUDA_HOST_COMPILER=mpicxx'
         ]
 
@@ -252,7 +253,7 @@ class uenv_ascent_doublegyre_cpp(rfm.RegressionTest):
     def set_run(self):
         self.num_tasks = 1
         self.num_tasks_per_node = self.num_tasks
-        self.executable = './bin/double_gyre_ascent'
+        self.executable = f'{self.builddir}/bin/double_gyre_ascent'
         self.executable_opts = ['128', '64', '100', '10', '2>&1']
         ref_dir = os.path.join(self.current_system.resourcesdir,
                                'ascent/reference/doublegyre_cpp')
@@ -351,6 +352,7 @@ class uenv_ascent_heatdiffusion_cpp(rfm.RegressionTest):
     valid_prog_environs = ['+uenv +ascent -cpe']
     sourcesdir = 'src'
     srcdir = 'InSitu-Vis-Tutorial-main/Examples/HeatDiffusion/C++'
+    builddir = variable(str, value='_build')
     png1 = 'ascent_temperature_isolines-010000.png'
     build_system = 'CMake'
     build_locally = False
@@ -362,13 +364,14 @@ class uenv_ascent_heatdiffusion_cpp(rfm.RegressionTest):
                            f'github/InSitu-Vis-Tutorial/main.zip')
         self.build_system.max_concurrency = 5
         self.prebuild_cmds += [f'ls -l {src}', f'unzip -q {src}']
+        gpu_arch = self.current_partition.select_devices('gpu')[0].arch[3:]
+        self.build_system.configuredir = self.srcdir
+        self.build_system.builddir = self.builddir
         self.build_system.config_opts = [
-            f'-S {self.srcdir}',
-            f'-DCMAKE_BUILD_TYPE=Debug',  # Release
+            f'-DCMAKE_BUILD_TYPE=Debug',
             f'-DINSITU=Ascent',
             f'-DAscent_DIR=$(find /user-tools/ -name ascent |grep ascent- |grep cmake)',  # noqa: E501
-            f'-DCMAKE_CUDA_ARCHITECTURES='
-            f'{self.current_partition.devices[0].arch[-2:]}',
+            f'-DCMAKE_CUDA_ARCHITECTURES={gpu_arch}',
             f'-DCMAKE_CUDA_HOST_COMPILER=mpicxx'
         ]
 
@@ -376,7 +379,7 @@ class uenv_ascent_heatdiffusion_cpp(rfm.RegressionTest):
     def set_run(self):
         self.num_tasks = 4
         self.num_tasks_per_node = self.num_tasks
-        self.executable = './bin/heat_diffusion'
+        self.executable = f'{self.builddir}/bin/heat_diffusion'
         self.executable_opts = ['--mesh=uniform', '--res=64']
         ref_dir = os.path.join(self.current_system.resourcesdir,
                                'ascent/reference/heatdiffusion_cpp')
@@ -415,6 +418,7 @@ class uenv_ascent_noise(rfm.RegressionTest):
     valid_systems = ['+uenv']
     valid_prog_environs = ['+uenv +ascent -cpe']
     sourcesdir = 'src'
+    builddir = variable(str, value='_build')
     ascent_v = variable(str, value='0.9.5')
     png1 = 's1_0_000005.png'
     build_system = 'CMake'
@@ -423,26 +427,26 @@ class uenv_ascent_noise(rfm.RegressionTest):
 
     @run_before('compile')
     def set_build(self):
+        self.srcdir = f'ascent-{self.ascent_v}/src/examples/synthetic/noise'
         src = os.path.join(self.current_system.resourcesdir,
                            'github/InSitu-Vis-Tutorial/main.zip')
         ascent_src = os.path.join(self.current_system.resourcesdir,
                                   f'github/ascent/v{self.ascent_v}.tar.gz')
         self.build_system.max_concurrency = 5
-        self.build_system.srcdir = \
-            f'ascent-{self.ascent_v}/src/examples/synthetic/noise'
         self.prebuild_cmds += [
-            f'tar xf {ascent_src} {self.build_system.srcdir}',
+            f'tar xf {ascent_src} {self.srcdir}',
             f'ls -l {src}', f'unzip -q {src}',
             f'cp InSitu-Vis-Tutorial-main/Examples/noise/CMakeLists.txt'
-            f' {self.build_system.srcdir}'
+            f' {self.srcdir}'
         ]
+        gpu_arch = self.current_partition.select_devices('gpu')[0].arch[3:]
+        self.build_system.configuredir = self.srcdir
+        self.build_system.builddir = self.builddir
         self.build_system.config_opts = [
-            f'-S {self.build_system.srcdir}',
-            f'-DCMAKE_BUILD_TYPE=Debug',  # Release
+            f'-DCMAKE_BUILD_TYPE=Debug',
             f'-DINSITU=Ascent',
             f'-DAscent_DIR=$(find /user-tools/ -name ascent |grep ascent- |grep cmake)',  # noqa: E501
-            f'-DCMAKE_CUDA_ARCHITECTURES='
-            f'{self.current_partition.devices[0].arch[-2:]}',
+            f'-DCMAKE_CUDA_ARCHITECTURES={gpu_arch}',
             f'-DCMAKE_CUDA_HOST_COMPILER=mpicxx'
     ]
 
@@ -450,7 +454,7 @@ class uenv_ascent_noise(rfm.RegressionTest):
     def set_run(self):
         self.num_tasks = 8
         self.num_tasks_per_node = self.num_tasks
-        self.executable = './noise'
+        self.executable = f'{self.builddir}/noise'
         self.executable_opts = ['--dims=32,32,32', '--time_steps=5',
                                 '--time_delta=.5']
         self.prerun_cmds = [
@@ -487,6 +491,7 @@ class uenv_ascent_kripke(rfm.RegressionTest):
     valid_systems = ['+uenv']
     valid_prog_environs = ['+uenv +ascent -cpe']
     sourcesdir = None
+    builddir = variable(str, value='_build')
     ascent_v = variable(str, value='0.9.5')
     png1 = 's1_0_000009.png'
     build_system = 'CMake'
@@ -495,26 +500,26 @@ class uenv_ascent_kripke(rfm.RegressionTest):
 
     @run_before('compile')
     def set_build(self):
+        self.srcdir = f'ascent-{self.ascent_v}/src/examples/proxies/kripke'
         src = os.path.join(self.current_system.resourcesdir,
                            'github/InSitu-Vis-Tutorial/main.zip')
         ascent_src = os.path.join(self.current_system.resourcesdir,
                                   f'github/ascent/v{self.ascent_v}.tar.gz')
         self.build_system.max_concurrency = 5
-        self.build_system.srcdir = \
-            f'ascent-{self.ascent_v}/src/examples/proxies/kripke'
         self.prebuild_cmds += [
-            f'tar xf {ascent_src} {self.build_system.srcdir}',
+            f'tar xf {ascent_src} {self.srcdir}',
             f'ls -l {src}', f'unzip -q {src}',
             f'cp InSitu-Vis-Tutorial-main/Examples/kripke/CMakeLists.txt'
-            f' {self.build_system.srcdir}'
+            f' {self.srcdir}'
         ]
+        gpu_arch = self.current_partition.select_devices('gpu')[0].arch[3:]
+        self.build_system.configuredir = self.srcdir
+        self.build_system.builddir = self.builddir
         self.build_system.config_opts = [
-            f'-S {self.build_system.srcdir}',
-            f'-DCMAKE_BUILD_TYPE=Debug',  # Release
+            f'-DCMAKE_BUILD_TYPE=Debug',
             f'-DINSITU=Ascent',
             f'-DAscent_DIR=$(find /user-tools/ -name ascent |grep ascent- |grep cmake)',  # noqa: E501
-            f'-DCMAKE_CUDA_ARCHITECTURES='
-            f'{self.current_partition.devices[0].arch[-2:]}',
+            f'-DCMAKE_CUDA_ARCHITECTURES={gpu_arch}',
             f'-DCMAKE_CUDA_HOST_COMPILER=mpicxx'
         ]
 
@@ -522,7 +527,7 @@ class uenv_ascent_kripke(rfm.RegressionTest):
     def set_run(self):
         self.num_tasks = 8
         self.num_tasks_per_node = self.num_tasks
-        self.executable = './Kripke'
+        self.executable = f'{self.builddir}/Kripke'
         self.executable_opts = [
             '--procs 2,2,2', '--zones 32,32,32', '--niter 10', '--dir 1:2',
             '--grp 1:1', '--legendre 4', '--quad 4:4']
@@ -537,7 +542,7 @@ class uenv_ascent_kripke(rfm.RegressionTest):
         # ref_dir = os.path.join(self.current_system.resourcesdir,
         #                        'ascent/reference/kripke')
         self.postrun_cmds = [
-            f'file {self.png1}',
+            f'file -L {self.png1}',
             # .png may vary between identical jobs, can't use 'diff -s' here
         ]
 

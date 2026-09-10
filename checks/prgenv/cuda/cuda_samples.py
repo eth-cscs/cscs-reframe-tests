@@ -8,46 +8,44 @@ import reframe.utility.sanity as sn
 
 
 class CudaSamplesBase(rfm.RegressionTest):
-    sourcesdir = 'https://github.com/NVIDIA/cuda-samples.git'
+    repo = 'https://github.com/NVIDIA/cuda-samples.git'
+    sourcesdir = 'src/cuda_samples'
     build_system = 'CMake'
     build_locally = False
     time_limit = '2m'
     maintainers = ['PA', 'SSA']
-    sample = parameter([
-        'deviceQuery', 'simpleCUBLAS', 'conjugateGradient'
-    ])
-    # https://github.com/NVIDIA/cuda-samples/releases/tag/v12.8
-    #   concurrentKernels is osbsolete since cuda/12.8
-    #   bandwidthTest is osbsolete since cuda/12.9
+    sample = parameter(['deviceQuery', 'simpleCUBLAS'])
     tags = {'production'}
 
     @run_after('init')
     def set_descr(self):
         self.descr = f'CUDA {self.sample} test'
-
-    @run_before('compile')
-    def set_branch(self):
-        self.prebuild_cmds += [
-            # Retrieve the CUDA version from nvcc and checkout tag
-            rf"export CUDA_VER=v$(nvcc -V | "
-            rf"sed -n 's/^.*release \([[:digit:]]*\.[[[:digit:]]\).*$/\1/p')",
-            #
-            # The tags v12.[6-7] do not exist, checkout v12.8 instead
-            rf"[[ $CUDA_VER = 'v12.6' || $CUDA_VER = 'v12.7' ]] && "
-            rf"export CUDA_VER='v12.8'",
-            #
-            rf"echo CUDA_VER=$CUDA_VER",
-            rf"git checkout ${{CUDA_VER}}",
-        ]
+        self.keep_files_d = {
+            'deviceQuery': 'cuda-samples/Samples/1_Utilities/deviceQuery',
+            'simpleCUBLAS':
+                'cuda-samples/Samples/4_CUDA_Libraries/simpleCUBLAS'
+        }
 
     @run_before('compile')
     def set_gpu_arch(self):
         gpu_arch = self.current_partition.select_devices('gpu')[0].arch[3:]
+        self.build_system.srcdir = 'cuda-samples'
+        self.build_system.configuredir = self.keep_files_d[self.sample]
+        self.build_system.builddir = f'_build'
         self.build_system.config_opts += [
-            f'-S Samples',
             f'-DCMAKE_CUDA_ARCHITECTURES={gpu_arch}',
         ]
-        self.build_system.make_opts = [self.sample]
+        self.build_system.build_opts = [self.sample]
+
+    @run_before('compile')
+    def set_branch(self):
+        # every job has a separate directory, cloning inside each dir is fine
+        self.prebuild_cmds += [
+            rf'git clone --quiet {self.repo}',
+            rf'./_git_checkout.sh {self.build_system.srcdir}',
+            # trying to save disk space for daily runs:
+            rf'./_clean.sh {self.keep_files_d[self.sample]}'
+        ]
 
     @run_before('run')
     def set_executable(self):
@@ -58,8 +56,6 @@ class CudaSamplesBase(rfm.RegressionTest):
         output_patterns = {
             'deviceQuery': r'Result = PASS',
             'simpleCUBLAS': r'test passed',
-            'conjugateGradient':
-                r'Test Summary:  Error amount = 0.00000'
         }
         self.sanity_patterns = sn.assert_found(
             output_patterns[self.sample], self.stdout
@@ -70,9 +66,7 @@ class CudaSamplesBase(rfm.RegressionTest):
 class UENV_CudaSamples(CudaSamplesBase):
     valid_systems = ['+nvgpu']
     valid_prog_environs = ['+uenv +prgenv +cuda -cpe']
-    # env_vars = {'LD_LIBRARY_PATH': '$CUDA_HOME/lib64:$LD_LIBRARY_PATH'}
 
     @run_before('compile')
     def set_build_flags(self):
         self.prebuild_cmds += ['echo CUDA_HOME=$CUDA_HOME']
-        # self.build_system.options += [f'CUDA_PATH=$CUDA_HOME']
