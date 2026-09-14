@@ -57,6 +57,7 @@ sys.path.append(str(pathlib.Path(__file__).parent.parent.parent / 'mixins'))
 from container_engine import ContainerEngineMixin                      # noqa: E402
 from slurm_mpi_pmi2 import SlurmMpiPmi2Mixin                          # noqa: E402
 from switch_topology import (                                          # noqa: E402
+    _all_partition_nodes,
     _get_l0_switches,
     get_switch_group_names,
     get_switch_groups,
@@ -155,6 +156,12 @@ class OMB_MBW_MR_Base(rfm.RunOnlyRegressionTest,
     def set_num_tasks(self):
         self.num_tasks = self.num_nodes * self.num_tasks_per_node
 
+    @run_before('run')
+    def set_binding(self):
+        self.job.launcher.options += [
+            '--cpu-bind=ldoms', '--distribution=block:block'
+        ]
+
     @sanity_function
     def assert_sanity(self):
         return sn.assert_found(
@@ -247,12 +254,6 @@ class OMB_MBW_MR_PerSwitch(OMB_MBW_MR_Base):
             f'--nodelist={",".join(nodes)}',
         ]
 
-    @run_before('run')
-    def set_binding(self):
-        self.job.launcher.options += [
-            '--cpu-bind=ldoms', '--distribution=block:block'
-        ]
-
 
 @rfm.simple_test
 class OMB_MBW_MR_FullTopology(OMB_MBW_MR_Base):
@@ -277,15 +278,24 @@ class OMB_MBW_MR_FullTopology(OMB_MBW_MR_Base):
     valid_systems = ['daint:normal', 'starlex:normal']
     num_tasks_per_node = 4
     _record_num_switch_groups = True
+    reservation = variable(str, value='')
 
     @run_after('setup')
     def set_num_nodes(self):
-        self.num_nodes = len(get_switch_group_names(0))
+        partition = self.current_partition.name
+        groups = get_switch_groups(level=0)
+        all_nodes = _all_partition_nodes(partition)
+        self.num_nodes = sum(
+            1 for nodes in groups.values() if set(nodes) & all_nodes
+        )
 
     @run_before('run')
     def pick_nodes(self):
         partition = self.current_partition.name
-        reservation = _extract_reservation(self.job.options)
+        reservation = self.reservation or _extract_reservation(self.job.options)
+        if reservation:
+            self.job.options += [f'--reservation={reservation}']
+
         nodes = select_nodes_across_groups(
             self.num_nodes, partition, reservation=reservation
         )
