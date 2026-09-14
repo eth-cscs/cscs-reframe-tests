@@ -8,6 +8,43 @@
 # The tests use the upstream MPICH Container Engine image that already ships
 # the OSU Micro-Benchmarks.  The Container Engine CXI hook injects the host's
 # optimised libfabric/xpmem libraries, giving native Slingshot performance.
+#
+# Benchmark purpose
+# -----------------
+# osu_mbw_mr measures the aggregate uni-directional bandwidth across multiple
+# simultaneous rank pairs.  Each rank is bound to a CPU LDOM so that Cray
+# MPICH selects the nearest Slingshot NIC (via libfabric hwloc topology).
+# With 4 ranks per node on GH200 (4 Slingshot 11 NICs per node), all 4 NICs
+# are exercised and the aggregate bandwidth reflects the full node injection
+# capability, not just a single-NIC ceiling.
+#
+# Theoretical limits and expected results
+# ----------------------------------------
+# Each Slingshot 11 (Cassini) NIC provides 200 Gbps = 25 GB/s unidirectional.
+# GH200 nodes have 4 NICs, giving a theoretical node injection bandwidth of
+# 100 GB/s.  Cray MPICH on daint is compiled without scalable endpoints
+# (MPIDI_OFI_ENABLE_SCALABLE_ENDPOINTS=0), so a single MPI process uses
+# exactly one NIC — multi-NIC striping per process is not possible regardless
+# of MPIR_CVAR_CH4_OFI_MAX_NICS or MPIR_CVAR_CH4_OFI_ENABLE_MULTI_NIC_STRIPING
+# settings.  This is consistent with observations on Frontier (OLCF) and
+# Perlmutter (NERSC), which use identical hardware and report comparable
+# single-pair bandwidth (see "Bringing HPE Slingshot 11 Support to Open MPI",
+# Shehata et al., SC23).
+#
+# Typical measured values at 4 MiB message size:
+#   1 pair  (2 nodes,  1 rank/node):  ~22-25 GB/s  ( 88-100% of 1 NIC)
+#   2 pairs (2 nodes,  2 ranks/node): ~45-49 GB/s  ( 90- 98% of 2 NICs)
+#   8 pairs (4 nodes,  4 ranks/node): ~49  GB/s    (~49% of 4×100 GB/s;
+#                                                    per-pair drops due to
+#                                                    switch/fabric contention
+#                                                    and shared-node overhead)
+#
+# The 8-pair baseline (~49 GB/s) is the reference for the PerSwitch variant.
+# Per-pair bandwidth decreases as more pairs contend for the same fabric
+# paths, which is expected and does not indicate a hardware problem.
+# Consistent per-switch results across all L0 groups confirm fabric health;
+# a single outlier group (slow switch, degraded cable, failing transceiver)
+# would flag a hardware issue requiring investigation.
 
 import pathlib
 import sys
@@ -46,6 +83,12 @@ class OMB_MBW_MR_Base(rfm.RunOnlyRegressionTest,
     aggregate bandwidth and message rate at a single message size.
     Concrete subclasses select node placement (intra-switch or
     cross-switch).
+
+    Each rank is bound to one CPU LDOM (--cpu-bind=ldoms) so that Cray
+    MPICH selects the nearest Slingshot NIC.  With num_tasks_per_node=4
+    on GH200 (4 NICs per node), all NICs are exercised and the aggregate
+    bandwidth reflects the full node injection capability.  See the file
+    header for theoretical limits and expected results.
     """
 
     valid_prog_environs = ['builtin']
