@@ -3,11 +3,14 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
+import os
+import sys
 import reframe as rfm
 import reframe.utility.sanity as sn
 import time
 
 from reframe.core.exceptions import SanityError
+sys.path.insert(0, os.path.abspath(os.path.join(__file__, '../../../..')))
 from hpctestlib.microbenchmarks.gpu.gpu_burn import gpu_burn_check
 
 

@@ -11,30 +11,39 @@ import reframe.utility.udeps as udeps
 import re
 import uenv
 
+from reframe.core.builtins import (
+    fixture,
+    performance_function,
+    run_after,
+    run_before,
+    sanity_function,
+    variable,
+)
+
 
 qe_references = {
-    "Au surf": {
-        "gh200": {"time_run": (8.74, None, 0.05, "s")},
-        "zen2": {"time_run": (99.45, None, 0.1, "s")},  # 1m44s
+    'Au surf': {
+        'gh200': {'time_run': (8.74, None, 0.05, 's')},
+        'zen2': {'time_run': (99.45, None, 0.1, 's')},  # 1m44s
     },
 }
 
 
 slurm_config = {
-    "Au surf": {
-        "gh200": {
-            "nodes": 1,
-            "ntasks-per-node": 4,
-            "cpus-per-task": 72,
-            "walltime": "0d0h20m0s",
-            "gpu": True,
+    'Au surf': {
+        'gh200': {
+            'nodes': 1,
+            'ntasks-per-node': 4,
+            'cpus-per-task': 72,
+            'walltime': '0d0h20m0s',
+            'gpu': True,
         },
-        "zen2": {
-            "nodes": 1,
-            "ntasks-per-node": 128,
-            "cpus-per-task": 1,
-            "walltime": "0d0h20m0s",
-            "gpu": False,
+        'zen2': {
+            'nodes': 1,
+            'ntasks-per-node': 128,
+            'cpus-per-task': 1,
+            'walltime': '0d0h20m0s',
+            'gpu': False,
         },
     },
 }
@@ -51,10 +60,10 @@ def version_from_uenv():
 
 def parse_qe_version(version_str):
     """Parse a QE version string (e.g. '7.6', '7.4.1') into a comparable
-    tuple of ints, ignoring first non-numeric suffix.
+    tuple of ints, ignoring any trailing non-numeric suffix.
     """
     parts = []
-    for tok in (version_str or "").split('.'):
+    for tok in (version_str or '').split('.'):
         match = re.match(r'\d+', tok)
         if not match:
             break
@@ -67,10 +76,10 @@ class qe_download(rfm.RunOnlyRegressionTest):
     Download QE source code.
     """
 
-    version = variable(str, value="")
-    descr = "Fetch QE source code"
+    version = variable(str, value='')
+    descr = 'Fetch QE source code'
     sourcesdir = None
-    executable = "wget"
+    executable = 'wget'
     local = False
 
     @run_before('run')
@@ -83,7 +92,7 @@ class qe_download(rfm.RunOnlyRegressionTest):
             if isinstance(uenv_version, str):
                 uenv_version = uenv_version.lstrip('v')
         except (KeyError, AttributeError):
-            self.logger.debug("Key ERROR: version from uenv!!")
+            self.logger.debug('Key ERROR: version from uenv!!')
             uenv_version = version_from_uenv()
 
         self.version = uenv_version
@@ -91,7 +100,7 @@ class qe_download(rfm.RunOnlyRegressionTest):
 
         self.executable_opts = [
             '--quiet',
-            f'{url}/qe-{self.version}/q-e-qe-{self.version}.tar.gz'
+            f'{url}/qe-{self.version}/q-e-qe-{self.version}.tar.gz',
         ]
 
     @sanity_function
@@ -105,86 +114,87 @@ class QeBuildTestUENV(rfm.CompileOnlyRegressionTest):
     Test QE build from source.
     """
 
-    descr = "QuantumESPRESSO Build Test"
-    valid_prog_environs = ["+qe-dev"]
-    valid_systems = ["*"]
-    build_system = "CMake"
+    descr = 'QuantumESPRESSO Build Test'
+    valid_prog_environs = ['+qe-dev']
+    valid_systems = ['*']
+    build_system = 'CMake'
     sourcesdir = None
     maintainers = ['simonpi', 'antonk', 'SSA']
-    qe_sources = fixture(qe_download, scope="environment")
+    qe_sources = fixture(qe_download, scope='environment')
     build_locally = False
-    tags = {"uenv", "maintenance"}
-    build_time_limit = "0d0h30m0s"
+    tags = {'uenv', 'maintenance'}
+    build_time_limit = '0d0h30m0s'
     pwx_executable = None
 
-    @run_before("compile")
+    @run_before('compile')
     def prepare_build(self):
         self.uarch = uenv.uarch(self.current_partition)
-        self.build_system.builddir = os.path.join(self.stagedir, "build")
+        self.build_system.builddir = os.path.join(self.stagedir, 'build')
         self.skip_if_no_procinfo()
         cpu = self.current_partition.processor
-        self.build_system.max_concurrency = cpu.info["num_cpus_per_socket"]
+        self.build_system.max_concurrency = cpu.info['num_cpus_per_socket']
 
         tarsource = os.path.join(
             self.qe_sources.stagedir,
-            f"q-e-qe-{self.qe_sources.version}.tar.gz"
+            f'q-e-qe-{self.qe_sources.version}.tar.gz',
         )
 
         # Extract source code
         self.prebuild_cmds = [
-            f"tar --strip-components=1 -xzf {tarsource} -C {self.stagedir}"
+            f'tar --strip-components=1 -xzf {tarsource} -C {self.stagedir}'
         ]
 
         try:
-            self.build_system.config_opts = \
-                self.current_environ.extras['cmake'].split()
+            self.build_system.config_opts = self.current_environ.extras[
+                'cmake'
+            ].split()
         except (KeyError, AttributeError):
             self.build_system.config_opts = [
-                "-DQE_ENABLE_MPI=ON ",
-                "-DQE_ENABLE_OPENMP=ON",
-                "-DQE_ENABLE_SCALAPACK:BOOL=ON",
-                "-DQE_ENABLE_LIBXC=ON",
-                "-DQE_CLOCK_SECONDS:BOOL=OFF",
+                '-DQE_ENABLE_MPI=ON ',
+                '-DQE_ENABLE_OPENMP=ON',
+                '-DQE_ENABLE_SCALAPACK:BOOL=ON',
+                '-DQE_ENABLE_LIBXC=ON',
+                '-DQE_CLOCK_SECONDS:BOOL=OFF',
             ]
-            if self.uarch == "gh200":
+            if self.uarch == 'gh200':
                 self.build_system.config_opts += [
-                    "-DQE_ENABLE_MPI_GPU_AWARE:BOOL=ON",
+                    '-DQE_ENABLE_MPI_GPU_AWARE:BOOL=ON',
                 ]
-                gpu_arch = self.current_partition.select_devices('gpu')[0].arch
+                if parse_qe_version(self.qe_sources.version) >= (7, 5):
+                    self.build_system.config_opts += [
+                        '-DSCALAPACK_LIBRARIES='
+                        '"/user-environment/env/develop/lib/libnvpl_scalapack_lp64.so;'
+                        '/user-environment/env/develop/lib/libnvpl_blacs_lp64_mpich.so"',
+                    ]
+
                 # QE >= 7.6 replaced QE_ENABLE_CUDA/QE_ENABLE_OPENACC with
                 # a single QE_GPU switch (plus QE_GPU_ARCHS), see the
                 # quantum_espresso spack recipe for v7.6.
                 if parse_qe_version(self.qe_sources.version) >= (7, 6):
-                    uenv_dev_dir = '/user-environment/env/develop'
                     self.build_system.config_opts += [
                         '-DQE_GPU="openacc;cuda"',
-                        f'-DQE_GPU_ARCHS={gpu_arch}',
-                        # CMake's FindSCALAPACK cannot auto-detect the
-                        # nvpl-scalapack/nvpl-blacs libraries shipped in
-                        # this uenv, so point it there explicitly.
-                        f'-DSCALAPACK_LIBRARIES='
-                        f'"{uenv_dev_dir}/lib/libnvpl_scalapack_lp64.so;'
-                        f'{uenv_dev_dir}/lib/libnvpl_blacs_lp64_mpich.so"',
+                        '-DQE_GPU_ARCHS=sm_90',
                     ]
                 else:
                     self.build_system.config_opts += [
-                        "-DQE_ENABLE_CUDA=ON",
-                        "-DQE_ENABLE_OPENACC=ON",
+                        '-DQE_ENABLE_CUDA=ON',
+                        '-DQE_ENABLE_OPENACC=ON',
                     ]
 
     @sanity_function
     def validate_test(self):
-        self.pwx_executable = os.path.join(self.stagedir,
-                                           "build", "bin", "pw.x")
+        self.pwx_executable = os.path.join(
+            self.stagedir, 'build', 'bin', 'pw.x'
+        )
         return os.path.isfile(self.pwx_executable)
 
 
 class QeCheckUENV(rfm.RunOnlyRegressionTest):
-    pwx_executable = "pw.x"
-    maintainers = ["SSA"]
-    valid_systems = ["*"]
+    pwx_executable = 'pw.x'
+    maintainers = ['SSA']
+    valid_systems = ['*']
 
-    @run_before("run")
+    @run_before('run')
     def prepare_run(self):
         self.uarch = uenv.uarch(self.current_partition)
         config = slurm_config[self.test_name][self.uarch]
@@ -192,41 +202,44 @@ class QeCheckUENV(rfm.RunOnlyRegressionTest):
         self.job.options = [
             f'--nodes={config["nodes"]}',
         ]
-        self.num_tasks_per_node = config["ntasks-per-node"]
-        self.num_tasks = config["nodes"] * self.num_tasks_per_node
-        self.num_cpus_per_task = config["cpus-per-task"]
+        self.num_tasks_per_node = config['ntasks-per-node']
+        self.num_tasks = config['nodes'] * self.num_tasks_per_node
+        self.num_cpus_per_task = config['cpus-per-task']
         self.ntasks_per_core = 1
-        self.time_limit = config["walltime"]
+        self.time_limit = config['walltime']
 
         # srun options
-        self.job.launcher.options = ["--cpu-bind=socket"]
+        self.job.launcher.options = ['--cpu-bind=socket']
 
         # environment variables
-        self.env_vars["OMP_NUM_THREADS"] = str(1)
-        if self.uarch == "gh200":
-            self.env_vars["MPICH_GPU_SUPPORT_ENABLED"] = "1"
-            self.env_vars["OMP_NUM_THREADS"] = str(20)
+        self.env_vars['OMP_NUM_THREADS'] = str(1)
+        if self.uarch == 'gh200':
+            self.env_vars['MPICH_GPU_SUPPORT_ENABLED'] = '1'
+            self.env_vars['OMP_NUM_THREADS'] = str(20)
 
         # set reference
-        if self.uarch is not None and \
-           self.uarch in qe_references[self.test_name]:
+        if (
+            self.uarch is not None
+            and self.uarch in qe_references[self.test_name]
+        ):
             self.reference = {
-                self.current_partition.fullname:
-                    qe_references[self.test_name][self.uarch]
+                self.current_partition.fullname: qe_references[self.test_name][
+                    self.uarch
+                ]
             }
 
     @sanity_function
     def assert_energy_diff(self):
         # TODO, update for QE
         energy = sn.extractsingle(
-            r"^!\s+total energy\s+=\s+(?P<energy>\S+)",
+            r'^!\s+total energy\s+=\s+(?P<energy>\S+)',
             self.stdout,
-            "energy",
+            'energy',
             float,
             item=-1,
         )
         energy_diff = sn.abs(energy - self.energy_reference)
-        successful_termination = sn.assert_found(r"JOB DONE", self.stdout)
+        successful_termination = sn.assert_found(r'JOB DONE', self.stdout)
         correct_energy = sn.assert_lt(energy_diff, 1e-4)
         return sn.all(
             [
@@ -236,29 +249,30 @@ class QeCheckUENV(rfm.RunOnlyRegressionTest):
         )
 
     # INFO: The name of this function needs to match with the reference dict!
-    @performance_function("s")
+    @performance_function('s')
     def time_run(self):
-        return sn.extractsingle(r'electrons.+\s(?P<wtime>\S+)s WALL',
-                                self.stdout, 'wtime', float)
+        return sn.extractsingle(
+            r'electrons.+\s(?P<wtime>\S+)s WALL', self.stdout, 'wtime', float
+        )
 
 
 class QeCheckAuSurfUENV(QeCheckUENV):
-    test_name = "Au surf"
-    executable_opts = ["-i", "ausurf.in"]
+    test_name = 'Au surf'
+    executable_opts = ['-i', 'ausurf.in']
     energy_reference = -11427.09017218
 
 
 @rfm.simple_test
 class QeCheckAuSurfUENVExec(QeCheckAuSurfUENV):
-    valid_prog_environs = ["+qe"]
-    tags = {"uenv", "production", "maintenance"}
+    valid_prog_environs = ['+qe']
+    tags = {'uenv', 'production', 'maintenance'}
 
-    @run_after("setup")
+    @run_after('setup')
     def setup_executable(self):
-        self.executable = f"pw.x"
+        self.executable = f'pw.x'
         uarch = uenv.uarch(self.current_partition)
         if uarch == 'gh200':
-            self.executable = f"./mps-wrapper.sh pw.x"
+            self.executable = f'./mps-wrapper.sh pw.x'
 
 
 @rfm.simple_test
@@ -267,18 +281,18 @@ class QeCheckAuSurfCustomExecUENV(QeCheckAuSurfUENV):
     Same test as above, but using executables built by QeBuildTestUENV.
     """
 
-    valid_prog_environs = ["+qe-dev"]
-    tags = {"uenv", "maintenance"}
+    valid_prog_environs = ['+qe-dev']
+    tags = {'uenv', 'maintenance'}
 
-    @run_after("init")
+    @run_after('init')
     def setup_dependency(self):
-        self.depends_on("QeBuildTestUENV", udeps.fully)
+        self.depends_on('QeBuildTestUENV', udeps.fully)
 
-    @run_after("setup")
+    @run_after('setup')
     def setup_executable(self):
-        parent = self.getdep("QeBuildTestUENV")
+        parent = self.getdep('QeBuildTestUENV')
 
-        self.executable = f"{parent.pwx_executable}"
+        self.executable = f'{parent.pwx_executable}'
         uarch = uenv.uarch(self.current_partition)
         if uarch == 'gh200':
-            self.executable = f"./mps-wrapper.sh {parent.pwx_executable}"
+            self.executable = f'./mps-wrapper.sh {parent.pwx_executable}'
