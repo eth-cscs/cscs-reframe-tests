@@ -209,6 +209,7 @@ class OMB_MBW_MR_PerSwitch(OMB_MBW_MR_Base):
     '''
     descr = 'OSU mbw_mr per-switch (4 nodes, 16 ranks)'
     valid_systems = ['daint:normal', 'starlex:normal']
+    tags = {'production'}
     switch_group = parameter(_get_l0_switches(), loggable=True)
     num_nodes = 4
     num_tasks_per_node = 4
