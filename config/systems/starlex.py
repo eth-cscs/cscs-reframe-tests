@@ -53,6 +53,10 @@ site_configuration = {
                     },
                     'resources': [
                         {
+                            'name': 'switches',
+                            'options': ['--switches={num_switches}']
+                        },
+                        {
                             'name': 'memory',
                             'options': ['--mem={mem_per_node}']
                         },

@@ -5,15 +5,41 @@
 
 """Helpers for selecting Slurm nodes based on the tree topology.
 
-The functions parse `scontrol show topology` and optionally intersect the
+The functions parse ``scontrol show topology`` and optionally intersect the
 reported switch groups with the currently available nodes of a target
 partition.  This lets ReFrame checks place jobs on nodes that span distinct
-Level-0 switch groups (or, conversely, keep all nodes inside a single group).
+Level-0 switch groups.
 """
 
 import json
 import re
 import subprocess
+
+
+def _get_l0_switches():
+    """Return the list of live Level-0 switch names.
+
+    Called at module import time (on a login node) to populate ReFrame
+    test parameters.  Returns an empty list if ``scontrol`` is not
+    available (e.g. CI runners, non-Slurm systems), in which case
+    parameterized tests will have no variants and effectively skip.
+    """
+    try:
+        output = subprocess.check_output(
+            ['scontrol', 'show', 'topology'], universal_newlines=True,
+            stderr=subprocess.STDOUT,
+        )
+    except (OSError, subprocess.CalledProcessError):
+        return []
+
+    pattern = re.compile(r'SwitchName=(\S+)\s+Level=(\d+)')
+    switches = []
+    for line in output.splitlines():
+        match = pattern.match(line)
+        if match and int(match.group(2)) == 0:
+            switches.append(match.group(1))
+
+    return switches
 
 
 def _run(cmd):
@@ -30,14 +56,37 @@ def expand_hostlist(nodelist):
     return [n.strip() for n in out.strip().splitlines() if n.strip()]
 
 
+def expand_reservation(name):
+    """Return the list of nodes in the given Slurm reservation."""
+    try:
+        out = _run(['scontrol', 'show', 'reservation', name])
+    except subprocess.CalledProcessError:
+        return []
+
+    match = re.search(r'Nodes=(\S+)', out)
+    if not match:
+        return []
+
+    return expand_hostlist(match.group(1))
+
+
 def get_switch_groups(level=0):
-    """Return a dict mapping switch name to node list for the given level."""
-    out = _run(['scontrol', 'show', 'topology'])
+    """Return a dict mapping switch name to node list for the given level.
+
+    Invokes ``scontrol show topology`` on the host.  The output cannot be
+    supplied from a ReFrame test's ``self.stdout`` because that is a
+    deferred expression, not a plain string, at the point helpers run
+    (during ``setup``/``run`` hooks).  See ``SwitchTopologyCheck`` for the
+    known trade-off: it runs ``scontrol`` as its own executable *and*
+    this helper spawns a second, redundant call.
+    """
+    output = _run(['scontrol', 'show', 'topology'])
+
     groups = {}
     pattern = re.compile(
         r'SwitchName=(\S+)\s+Level=(\d+)\s+LinkSpeed=\d+\s+Nodes=(\S+)'
     )
-    for line in out.splitlines():
+    for line in output.splitlines():
         match = pattern.match(line)
         if match:
             switch_name, switch_level, nodelist = match.groups()
@@ -47,51 +96,45 @@ def get_switch_groups(level=0):
     return groups
 
 
-def get_partition_nodes(partition,
-                        required_state=None,
-                        exclude_states=None,
-                        allow_reserved=False):
+def get_switch_group_names(level=0):
+    """Return a sorted list of switch names at the given level.
+
+    Wraps :func:`get_switch_groups` and returns only the keys.
+    """
+    return sorted(get_switch_groups(level).keys())
+
+
+def get_partition_nodes(partition, reservation=None):
     """Return the set of usable nodes in *partition*.
 
-    By default only nodes that contain the ``IDLE`` state flag are returned,
-    and nodes with the ``RESERVED`` flag are excluded unless a reservation is
-    being used.
+    When *reservation* is given, only nodes belonging to that Slurm
+    reservation are returned (no state filtering — the reservation
+    guarantees access).  This is the path used during maintenance, where
+    nodes carry the ``RESERVED`` flag and would otherwise be excluded.
 
-    :param partition: Slurm partition name.
-    :param required_state: List of state flags that must all be present.  If
-        ``None``, defaults to ``['IDLE']``.
-    :param exclude_states: List of state flags that must not be present.  If
-        ``None``, defaults to common non-usable flags.
-    :param allow_reserved: If ``False`` (default), exclude nodes with the
-        ``RESERVED`` flag.  Set to ``True`` when the job is submitted with a
-        Slurm reservation.
-    :returns: A set of node names.
+    Without a reservation, only ``IDLE`` nodes are returned, with ``DRAIN``
+    and ``MAINTENANCE`` nodes excluded.
     """
-    if required_state is None:
-        required_state = ['IDLE']
-
-    if exclude_states is None:
-        exclude_states = [
-            'DOWN', 'DRAIN', 'DRAINED', 'MAINTENANCE', 'ALLOCATED', 'MIXED',
-            'COMPLETING', 'NOT_RESPONDING', 'UNKNOWN'
-        ]
-
-    if not allow_reserved:
-        exclude_states = list(exclude_states) + ['RESERVED']
+    if reservation:
+        reserved = set(expand_reservation(reservation))
+        all_nodes = _all_partition_nodes(partition)
+        return reserved & all_nodes
 
     out = _run(['scontrol', 'show', 'nodes', '--json'])
     data = json.loads(out)
+    # Exclude COMPLETING: a node in IDLE+COMPLETING matches as IDLE but
+    # Slurm won't allocate it, causing indefinite hangs.
+    exclude = ('DRAIN', 'MAINTENANCE', 'COMPLETING')
     nodes = set()
     for node in data.get('nodes', []):
-        partitions = node.get('partitions', [])
-        if partition not in partitions:
+        if partition not in node.get('partitions', []):
             continue
 
         state = node.get('state', [])
-        if not all(flag in state for flag in required_state):
+        if 'IDLE' not in state:
             continue
 
-        if any(flag in state for flag in exclude_states):
+        if any(flag in state for flag in exclude):
             continue
 
         nodes.add(node['name'])
@@ -99,10 +142,17 @@ def get_partition_nodes(partition,
     return nodes
 
 
-def select_nodes_across_groups(num_nodes, partition,
-                               required_state=None,
-                               exclude_states=None,
-                               allow_reserved=False):
+def _all_partition_nodes(partition):
+    """Return all node names in *partition* regardless of state."""
+    out = _run(['scontrol', 'show', 'nodes', '--json'])
+    data = json.loads(out)
+    return {
+        node['name'] for node in data.get('nodes', [])
+        if partition in node.get('partitions', [])
+    }
+
+
+def select_nodes_across_groups(num_nodes, partition, reservation=None):
     """Return up to *num_nodes* usable nodes from distinct Level-0 groups.
 
     The switch groups are processed in the order reported by
@@ -111,12 +161,10 @@ def select_nodes_across_groups(num_nodes, partition,
     *num_nodes* groups have usable nodes, the returned list is shorter.
     """
     groups = get_switch_groups(level=0)
-    usable_nodes = get_partition_nodes(partition, required_state,
-                                       exclude_states,
-                                       allow_reserved=allow_reserved)
+    usable = get_partition_nodes(partition, reservation=reservation)
     selected = []
     for nodes in groups.values():
-        candidates = [n for n in nodes if n in usable_nodes]
+        candidates = [n for n in nodes if n in usable]
         if candidates:
             selected.append(candidates[0])
 
@@ -124,26 +172,3 @@ def select_nodes_across_groups(num_nodes, partition,
             break
 
     return selected
-
-
-def select_nodes_in_group(num_nodes, partition,
-                          required_state=None,
-                          exclude_states=None,
-                          allow_reserved=False):
-    """Return up to *num_nodes* usable nodes that all belong to one Level-0
-    group.
-
-    The group with the largest number of available nodes is chosen so that
-    the request is most likely satisfiable.
-    """
-    groups = get_switch_groups(level=0)
-    usable_nodes = get_partition_nodes(partition, required_state,
-                                       exclude_states,
-                                       allow_reserved=allow_reserved)
-    best_group = []
-    for nodes in groups.values():
-        candidates = [n for n in nodes if n in usable_nodes]
-        if len(candidates) > len(best_group):
-            best_group = candidates
-
-    return best_group[:num_nodes]
