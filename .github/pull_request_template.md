@@ -15,6 +15,15 @@ cscs-ci run alps-eiger-uenv;CSCS_RFM_UENV=[build::|service::]prgenv-gnu/26.3:v1
 cscs-ci run alps-pilatus-uenv;CSCS_RFM_UENV=[build::|service::]prgenv-gnu/26.3:v1
 ```
 
+To run the non-uenv pipeline (container/integration tests, or any test not
+requiring a uenv), use the `alps-<system>` triggers instead. These run
+`ci/alps.yml` with `--mode daily_production` and no `CSCS_RFM_UENV`, so
+tests gated on `+uenv` are automatically skipped.
+
+```shell
+cscs-ci run alps-daint
+```
+
 - You can also pass SLURM flags:
     - cscs-ci run alps-starlex-uenv;CSCS_RFM_UENV=prgenv-gnu/25.11:v1;CSCS_RFM_EXTRA="-J reservation=uss140-shs131-nv590-staging"
     - note:
