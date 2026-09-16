@@ -555,7 +555,7 @@ class PyTorchMegatronLM_UENV(PyTorchMegatronLM):
     @run_after('setup')
     def set_env_vars(self):
         self.env_vars.update({
-            'TRITON_CACHE_DIR': '$MEGATRON_LM_DIR/.triton_cache',
+            'TRITON_CACHE_DIR': '/tmp/$(id -un)/.triton_cache',
             'NCCL_CROSS_NIC': 1,
             'NCCL_NET_GDR_LEVEL': 'PHB',
             'NCCL_NET': '"AWS Libfabric"',
