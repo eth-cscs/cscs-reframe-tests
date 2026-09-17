@@ -132,6 +132,12 @@ class OMB_MBW_MR_Base(rfm.RunOnlyRegressionTest,
     # changes with the live topology).
     _record_num_switch_groups = False
 
+    # Number of switch groups actually exercised by the test.  Populated
+    # by subclasses that set _record_num_switch_groups (e.g. FullTopology)
+    # so that the recorded metric matches the groups used, not the raw
+    # topology size.
+    _num_switch_groups = None
+
     @run_after('setup')
     def set_executable(self):
         self.executable = f'{self.mpi_tests_dir}/{self.test_name}'
@@ -175,9 +181,16 @@ class OMB_MBW_MR_Base(rfm.RunOnlyRegressionTest,
             'agg_mr': sn.extractsingle(regex, self.stdout, 'mr', float)
         }
         if self._record_num_switch_groups:
-            self.perf_patterns['num_switch_groups'] = sn.count(
-                get_switch_group_names(0)
-            )
+            # Use the count of groups actually selected for this partition;
+            # fall back to the raw topology count if not set.
+            if self._num_switch_groups is not None:
+                self.perf_patterns['num_switch_groups'] = (
+                    self._num_switch_groups
+                )
+            else:
+                self.perf_patterns['num_switch_groups'] = sn.count(
+                    get_switch_group_names(0)
+                )
 
 
 @rfm.simple_test
@@ -255,11 +268,11 @@ class OMB_MBW_MR_PerSwitch(OMB_MBW_MR_Base):
 class OMB_MBW_MR_FullTopology(OMB_MBW_MR_Base):
     '''Cross-switch stress test spanning all Level-0 switch groups.
 
-    One node is selected from each live Level-0 group via
-    `select_nodes_across_groups` so that the traffic crosses every
-    leaf switch. The number of nodes is derived dynamically from the
-    live topology (`len(get_switch_group_names(0))`); if fewer groups
-    have usable nodes than required, the test is skipped.
+    One node is selected from each live Level-0 group that belongs
+    to the current partition via ``select_nodes_across_groups`` so that
+    the traffic crosses every relevant leaf switch.  The number of nodes
+    is derived dynamically from the live topology; if fewer groups have
+    usable nodes than required, the test is skipped.
 
     The `num_switch_groups` performance metric is recorded so that
     historical runs can be filtered by topology size - a changing switch
@@ -281,9 +294,11 @@ class OMB_MBW_MR_FullTopology(OMB_MBW_MR_Base):
         partition = self.current_partition.name
         groups = get_switch_groups(level=0)
         all_nodes = _all_partition_nodes(partition)
-        self.num_nodes = sum(
-            1 for nodes in groups.values() if set(nodes) & all_nodes
-        )
+        partition_groups = [
+            name for name, nodes in groups.items() if set(nodes) & all_nodes
+        ]
+        self.num_nodes = len(partition_groups)
+        self._num_switch_groups = len(partition_groups)
 
     @run_before('run')
     def pick_nodes(self):
