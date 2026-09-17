@@ -21,7 +21,8 @@ class cpi_build_test(rfm.RegressionTest):
 
     @run_before('run')
     def setup_job(self):
-        self.num_tasks = 0 if self.flexible else self.num_tasks_per_node
+        if self.flexible:
+            self.num_tasks = 0
 
     @sanity_function
     def validate(self):
