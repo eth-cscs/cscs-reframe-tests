@@ -277,7 +277,7 @@ class OMB_MBW_MR_FullTopology(OMB_MBW_MR_Base):
     ``reference`` entries once a stable baseline has been collected.
     '''
     descr = 'OSU mbw_mr full topology (available Level-0 switch groups)'
-    valid_systems = ['daint:normal', 'starlex:normal']
+    valid_systems = ['daint:normal', 'starlex:normal', 'clariden:normal']
     num_tasks_per_node = 4
     _record_num_switch_groups = True
     reservation = variable(str, value='')
@@ -285,6 +285,28 @@ class OMB_MBW_MR_FullTopology(OMB_MBW_MR_Base):
     # run.  The test will use every available group as long as at least this
     # many have usable nodes.
     min_switch_groups = variable(int, value=2)
+    # Maximum number of switch groups to use.  Zero means "use every
+    # available group" (default production behaviour).  Set to a positive
+    # value to run controlled scaling benchmarks.
+    max_switch_groups = variable(int, value=0)
+
+    # Baseline performance values per number of switch groups actually used.
+    # These are shared across the Alps vclusters (daint/starlex/clariden)
+    # because they use the same Slingshot 11 fabric.  Populate this table
+    # from scaling benchmark results; until then the test records performance
+    # without comparison.
+    _baselines = {
+        # Baselines collected on daint (Sep 2026).  Shared across Alps
+        # vclusters (daint/starlex/clariden) with ±10% tolerance.
+        # N: {'agg_bw_mb_s': MB/s, 'agg_mr': Messages/s}
+        2: {'agg_bw_mb_s': 23215.04, 'agg_mr': 5534.90},
+        3: {'agg_bw_mb_s': 39788.99, 'agg_mr': 9486.43},
+        4: {'agg_bw_mb_s': 46437.60, 'agg_mr': 11071.59},
+        5: {'agg_bw_mb_s': 57577.84, 'agg_mr': 13727.63},
+        6: {'agg_bw_mb_s': 71766.80, 'agg_mr': 17110.54},
+        7: {'agg_bw_mb_s': 81816.81, 'agg_mr': 19506.65},
+        8: {'agg_bw_mb_s': 94085.66, 'agg_mr': 22431.77},
+    }
 
     @run_after('setup')
     def set_num_nodes(self):
@@ -301,17 +323,22 @@ class OMB_MBW_MR_FullTopology(OMB_MBW_MR_Base):
             if set(groups[name]) & usable
         ]
 
-        if len(available_groups) < self.min_switch_groups:
+        target = len(available_groups)
+        if self.max_switch_groups > 0:
+            target = min(target, self.max_switch_groups)
+
+        if target < self.min_switch_groups:
             self.skip(
                 f'only {len(available_groups)} switch group(s) usable, '
                 f'need at least {self.min_switch_groups}'
             )
 
-        self._used_switch_groups = available_groups
-        self.num_nodes = len(available_groups)
+        self._used_switch_groups = available_groups[:target]
+        self.num_nodes = target
+        self._num_switch_groups = target
         self.logger.info(
             f'OMB_MBW_MR_FullTopology: running on '
-            f'{len(available_groups)}/{len(partition_groups)} switch groups'
+            f'{target}/{len(partition_groups)} switch groups'
         )
 
     @run_before('run')
@@ -337,3 +364,23 @@ class OMB_MBW_MR_FullTopology(OMB_MBW_MR_Base):
             )
 
         self.job.options += [f'--nodelist={",".join(nodes)}']
+
+    @run_before('performance')
+    def set_reference(self):
+        # Set per-switch-count reference values shared across the Alps
+        # vclusters.  If no baseline exists for the actual number of groups
+        # used in this run, leave reference empty and record only.
+        n = self._num_switch_groups
+        baseline = self._baselines.get(n)
+        if baseline is None:
+            return
+
+        ref_entry = {
+            'agg_bw_mb_s': (baseline['agg_bw_mb_s'], -0.1, 0.1, 'MB/s'),
+            'agg_mr':      (baseline['agg_mr'],      -0.1, 0.1, 'Messages/s'),
+        }
+        self.reference = {
+            'daint:normal':    ref_entry,
+            'starlex:normal':  ref_entry,
+            'clariden:normal': ref_entry,
+        }
