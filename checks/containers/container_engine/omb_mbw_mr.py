@@ -59,9 +59,9 @@ from slurm_mpi_pmi2 import SlurmMpiPmi2Mixin          # noqa: E402
 from switch_topology import (                         # noqa: E402
     _all_partition_nodes,
     _get_l0_switches,
+    get_partition_nodes,
     get_switch_group_names,
     get_switch_groups,
-    select_nodes_across_groups,
 )
 
 
@@ -266,28 +266,31 @@ class OMB_MBW_MR_PerSwitch(OMB_MBW_MR_Base):
 
 @rfm.simple_test
 class OMB_MBW_MR_FullTopology(OMB_MBW_MR_Base):
-    '''Cross-switch stress test spanning all Level-0 switch groups.
+    '''Cross-switch stress test spanning available Level-0 switch groups.
 
-    One node is selected from each live Level-0 group that belongs
-    to the current partition via ``select_nodes_across_groups`` so that
-    the traffic crosses every relevant leaf switch.  The number of nodes
-    is derived dynamically from the live topology; if fewer groups have
-    usable nodes than required, the test is skipped.
+    One node is selected from each live Level-0 group that belongs to
+    the current partition and currently has at least one usable node.
+    The number of nodes is therefore dynamic and reflects the live load;
+    the test only skips if fewer than ``min_switch_groups`` groups are
+    available.  The idle-node check is a scheduling hint, not a guarantee
+    that Slurm will immediately allocate the selected nodes.
 
-    The `num_switch_groups` performance metric is recorded so that
-    historical runs can be filtered by topology size - a changing switch
-    count affects aggregate bandwidth even if per-pair performance is
-    unchanged.
+    The ``num_switch_groups`` performance metric records the actual number
+    of groups used in the run, so historical results can be filtered by
+    topology size.
 
-    Intended for an empty system after maintenance. Performance is
-    recorded but not yet compared - add per-partition `reference`
-    entries once a stable baseline has been collected.
+    Performance is recorded but not yet compared — add per-partition
+    ``reference`` entries once a stable baseline has been collected.
     '''
-    descr = 'OSU mbw_mr full topology (all Level-0 switch groups)'
+    descr = 'OSU mbw_mr full topology (available Level-0 switch groups)'
     valid_systems = ['daint:normal', 'starlex:normal']
     num_tasks_per_node = 4
     _record_num_switch_groups = True
     reservation = variable(str, value='')
+    # Minimum number of switch groups required for a meaningful cross-switch
+    # run.  The test will use every available group as long as at least this
+    # many have usable nodes.
+    min_switch_groups = variable(int, value=2)
 
     @run_after('setup')
     def set_num_nodes(self):
@@ -297,8 +300,26 @@ class OMB_MBW_MR_FullTopology(OMB_MBW_MR_Base):
         partition_groups = [
             name for name, nodes in groups.items() if set(nodes) & all_nodes
         ]
-        self.num_nodes = len(partition_groups)
-        self._num_switch_groups = len(partition_groups)
+
+        usable = get_partition_nodes(partition)
+        available_groups = [
+            name for name in partition_groups
+            if set(groups[name]) & usable
+        ]
+
+        if len(available_groups) < self.min_switch_groups:
+            self.skip(
+                f'only {len(available_groups)} switch group(s) usable, '
+                f'need at least {self.min_switch_groups}'
+            )
+
+        self._used_switch_groups = available_groups
+        self.num_nodes = len(available_groups)
+        self._num_switch_groups = len(available_groups)
+        self.logger.info(
+            f'OMB_MBW_MR_FullTopology: running on '
+            f'{len(available_groups)}/{len(partition_groups)} switch groups'
+        )
 
     @run_before('run')
     def pick_nodes(self):
@@ -307,13 +328,19 @@ class OMB_MBW_MR_FullTopology(OMB_MBW_MR_Base):
         if reservation:
             self.job.options += [f'--reservation={reservation}']
 
-        nodes = select_nodes_across_groups(
-            self.num_nodes, partition, reservation=reservation
-        )
-        if len(nodes) < self.num_nodes:
+        groups = get_switch_groups(level=0)
+        usable = get_partition_nodes(partition, reservation=reservation)
+
+        nodes = []
+        for group in self._used_switch_groups:
+            candidates = [n for n in groups[group] if n in usable]
+            if candidates:
+                nodes.append(candidates[0])
+
+        if len(nodes) < self.min_switch_groups:
             self.skip(
-                f'could not find {self.num_nodes} usable nodes in distinct '
-                f'switch groups (found {len(nodes)})'
+                f'could not find {self.min_switch_groups} usable nodes in '
+                f'distinct switch groups (found {len(nodes)})'
             )
 
         self.job.options += [f'--nodelist={",".join(nodes)}']
