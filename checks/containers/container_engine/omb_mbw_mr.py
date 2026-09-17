@@ -132,12 +132,6 @@ class OMB_MBW_MR_Base(rfm.RunOnlyRegressionTest,
     # changes with the live topology).
     _record_num_switch_groups = False
 
-    # Number of switch groups actually exercised by the test.  Populated
-    # by subclasses that set _record_num_switch_groups (e.g. FullTopology)
-    # so that the recorded metric matches the groups used, not the raw
-    # topology size.
-    _num_switch_groups = None
-
     @run_after('setup')
     def set_executable(self):
         self.executable = f'{self.mpi_tests_dir}/{self.test_name}'
@@ -183,9 +177,9 @@ class OMB_MBW_MR_Base(rfm.RunOnlyRegressionTest,
         if self._record_num_switch_groups:
             # Use the count of groups actually selected for this partition;
             # fall back to the raw topology count if not set.
-            if self._num_switch_groups is not None:
-                self.perf_patterns['num_switch_groups'] = (
-                    self._num_switch_groups
+            if hasattr(self, '_used_switch_groups'):
+                self.perf_patterns['num_switch_groups'] = sn.len(
+                    self._used_switch_groups
                 )
             else:
                 self.perf_patterns['num_switch_groups'] = sn.count(
@@ -315,7 +309,6 @@ class OMB_MBW_MR_FullTopology(OMB_MBW_MR_Base):
 
         self._used_switch_groups = available_groups
         self.num_nodes = len(available_groups)
-        self._num_switch_groups = len(available_groups)
         self.logger.info(
             f'OMB_MBW_MR_FullTopology: running on '
             f'{len(available_groups)}/{len(partition_groups)} switch groups'
