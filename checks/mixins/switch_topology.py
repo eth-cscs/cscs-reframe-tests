@@ -5,7 +5,7 @@
 
 """Helpers for selecting Slurm nodes based on the tree topology.
 
-The functions parse ``scontrol show topology`` and optionally intersect the
+The functions parse `scontrol show topology` and optionally intersect the
 reported switch groups with the currently available nodes of a target
 partition.  This lets ReFrame checks place jobs on nodes that span distinct
 Level-0 switch groups.
@@ -20,7 +20,7 @@ def _get_l0_switches():
     """Return the list of live Level-0 switch names.
 
     Called at module import time (on a login node) to populate ReFrame
-    test parameters.  Returns an empty list if ``scontrol`` is not
+    test parameters. Returns an empty list if `scontrol` is not
     available (e.g. CI runners, non-Slurm systems), in which case
     parameterized tests will have no variants and effectively skip.
     """
@@ -73,11 +73,11 @@ def expand_reservation(name):
 def get_switch_groups(level=0):
     """Return a dict mapping switch name to node list for the given level.
 
-    Invokes ``scontrol show topology`` on the host.  The output cannot be
-    supplied from a ReFrame test's ``self.stdout`` because that is a
+    Invokes `scontrol show topology` on the host.  The output cannot be
+    supplied from a ReFrame test's `self.stdout` because that is a
     deferred expression, not a plain string, at the point helpers run
-    (during ``setup``/``run`` hooks).  See ``SwitchTopologyCheck`` for the
-    known trade-off: it runs ``scontrol`` as its own executable *and*
+    (during `setup`/`run` hooks).  See `SwitchTopologyCheck` for the
+    known trade-off: it runs `scontrol` as its own executable *and*
     this helper spawns a second, redundant call.
     """
     output = _run(['scontrol', 'show', 'topology'])
@@ -110,10 +110,10 @@ def get_partition_nodes(partition, reservation=None):
     When *reservation* is given, only nodes belonging to that Slurm
     reservation are returned (no state filtering — the reservation
     guarantees access).  This is the path used during maintenance, where
-    nodes carry the ``RESERVED`` flag and would otherwise be excluded.
+    nodes carry the `RESERVED` flag and would otherwise be excluded.
 
-    Without a reservation, only ``IDLE`` nodes are returned, with ``DRAIN``
-    and ``MAINTENANCE`` nodes excluded.
+    Without a reservation, only `IDLE` nodes are returned, with `DRAIN`
+    and `MAINTENANCE` nodes excluded.
     """
     if reservation:
         reserved = set(expand_reservation(reservation))
@@ -156,7 +156,7 @@ def select_nodes_across_groups(num_nodes, partition, reservation=None):
     """Return up to *num_nodes* usable nodes from distinct Level-0 groups.
 
     The switch groups are processed in the order reported by
-    ``scontrol show topology``.  The first usable node of each group is
+    `scontrol show topology`.  The first usable node of each group is
     selected until *num_nodes* nodes have been picked.  If fewer than
     *num_nodes* groups have usable nodes, the returned list is shorter.
     """
