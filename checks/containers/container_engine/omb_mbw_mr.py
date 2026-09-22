@@ -303,11 +303,18 @@ class OMB_MBW_MR_FullTopology(OMB_MBW_MR_Base):
     of groups used in the run, so historical results can be filtered by
     topology size.
 
-    Performance is recorded but not yet compared — add per-partition
-    ``reference`` entries once a stable baseline has been collected.
+    Tagged ``maintenance`` because it may require many idle nodes across
+    all switch groups; daily production runs are covered by the
+    ``PerSwitch`` variant.
+
+    Per-switch-count reference values are set for the baselines collected
+    on daint (Sep 2026) for ``N = 2..8`` groups.  Larger topologies still
+    record performance without comparison until additional maintenance
+    windows provide stable baselines.
     '''
     descr = 'OSU mbw_mr full topology (available Level-0 switch groups)'
     valid_systems = ['daint:normal', 'starlex:normal', 'clariden:normal']
+    tags = {'maintenance'}
     num_tasks_per_node = 4
     _record_num_switch_groups = True
     reservation = variable(str, value='')
@@ -325,9 +332,8 @@ class OMB_MBW_MR_FullTopology(OMB_MBW_MR_Base):
     # because they use the same Slingshot 11 fabric.  The ±10% tolerance
     # accounts for fabric variance across switch groups and load
     # conditions; measured spread was <2% for most N, up to 5% for N=5
-    # and N=7 due to group composition differences.  Populate this table
-    # from scaling benchmark results; until then the test records
-    # performance without comparison.
+    # and N=7 due to group composition differences.  Topologies with no
+    # entry in this table still record performance without comparison.
     _baselines = {
         # Baselines collected on daint (Sep 2026).  Shared across Alps
         # vclusters (daint/starlex/clariden) with ±10% tolerance.
