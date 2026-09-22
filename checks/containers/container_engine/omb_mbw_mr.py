@@ -54,11 +54,11 @@ import reframe.utility.sanity as sn
 
 sys.path.append(str(pathlib.Path(__file__).parent.parent.parent / 'mixins'))
 
-from container_engine import ContainerEngineMixin     # noqa: E402
-from slurm_mpi_pmi2 import SlurmMpiPmi2Mixin          # noqa: E402
-from switch_topology import (                         # noqa: E402
-    _all_partition_nodes,
-    _get_l0_switches,
+from container_engine import ContainerEngineMixin                      # noqa: E402
+from slurm_mpi_pmi2 import SlurmMpiPmi2Mixin                          # noqa: E402
+from switch_topology import (                                          # noqa: E402
+    all_partition_nodes,
+    get_l0_switches,
     get_partition_nodes,
     get_switch_group_names,
     get_switch_groups,
@@ -66,10 +66,24 @@ from switch_topology import (                         # noqa: E402
 
 
 def _extract_reservation(options):
-    """Return the reservation name from Slurm job options, or None."""
-    for opt in (options or []):
+    """Return the reservation name from Slurm job options, or None.
+
+    Handles both ``--reservation=name`` and ``--reservation name``
+    (space-separated) forms.  An empty value (``--reservation=``) is
+    skipped rather than treated as "no reservation."
+    """
+    if not options:
+        return None
+
+    for i, opt in enumerate(options):
+        if opt in ('--reservation', 'reservation'):
+            if i + 1 < len(options):
+                return options[i + 1]
+
         if opt.startswith('--reservation=') or opt.startswith('reservation='):
-            return opt.split('=', 1)[1]
+            value = opt.split('=', 1)[1]
+            if value:
+                return value
 
     return None
 
@@ -120,17 +134,22 @@ class OMB_MBW_MR_Base(rfm.RunOnlyRegressionTest,
     num_tasks_per_node = 4
     num_tasks = required
 
-    # OSU options. By default measure at 4 MiB after a 50 iters run.
-    message_size = variable(str, value='4194304')
+    # OSU options.  By default measure at 4 MiB with a short run.
+    message_size = variable(int, value=4194304)
     warmup_iters = variable(int, value=10)
     num_iters = variable(int, value=50)
     # When True, pass -c to osu_mbw_mr for internal correctness checking.
     # This is independent of ReFrame's reference comparison.
-    validate = variable(bool, value=True)
+    osu_correctness_check = variable(bool, value=True)
+
     # Set to True in subclasses that should record num_switch_groups
     # as a performance metric (e.g. FullTopology, where the count
     # changes with the live topology).
     _record_num_switch_groups = False
+
+    # Initialized at class level so that set_perf can use .update()
+    # without clobbering subclass additions.
+    perf_patterns = {}
 
     @run_after('setup')
     def set_executable(self):
@@ -144,7 +163,7 @@ class OMB_MBW_MR_Base(rfm.RunOnlyRegressionTest,
             '-x', str(self.warmup_iters),
             '-i', str(self.num_iters)
         ]
-        if self.validate:
+        if self.osu_correctness_check:
             opts.append('-c')
 
         self.executable_opts = opts
@@ -169,11 +188,16 @@ class OMB_MBW_MR_Base(rfm.RunOnlyRegressionTest,
     def set_perf(self):
         # Extract aggregate bandwidth and message rate from the single line
         # that corresponds to the configured message size.
-        regex = rf'^{self.message_size}\s+(?P<bw>\S+)\s+(?P<mr>\S+)'
-        self.perf_patterns = {
-            'agg_bw_mb_s': sn.extractsingle(regex, self.stdout, 'bw', float),
-            'agg_mr': sn.extractsingle(regex, self.stdout, 'mr', float)
-        }
+        self.perf_patterns.update({
+            'agg_bw_mb_s': sn.extractsingle(
+                rf'^{self.message_size}\s+(?P<bw>\S+)\s+(?P<mr>\S+)',
+                self.stdout, 'bw', float
+            ),
+            'agg_mr': sn.extractsingle(
+                rf'^{self.message_size}\s+(?P<bw>\S+)\s+(?P<mr>\S+)',
+                self.stdout, 'mr', float
+            )
+        })
         if self._record_num_switch_groups:
             # Use the count of groups actually selected for this partition;
             # fall back to the raw topology count if not set.
@@ -209,7 +233,7 @@ class OMB_MBW_MR_PerSwitch(OMB_MBW_MR_Base):
     descr = 'OSU mbw_mr per-switch (4 nodes, 16 ranks)'
     valid_systems = ['daint:normal', 'starlex:normal']
     tags = {'production'}
-    switch_group = parameter(_get_l0_switches(), loggable=True)
+    switch_group = parameter(get_l0_switches(), loggable=True)
     num_nodes = 4
     num_tasks_per_node = 4
     warmup_iters = 10
@@ -221,7 +245,13 @@ class OMB_MBW_MR_PerSwitch(OMB_MBW_MR_Base):
     time_limit = '1h'
     # Disable OSU's internal -c correctness check for the reference run;
     # this is unrelated to ReFrame's reference comparison below.
-    validate = False
+    osu_correctness_check = False
+
+    # Reference values collected on daint (Sep 2026) from 10 L0 switch
+    # groups with 0.8% spread (49,229-49,632 MB/s).  The ±10% tolerance
+    # accommodates normal fabric variance across switches and load
+    # conditions; a consistently slow group (outside tolerance) flags a
+    # hardware issue requiring investigation.
     reference = {
         'daint:normal':   {'agg_bw_mb_s': (48251.31, -0.1, 0.1, 'MB/s'),
                            'agg_mr':      (11504.01, -0.1, 0.1, 'Messages/s')},
@@ -292,9 +322,12 @@ class OMB_MBW_MR_FullTopology(OMB_MBW_MR_Base):
 
     # Baseline performance values per number of switch groups actually used.
     # These are shared across the Alps vclusters (daint/starlex/clariden)
-    # because they use the same Slingshot 11 fabric.  Populate this table
-    # from scaling benchmark results; until then the test records performance
-    # without comparison.
+    # because they use the same Slingshot 11 fabric.  The ±10% tolerance
+    # accounts for fabric variance across switch groups and load
+    # conditions; measured spread was <2% for most N, up to 5% for N=5
+    # and N=7 due to group composition differences.  Populate this table
+    # from scaling benchmark results; until then the test records
+    # performance without comparison.
     _baselines = {
         # Baselines collected on daint (Sep 2026).  Shared across Alps
         # vclusters (daint/starlex/clariden) with ±10% tolerance.
@@ -312,7 +345,7 @@ class OMB_MBW_MR_FullTopology(OMB_MBW_MR_Base):
     def set_num_nodes(self):
         partition = self.current_partition.name
         groups = get_switch_groups(level=0)
-        all_nodes = _all_partition_nodes(partition)
+        all_nodes = all_partition_nodes(partition)
         partition_groups = [
             name for name, nodes in groups.items() if set(nodes) & all_nodes
         ]
@@ -344,8 +377,10 @@ class OMB_MBW_MR_FullTopology(OMB_MBW_MR_Base):
     @run_before('run')
     def pick_nodes(self):
         partition = self.current_partition.name
-        reservation = self.reservation or _extract_reservation(self.job.options)  # noqa: E402
-        if reservation:
+        reservation = self.reservation or _extract_reservation(self.job.options)
+        if reservation and not any(
+            opt.startswith('--reservation=') for opt in self.job.options
+        ):
             self.job.options += [f'--reservation={reservation}']
 
         groups = get_switch_groups(level=0)
@@ -353,7 +388,7 @@ class OMB_MBW_MR_FullTopology(OMB_MBW_MR_Base):
 
         nodes = []
         for group in self._used_switch_groups:
-            candidates = [n for n in groups[group] if n in usable]
+            candidates = list(set(groups[group]) & usable)
             if candidates:
                 nodes.append(candidates[0])
 
@@ -363,7 +398,10 @@ class OMB_MBW_MR_FullTopology(OMB_MBW_MR_Base):
                 f'distinct switch groups (found {len(nodes)})'
             )
 
-        self.job.options += [f'--nodelist={",".join(nodes)}']
+        self.job.options += [
+            f'--nodes={len(nodes)}',
+            f'--nodelist={",".join(nodes)}',
+        ]
 
     @run_before('performance')
     def set_reference(self):
