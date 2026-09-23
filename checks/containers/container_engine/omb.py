@@ -112,7 +112,7 @@ class OMB_MPICH_Base_CE(OMB_Base_CE, SlurmMpiPmi2Mixin):
         },
         'collective/osu_alltoall': {
             'zinal': {
-                'latency_1M': (1200., None, 0.15, 'us')
+                'latency_1M': (2400., None, 0.15, 'us')
             },
             '*': {
                 'latency_1M': (1800., None, 0.15, 'us')
