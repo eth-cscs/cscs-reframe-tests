@@ -169,7 +169,7 @@ class OMB_MPICH_CPU_Base_CE(OMB_MPICH_Base_CE):
         'jfrog.svc.cscs.ch/ghcr/sarus-suite/containerfiles-ci/'
         'omb:7.5.2-mpich5.0.1-ofi2.6.0'
     )
-    valid_systems = ['+ce']
+    valid_systems = ['+ce -gpu']
 
 
 class OMB_OMPI_CPU_Base_CE(OMB_OMPI_Base_CE):
@@ -178,7 +178,7 @@ class OMB_OMPI_CPU_Base_CE(OMB_OMPI_Base_CE):
         'jfrog.svc.cscs.ch/ghcr/sarus-suite/containerfiles-ci/'
         'omb:7.5.2-ompi5.0.11-ofi2.6.0'
     )
-    valid_systems = ['+ce']
+    valid_systems = ['+ce -gpu']
 
 
 @rfm.simple_test
