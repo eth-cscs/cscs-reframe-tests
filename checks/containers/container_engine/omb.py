@@ -78,6 +78,11 @@ class OMB_Base_CE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
             gpu_devices = self.current_partition.select_devices('gpu')
             self.num_gpus_per_node = gpu_devices[0].num_devices
 
+    @run_after('init')
+    def skip_xfail_test(self):
+        self.skip_if(self.test_name == 'collective/osu_alltoall',
+                     'skipping Known performance regression')
+
     @sanity_function
     def assert_sanity(self):
         return sn.assert_found(self.sanity_per_test[self.test_name],
@@ -137,11 +142,6 @@ class OMB_OMPI_Base_CE(OMB_Base_CE, SlurmMpiPmixMixin):
             }
         }
     }
-
-    @run_after('init')
-    def skip_xfail_test(self):
-        self.skip_if(self.test_name == 'collective/osu_alltoall',
-                     'skipping Known performance regression')
 
 
 class OMB_MPICH_CUDA_Base_CE(OMB_MPICH_Base_CE):
