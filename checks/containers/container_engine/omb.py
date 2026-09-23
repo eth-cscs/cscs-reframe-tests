@@ -20,6 +20,25 @@ from slurm_mpi_pmi2 import SlurmMpiPmi2Mixin       # noqa: E402
 from slurm_mpi_pmix import SlurmMpiPmixMixin       # noqa: E402
 
 
+class OMB_Host_Netstack_Mixin(rfm.RegressionTestPlugin):
+    @run_after('init')
+    def setup_netstack_source(self):
+        self.container_env_table = {
+            table: values.copy()
+            for table, values in self.container_env_table.items()
+        }
+        self.container_env_table['annotations.com.hooks'].update({
+            'netstack.source': 'host'
+        })
+
+
+class OMB_Skybox_Mixin(rfm.RegressionTestPlugin):
+    @run_after('init')
+    def setup_skybox(self):
+        self.tags = {'ce_dev', 'skybox'}
+        self.spank_option = 'edf'
+
+
 class OMB_Base_CE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     valid_prog_environs = ['builtin']
     valid_systems = ['+ce']
@@ -33,6 +52,7 @@ class OMB_Base_CE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
         }
     }
     tags = {'production', 'ce', 'ce_dev', 'maintenance'}
+    hardware = None
 
     mpi_tests_dir = '/usr/local/libexec/osu-micro-benchmarks/mpi'
 
@@ -51,11 +71,18 @@ class OMB_Base_CE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
         self.executable = f'{self.mpi_tests_dir}/{self.test_name}'
 
     @run_after('setup')
-    def set_num_gpus_per_node(self):
-        curr_part = self.current_partition
-        self.num_gpus_per_node = curr_part.select_devices('gpu')[0].num_devices
+    def set_resources(self):
         self.num_tasks_per_node = self.local_ranks_per_test[self.test_name]
         self.num_tasks = self.num_nodes * self.num_tasks_per_node
+        if self.hardware == 'cuda':
+            gpu_devices = self.current_partition.select_devices('gpu')
+            self.num_gpus_per_node = gpu_devices[0].num_devices
+
+    @run_after('setup')
+    def skip_cuda_xfail_test(self):
+        if self.hardware == 'cuda':
+            self.skip_if(self.test_name == 'collective/osu_alltoall',
+                         'skipping Known performance regression')
 
     @sanity_function
     def assert_sanity(self):
@@ -82,14 +109,7 @@ class OMB_Base_CE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
         self.perf_patterns = self.patterns_per_test[self.test_name]
 
 
-@rfm.simple_test
-class OMB_MPICH_CE(OMB_Base_CE, SlurmMpiPmi2Mixin):
-    descr = 'OSU Micro-benchmarks for MPICH/CE (Point2Point and All2All)'
-    container_image = (
-        'jfrog.svc.cscs.ch/ghcr/sarus-suite/containerfiles-ci/'
-        'omb:7.5.2-mpich4.3.2-ofi1.22-cuda12.8.1'
-    )
-    valid_systems = ['+ce +nvgpu']
+class OMB_MPICH_Base_CE(OMB_Base_CE, SlurmMpiPmi2Mixin):
     reference_per_test = {
         'pt2pt/osu_bw': {
             '*': {
@@ -106,20 +126,8 @@ class OMB_MPICH_CE(OMB_Base_CE, SlurmMpiPmi2Mixin):
         }
     }
 
-    @run_after('init')
-    def skip_xfail_test(self):
-        self.skip_if(self.test_name == 'collective/osu_alltoall',
-                     'skipping Known performance regression')
 
-
-@rfm.simple_test
-class OMB_OMPI_CE(OMB_Base_CE, SlurmMpiPmixMixin):
-    descr = 'OSU Micro-benchmarks for OpenMPI/CE (Point2Point and All2All)'
-    container_image = (
-        'jfrog.svc.cscs.ch/ghcr/sarus-suite/containerfiles-ci/'
-        'omb:7.5.2-ompi5.0.9-ofi1.22-cuda12.8.1'
-    )
-    valid_systems = ['+ce +nvgpu']
+class OMB_OMPI_Base_CE(OMB_Base_CE, SlurmMpiPmixMixin):
     reference_per_test = {
         'pt2pt/osu_bw': {
             '*': {
@@ -136,53 +144,118 @@ class OMB_OMPI_CE(OMB_Base_CE, SlurmMpiPmixMixin):
         }
     }
 
-    @run_after('init')
-    def skip_xfail_test(self):
-        self.skip_if(self.test_name == 'collective/osu_alltoall',
-                     'skipping Known performance regression')
+
+class OMB_MPICH_CUDA_Base_CE(OMB_MPICH_Base_CE):
+    hardware = 'cuda'
+    container_image = (
+        'jfrog.svc.cscs.ch/ghcr/sarus-suite/containerfiles-ci/'
+        'omb:7.5.2-mpich4.3.2-ofi1.22-cuda12.8.1'
+    )
+    valid_systems = ['+ce +nvgpu']
+
+
+class OMB_OMPI_CUDA_Base_CE(OMB_OMPI_Base_CE):
+    hardware = 'cuda'
+    container_image = (
+        'jfrog.svc.cscs.ch/ghcr/sarus-suite/containerfiles-ci/'
+        'omb:7.5.2-ompi5.0.9-ofi1.22-cuda12.8.1'
+    )
+    valid_systems = ['+ce +nvgpu']
+
+
+class OMB_MPICH_CPU_Base_CE(OMB_MPICH_Base_CE):
+    hardware = 'cpu'
+    container_image = (
+        'jfrog.svc.cscs.ch/ghcr/sarus-suite/containerfiles-ci/'
+        'omb:7.5.2-mpich5.0.1-ofi2.6.0'
+    )
+    valid_systems = ['+ce']
+
+
+class OMB_OMPI_CPU_Base_CE(OMB_OMPI_Base_CE):
+    hardware = 'cpu'
+    container_image = (
+        'jfrog.svc.cscs.ch/ghcr/sarus-suite/containerfiles-ci/'
+        'omb:7.5.2-ompi5.0.11-ofi2.6.0'
+    )
+    valid_systems = ['+ce']
 
 
 @rfm.simple_test
-class OMB_MPICH_CE_Host(OMB_MPICH_CE):
+class OMB_MPICH_CE(OMB_MPICH_CUDA_Base_CE):
+    descr = 'OSU Micro-benchmarks for MPICH/CE (Point2Point and All2All)'
+
+
+@rfm.simple_test
+class OMB_OMPI_CE(OMB_OMPI_CUDA_Base_CE):
+    descr = 'OSU Micro-benchmarks for OpenMPI/CE (Point2Point and All2All)'
+
+
+@rfm.simple_test
+class OMB_MPICH_CPU_CE(OMB_MPICH_CPU_Base_CE):
+    descr = 'CPU-only OSU Micro-benchmarks for MPICH/CE'
+
+
+@rfm.simple_test
+class OMB_OMPI_CPU_CE(OMB_OMPI_CPU_Base_CE):
+    descr = 'CPU-only OSU Micro-benchmarks for OpenMPI/CE'
+
+
+@rfm.simple_test
+class OMB_MPICH_CE_Host(OMB_MPICH_CE, OMB_Host_Netstack_Mixin):
     descr = '''
     OSU Micro-benchmarks for MPICH/CE with host netstack
     (Point2Point and All2All)
     '''
 
-    @run_after('init')
-    def setup_netstack_source(self):
-        self.container_env_table['annotations.com.hooks'].update({
-            'netstack.source': 'host'
-        })
-
 
 @rfm.simple_test
-class OMB_OMPI_CE_Host(OMB_OMPI_CE):
+class OMB_OMPI_CE_Host(OMB_OMPI_CE, OMB_Host_Netstack_Mixin):
     descr = '''
     OSU Micro-benchmarks for OpenMPI/CE with host netstack
     (Point2Point and All2All)
     '''
 
-    @run_after('init')
-    def setup_netstack_source(self):
-        self.container_env_table['annotations.com.hooks'].update({
-            'netstack.source': 'host'
-        })
+
+@rfm.simple_test
+class OMB_MPICH_CPU_CE_Host(OMB_MPICH_CPU_CE,
+                            OMB_Host_Netstack_Mixin):
+    descr = '''
+    CPU-only OSU Micro-benchmarks for MPICH/CE with host netstack
+    '''
 
 
 @rfm.simple_test
-class OMB_MPICH_Skybox(OMB_MPICH_CE):
+class OMB_OMPI_CPU_CE_Host(OMB_OMPI_CPU_CE,
+                           OMB_Host_Netstack_Mixin):
+    descr = '''
+    CPU-only OSU Micro-benchmarks for OpenMPI/CE with host netstack
+    '''
+
+
+@rfm.simple_test
+class OMB_MPICH_Skybox(OMB_MPICH_CE, OMB_Skybox_Mixin):
     descr = '''
     OSU Micro-benchmarks for MPICH/CE/Skybox (Point-to-Point & All-to-All)
     '''
-    tags = {'ce_dev', 'skybox'}
-    spank_option = 'edf'
 
 
 @rfm.simple_test
-class OMB_OMPI_Skybox(OMB_OMPI_CE):
+class OMB_OMPI_Skybox(OMB_OMPI_CE, OMB_Skybox_Mixin):
     descr = '''
     OSU Micro-benchmarks for OpenMPI/CE/Skybox (Point-to-Point & All-to-All)
     '''
-    tags = {'ce_dev', 'skybox'}
-    spank_option = 'edf'
+
+
+@rfm.simple_test
+class OMB_MPICH_CPU_Skybox(OMB_MPICH_CPU_CE, OMB_Skybox_Mixin):
+    descr = '''
+    CPU-only OSU Micro-benchmarks for MPICH/CE/Skybox
+    '''
+
+
+@rfm.simple_test
+class OMB_OMPI_CPU_Skybox(OMB_OMPI_CPU_CE, OMB_Skybox_Mixin):
+    descr = '''
+    CPU-only OSU Micro-benchmarks for OpenMPI/CE/Skybox
+    '''
