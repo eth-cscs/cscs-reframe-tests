@@ -9,7 +9,6 @@ reframe:
   stage: run
   extends: .f7t-baremetal-runner
   timeout: 8 hours
-  # needs: ['setup and pull']
   variables:
     SLURM_TIMELIMIT: '02:00:00'
   before_script:
@@ -20,8 +19,7 @@ reframe:
     - echo "FIRECREST_SYSTEM=$FIRECREST_SYSTEM / F7T_URL=$F7T_URL / CLUSTER_NAME=$CLUSTER_NAME"
     - uname -a
     - pwd
-    # - echo "UENV=$UENV" | tr , "\n"
-    # Send data to elastic on main branch only
+    # non `main` branch will not send data to Elastic:
     - '[ "$CI_COMMIT_REF_NAME" != "main" ] && unset CSCS_RFM_HTTPJSON_URL_ES'
     - 'git remote add oripr https://github.com/eth-cscs/cscs-reframe-tests || true'
     - 'echo "it is safe to ignore error: remote already exists"'
@@ -41,7 +39,7 @@ reframe:
       else
         git fetch oripr main;
         git diff --name-only oripr/main...;
-        tests_pr=$(git diff --name-only oripr/main... |grep ^checks/ |grep py$ |awk '{printf "-c %s ",$0}');
+        tests_pr=$(git diff --name-only oripr/main... |grep ^checks/ |grep '\.py$' |awk '{printf "-c %s ",$0}');
         if [ -z "$tests_pr" ]; then
           echo "no new/modified test(s) found, exiting";
           exit 0
