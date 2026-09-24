@@ -45,6 +45,11 @@ tests gated on `+uenv` are automatically skipped.
 
 ```shell
 cscs-ci run alps-daint
+cscs-ci run alps-santis
+cscs-ci run alps-clariden
+cscs-ci run alps-starlex
+
+cscs-ci run alps-eiger
 ```
 
 ### 3. Local Testing (optional)
