@@ -218,7 +218,7 @@ class CoralGemm(rfm.RegressionTest):
         # the expected number. In case of misconfiguration, the node can
         # appear to have more GPUs than it actually has, with lower
         # performance.
-        s2 = sn.assert_not_found(rf'device_{self.num_gpus+1}', self.stdout)
+        s2 = sn.assert_not_found(rf'device_{self.num_gpus}', self.stdout)
 
         return sn.all([s1, s2])
 
