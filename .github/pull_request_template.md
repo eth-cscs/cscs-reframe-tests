@@ -36,7 +36,18 @@ Notes:
 Other supported variables you can set in the same way:
 `CSCS_RFM_CPE_CE`, `CSCS_RFM_DIR`, `CSCS_RFM_ONEUPTIME_APIKEY`, `CSCS_RFM_TARGET_DIR`, `CSCS_RFM_USER_ENV_CUDA_VISIBLE`, `CSCS_RFM_USER_ENV_IMAGE`, `CSCS_RFM_USER_ENV_ROOT`
 
-### 2. Local Testing (optional)
+### 2. Non uenv testing
+
+To run the non-uenv pipeline (container/integration tests, or any test not
+requiring a uenv), use the `alps-<system>` triggers instead. These run
+`ci/alps.yml` with `--mode daily_production` and no `CSCS_RFM_UENV`, so
+tests gated on `+uenv` are automatically skipped.
+
+```shell
+cscs-ci run alps-daint
+```
+
+### 3. Local Testing (optional)
 
 Install ReFrame: https://confluence.cscs.ch/spaces/reframe/pages/886276110/Installing+ReFrame
 
