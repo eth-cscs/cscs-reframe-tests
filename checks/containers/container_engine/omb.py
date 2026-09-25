@@ -23,10 +23,6 @@ from slurm_mpi_pmix import SlurmMpiPmixMixin       # noqa: E402
 class OMB_Host_Netstack_Mixin(rfm.RegressionTestPlugin):
     @run_after('init')
     def setup_netstack_source(self):
-        self.container_env_table = {
-            table: values.copy()
-            for table, values in self.container_env_table.items()
-        }
         self.container_env_table['annotations.com.hooks'].update({
             'netstack.source': 'host'
         })
@@ -222,6 +218,10 @@ class OMB_MPICH_CPU_CE_Host(OMB_MPICH_CPU_CE,
     descr = '''
     CPU-only OSU Micro-benchmarks for MPICH/CE with host netstack
     '''
+    container_image = (
+        'jfrog.svc.cscs.ch/ghcr/sarus-suite/containerfiles-ci/'
+        'omb:7.5.2-mpich5.0.1-ofi2.3.1'
+    )
 
 
 @rfm.simple_test
@@ -230,6 +230,10 @@ class OMB_OMPI_CPU_CE_Host(OMB_OMPI_CPU_CE,
     descr = '''
     CPU-only OSU Micro-benchmarks for OpenMPI/CE with host netstack
     '''
+    container_image = (
+        'jfrog.svc.cscs.ch/ghcr/sarus-suite/containerfiles-ci/'
+        'omb:7.5.2-ompi5.0.11-ofi2.3.1'
+    )
 
 
 @rfm.simple_test
