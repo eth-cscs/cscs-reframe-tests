@@ -16,6 +16,7 @@ class cpi_build_test(rfm.RegressionTest):
              'allocation depending on the flexible parameter')
     valid_systems = ['+remote']
     valid_prog_environs = ['+mpi +prgenv -cpe']
+    maintainers = ['UE', 'PA']
     build_system = 'SingleSource'
     sourcesdir = 'src/mpi_cpi'
     sourcepath = 'cpi.c'
@@ -23,9 +24,8 @@ class cpi_build_test(rfm.RegressionTest):
     num_tasks = -2
     num_tasks_per_node = 1
     build_locally = False
-    env_vars = {'MPICH_GPU_SUPPORT_ENABLED': 0}
     tags = {'appscheckout', 'uenv', 'flexible'}
-    maintainers = ['UE', 'PA']
+    env_vars = {'MPICH_GPU_SUPPORT_ENABLED': 0}
     flexible = variable(bool, value=False)
 
     @run_before('run')
