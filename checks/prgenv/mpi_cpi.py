@@ -4,7 +4,16 @@ import reframe.utility.sanity as sn
 
 @rfm.simple_test
 class cpi_build_test(rfm.RegressionTest):
-    descr = 'Simple mpi test'
+    """
+    Simple MPI CPI build/run test.
+
+    When ``flexible`` is enabled, the test is submitted with
+    ``num_tasks=0`` so the scheduler can allocate any available
+    nodes. In the default non-flexible mode, ``num_tasks`` is left
+    unchanged (``-2``), which asks ReFrame to reserve two nodes.
+    """
+    descr = ('MPI CPI test with flexible or fixed two-node '
+             'allocation depending on the flexible parameter')
     valid_systems = ['+remote']
     valid_prog_environs = ['+mpi +prgenv -cpe']
     build_system = 'SingleSource'
