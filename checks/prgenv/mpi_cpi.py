@@ -25,7 +25,7 @@ class cpi_build_test(rfm.RegressionTest):
     build_locally = False
     env_vars = {'MPICH_GPU_SUPPORT_ENABLED': 0}
     tags = {'appscheckout', 'uenv', 'flexible'}
-    maintainers = ['VCUE', 'PA']
+    maintainers = ['UE', 'PA']
     flexible = variable(bool, value=False)
 
     @run_before('run')
