@@ -260,8 +260,3 @@ class PyTorchMegatronLM_CE_Dev(PyTorchMegatronLM, ContainerEngineMixin):
 @rfm.simple_test
 class PyTorchMegatronLM_Skybox(PyTorchMegatronLM_CE_Dev):
     tags = {'ce_dev', 'skybox'}
-
-    @run_after('setup')
-    def skip_test(self):
-        self.skip('WIP: '
-                  'Requires specific functionality in default hooks and CDIs.')
