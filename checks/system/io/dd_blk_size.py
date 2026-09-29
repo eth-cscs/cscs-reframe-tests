@@ -33,28 +33,26 @@ class ddBlockSizeTest(rfm.RunOnlyRegressionTest):
     def set_commands(self):
         self.num_tasks = self.ntasks
         self.executable = "/bin/bash"
-        self.executable_opts = [f''' 
-
+        self.executable_opts = [f'''
         mkdir -p {self.test_path}
 
         sleep 5
 
         ntasks={self.ntasks}
         for bs in 1M 5M {self.prob_block_size}; do
-
             echo "------------------------------------------"
             echo "Running dd with bs=$bs and ntasks=$ntasks count={self.count} path={self.test_path}/dd_largefile.$bs.$SLURM_PROCID"
 
-            srun -n $ntasks /usr/bin/dd if=/dev/zero of={self.test_path}/dd_largefile.$bs.$SLURM_PROCID bs=$bs count={self.count} status=progress
+            /usr/bin/dd if=/dev/zero of={self.test_path}/dd_largefile.$bs.$SLURM_PROCID bs=$bs count={self.count} status=progress
 
             echo "Finished."
 
-            rm {self.test_path}/dd_largefile.*
+            rm {self.test_path}/dd_largefile.$bs.$SLURM_PROCID
             sleep 5
         done
 
         echo "SUCCESS"
-        '''] 
+        ''']
         
     @sanity_function
     def check_success(self):
