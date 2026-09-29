@@ -218,13 +218,16 @@ class OMB_MBW_MR_PerSwitch(OMB_MBW_MR_Base):
     Each variant constrains `--nodelist` to all nodes in a specific
     Level-0 switch group and lets Slurm pick any 4. This gives
     per-switch bandwidth data - a consistently slow switch indicates a
-    hardware issue (degraded cable, failing transceiver, etc...).
+    hardware issue (degraded cable, failing transceiver, etc.).
 
-    Groups with fewer than `num_nodes` nodes total are skipped
-    (physically impossible). Groups with 0 idle nodes are NOT skipped
-    - the job waits for 4 nodes to become available, which is
-    reasonable in production given the large group sizes (26-111
-    nodes per group on daint).
+    Groups with fewer than `num_nodes` usable nodes are skipped
+    (physically impossible). When a Slurm reservation is configured,
+    only nodes belonging to that reservation are considered.
+
+    This test is intended for **maintenance** runs (typically inside a
+    reservation), not for daily production: `normal`-partition jobs can
+    wait indefinitely for nodes and eventually time out, which would
+    produce daily false positives.
 
     The container image (~9.6 GB) is cached in the shared
     `${SCRATCH}/.edf_imagestore`. The first run per account pulls
@@ -232,16 +235,19 @@ class OMB_MBW_MR_PerSwitch(OMB_MBW_MR_Base):
     '''
     descr = 'OSU mbw_mr per-switch (4 nodes, 16 ranks)'
     valid_systems = ['daint:normal', 'starlex:normal']
-    tags = {'production'}
+    tags = {'maintenance'}
     switch_group = parameter(get_l0_switches(), loggable=True)
     num_nodes = 4
     num_tasks_per_node = 4
     warmup_iters = 10
     num_iters = 50
+    # Slurm reservation to use for this variant. When non-empty, the
+    # variant only considers reserved nodes and passes --reservation
+    # to the job script.
+    reservation = variable(str, value='')
     # Allow extra time for container image pull on first run (per
     # account); the benchmark itself completes in < 1 minute once
-    # cached. The 1h limit gives Slurm enough time to find 4 idle
-    # nodes within the --nodelist constraint during production.
+    # cached. This is the job wall-clock limit after allocation.
     time_limit = '1h'
     # Disable OSU's internal -c correctness check for the reference run;
     # this is unrelated to ReFrame's reference comparison below.
@@ -274,12 +280,30 @@ class OMB_MBW_MR_PerSwitch(OMB_MBW_MR_Base):
         # needed. --nodes is required because --nodelist makes Slurm
         # default to one node per task rather than respecting
         # --ntasks-per-node.
+        partition = self.current_partition.name
+        reservation = self.reservation or _extract_reservation(self.job.options)
+        if reservation and not any(
+            opt.startswith('--reservation=') for opt in self.job.options
+        ):
+            self.job.options += [f'--reservation={reservation}']
+
         groups = get_switch_groups(level=0)
-        nodes = groups.get(self.switch_group, [])
+        group_nodes = groups.get(self.switch_group, [])
+
+        if reservation:
+            # Only nodes inside the reservation are usable for this run.
+            usable = get_partition_nodes(partition, reservation=reservation)
+            nodes = sorted(set(group_nodes) & usable)
+            scope = 'reservation'
+        else:
+            nodes = group_nodes
+            scope = 'partition'
+
         if len(nodes) < self.num_nodes:
             self.skip(
                 f'switch group {self.switch_group!r} has only '
-                f'{len(nodes)} node(s), need {self.num_nodes}'
+                f'{len(nodes)} usable node(s) in the current {scope}, '
+                f'need {self.num_nodes}'
             )
 
         self.job.options += [
