@@ -8,7 +8,7 @@ See the file header in `omb_mbw_mr.py` for benchmark theory, expected results, a
 
 | Check | Tag | valid_systems | References |
 |-------|-----|---------------|------------|
-| `OMB_MBW_MR_PerSwitch` | `maintenance` | daint, starlex, clariden, santis | daint + starlex only; clariden and santis run **record-only** until baselines are collected |
+| `OMB_MBW_MR_PerSwitch` | `maintenance` | daint, starlex, clariden, santis | daint (10 groups), starlex (3 groups), clariden (1 group, group29); santis runs **record-only** until baselines are collected |
 | `OMB_MBW_MR_FullTopology` | `maintenance` | daint, starlex, clariden, santis | Shared per-switch-count baselines (N=2–8) across all four vclusters |
 
 Both are tagged `maintenance` because `normal`-partition jobs can wait indefinitely for nodes and eventually time out, producing daily false positives. Use a reservation.
@@ -63,5 +63,6 @@ reframe -C config/cscs.py --system daint:normal \
 
 ## TODO
 
-- [ ] Collect PerSwitch baselines on clariden and santis during the next maintenance window, then add `reference` entries (currently record-only).
+- [ ] Collect PerSwitch baselines on santis during the next maintenance window, then add `reference` entry (currently record-only).
+- [ ] Collect full per-switch baselines on clariden across all groups (current reference is from group29 only).
 - [ ] Replace hardcoded partition names with a feature (e.g. `slingshot11` or `gh200`) once a suitable feature is added to the system configs. `+ce +nvgpu` is too broad (includes bristen A100).

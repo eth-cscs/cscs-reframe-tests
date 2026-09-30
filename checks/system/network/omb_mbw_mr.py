@@ -260,19 +260,22 @@ class OMB_MBW_MR_PerSwitch(OMB_MBW_MR_Base):
     osu_correctness_check = False
 
     # Reference values collected on daint (Sep 2026) from 10 L0 switch
-    # groups with 0.8% spread (49,229-49,632 MB/s).
+    # groups with 0.8% spread (49,229-49,632 MB/s).  clariden collected
+    # from a single group (group29) on 30 Sep 2026; a full per-switch
+    # baseline across all groups will be collected during the next
+    # maintenance window.  santis has no per-switch reference yet and
+    # runs record-only.
     #
-    # clariden and santis have no per-switch reference yet; they
-    # run record-only until baselines are collected in a
-    # maintenance window.  The ±10% tolerance
-    # accommodates normal fabric variance across switches and load
-    # conditions; a consistently slow group (outside tolerance) flags a
-    # hardware issue requiring investigation.
+    # The ±10% tolerance accommodates normal fabric variance across
+    # switches and load conditions; a consistently slow group (outside
+    # tolerance) flags a hardware issue requiring investigation.
     reference = {
         'daint:normal':   {'agg_bw_mb_s': (48251.31, -0.1, 0.1, 'MB/s'),
                            'agg_mr':      (11504.01, -0.1, 0.1, 'Messages/s')},
         'starlex:normal': {'agg_bw_mb_s': (49705.12, -0.1, 0.1, 'MB/s'),
                            'agg_mr':      (11851.62, -0.1, 0.1, 'Messages/s')},
+        'clariden:normal': {'agg_bw_mb_s': (49590.22, -0.1, 0.1, 'MB/s'),
+                            'agg_mr':      (11823.23, -0.1, 0.1, 'Messages/s')},
     }
 
     @run_after('init')
