@@ -1,0 +1,130 @@
+# Copyright 2026 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# ReFrame Project Developers. See the top-level LICENSE file for details.
+#
+# SPDX-License-Identifier: BSD-3-Clause
+#
+# ReFrame CSCS settings
+#
+
+site_configuration = {
+    'systems': [
+        {
+            'name': 'linard',
+            'descr': 'Linard vcluster',
+            'hostnames': ['linard'],
+            'modules_system': 'nomod',
+            'max_local_jobs': 20,
+            'partitions': [
+                {
+                    'name': 'login',
+                    'scheduler': 'local',
+                    'time_limit': '10m',
+                    'environs': [
+                        'builtin',
+                    ],
+                    'features': [
+                        'remote', 'uenv',
+                    ],
+                    'descr': 'Login nodes',
+                    'max_jobs': 20,
+                    'launcher': 'local'
+                },
+                {
+                    'name': 'nvgpu',
+                    'scheduler': 'slurm',
+                    'time_limit': '10m',
+                    'environs': [
+                        'builtin',
+                    ],
+                    'container_platforms': [
+                        {
+                             'type': 'Sarus',
+                        },
+                    ],
+                    'max_jobs': 1000,
+                    'access': ['-pnormal'],
+                    'resources': [
+                        {
+                            'name': 'switches',
+                            'options': ['--switches={num_switches}']
+                        },
+                        {
+                            'name': 'memory',
+                            'options': ['--mem={mem_per_node}']
+                        },
+                    ],
+                    'features': [
+                        'gpu', 'nvgpu', 'uenv', 'remote', 'sarus', 'scontrol'
+                    ],
+                    'devices': [
+                        {
+                            'type': 'gpu',
+                            'arch': 'sm_80',
+                            'num_devices': 4
+                        }
+                    ],
+                    'launcher': 'srun'
+                },
+                {
+                    'name': 'cpu',
+                    'scheduler': 'slurm',
+                    'time_limit': '10m',
+                    'container_platforms': [
+                        {
+                            'type': 'Sarus',
+                        }
+                    ],
+                    'environs': [
+                        'builtin',
+                    ],
+                    'max_jobs': 1000,
+                    'access': ['-ppostproc'],
+                    'resources': [
+                        {
+                            'name': 'switches',
+                            'options': ['--switches={num_switches}']
+                        },
+                        {
+                            'name': 'memory',
+                            'options': ['--mem={mem_per_node}']
+                        },
+                    ],
+                    'features': [
+                        'remote', 'uenv', 'sarus', 'scontrol'
+                    ],
+                    'launcher': 'srun'
+                },
+            ]
+        },
+    ],
+    'modes': [
+        {
+            'name': 'maintenance',
+            'options': [
+                '--unload-module=reframe',
+                '--exec-policy=async',
+                '-Sstrict_check=1',
+                '--prefix=$SCRATCH/$USER/regression/maintenance',
+                '--report-file=$SCRATCH/$USER/regression/maintenance/reports/maint_report_{sessionid}.json',
+                '--save-log-files',
+                '--tag=maintenance',
+                '--timestamp=%F_%H-%M-%S'
+            ],
+            'target_systems': ['linard'],
+        },
+        {
+            'name': 'production',
+            'options': [
+                '--unload-module=reframe',
+                '--exec-policy=async',
+                '-Sstrict_check=1',
+                '--prefix=$SCRATCH/$USER/regression/production',
+                '--report-file=$SCRATCH/$USER/regression/production/reports/prod_report_{sessionid}.json',
+                '--save-log-files',
+                '--tag=production',
+                '--timestamp=%F_%H-%M-%S'
+            ],
+            'target_systems': ['linard'],
+        }
+    ]
+}
