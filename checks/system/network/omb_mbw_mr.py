@@ -52,6 +52,7 @@ import sys
 import reframe as rfm
 import reframe.utility.sanity as sn
 
+sys.path.append(str(pathlib.Path(__file__).parent))
 sys.path.append(str(pathlib.Path(__file__).parent.parent.parent / 'mixins'))
 
 from container_engine import ContainerEngineMixin                      # noqa: E402
@@ -158,6 +159,10 @@ class OMB_MBW_MR_Base(rfm.RunOnlyRegressionTest,
     @run_after('setup')
     def set_executable_opts(self):
         # osu_mbw_mr expects a message-size range as "min:max".
+        #   -m  single message size (min:max, here both equal)
+        #   -x  number of warm-up iterations to skip
+        #   -i  iterations per rank pair (averaged for the result)
+        #   -c  internal correctness check (independent of ReFrame refs)
         opts = [
             '-m', f'{self.message_size}:{self.message_size}',
             '-x', str(self.warmup_iters),
