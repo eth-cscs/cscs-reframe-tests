@@ -376,4 +376,4 @@ class osu_collective_check(osu_build_run):
     def setup_by_scale(self):
         self.num_tasks = self.num_nodes
         with contextlib.suppress(KeyError):
-            self.reference = self.allref[self.num_nodes]
+            self.reference = self.allref[self.benchmark_info[0]][self.num_nodes]
