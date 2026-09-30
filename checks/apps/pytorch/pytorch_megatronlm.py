@@ -289,6 +289,9 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
         if self.nccl_debug:
             self.env_vars['NCCL_DEBUG'] = 'Info'
 
+        make_helper_library_cmd = 'make -C Megatron-LM/megatron/core/datasets'
+        if isinstance(self, PyTorchMegatronLM_CE):
+            make_helper_library_cmd = f'srun -N1 -n1 --environment={self.stagedir}/rfm_env.toml {make_helper_library_cmd}'
         self.prerun_cmds = [
             f'set -x',
             f'git clone {self.megatron_repo} $MEGATRON_LM_DIR',
@@ -296,6 +299,7 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
             f'git fetch origin',
             f'git checkout {self.megatron_release}',
             f'cd -',
+            f'{make_helper_library_cmd}',
             f'echo "START TIME: $(date)"',
             f'ulimit -c 0',
             f'mkdir -p $HF_HOME',
@@ -555,7 +559,7 @@ class PyTorchMegatronLM_UENV(PyTorchMegatronLM):
     @run_after('setup')
     def set_env_vars(self):
         self.env_vars.update({
-            'TRITON_CACHE_DIR': '$MEGATRON_LM_DIR/.triton_cache',
+            'TRITON_CACHE_DIR': '/tmp/$(id -un)/.triton_cache',
             'NCCL_CROSS_NIC': 1,
             'NCCL_NET_GDR_LEVEL': 'PHB',
             'NCCL_NET': '"AWS Libfabric"',
