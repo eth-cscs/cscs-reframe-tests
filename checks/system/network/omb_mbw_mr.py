@@ -134,6 +134,10 @@ class OMB_MBW_MR_Base(rfm.RunOnlyRegressionTest,
     num_nodes = 2
     num_tasks_per_node = 4
     num_tasks = required
+    # Allow extra time for container image pull on first run
+    # (per account); the benchmark itself completes in < 1 minute
+    # once cached. This is the job wall-clock limit after allocation.
+    time_limit = '1h'
 
     # OSU options.  By default measure at 4 MiB with a short run.
     message_size = variable(int, value=4194304)
@@ -239,7 +243,8 @@ class OMB_MBW_MR_PerSwitch(OMB_MBW_MR_Base):
     the image (~20-30 min); subsequent runs complete in < 1 minute.
     '''
     descr = 'OSU mbw_mr per-switch (4 nodes, 16 ranks)'
-    valid_systems = ['daint:normal', 'starlex:normal']
+    valid_systems = ['daint:normal', 'starlex:normal',
+                   'clariden:normal', 'santis:normal']
     tags = {'maintenance'}
     switch_group = parameter(get_l0_switches(), loggable=True)
     num_nodes = 4
@@ -250,16 +255,16 @@ class OMB_MBW_MR_PerSwitch(OMB_MBW_MR_Base):
     # variant only considers reserved nodes and passes --reservation
     # to the job script.
     reservation = variable(str, value='')
-    # Allow extra time for container image pull on first run (per
-    # account); the benchmark itself completes in < 1 minute once
-    # cached. This is the job wall-clock limit after allocation.
-    time_limit = '1h'
     # Disable OSU's internal -c correctness check for the reference run;
     # this is unrelated to ReFrame's reference comparison below.
     osu_correctness_check = False
 
     # Reference values collected on daint (Sep 2026) from 10 L0 switch
-    # groups with 0.8% spread (49,229-49,632 MB/s).  The ±10% tolerance
+    # groups with 0.8% spread (49,229-49,632 MB/s).
+    #
+    # clariden and santis have no per-switch reference yet; they
+    # run record-only until baselines are collected in a
+    # maintenance window.  The ±10% tolerance
     # accommodates normal fabric variance across switches and load
     # conditions; a consistently slow group (outside tolerance) flags a
     # hardware issue requiring investigation.
@@ -342,7 +347,8 @@ class OMB_MBW_MR_FullTopology(OMB_MBW_MR_Base):
     windows provide stable baselines.
     '''
     descr = 'OSU mbw_mr full topology (available Level-0 switch groups)'
-    valid_systems = ['daint:normal', 'starlex:normal', 'clariden:normal']
+    valid_systems = ['daint:normal', 'starlex:normal',
+                   'clariden:normal', 'santis:normal']
     tags = {'maintenance'}
     num_tasks_per_node = 4
     _record_num_switch_groups = True
@@ -456,4 +462,5 @@ class OMB_MBW_MR_FullTopology(OMB_MBW_MR_Base):
             'daint:normal':    ref_entry,
             'starlex:normal':  ref_entry,
             'clariden:normal': ref_entry,
+            'santis:normal':   ref_entry,
         }
