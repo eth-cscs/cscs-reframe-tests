@@ -3,25 +3,23 @@ import reframe.utility.sanity as sn
 
 
 @rfm.simple_test
-class cpi_build_test(rfm.RegressionTest):
+class cpi_test(rfm.RegressionTest):
     """
     Simple MPI CPI build/run test.
 
-    Default production and maintenance run: fixed 2-node / 2-task functionality test.
-
-    Flexible allocation can be enabled by setting ``flexible=True`` on
+    Flexible allocation can be enabled by setting `flexible=True` on
     the command line:
 
-    - ``-S flexible=True`` allocates all currently idle nodes
-      (ReFrame's default ``--flex-alloc-nodes=idle``).
-    - ``-S flexible=True --flex-alloc-nodes=N`` caps the allocation to
-      ``N`` nodes.
-    - ``-S flexible=True --flex-alloc-nodes=all`` considers all partition
+    - `-S flexible=True` allocates all currently idle nodes
+      (ReFrame's default `--flex-alloc-nodes=idle`).
+    - `-S flexible=True --flex-alloc-nodes=N` caps the allocation to
+      `N` nodes.
+    - `-S flexible=True --flex-alloc-nodes=all` considers all partition
       nodes.
 
     This is useful for manual tests or future health-check runs.
     """
-    descr = ('MPI CPI functionality test on two nodes; '
+    descr = ('MPI CPI functionality test on two nodes or '
              'flexible allocation when requested')
     valid_systems = ['+remote']
     valid_prog_environs = ['+mpi +prgenv -cpe']
@@ -31,7 +29,7 @@ class cpi_build_test(rfm.RegressionTest):
     sourcepath = 'cpi.c'
     executable = './cpi.x'
 
-    # Fixed 2-node allocation for the default production/maintenance run
+    # Default run on 2 nodes
     num_tasks = 2
     num_tasks_per_node = 1
 
