@@ -35,11 +35,6 @@ reframe -C config/cscs.py --system daint:normal \
     -n OMB_MBW_MR_FullTopology -S 'max_switch_groups=4' -r --performance-report
 ```
 
-> **Note:** `--mode maintenance` uses the production checkout at
-> `$RFM_STABLE/$CLUSTER_NAME/cscs-reframe-tests.git/checks`, not the
-> current working directory.  Until this PR is merged and deployed, run
-> with `-c checks -t maintenance` instead of `--mode maintenance`.
-
 ## What to expect
 
 - **PerSwitch skips are normal on a busy system.** Each variant requires 4 idle nodes in its switch group; today on starlex, 2 of 3 variants skipped because groups had only 1–2 idle nodes. Use a reservation for reliable coverage.
