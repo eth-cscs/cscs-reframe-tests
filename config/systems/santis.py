@@ -8,66 +8,76 @@
 
 import reframe.utility.osext as osext
 
-site_configuration = {
-    'systems': [
+
+base_config = {
+    'modules_system': 'lmod',
+    'resourcesdir': '/capstor/store/cscs/cscs/public/reframe/resources',
+    'max_local_jobs': 20,
+    'partitions': [
         {
-            'name': 'santis',
-            'descr': 'santis vcluster',
-            'hostnames': ['santis'],
-            'modules_system': 'nomod',
-            'resourcesdir':
-                '/capstor/store/cscs/cscs/public/reframe/resources',
-            'max_local_jobs': 20,
-            'partitions': [
+            'name': 'login',
+            'scheduler': 'local',
+            'time_limit': '10m',
+            'environs': [
+                'builtin',
+            ],
+            'descr': 'Login nodes',
+            'max_jobs': 20,
+            'launcher': 'local'
+        },
+        {
+            'name': 'normal',
+            'descr': 'GH200',
+            'scheduler': 'slurm',
+            'time_limit': '10m',
+            'container_platforms': [],
+            'environs': [
+                'builtin',
+            ],
+            'max_jobs': 1000,
+            'extras': {
+                'cn_memory': 870000,
+            },
+            'features': [
+                'ce', 'gpu', 'nvgpu', 'remote', 'scontrol', 'uenv',
+                'hugepages_slurm'],
+            'access': [
+                f'--account={osext.osgroup()}',
+                f'--gpus-per-node=4'],
+            'resources': [
                 {
-                    'name': 'login',
-                    'scheduler': 'local',
-                    'time_limit': '10m',
-                    'environs': [
-                        'builtin',
-                    ],
-                    'descr': 'Login nodes',
-                    'max_jobs': 20,
-                    'launcher': 'local'
+                    'name': 'switches',
+                    'options': ['--switches={num_switches}']
                 },
                 {
-                    'name': 'normal',
-                    'scheduler': 'slurm',
-                    'time_limit': '10m',
-                    'environs': [
-                        'builtin',
-                    ],
-                    'max_jobs': 1000,
-                    'extras': {
-                        'cn_memory': 870000,
-                    },
-                    'resources': [
-                        {
-                            'name': 'memory',
-                            'options': ['--mem={mem_per_node}']
-                        },
-                        {
-                            'name': 'gres',
-                            'options': ['--gres={gres}']
-                        },
-                    ],
-                    'features': ['ce', 'gpu', 'nvgpu', 'remote', 'scontrol', 
-                                 'uenv', 'hugepages_slurm'
-                    ],
-                    'access': [
-                        f'--account={osext.osgroup()}',
-                        f'--gpus-per-node=4'
-                    ],
-                    'devices': [
-                        {
-                            'type': 'gpu',
-                            'arch': 'sm_90',
-                            'num_devices': 4
-                        }
-                    ],
-                    'launcher': 'srun'
+                    'name': 'gres',
+                    'options': ['--gres={gres}']
                 },
-            ]
+                {
+                    'name': 'memory',
+                    'options': ['--mem={mem_per_node}']
+                },
+            ],
+            'devices': [
+                {
+                    'type': 'gpu',
+                    'arch': 'sm_90',
+                    'num_devices': 4
+                }
+            ],
+            'launcher': 'srun',
         },
     ]
+}
+
+base_config['name'] = 'clariden'
+base_config['descr'] = 'Clariden vcluster'
+base_config['hostnames'] = ['clariden']
+
+site_configuration = {
+    'systems': [
+        base_config,
+    ],
+    'environments': [
+    ],
 }

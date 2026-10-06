@@ -1,4 +1,4 @@
-# Copyright 2024 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -6,9 +6,9 @@
 # ReFrame CSCS settings
 #
 
-
 import os
 import reframe.utility.osext as osext
+
 
 def _cpe_ce_env():
     return {
@@ -25,8 +25,9 @@ def _cpe_ce_env():
         }
     }
 
+
 _cpe_ce_environs = (
-    ['builtin', 'PrgEnv-ce'] if 'CSCS_RFM_CPE_CE' in os.environ else ['builtin']
+    ['builtin', 'PrgEnv-ce'] if 'CSCS_RFM_CPE_CE' in os.environ else ['builtin']  # noqa:E501
 )
 
 base_config = {
@@ -50,6 +51,7 @@ base_config = {
             'descr': 'GH200',
             'scheduler': 'slurm',
             'time_limit': '10m',
+            # 'container_platforms': [],
             'environs': _cpe_ce_environs,
             'max_jobs': 1000,
             'extras': {
@@ -58,7 +60,9 @@ base_config = {
             'features': [
                 'ce', 'gpu', 'nvgpu', 'remote', 'scontrol', 'uenv',
                 'hugepages_slurm'],
-            'access': [f'--account={osext.osgroup()}'],
+            'access': [
+                f'--account={osext.osgroup()}',
+                f'--gpus-per-node=4'],
             'resources': [
                 {
                     'name': 'switches',
