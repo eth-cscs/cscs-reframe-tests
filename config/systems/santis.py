@@ -70,9 +70,9 @@ base_config = {
     ]
 }
 
-base_config['name'] = 'clariden'
-base_config['descr'] = 'Clariden vcluster'
-base_config['hostnames'] = ['clariden']
+base_config['name'] = 'santis'
+base_config['descr'] = 'Santis vcluster'
+base_config['hostnames'] = ['santis']
 
 site_configuration = {
     'systems': [
