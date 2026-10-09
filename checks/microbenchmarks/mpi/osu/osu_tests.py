@@ -374,6 +374,11 @@ class osu_collective_check(osu_build_run):
 
     @run_after('init')
     def setup_by_scale(self):
+        build_type = self.osu_binaries.build_type
+        if build_type == 'cuda':
+            self.device_buffers = 'cuda'
+            self.num_gpus_per_node = 1
+
         self.num_tasks = self.num_nodes
         with contextlib.suppress(KeyError):
             self.reference = self.allref[self.benchmark_info[0]][self.num_nodes]
