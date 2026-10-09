@@ -6,77 +6,79 @@
 # ReFrame CSCS settings
 #
 
-import os
 import reframe.utility.osext as osext
 
-reframe_dir = os.getenv(
-    'CSCS_RFM_DIR',
-    '/capstor/store/cscs/cscs/public/reframe/reframe-stable/$CLUSTER_NAME'
-)
-target_dir_var_exists = bool(os.getenv('CSCS_RFM_TARGET_DIR'))
-target_dir_base = (
-    '$SCRATCH/reframe/$CLUSTER_NAME' if not target_dir_var_exists else ''
-)
+
+
+base_config = {
+    'modules_system': 'lmod',
+    'resourcesdir': '/capstor/store/cscs/cscs/public/reframe/resources',
+    'max_local_jobs': 20,
+    'partitions': [
+        {
+            'name': 'login',
+            'scheduler': 'local',
+            'time_limit': '10m',
+            'environs': [
+                'builtin',
+            ],
+            'descr': 'Login nodes',
+            'max_jobs': 50,
+            'launcher': 'local'
+        },
+        {
+            'name': 'normal',
+            'descr': 'GH200',
+            'scheduler': 'slurm',
+            'time_limit': '10m',
+            'container_platforms': [],
+            'environs': [
+                'builtin',
+            ],
+            'max_jobs': 1000,
+            'extras': {
+                'cn_memory': 870000,
+            },
+            'features': [
+                'ce', 'gpu', 'nvgpu', 'remote', 'scontrol', 'uenv',
+                'hugepages_slurm'],
+            'access': [
+                f'--account={osext.osgroup()}',
+                f'--gpus-per-node=4'],
+            'resources': [
+                {
+                    'name': 'switches',
+                    'options': ['--switches={num_switches}']
+                },
+                {
+                    'name': 'gres',
+                    'options': ['--gres={gres}']
+                },
+                {
+                    'name': 'memory',
+                    'options': ['--mem={mem_per_node}']
+                },
+            ],
+            'devices': [
+                {
+                    'type': 'gpu',
+                    'arch': 'sm_90',
+                    'num_devices': 4
+                }
+            ],
+            'launcher': 'srun',
+        },
+    ]
+}
+
+base_config['name'] = 'starlex'
+base_config['descr'] = 'Starlex vcluster'
+base_config['hostnames'] = ['starlex']
 
 site_configuration = {
     'systems': [
-        {
-            'name': 'starlex',
-            'descr': 'starlex vcluster',
-            'hostnames': ['starlex'],
-            'modules_system': 'lmod',
-            'resourcesdir':
-                '/capstor/store/cscs/cscs/public/reframe/resources',
-            'max_local_jobs': 50,
-            'partitions': [
-                {
-                    'name': 'login',
-                    'scheduler': 'local',
-                    'time_limit': '10m',
-                    'environs': [
-                        'builtin',
-                    ],
-                    'descr': 'Login nodes',
-                    'max_jobs': 50,
-                    'launcher': 'local'
-                },
-                {
-                    'name': 'normal',
-                    'scheduler': 'slurm',
-                    'time_limit': '10m',
-                    'environs': [
-                        'builtin',
-                    ],
-                    'max_jobs': 1000,
-                    'extras': {
-                        'cn_memory': 870000,
-                    },
-                    'resources': [
-                        {
-                            'name': 'memory',
-                            'options': ['--mem={mem_per_node}']
-                        },
-                        {
-                            'name': 'gres',
-                            'options': ['--gres={gres}']
-                        },
-                    ],
-                    'features': ['ce', 'gpu', 'nvgpu', 'remote', 'scontrol',
-                                 'uenv', 'hugepages_slurm'],
-                    'access': [
-                        f'--account={osext.osgroup()}',
-                        f'--gpus-per-node=4'
-                    ],
-                    'devices': [
-                        {
-                            'type': 'gpu',
-                            'arch': 'sm_90',
-                            'num_devices': 4
-                        }
-                    ],
-                    'launcher': 'srun'
-                },
-            ]
-        },
+        base_config,
+    ],
+    'environments': [
     ],
 }
