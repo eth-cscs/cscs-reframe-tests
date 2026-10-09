@@ -16,6 +16,7 @@ sys.path.append(
 )
 
 from extra_launcher_options import ExtraLauncherOptionsMixin
+from uenv_slurm_mpi_options import UenvSlurmMpiOptionsMixin
 from container_engine import ContainerEngineCPEMixin
 
 
@@ -137,7 +138,7 @@ class build_osu_benchmarks(rfm.CompileOnlyRegressionTest,
 
 
 class osu_benchmark(rfm.RunOnlyRegressionTest, ExtraLauncherOptionsMixin,
-                    ContainerEngineCPEMixin):
+                    UenvSlurmMpiOptionsMixin, ContainerEngineCPEMixin):
     '''OSU benchmark test base class.'''
 
     #: Number of warmup iterations.
