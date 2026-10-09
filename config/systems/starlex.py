@@ -9,14 +9,6 @@
 import reframe.utility.osext as osext
 
 
-#needed? reframe_dir = os.getenv(
-#needed?     'CSCS_RFM_DIR',
-#needed?     '/capstor/store/cscs/cscs/public/reframe/reframe-stable/$CLUSTER_NAME'
-#needed? )
-#needed? target_dir_var_exists = bool(os.getenv('CSCS_RFM_TARGET_DIR'))
-#needed? target_dir_base = (
-#needed?     '$SCRATCH/reframe/$CLUSTER_NAME' if not target_dir_var_exists else ''
-#needed? )
 
 base_config = {
     'modules_system': 'lmod',
