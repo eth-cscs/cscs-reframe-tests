@@ -19,8 +19,10 @@ class cpi_test(rfm.RegressionTest):
 
     This is useful for manual tests or future health-check runs.
     """
-    descr = ('MPI CPI functionality test on two nodes or '
-             'flexible allocation when requested')
+    descr = (
+        "MPI CPI functionality test on two nodes or "
+        "flexible allocation when requested"
+    )
     valid_systems = ['+remote']
     valid_prog_environs = ['+mpi +prgenv -cpe']
     maintainers = ['UE', 'PA']
