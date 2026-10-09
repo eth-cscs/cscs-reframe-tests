@@ -27,9 +27,9 @@ class NodeBurnCE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     '''
 
     image_repository = 'jfrog.svc.cscs.ch#reframe-oci/node-burn'
-    image_tag = 'cuda-12.4_nb-be4f759'
+    image_tag = 'cuda-12.4_nb-be4f759-openmp'
     valid_prog_environs = ['builtin']
-    maintainers = ['VCUE', 'PA']
+    maintainers = ['UE', 'PA']
     nb_duration = variable(int, value=20)
     flexible = variable(bool, value=False)
     container_image = f'{image_repository}:{image_tag}'
@@ -140,10 +140,14 @@ class CPUNodeBurnGemmCE(NodeBurnGemmCE):
     executable = 'burn-f64-cpu'
     ref_nb_gflops = {
         'gh200': {'nb_gflops': (3100, -0.1, None, 'GFlops')},
-        'zen2': {'nb_gflops': (2000, -0.1, None, 'GFlops')},
+        'zen2': {'nb_gflops': (3300, -0.1, None, 'GFlops')},
     }
     test_hw = 'cpu'
     valid_systems = ['+ce']
+    # Use physical cores only: the OpenMP OpenBLAS in the image respects
+    # OMP_NUM_THREADS and OMP_PROC_BIND, eliminating the random thread
+    # placement that caused large performance variance on multi-socket nodes.
+    use_multithreading = False
     env_vars.update({
         # Disable the nvidia-container-cli to run on systems without
         # Nvidia Gpus
@@ -157,6 +161,7 @@ class CPUNodeBurnGemmCE(NodeBurnGemmCE):
         proc = self.current_partition.processor
         self.num_sockets = int(proc.num_sockets)
         self.cpus_per_socket = int(proc.num_cpus_per_socket)
+        self.cpus_per_core = int(proc.num_cpus_per_core)
 
         # On GH200 use 1 task per GH module
         if proc.arch == 'neoverse_v2':
@@ -164,12 +169,15 @@ class CPUNodeBurnGemmCE(NodeBurnGemmCE):
             self.num_cpus_per_task = self.cpus_per_socket
         else:
             self.num_tasks_per_node = 1
-            self.num_cpus_per_task = self.cpus_per_socket * self.num_sockets
+            self.num_cpus_per_task = (
+                self.cpus_per_socket * self.num_sockets) // self.cpus_per_core
 
         self.env_vars.update(
             {
                 'OMP_NUM_THREADS': self.num_cpus_per_task,
-                'OMP_PROC_BIND': 'true',
+                'OMP_PLACES': 'cores',
+                'OMP_PROC_BIND': 'spread',
+                'OPENBLAS_NUM_THREADS': self.num_cpus_per_task,
             }
         )
         self.set_num_tasks()
@@ -217,6 +225,7 @@ class CPUNodeBurnStreamCE(NodeBurnStreamCE):
         'gh200': {'nb_gbps': (425.0, -0.1, None, 'GB/s')},
         'zen2': {'nb_gbps': (220.0, -0.1, None, 'GB/s')},
     }
+    use_multithreading = False
     test_hw = 'cpu'
     valid_systems = ['+ce']
     env_vars.update({
@@ -255,15 +264,15 @@ class CPUNodeBurnStreamCE(NodeBurnStreamCE):
         else:
             self.num_tasks_per_node = 1
             array_size = array_size_per_socket * self.num_sockets
-            self.num_cpus_per_task = self.cpus_per_socket * self.num_sockets
+            self.num_cpus_per_task = (
+                self.cpus_per_socket * self.num_sockets) // self.cpus_per_core
 
         self.env_vars.update(
             {
-                # Do not use multiple threads per core
-                'OMP_NUM_THREADS':
-                    self.num_cpus_per_task // self.cpus_per_core,
+                'OMP_NUM_THREADS': self.num_cpus_per_task,
                 'OMP_PROC_BIND': 'spread',
-                'OMP_PLACES': 'cores'
+                'OMP_PLACES': 'cores',
+                'OPENBLAS_NUM_THREADS': self.num_cpus_per_task,
             }
         )
         self.set_num_tasks()
