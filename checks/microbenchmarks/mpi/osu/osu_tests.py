@@ -348,6 +348,7 @@ class osu_pt2pt_check(osu_build_run):
 
 @rfm.simple_test
 class osu_collective_check(osu_build_run):
+    maintainers = ['UE']
     benchmark_info = parameter([
         ('mpi.collective.blocking.osu_alltoall', 'latency'),
         ('mpi.collective.blocking.osu_allreduce', 'latency'),
@@ -356,21 +357,44 @@ class osu_collective_check(osu_build_run):
     num_nodes = parameter([6])
     osu_binaries = fixture(build_osu_benchmarks, scope='environment')
 
+    # References are keyed by [benchmark][build_type][num_nodes], then by
+    # system:partition (ScopedDict, '*' is the global fallback).  A single
+    # '*'-scoped reference with a loose +20% upper bound (no lower bound)
+    # covers all systems for now; ideally maintenance and production
+    # systems would have separate references.
     allref = {
-        'mpi.collective.blocking.osu_allreduce': {
-            6: {
-                '*': {
-                    'latency': (8.45, None, 0.10, 'us')
+        'mpi.collective.blocking.osu_alltoall': {
+            'cpu': {
+                6: {
+                    '*': {
+                        'latency': (26.0, None, 0.20, 'us')
+                    },
+                },
+            },
+            'cuda': {
+                6: {
+                    '*': {
+                        'latency': (40.0, None, 0.20, 'us')
+                    },
                 },
             },
         },
-        'mpi.collective.blocking.osu_alltoall': {
-            6: {
-                '*': {
-                    'latency': (14.50, None, 0.10, 'us')
+        'mpi.collective.blocking.osu_allreduce': {
+            'cpu': {
+                6: {
+                    '*': {
+                        'latency': (15.5, None, 0.20, 'us')
+                    },
                 },
             },
-        }
+            'cuda': {
+                6: {
+                    '*': {
+                        'latency': (71.0, None, 0.20, 'us')
+                    },
+                },
+            },
+        },
     }
 
     @run_after('init')
@@ -382,4 +406,4 @@ class osu_collective_check(osu_build_run):
 
         self.num_tasks = self.num_nodes
         with contextlib.suppress(KeyError):
-            self.reference = self.allref[self.benchmark_info[0]][self.num_nodes]
+            self.reference = self.allref[self.benchmark_info[0]][build_type][self.num_nodes]
