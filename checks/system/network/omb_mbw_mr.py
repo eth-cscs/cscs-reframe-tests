@@ -6,21 +6,21 @@
 # OSU Multiple Bandwidth / Message Rate checks across Slurm switch groups.
 #
 # The tests use the upstream MPICH Container Engine image that already ships
-# the OSU Micro-Benchmarks.  The Container Engine CXI hook injects the host's
+# the OSU Micro-Benchmarks. The Container Engine CXI hook injects the host's
 # optimised libfabric/xpmem libraries, giving native Slingshot performance.
 #
 # Benchmark purpose
 # -----------------
 # osu_mbw_mr measures the aggregate uni-directional bandwidth across multiple
-# simultaneous rank pairs.  Each rank is bound to a CPU LDOM so that Cray
+# simultaneous rank pairs. Each rank is bound to a CPU LDOM so that Cray
 # MPICH selects the nearest Slingshot NIC (via libfabric hwloc topology).
-# With 4 ranks per node on GH200 (4 Slingshot 11 NICs per node), all 4 NICs
+# With 4 ranks per node on GH200 (4 Slingshot-11 NICs per node), all 4 NICs
 # are exercised and the aggregate bandwidth reflects the full node injection
 # capability, not just a single-NIC ceiling.
 #
 # Theoretical limits and expected results
 # ----------------------------------------
-# Each Slingshot 11 (Cassini) NIC provides 200 Gbps = 25 GB/s unidirectional.
+# Each Slingshot-11 (Cassini) NIC provides 200 Gbps = 25 GB/s unidirectional.
 # GH200 nodes have 4 NICs, giving a theoretical node injection bandwidth of
 # 100 GB/s. Cray MPICH on daint is compiled without scalable endpoints
 # (MPIDI_OFI_ENABLE_SCALABLE_ENDPOINTS=0), so a single MPI process uses
@@ -28,7 +28,7 @@
 # of MPIR_CVAR_CH4_OFI_MAX_NICS or MPIR_CVAR_CH4_OFI_ENABLE_MULTI_NIC_STRIPING
 # settings. This is consistent with observations on Frontier (OLCF) and
 # Perlmutter (NERSC), which use identical hardware and report comparable
-# single-pair bandwidth (see "Bringing HPE Slingshot 11 Support to Open MPI",
+# single-pair bandwidth (see "Bringing HPE Slingshot-11 Support to Open MPI",
 # Shehata et al., SC23).
 #
 # Typical measured values at 4 MiB message size:
@@ -55,9 +55,9 @@ import reframe.utility.sanity as sn
 sys.path.append(str(pathlib.Path(__file__).parent))
 sys.path.append(str(pathlib.Path(__file__).parent.parent.parent / 'mixins'))
 
-from container_engine import ContainerEngineMixin                      # noqa: E402
-from slurm_mpi_pmi2 import SlurmMpiPmi2Mixin                          # noqa: E402
-from switch_topology import (                                          # noqa: E402
+from container_engine import ContainerEngineMixin  # noqa: E402
+from slurm_mpi_pmi2 import SlurmMpiPmi2Mixin       # noqa: E402
+from switch_topology import (                      # noqa: E402
     all_partition_nodes,
     get_l0_switches,
     get_partition_nodes,
@@ -69,8 +69,8 @@ from switch_topology import (                                          # noqa: E
 def _extract_reservation(options):
     """Return the reservation name from Slurm job options, or None.
 
-    Handles both ``--reservation=name`` and ``--reservation name``
-    (space-separated) forms.  An empty value (``--reservation=``) is
+    Handles both `--reservation=name` and `--reservation name`
+    (space-separated) forms. An empty value (`--reservation=`) is
     skipped rather than treated as "no reservation."
     """
     if not options:
@@ -101,12 +101,11 @@ class OMB_MBW_MR_Base(rfm.RunOnlyRegressionTest,
     cross-switch).
 
     Each rank is bound to one CPU LDOM (--cpu-bind=ldoms) so that Cray
-    MPICH selects the nearest Slingshot NIC.  With num_tasks_per_node=4
+    MPICH selects the nearest Slingshot NIC. With num_tasks_per_node=4
     on GH200 (4 NICs per node), all NICs are exercised and the aggregate
     bandwidth reflects the full node injection capability. See the file
     header for theoretical limits and expected results.
     """
-
     valid_prog_environs = ['builtin']
     valid_systems = []  # set in the other classes
     maintainers = ['perettig', 'UE']
@@ -139,7 +138,7 @@ class OMB_MBW_MR_Base(rfm.RunOnlyRegressionTest,
     # once cached. This is the job wall-clock limit after allocation.
     time_limit = '1h'
 
-    # OSU options.  By default measure at 4 MiB with a short run.
+    # OSU options. By default measure at 4 MiB with a short run.
     message_size = variable(int, value=4194304)
     warmup_iters = variable(int, value=10)
     num_iters = variable(int, value=50)
@@ -163,10 +162,10 @@ class OMB_MBW_MR_Base(rfm.RunOnlyRegressionTest,
     @run_after('setup')
     def set_executable_opts(self):
         # osu_mbw_mr expects a message-size range as "min:max".
-        #   -m  single message size (min:max, here both equal)
-        #   -x  number of warm-up iterations to skip
-        #   -i  iterations per rank pair (averaged for the result)
-        #   -c  internal correctness check (independent of ReFrame refs)
+        #   -m single message size (min:max, here both equal)
+        #   -x number of warm-up iterations to skip
+        #   -i iterations per rank pair (averaged for the result)
+        #   -c internal correctness check (independent of ReFrame refs)
         opts = [
             '-m', f'{self.message_size}:{self.message_size}',
             '-x', str(self.warmup_iters),
@@ -195,8 +194,15 @@ class OMB_MBW_MR_Base(rfm.RunOnlyRegressionTest,
 
     @run_before('performance')
     def set_perf(self):
-        # Extract aggregate bandwidth and message rate from the single line
-        # that corresponds to the configured message size.
+        """
+        Extract aggregate bandwidth and message rate from the single line
+        that corresponds to the configured message size. Typical output:
+        # OSU MPI Multiple Bandwidth / Message Rate Test v7.5.2
+        # [ pairs: 8 ] [ window size: 64 ]
+        # Datatype: MPI_CHAR.
+        # Size                  MB/s        Messages/s
+        4194304             49366.33          11769.85
+        """
         self.perf_patterns.update({
             'agg_bw_mb_s': sn.extractsingle(
                 rf'^{self.message_size}\s+(?P<bw>\S+)\s+(?P<mr>\S+)',
@@ -244,7 +250,7 @@ class OMB_MBW_MR_PerSwitch(OMB_MBW_MR_Base):
     '''
     descr = 'OSU mbw_mr per-switch (4 nodes, 16 ranks)'
     valid_systems = ['daint:normal', 'starlex:normal',
-                   'clariden:normal', 'santis:normal']
+                     'clariden:normal', 'santis:normal']
     tags = {'maintenance'}
     switch_group = parameter(get_l0_switches(), loggable=True)
     num_nodes = 4
@@ -260,22 +266,22 @@ class OMB_MBW_MR_PerSwitch(OMB_MBW_MR_Base):
     osu_correctness_check = False
 
     # Reference values collected on daint (Sep 2026) from 10 L0 switch
-    # groups with 0.8% spread (49,229-49,632 MB/s).  clariden collected
+    # groups with 0.8% spread (49.229-49.632 MB/s). clariden collected
     # from a single group (group29) on 30 Sep 2026; a full per-switch
     # baseline across all groups will be collected during the next
-    # maintenance window.  santis has no per-switch reference yet and
+    # maintenance window. santis has no per-switch reference yet and
     # runs record-only.
     #
     # The ±10% tolerance accommodates normal fabric variance across
     # switches and load conditions; a consistently slow group (outside
     # tolerance) flags a hardware issue requiring investigation.
     reference = {
-        'daint:normal':   {'agg_bw_mb_s': (48251.31, -0.1, 0.1, 'MB/s'),
-                           'agg_mr':      (11504.01, -0.1, 0.1, 'Messages/s')},
+        'daint:normal': {'agg_bw_mb_s': (48251.31, -0.1, 0.1, 'MB/s'),
+                         'agg_mr': (11504.01, -0.1, 0.1, 'Messages/s')},
         'starlex:normal': {'agg_bw_mb_s': (49705.12, -0.1, 0.1, 'MB/s'),
-                           'agg_mr':      (11851.62, -0.1, 0.1, 'Messages/s')},
+                           'agg_mr': (11851.62, -0.1, 0.1, 'Messages/s')},
         'clariden:normal': {'agg_bw_mb_s': (49590.22, -0.1, 0.1, 'MB/s'),
-                            'agg_mr':      (11823.23, -0.1, 0.1, 'Messages/s')},
+                            'agg_mr': (11823.23, -0.1, 0.1, 'Messages/s')},
     }
 
     @run_after('init')
@@ -287,14 +293,17 @@ class OMB_MBW_MR_PerSwitch(OMB_MBW_MR_Base):
 
     @run_after('setup')
     def set_nodelist(self):
-        # Constrain to all nodes in this switch group; Slurm picks any
-        # num_nodes from the list. All nodes in a single L0 group are
-        # on the same switch by definition, so --switches=1 is not
-        # needed. --nodes is required because --nodelist makes Slurm
-        # default to one node per task rather than respecting
-        # --ntasks-per-node.
+        """
+        Constrain to all nodes in this switch group; Slurm picks any
+        num_nodes from the list. All nodes in a single L0 group are
+        on the same switch by definition, so --switches=1 is not
+        needed. --nodes is required because --nodelist makes Slurm
+        default to one node per task rather than respecting
+        --ntasks-per-node.
+        """
         partition = self.current_partition.name
-        reservation = self.reservation or _extract_reservation(self.job.options)
+        reservation = \
+            self.reservation or _extract_reservation(self.job.options)
         if reservation and not any(
             opt.startswith('--reservation=') for opt in self.job.options
         ):
@@ -327,53 +336,54 @@ class OMB_MBW_MR_PerSwitch(OMB_MBW_MR_Base):
 
 @rfm.simple_test
 class OMB_MBW_MR_FullTopology(OMB_MBW_MR_Base):
-    '''Cross-switch stress test spanning available Level-0 switch groups.
+    '''
+    Cross-switch stress test spanning available Level-0 switch groups.
 
     One node is selected from each live Level-0 group that belongs to
     the current partition and currently has at least one usable node.
     The number of nodes is therefore dynamic and reflects the live load;
-    the test only skips if fewer than ``min_switch_groups`` groups are
-    available.  The idle-node check is a scheduling hint, not a guarantee
+    the test only skips if fewer than `min_switch_groups` groups are
+    available. The idle-node check is a scheduling hint, not a guarantee
     that Slurm will immediately allocate the selected nodes.
 
-    The ``num_switch_groups`` performance metric records the actual number
+    The `num_switch_groups` performance metric records the actual number
     of groups used in the run, so historical results can be filtered by
     topology size.
 
-    Tagged ``maintenance`` because it may require many idle nodes across
+    Tagged `maintenance` because it may require many idle nodes across
     all switch groups; daily production runs are covered by the
-    ``PerSwitch`` variant.
+    `PerSwitch` variant.
 
     Per-switch-count reference values are set for the baselines collected
-    on daint (Sep 2026) for ``N = 2..8`` groups.  Larger topologies still
+    on daint (Sep 2026) for `N = 2..8` groups. Larger topologies still
     record performance without comparison until additional maintenance
     windows provide stable baselines.
     '''
     descr = 'OSU mbw_mr full topology (available Level-0 switch groups)'
     valid_systems = ['daint:normal', 'starlex:normal',
-                   'clariden:normal', 'santis:normal']
+                     'clariden:normal', 'santis:normal']
     tags = {'maintenance'}
     num_tasks_per_node = 4
     _record_num_switch_groups = True
     reservation = variable(str, value='')
     # Minimum number of switch groups required for a meaningful cross-switch
-    # run.  The test will use every available group as long as at least this
+    # run. The test will use every available group as long as at least this
     # many have usable nodes.
     min_switch_groups = variable(int, value=2)
-    # Maximum number of switch groups to use.  Zero means "use every
-    # available group" (default production behaviour).  Set to a positive
+    # Maximum number of switch groups to use. Zero means "use every
+    # available group" (default production behaviour). Set to a positive
     # value to run controlled scaling benchmarks.
     max_switch_groups = variable(int, value=0)
 
     # Baseline performance values per number of switch groups actually used.
     # These are shared across the Alps vclusters (daint/starlex/clariden)
-    # because they use the same Slingshot 11 fabric.  The ±10% tolerance
+    # because they use the same Slingshot-11 fabric. The ±10% tolerance
     # accounts for fabric variance across switch groups and load
     # conditions; measured spread was <2% for most N, up to 5% for N=5
-    # and N=7 due to group composition differences.  Topologies with no
+    # and N=7 due to group composition differences. Topologies with no
     # entry in this table still record performance without comparison.
     _baselines = {
-        # Baselines collected on daint (Sep 2026).  Shared across Alps
+        # Baselines collected on daint (Sep 2026). Shared across Alps
         # vclusters (daint/starlex/clariden) with ±10% tolerance.
         # N: {'agg_bw_mb_s': MB/s, 'agg_mr': Messages/s}
         2: {'agg_bw_mb_s': 23215.04, 'agg_mr': 5534.90},
@@ -421,7 +431,8 @@ class OMB_MBW_MR_FullTopology(OMB_MBW_MR_Base):
     @run_before('run')
     def pick_nodes(self):
         partition = self.current_partition.name
-        reservation = self.reservation or _extract_reservation(self.job.options)
+        reservation = \
+            self.reservation or _extract_reservation(self.job.options)
         if reservation and not any(
             opt.startswith('--reservation=') for opt in self.job.options
         ):
@@ -450,7 +461,7 @@ class OMB_MBW_MR_FullTopology(OMB_MBW_MR_Base):
     @run_before('performance')
     def set_reference(self):
         # Set per-switch-count reference values shared across the Alps
-        # vclusters.  If no baseline exists for the actual number of groups
+        # vclusters. If no baseline exists for the actual number of groups
         # used in this run, leave reference empty and record only.
         n = self._num_switch_groups
         baseline = self._baselines.get(n)
@@ -459,11 +470,11 @@ class OMB_MBW_MR_FullTopology(OMB_MBW_MR_Base):
 
         ref_entry = {
             'agg_bw_mb_s': (baseline['agg_bw_mb_s'], -0.1, 0.1, 'MB/s'),
-            'agg_mr':      (baseline['agg_mr'],      -0.1, 0.1, 'Messages/s'),
+            'agg_mr': (baseline['agg_mr'], -0.1, 0.1, 'Messages/s'),
         }
         self.reference = {
-            'daint:normal':    ref_entry,
-            'starlex:normal':  ref_entry,
+            'daint:normal': ref_entry,
+            'starlex:normal': ref_entry,
             'clariden:normal': ref_entry,
-            'santis:normal':   ref_entry,
+            'santis:normal': ref_entry,
         }
