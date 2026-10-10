@@ -1,4 +1,4 @@
-# Copyright 2024 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -10,7 +10,7 @@ import reframe.utility.osext as osext
 
 
 base_config = {
-    'modules_system': 'nomod',
+    'modules_system': 'lmod',
     'resourcesdir': '/capstor/store/cscs/cscs/public/reframe/resources',
     'max_local_jobs': 20,
     'partitions': [
@@ -30,8 +30,7 @@ base_config = {
             'descr': 'GH200',
             'scheduler': 'slurm',
             'time_limit': '10m',
-            'container_platforms': [
-            ],
+            'container_platforms': [],
             'environs': [
                 'builtin',
             ],
@@ -39,8 +38,12 @@ base_config = {
             'extras': {
                 'cn_memory': 850000,
             },
-            'features': ['ce', 'gpu', 'nvgpu', 'remote', 'scontrol', 'uenv', 'hugepages_slurm'],
-            'access': [f'--account=a-{osext.osgroup()}'],
+            'features': [
+                'ce', 'gpu', 'nvgpu', 'remote', 'scontrol', 'uenv',
+                'hugepages_slurm'],
+            'access': [
+                f'--account={osext.osgroup()}',
+                f'--gpus-per-node=4'],
             'resources': [
                 {
                     'name': 'switches',
@@ -61,7 +64,7 @@ base_config = {
                     'arch': 'sm_90',
                     'num_devices': 4
                 }
-                ],
+            ],
             'launcher': 'srun',
         },
     ]
