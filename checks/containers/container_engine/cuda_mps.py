@@ -20,7 +20,7 @@ class CUDA_MPS_CE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     descr = 'Check for CUDA MPS with CE'
     valid_prog_environs = ['builtin']
     valid_systems = ['+ce +nvgpu']
-    maintainers = ['amadonna', 'VCUE']
+    maintainers = ['amadonna', 'UE']
     test_name = 'cuda_mps'
     num_nodes = variable(int, value=1)
     container_image = 'ubuntu:24.04'

@@ -16,7 +16,7 @@ class AllocSpeedTest(rfm.RegressionTest):
     build_system = 'SingleSource'
     build_locally = False
     tags = {'production', 'craype'}
-    maintainers = ['VCUE']
+    maintainers = ['UE']
 
     @run_after('init')
     def set_descr(self):

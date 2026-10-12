@@ -504,7 +504,7 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
 class PyTorchMegatronLM_CE(PyTorchMegatronLM, ContainerEngineMixin):
     valid_systems = ['+nvgpu +ce']
     valid_prog_environs = ['builtin']
-    maintainers = ['VCUE', 'SSA']
+    maintainers = ['UE', 'SSA']
     container_image = 'docker://jfrog.svc.cscs.ch#reframe-oci/pytorch:25.01-py3_nvrtc-12.9'
 
     @run_after('setup')
@@ -542,7 +542,7 @@ class PyTorchMegatronLM_CE(PyTorchMegatronLM, ContainerEngineMixin):
 class PyTorchMegatronLM_UENV(PyTorchMegatronLM):
     valid_systems = ['+nvgpu +uenv']
     valid_prog_environs = ['+pytorch']
-    maintainers = ['VCUE', 'SSA']
+    maintainers = ['UE', 'SSA']
 
     @run_after('setup')
     def patch_numpy(self):
