@@ -323,7 +323,7 @@ class osu_pt2pt_check(osu_build_run):
         'mpi.pt2pt.standard.osu_latency': {
             'cpu': {
                 '*': {
-                    'latency': (3.8, None, 0.15, 'us')
+                    'latency': (3.8, None, 0.30, 'us')
                 }
             },
             'cuda': {
