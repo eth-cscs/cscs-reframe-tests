@@ -524,10 +524,17 @@ def create_checks(check):
     )
 
     check(
+        'bash -c "[[ $SCRATCH == /ritom/scratch/cscs/*  ]] || echo FAILED"',
+        name='scratch-path-check-ritom',
+        descr='Verify SCRATCH path is under /ritom/scratch/cscs',
+        valid_systems=['daint', 'eiger'],
+        not_expected=r'FAILED'
+    )
+    check(
         'bash -c "[[ $SCRATCH == /capstor/scratch/cscs/*  ]] || echo FAILED"',
         name='scratch-path-check-capstor',
         descr='Verify SCRATCH path is under /capstor/scratch/cscs',
-        valid_systems=['daint', 'eiger', 'santis'],
+        valid_systems=['santis'],
         not_expected=r'FAILED'
     )
     check(

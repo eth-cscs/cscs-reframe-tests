@@ -87,15 +87,15 @@ class lammps_build_test(rfm.CompileOnlyRegressionTest):
 
     @run_before('compile')
     def prepare_build(self):
-        self.build_system.builddir = 'build'
         version = lammps_versions[self.lammps_sources.version]
+        self.build_system.builddir = 'build'
+        self.build_system.configuredir = f'lammps-{version}/cmake/'
         self.build_system.config_opts = [
-            f'-C ../lammps-{version}/cmake/presets/kokkos-cuda.cmake',
+            f'-C lammps-{version}/cmake/presets/kokkos-cuda.cmake',
             '-DKokkos_ENABLE_IMPL_CUDA_MALLOC_ASYNC=OFF',
             '-DKokkos_ARCH_NATIVE=ON',
             '-DKokkos_ARCH_PASCAL60=OFF',
             '-DKokkos_ARCH_HOPPER90=ON',
-            f'../lammps-{version}/cmake/',
         ]
         self.build_system.max_concurrency = 64
         tarsource = os.path.join(
