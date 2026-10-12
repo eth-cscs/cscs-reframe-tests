@@ -23,7 +23,7 @@ from slurm_mpi_pmix import SlurmMpiPmixMixin       # noqa: E402
 class OMB_Base_CE(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     valid_prog_environs = ['builtin']
     valid_systems = ['+ce']
-    maintainers = ['amadonna', 'VCUE']
+    maintainers = ['amadonna', 'UE']
     sourcesdir = None
     test_name = parameter(['pt2pt/osu_bw', 'collective/osu_alltoall'])
     num_nodes = variable(int, value=2)

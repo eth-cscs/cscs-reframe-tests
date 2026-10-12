@@ -25,7 +25,7 @@ class fio_compile_test(rfm.RegressionTest):
     valid_prog_environs = ["builtin"]
     build_system = "Autotools"
     tags = {"maintenance"}
-    maintainers = ["VCUE", "gppezzi"]
+    maintainers = ["UE", "gppezzi"]
 
     @run_after("setup")
     def set_num_procs(self):
@@ -108,7 +108,7 @@ class stuck_gpu_mem_test(rfm.RunOnlyRegressionTest):
     valid_systems = ["+remote +nvgpu"]
     descr = "Check for stuck GPU memory on GH200"
     tags = {"maintenance"}
-    maintainers = ["VCUE", "gppezzi"]
+    maintainers = ["UE", "gppezzi"]
 
     # One can parametrise these parameters or make them variables
     test_name = "cachetest"

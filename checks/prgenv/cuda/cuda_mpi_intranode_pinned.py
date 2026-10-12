@@ -27,7 +27,7 @@ class MPIIntranodePinned(rfm.RegressionTest, UenvSlurmMpiOptionsMixin):
     build_locally = False
     time_limit = '2m'
     tags = {'maintenance', 'uenv'}
-    maintainers = ['SSA', 'VCUE', 'msimberg', 'perettig']
+    maintainers = ['SSA', 'UE', 'msimberg', 'perettig']
     executable = 'intranode_pinned_host_comm'
     mem = parameter(['host', 'pinned_host'])
     # This has no effect with OpenMPI
