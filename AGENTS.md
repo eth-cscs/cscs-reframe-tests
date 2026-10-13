@@ -99,7 +99,12 @@ Use `--system <vcluster>:normal`.  Do **not** use `-p <partition>`: in
 ReFrame `-p` filters *programming environments*, not partitions.
 
 ```bash
-reframe -C config/cscs.py --system starlex:normal -n HostnameCheck --dry-run
+reframe -C config/cscs.py --system starlex:normal -n HostnameCheck --dry-run  # for starlex
+reframe -C config/cscs.py --system daint:normal -n HostnameCheck --dry-run  # for daint
+reframe -C config/cscs.py --system clariden:normal -n HostnameCheck --dry-run  # for clariden
+reframe -C config/cscs.py --system santis:normal -n HostnameCheck --dry-run  # for santis
+
+reframe -C config/cscs.py --system beverin:normal -n HostnameCheck --dry-run  # for beverin
 ```
 
 ### Slurm account
