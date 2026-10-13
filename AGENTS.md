@@ -15,6 +15,7 @@ across the GH200 vclusters (**daint**, **starlex**, **clariden**,
 export CLUSTER_NAME=$(hostname -s | cut -d- -f1)
 export RFM_STABLE=/capstor/store/cscs/cscs/public/reframe/reframe-stable/$CLUSTER_NAME
 source $RFM_STABLE/rfm-env/bin/activate
+reframe -V
 ```
 
 The config file for CSCS systems is `config/cscs.py`:
@@ -44,6 +45,37 @@ Useful flags:
 | `-J OPT` | Pass a Slurm option (e.g. `-J--account=csstaff`) |
 | `--system <name>:<partition>` | Target a specific system/partition (NOT `-p`, which filters programming environments) |
 
+### Validating changes (dry-run)
+
+The first step when validating any change to a ReFrame test is a **dry
+run**: ReFrame generates the sbatch scripts without submitting them, so
+you can inspect the build and run scripts, environment setup, and Slurm
+options before anything runs on the cluster.
+
+Use `-s` / `--stage` to set the stage directory so generated scripts are
+easy to find.  The example below uses the `cpi_test` from
+`checks/prgenv/mpi_cpi.py`, which requires `+mpi +prgenv` and therefore
+needs `CSCS_RFM_UENV`:
+
+```bash
+CSCS_RFM_UENV=prgenv-gnu/25.11:v1 \
+    reframe -C config/cscs.py \
+    -c checks/prgenv/mpi_cpi.py \
+    --system starlex:normal \
+    -s $SCRATCH/reframe-stage \
+    -n cpi_test --dry-run
+```
+
+Then inspect the generated build and run scripts:
+
+```bash
+find $SCRATCH/reframe-stage -name '*.sh'
+```
+
+Once the dry-run output looks correct (right account, partition,
+uenv, GPUs, etc.), run the same command without `--dry-run` to submit
+the job.
+
 ---
 
 ## 2.  Alps / Slurm conventions
@@ -66,9 +98,7 @@ can take 20-30 minutes; subsequent runs complete in under a minute.
   immediately are queued — there is **no need to pre-check for idle
   nodes**.  Let Slurm schedule them.
 - The default walltime for tests should be conservative (e.g.
-  `1h00m00s`).  If a ReFrame process is killed mid-run, the queued
-  Slurm job is **not** automatically cancelled and will keep running
-  with the original time limit.  Use `scancel <jobid>` to clean up.
+  `1h00m00s`).
 - `squeue -u <user>` to list queued/running jobs.
 - `sinfo -p <partition> --state=IDLE -o "%g %D %N"` to see idle nodes
   per group (useful for ad-hoc checks, but not required for test
@@ -104,7 +134,7 @@ reframe -C config/cscs.py --system daint:normal -n HostnameCheck --dry-run  # fo
 reframe -C config/cscs.py --system clariden:normal -n HostnameCheck --dry-run  # for clariden
 reframe -C config/cscs.py --system santis:normal -n HostnameCheck --dry-run  # for santis
 
-reframe -C config/cscs.py --system beverin:normal -n HostnameCheck --dry-run  # for beverin
+reframe -C config/cscs.py --system beverin:mi300 -n HostnameCheck --dry-run  # for beverin
 ```
 
 ### Slurm account
@@ -122,7 +152,7 @@ To override the group, pass it explicitly:
 reframe -C config/cscs.py --system starlex:normal -J--account=csstaff ...
 ```
 
-### Uenvs — the single most important fact
+### Uenvs — required for non-builtin tests
 
 By default only the `builtin` environ is available on each `normal`
 partition, so only the ~59 `builtin` tests are valid.  To run any test
@@ -146,6 +176,25 @@ export CSCS_RFM_UENV=prgenv-gnu/25.11:v1
   `prgenv-gnu_25_11_v1_default`.
 - Each vcluster has its own `prgenv-gnu` version; pull with the matching
   `@<system>` suffix and set `CSCS_RFM_UENV` to the bare label.
+
+**Uenv cheat-sheet** (see also the
+[CSCS uenv quick-start](https://docs.cscs.ch/software/uenv/#quick-start)):
+
+| Command | Purpose |
+|---------|---------|
+| `uenv status` | Show whether a uenv is currently loaded |
+| `uenv image find <label>` | Search for available uenv images |
+| `uenv image pull <label>@<system>` | Download a uenv, pinning the system so the right image is fetched |
+| `uenv image ls` | List downloaded uenv images |
+| `export CSCS_RFM_UENV=<label>` | Expose a uenv to ReFrame **without** the `@<system>` suffix |
+
+Typical ReFrame workflow:
+
+1. Find the right image: `uenv image find prgenv-gnu`
+2. Pull it for your system: `uenv image pull prgenv-gnu/25.11:v1@starlex`
+3. Expose to ReFrame: `export CSCS_RFM_UENV=prgenv-gnu/25.11:v1`
+4. Verify the environ is visible:
+   `reframe -C config/cscs.py --system starlex:normal -L`
 
 ### Verified dry-run examples (starlex-ln001)
 
@@ -261,9 +310,10 @@ including `rocm`, `mpi`, and `prgenv`.
    flag, not `self.job.options` in a late `run_before('run')` hook.
 2. **`/tmp` vs `$SCRATCH`**: Always use `$SCRATCH` for large files and
    persistent state.  `/tmp` is per-node and unreliable.
-3. **Killed ReFrame leaves orphan jobs**: If you kill the ReFrame
-   process, queued Slurm jobs are not cancelled.  Run `squeue -u <user>`
-   and `scancel` as needed.
+3. **Check for running jobs before submitting**: Before starting new
+   ReFrame runs, check `squeue -u <user>` for existing jobs.  If jobs
+   are found, warn the user and ask for guidance before proceeding —
+   don't assume prior runs have completed or been cancelled.
 4. **`-p` vs `--system`**: `-p` filters *programming environments*
    (e.g. `PrgEnv-ce`); `--system <name>:<partition>` is how you select
    a partition.  Mixing them up is a common source of "no checks
