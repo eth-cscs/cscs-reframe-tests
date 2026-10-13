@@ -292,7 +292,7 @@ including `rocm`, `mpi`, and `prgenv`.
 ## 6.  Git and GitHub workflow
 
 - The fork remote (named **`origin`** in this checkout) →
-  `git@github.com:gppezzi/cscs-reframe-tests.git`.
+  `git@github.com:<username>/cscs-reframe-tests.git`.
 - The upstream remote (`upstream`) →
   `git@github.com:eth-cscs/cscs-reframe-tests.git`.
 - The `gh` CLI is **not installed** on the Alps login nodes.  PR
