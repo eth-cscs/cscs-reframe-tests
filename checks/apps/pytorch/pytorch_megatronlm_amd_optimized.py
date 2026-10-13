@@ -119,7 +119,7 @@ class PyTorchMegatronLM_AMD_Optimized(rfm.RunOnlyRegressionTest):
     sourcesdir = None
     executable = 'bash'
 
-    maintainers = ['VCUE', 'SSA']
+    maintainers = ['UE', 'SSA']
     tags = {'ml', 'bencher'}
 
     @run_after('setup')
@@ -449,7 +449,7 @@ class pytorch_image_import(rfm.RunOnlyRegressionTest):
 class PyTorchMegatronLM_AMD_Optimized_CE(PyTorchMegatronLM_AMD_Optimized, ContainerEngineMixin):
     valid_systems = ['+amdgpu +ce']
     valid_prog_environs = ['builtin']
-    maintainers = ['VCUE', 'SSA']
+    maintainers = ['UE', 'SSA']
     pytorch_image = fixture(pytorch_image_import, scope='session')
 
     @run_after('setup')

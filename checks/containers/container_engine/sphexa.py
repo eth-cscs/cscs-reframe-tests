@@ -25,7 +25,7 @@ class SphExa_CE(rfm.RunOnlyRegressionTest, ContainerEngineMixin,
     descr = 'SPH-EXA for CE'
     valid_systems = ['+ce +nvgpu']
     valid_prog_environs = ['builtin']
-    maintainers = ['SSA', 'VCUE', '@jgphpc']
+    maintainers = ['SSA', 'UE', '@jgphpc']
     tags = {'production', 'ce_dev', 'maintenance'}
 
     container_image = ('jfrog.svc.cscs.ch/ghcr/sarus-suite/containerfiles-ci/'
