@@ -20,7 +20,7 @@ class _openmp_offload_base(rfm.RegressionTest):
     build_locally = False
     env_vars = {'OMP_TARGET_OFFLOAD': 'MANDATORY'}
     tags = {'uenv'}
-    maintainers = ['SSA', 'VCUE']
+    maintainers = ['SSA', 'UE']
 
     @sanity_function
     def validate(self):

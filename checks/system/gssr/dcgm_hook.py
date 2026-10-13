@@ -16,7 +16,7 @@ from container_engine import ContainerEngineMixin  # noqa: E402
 @rfm.simple_test
 class DcgmRpmCheck(rfm.RunOnlyRegressionTest):
     descr = 'Check DCGM executable and libraries are installed'
-    maintainers = ['VCUE', 'PA']
+    maintainers = ['UE', 'PA']
     tags = {'maintenance', 'vs-node-validator'}
     sourcesdir = 'src/rpm'
     valid_systems = ['+nvgpu']
@@ -35,7 +35,7 @@ class DcgmRpmCheck(rfm.RunOnlyRegressionTest):
 @rfm.simple_test
 class GssrCeHookCheck(rfm.RunOnlyRegressionTest, ContainerEngineMixin):
     descr = 'Check DCGM CE hook is working with gssr'
-    maintainers = ['VCUE', 'PA']
+    maintainers = ['UE', 'PA']
     tags = {'ce', 'maintenance', 'vs-node-validator'}
     sourcesdir = 'src/hook'
     valid_systems = ['+ce +nvgpu']
