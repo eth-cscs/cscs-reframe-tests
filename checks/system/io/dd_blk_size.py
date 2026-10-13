@@ -21,7 +21,7 @@ class ddBlockSizeTest(rfm.RunOnlyRegressionTest):
     valid_systems = ['*']
     valid_prog_environs = ['builtin']
     tags = {"maintenance", "production"}
-    maintainers = ["VCUE", "gppezzi"]
+    maintainers = ["UE", "gppezzi"]
 
     # bs=4096000 can potentially trigger node issues
     prob_block_size = variable(int, value=4096000)

@@ -25,7 +25,7 @@ class SlurmSimpleBaseCheck(rfm.RunOnlyRegressionTest):
     valid_prog_environs = ['+prgenv']
     tags = {'slurm', 'maintenance', 'ops', 'production', 'single-node'}
     num_tasks_per_node = 1
-    maintainers = ['VCUE', 'PA']
+    maintainers = ['UE', 'PA']
 
 
 class SlurmCompiledBaseCheck(rfm.RegressionTest):
@@ -35,7 +35,7 @@ class SlurmCompiledBaseCheck(rfm.RegressionTest):
     build_locally = False
     tags = {'slurm', 'maintenance', 'ops', 'production', 'single-node'}
     num_tasks_per_node = 1
-    maintainers = ['VCUE', 'PA']
+    maintainers = ['UE', 'PA']
 
 
 @rfm.simple_test
@@ -303,7 +303,7 @@ class slurm_response_check(rfm.RunOnlyRegressionTest):
     sourcesdir = None
     valid_systems = ['-remote']
     valid_prog_environs = ['builtin']
-    maintainers = ['VCUE', 'PA']
+    maintainers = ['UE', 'PA']
     num_tasks = 1
     num_tasks_per_node = 1
     reference = {
@@ -352,7 +352,7 @@ class SlurmQueueStatusCheck(rfm.RunOnlyRegressionTest):
     descr = 'check system queue status (# of nodes)'
     valid_systems = ['-remote']
     valid_prog_environs = ['builtin']
-    maintainers = ['VCUE', 'PA']
+    maintainers = ['UE', 'PA']
     tags = {'slurm', 'ops', 'single-node'}
     min_avail_nodes = variable(int, value=1)
     ratio_minavail_nodes = variable(float, value=0.1)
@@ -481,7 +481,7 @@ class SlurmPrologEpilogCheck(rfm.RunOnlyRegressionTest):
     descr = 'Runs Prolog and Epilog tests'
     valid_systems = ['*']
     valid_prog_environs = ['builtin']
-    maintainers = ['VCUE', 'PA']
+    maintainers = ['UE', 'PA']
     time_limit = '2m'
     kafka_logger = '/etc/slurm/utils/kafka_logger'
     prolog_dir = '/etc/slurm/node_prolog.d/'
@@ -532,7 +532,7 @@ class SlurmTransparentHugepagesCheck(rfm.RunOnlyRegressionTest):
     hugepages_options = parameter(['default', 'always', 'madvise', 'never'])
     valid_systems = ['+hugepages_slurm']
     valid_prog_environs = ['builtin']
-    maintainers = ['VCUE', 'PA']
+    maintainers = ['UE', 'PA']
     descr = 'Check Slurm transparent hugepages configuration'
     time_limit = '2m'
     num_tasks_per_node = 1
@@ -540,7 +540,7 @@ class SlurmTransparentHugepagesCheck(rfm.RunOnlyRegressionTest):
     executable = 'cat /sys/kernel/mm/transparent_hugepage/enabled'
 
     tags = {'production', 'maintenance', 'slurm'}
-    maintainers = ['VCUE']
+    maintainers = ['UE']
 
     @run_after('setup')
     def set_executable(self):
@@ -685,7 +685,7 @@ class SlurmGPUGresTest(SlurmSimpleBaseCheck):
     '''
     valid_systems = ['+scontrol +gpu']
     valid_prog_environs = ['builtin']
-    maintainers = ['VCUE', 'PA']
+    maintainers = ['UE', 'PA']
     sourcesdir = None
     time_limit = '1m'
     num_tasks_per_node = 1

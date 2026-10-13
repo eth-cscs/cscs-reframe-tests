@@ -28,7 +28,7 @@ class PyFR_CE(rfm.RunOnlyRegressionTest,
     valid_prog_environs = ['builtin']
     backend = parameter(['cuda'])
     test_name = parameter(['3d-taylor-green-ci'])
-    maintainers = ['VCUE']
+    maintainers = ['UE']
     tags = {'production', 'ce_dev', 'maintenance'}
 
     num_tasks = 2

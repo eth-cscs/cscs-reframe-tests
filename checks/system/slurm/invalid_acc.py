@@ -21,7 +21,7 @@ class InvalidAccount(rfm.RunOnlyRegressionTest):
     executable_opts = [
         '--account=abcd1234', 'echo', 'this job should never start']
     tags = {'production', 'maintenance', 'slurm'}
-    maintainers = ['VCUE', 'perettig']
+    maintainers = ['UE', 'perettig']
 
     @run_before('setup')
     def skip_on_uenv(self):

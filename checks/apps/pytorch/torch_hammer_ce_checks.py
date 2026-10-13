@@ -49,7 +49,7 @@ class TorchHammerCEMultiGPU(TorchHammerBase, ContainerEngineMixin):
     valid_systems = ['+ce +nvgpu']
     valid_prog_environs = ['builtin']
     tags = {'gpu', 'multi-gpu', 'parallel', 'production'}
-    maintainers = ['VCUE']
+    maintainers = ['UE']
     pytorch_version = variable(str, value='26.05-py3')
 
     @run_after('init')
