@@ -65,7 +65,7 @@ can take 20-30 minutes; subsequent runs complete in under a minute.
 - ReFrame submits jobs via Slurm (`sbatch`).  Jobs that cannot start
   immediately are queued — there is **no need to pre-check for idle
   nodes**.  Let Slurm schedule them.
-- The default walltime for tests should be set conservatively (e.g.
+- The default walltime for tests should be conservative (e.g.
   `1h00m00s`).  If a ReFrame process is killed mid-run, the queued
   Slurm job is **not** automatically cancelled and will keep running
   with the original time limit.  Use `scancel <jobid>` to clean up.
