@@ -146,10 +146,10 @@ class MpiGpuDirectOOM(rfm.RegressionTest, ContainerEngineCPEMixin,
         - Setting MPICH_GPU_IPC_ENABLED to 1 enables GPU IPC support for
           intra-node GPU-GPU communication operations.
         - Setting MPICH_GPU_IPC_ENABLED to 0 disables GPU IPC support, it can
-        also have a noticeable impact on intra-node MPI performance.
+          also have a noticeable impact on intra-node MPI performance.
         - If MPICH_GPU_SUPPORT_ENABLED is set to 1, MPICH_GPU_IPC_ENABLED is
-        automatically set to 1. MPICH_GPU_IPC_ENABLED has no effect if
-        MPICH_GPU_SUPPORT_ENABLED is set to 0.
+          automatically set to 1. MPICH_GPU_IPC_ENABLED has no effect if
+          MPICH_GPU_SUPPORT_ENABLED is set to 0.
     '''
     maintainers = ['SSA']
     gh = 'https://github.com/eth-cscs/alps-gh200-reproducers'
