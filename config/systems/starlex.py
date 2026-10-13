@@ -9,7 +9,6 @@
 import reframe.utility.osext as osext
 
 
-
 base_config = {
     'modules_system': 'lmod',
     'resourcesdir': '/capstor/store/cscs/cscs/public/reframe/resources',
@@ -17,12 +16,12 @@ base_config = {
     'partitions': [
         {
             'name': 'login',
+            'descr': 'Login nodes',
             'scheduler': 'local',
             'time_limit': '10m',
             'environs': [
                 'builtin',
             ],
-            'descr': 'Login nodes',
             'max_jobs': 50,
             'launcher': 'local'
         },
@@ -44,7 +43,8 @@ base_config = {
                 'hugepages_slurm'],
             'access': [
                 f'--account={osext.osgroup()}',
-                f'--gpus-per-node=4'],
+                f'--gpus-per-node=4'
+            ],
             'resources': [
                 {
                     'name': 'switches',
