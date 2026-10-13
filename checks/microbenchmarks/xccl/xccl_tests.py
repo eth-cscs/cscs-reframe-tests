@@ -20,7 +20,7 @@ from uenv_slurm_mpi_options import UenvSlurmMpiOptionsMixin  # noqa: E402
 
 class XCCLTestsBase(rfm.RunOnlyRegressionTest):
     valid_prog_environs = ['builtin']
-    maintainers = ['amadonna', 'msimberg', 'VCUE', 'SSA']
+    maintainers = ['amadonna', 'msimberg', 'UE', 'SSA']
     sourcesdir = None
     test_name = parameter(['all_reduce', 'sendrecv'])
     num_nodes = variable(int, value=2)

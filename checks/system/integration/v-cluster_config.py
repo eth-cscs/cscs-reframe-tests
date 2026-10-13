@@ -85,7 +85,7 @@ class MountPointExistsTest(rfm.RunOnlyRegressionTest):
         valid_systems = []
     descr = 'Test mount points in the system'
     valid_prog_environs = ['builtin']
-    maintainers = ['VCUE', 'PA']
+    maintainers = ['UE', 'PA']
     time_limit = '2m'
     tags = {'mount', 'vs-node-validator'}
 
@@ -114,7 +114,7 @@ class PackagePresentTest(rfm.RunOnlyRegressionTest):
         valid_systems = []
     descr = 'Test pkgs installation in the system'
     valid_prog_environs = ['builtin']
-    maintainers = ['VCUE', 'PA']
+    maintainers = ['UE', 'PA']
     time_limit = '2m'
     tags = {'tools', 'vs-node-validator'}
 
@@ -148,7 +148,7 @@ class EnvVariableConfigTest(rfm.RunOnlyRegressionTest):
         valid_systems = []
     descr = 'Test environment variables of the system'
     valid_prog_environs = ['builtin']
-    maintainers = ['VCUE', 'PA']
+    maintainers = ['UE', 'PA']
     time_limit = '2m'
     tags = {'env_var', 'vs-node-validator'}
 
