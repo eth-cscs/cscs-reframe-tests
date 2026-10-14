@@ -116,6 +116,7 @@ class SphExa(rfm.RegressionTest):
         self.prerun_cmds = [
             f'echo "# SLURM_JOBID=$SLURM_JOBID"',
             f'wget --quiet {self.url}/sphexa/50c.h5',
+            'export HSA_ENABLE_IPC_MODE_LEGACY=1',
         ]
 
     @sanity_function
