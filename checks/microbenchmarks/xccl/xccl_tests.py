@@ -247,6 +247,9 @@ def _set_rccl_uenv_env_vars(env_vars):
             'NCCL_NET_FORCE_FLUSH': '1',
             'FI_CXI_DISABLE_NON_INJECT_MSG_IDC': '1',
             'NCCL_NET_PLUGIN': 'librccl-net.so', # Use aws-ofi-rccl plugin with rccl
+            'NCCL_NCHANNELS_PER_NET_PEER': '4',
+            'NCCL_IGNORE_CPU_AFFINITY': '1',
+            'RCCL_ENABLE_CONTEXT_TRACKING': '1',
         }
     )
 
