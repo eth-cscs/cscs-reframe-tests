@@ -96,7 +96,8 @@ class XCCLTestsBase(rfm.RunOnlyRegressionTest):
         return sn.all([
             sn.assert_found(r'Out of bounds values\s*:\s*0\s*OK', self.stdout),
             sn.assert_found(
-                r'NCCL INFO NET/OFI Selected [pP]rovider is cxi', self.stdout
+                r'NCCL (INFO|WARN) NET/OFI Selected [pP]rovider is cxi',
+                self.stdout
             )
         ])
 
