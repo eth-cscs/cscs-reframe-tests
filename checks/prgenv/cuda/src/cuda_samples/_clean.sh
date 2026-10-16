@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -euo pipefail
+
 # this script will keep the minimum amount of files,
 # it can be improved but this will do the job as is.
 
