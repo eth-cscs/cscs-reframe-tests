@@ -59,7 +59,7 @@ class MpiInitTest(rfm.RegressionTest, ContainerEngineCPEMixin,
         # - 8.1.4.31,8.1.5.32,8.1.18.4,8.1.21.11,8.1.25.17 (ANL base 3.4a2)
         # OpenMPI version:
         # - MPI-3.1 = Open MPI v5.0.9
-        regex = r'= (MPI VERSION\s+: CRAY MPICH version \S+ \(ANL base |Open MPI v)([\S^\)]+)'  # noqa: E501
+        regex = r'(MPI VERSION\s+: CRAY MPICH version \S+ \(ANL base |Open MPI v)([^\s\),]+)'  # noqa: E501
         stdout = os.path.join(self.stagedir, sn.evaluate(self.stdout))
         mpich_version = sn.extractsingle(regex, stdout, 2)
         self.mpithread_version = {
