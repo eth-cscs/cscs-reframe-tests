@@ -14,23 +14,23 @@ class CudaSamplesBase(rfm.RegressionTest):
     build_locally = False
     time_limit = '2m'
     maintainers = ['PA', 'SSA']
-    sample = parameter(['deviceQuery', 'simpleCUBLAS'])
+    # simpleCUBLAS was removed in cuda-samples v13.4 (moved to
+    # NVIDIA/CUDALibrarySamples); conjugateGradientCudaGraphs uses cuBLAS
+    # and cuSPARSE and exists in every supported tag
+    sample = parameter(['deviceQuery', 'conjugateGradientCudaGraphs'])
     tags = {'production'}
 
     @run_after('init')
     def set_descr(self):
         self.descr = f'CUDA {self.sample} test'
-        self.keep_files_d = {
-            'deviceQuery': 'cuda-samples/Samples/1_Utilities/deviceQuery',
-            'simpleCUBLAS':
-                'cuda-samples/Samples/4_CUDA_Libraries/simpleCUBLAS'
-        }
 
     @run_before('compile')
     def set_gpu_arch(self):
         gpu_arch = self.current_partition.select_devices('gpu')[0].arch[3:]
         self.build_system.srcdir = 'cuda-samples'
-        self.build_system.configuredir = self.keep_files_d[self.sample]
+        # set by set_branch, e.g. cuda-samples/cpp/1_Utilities/deviceQuery:
+        # the samples moved from Samples/ to cpp/ in cuda-samples v13.2update
+        self.build_system.configuredir = '$CUDA_SAMPLE_DIR'
         self.build_system.builddir = f'_build'
         self.build_system.config_opts += [
             f'-DCMAKE_CUDA_ARCHITECTURES={gpu_arch}',
@@ -40,11 +40,17 @@ class CudaSamplesBase(rfm.RegressionTest):
     @run_before('compile')
     def set_branch(self):
         # every job has a separate directory, cloning inside each dir is fine
+        srcdir = self.build_system.srcdir
         self.prebuild_cmds += [
             rf'git clone --quiet {self.repo}',
-            rf'./_git_checkout.sh {self.build_system.srcdir}',
+            rf'./_git_checkout.sh {srcdir} || exit 1',
+            rf'export CUDA_SAMPLE_DIR=$(find {srcdir}/cpp {srcdir}/Samples '
+            rf'-mindepth 2 -maxdepth 2 -type d -name {self.sample} '
+            rf'2>/dev/null | head -1)',
+            rf'[ -n "$CUDA_SAMPLE_DIR" ] || '
+            rf'{{ echo "{self.sample} not found in {srcdir}"; exit 1; }}',
             # trying to save disk space for daily runs:
-            rf'./_clean.sh {self.keep_files_d[self.sample]}'
+            r'./_clean.sh $CUDA_SAMPLE_DIR || exit 1'
         ]
 
     @run_before('run')
@@ -53,13 +59,13 @@ class CudaSamplesBase(rfm.RegressionTest):
 
     @run_before('sanity')
     def set_sanity_patterns(self):
-        output_patterns = {
-            'deviceQuery': r'Result = PASS',
-            'simpleCUBLAS': r'test passed',
-        }
-        self.sanity_patterns = sn.assert_found(
-            output_patterns[self.sample], self.stdout
-        )
+        if self.sample == 'conjugateGradientCudaGraphs':
+            err = sn.extractsingle(r'Test Summary:\s+Error amount = (\S+)',
+                                   self.stdout, 1, float)
+            self.sanity_patterns = sn.assert_lt(err, 1e-5)
+        else:
+            self.sanity_patterns = sn.assert_found(r'Result = PASS',
+                                                   self.stdout)
 
 
 @rfm.simple_test

@@ -4,30 +4,43 @@ set -euo pipefail
 
 # this script will keep the minimum amount of files,
 # it can be improved but this will do the job as is.
+#
+# Every delete runs in a subshell after a checked cd: a missing directory
+# aborts the script instead of deleting files in $PWD or $OLDPWD.
 
-dirn=$1
-# example: 'cuda-samples/Samples/1_Utilities/deviceQuery'
-if [ -z "$dirn" ] ; then exit -1 ; else echo "cleaning $dirn" ; fi
+dirn=${1:-}
+# example: 'cuda-samples/cpp/1_Utilities/deviceQuery'
+if [ -z "$dirn" ] ; then
+    exit 1
+else
+    echo "cleaning $dirn"
+fi
 
-rm -fr cuda-samples/bin/win64
+if [ ! -d "$dirn" ] ; then
+    echo "_clean.sh: $dirn not found" >&2 ; exit 1
+fi
 
-# --- level1
-_wdir=$(echo $dirn |cut -d/ -f1,2) # cuda-samples/Samples/
-_keep=$(echo $dirn |cut -d/ -f3)  # 1_Utilities
-cd $_wdir
-_delete=$(ls -I CMakeLists.txt -I $_keep)
-_cmd="rm -fr $_delete"
-echo $_cmd
-$_cmd
-cd -
+IFS=/ read -r _top _layout _category _sample _rest <<< "$dirn"
+if [ -z "$_sample" ] || [ -n "$_rest" ] ; then
+    echo "_clean.sh: expected <repo>/<layout>/<category>/<sample>" >&2
+    exit 1
+fi
 
-# --- level2
-_wdir=$(echo $dirn |cut -d/ -f1,2,3) # cuda-samples/Samples/1_Utilities/
-_keep=$(echo $dirn |cut -d/ -f4)     # deviceQuery
-cd $_wdir
-_delete=$(ls -I CMakeLists.txt -I $_keep)
-_cmd="rm -fr $_delete"
-echo $_cmd
-$_cmd
-cd -
+rm -fr "$_top/bin/win64"
 
+# delete everything in $1 except CMakeLists.txt and $2
+_prune() {
+    (
+        cd "$1"
+        find . -mindepth 1 -maxdepth 1 \
+            ! -name CMakeLists.txt \
+            ! -name "$2" \
+            -print -exec rm -fr {} +
+    )
+}
+
+# --- level1: cuda-samples/cpp/, keep 1_Utilities
+_prune "$_top/$_layout" "$_category"
+
+# --- level2: cuda-samples/cpp/1_Utilities/, keep deviceQuery
+_prune "$_top/$_layout/$_category" "$_sample"
