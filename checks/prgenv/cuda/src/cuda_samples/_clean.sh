@@ -8,12 +8,17 @@ set -euo pipefail
 # Every delete runs in a subshell after a checked cd: a missing directory
 # aborts the script instead of deleting files in $PWD or $OLDPWD.
 
-set -euo pipefail
-
 dirn=${1:-}
 # example: 'cuda-samples/cpp/1_Utilities/deviceQuery'
-if [ -z "$dirn" ] ; then exit 1 ; else echo "cleaning $dirn" ; fi
-if [ ! -d "$dirn" ] ; then echo "_clean.sh: $dirn not found" >&2 ; exit 1 ; fi
+if [ -z "$dirn" ] ; then
+    exit 1
+else
+    echo "cleaning $dirn"
+fi
+
+if [ ! -d "$dirn" ] ; then
+    echo "_clean.sh: $dirn not found" >&2 ; exit 1
+fi
 
 IFS=/ read -r _top _layout _category _sample _rest <<< "$dirn"
 if [ -z "$_sample" ] || [ -n "$_rest" ] ; then
@@ -27,7 +32,9 @@ rm -fr "$_top/bin/win64"
 _prune() {
     (
         cd "$1"
-        find . -mindepth 1 -maxdepth 1 ! -name CMakeLists.txt ! -name "$2" \
+        find . -mindepth 1 -maxdepth 1 \
+            ! -name CMakeLists.txt \
+            ! -name "$2" \
             -print -exec rm -fr {} +
     )
 }
