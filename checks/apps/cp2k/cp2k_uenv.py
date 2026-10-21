@@ -16,15 +16,32 @@ from uenv import uarch
 
 cp2k_references = {
     'md': {
-        'gh200': {'time_run': (38, None, 0.05, 's')},
-        'zen2': {'time_run': (94, None, 0.05, 's')}
+        'gh200':{ 
+            # Known issue with cray-mpich@:9.0.1 and CUDA Driver 590 and later
+            '2026.1': {'time_run': xfail('Known performance regression', (45, None, 0.05, 's'))},
+            '2026.2': {'time_run': (38, None, 0.05, 's')},
+        },
+        'zen2': {
+	    '2026.1': {'time_run': (94, None, 0.05, 's')},
+	    '2026.2': {'time_run': (94, None, 0.05, 's')},
+        },
     },
     'pbe': {
-        'gh200': {'time_run': (38, None, 0.05, 's')},
-        'zen2': {'time_run': (75, None, 0.05, 's')}
+        'gh200': {
+            # Known issue with cray-mpich@:9.0.1 and CUDA Driver 590 and later
+            '2026.1': {'time_run': xfail('Known performance regression', (51, None, 0.05, 's'))},
+            '2026.2': {'time_run': (38, None, 0.05, 's')},
+        },
+        'zen2': {
+            '2026.1': {'time_run': (75, None, 0.05, 's')},
+            '2026.2': {'time_run': (75, None, 0.05, 's')},
+        },
     },
     'rpa': {
-        'gh200': {'time_run': (340, None, 0.05, 's')}
+        'gh200': {
+            '2026.1': {'time_run': (575, None, 0.05, 's')},
+            '2026.2': {'time_run': (340, None, 0.05, 's')},
+        },
     },
 }
 
@@ -238,13 +255,23 @@ class Cp2kCheck_UENV(rfm.RunOnlyRegressionTest):
                 '128'
             self.env_vars['DLAF_UMPIRE_DEVICE_MEMORY_POOL_ALIGNMENT_BYTES'] = \
                 str(2**21)
+        
+        try:
+            uenv_version = self.current_environ.extras['version']
+            self.uenv_version = (
+                uenv_version[0]
+                if isinstance(uenv_version, tuple)
+                else uenv_version.lstrip('v')
+            )
+        except (KeyError, AttributeError):
+            self.uenv_version = version_from_uenv()
 
         # set reference
         if self.uarch is not None and \
            self.uarch in cp2k_references[self.test_name]:
             self.reference = {
                 self.current_partition.fullname:
-                    cp2k_references[self.test_name][self.uarch]
+                    cp2k_references[self.test_name][self.uarch][self.uenv_version]
             }
 
     @run_before('run')
@@ -332,17 +359,7 @@ Included versions:
         # Since this first inner SCF step does converge
         # a different count means a different runtime with the same input file
         # See https://github.com/cp2k/cp2k/pull/4141
-        try:
-            uenv_version = self.current_environ.extras['version']
-            uenv_version = (
-                uenv_version[0]
-                if isinstance(uenv_version, tuple)
-                else uenv_version.lstrip('v')
-            )
-        except (KeyError, AttributeError):
-            uenv_version = version_from_uenv()
-
-        if Version(uenv_version) > Version('2025.1'):
+        if Version(self.uenv_version) > Version('2025.1'):
             # Reduce max_scf to 16 to reproduce previous behaviour
             self.executable_opts = ['-i', 'H2O-128-PBE-TZ-max_scf_16.inp']
         else:
