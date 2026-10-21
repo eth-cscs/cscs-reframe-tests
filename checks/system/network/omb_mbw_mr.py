@@ -250,7 +250,7 @@ class OMB_MBW_MR_PerSwitch(OMB_MBW_MR_Base):
     '''
     descr = 'OSU mbw_mr per-switch (4 nodes, 16 ranks)'
     valid_systems = ['daint:normal', 'starlex:normal',
-                     'clariden:normal', 'santis:normal']
+                     'clariden:normal', 'santis:normal', 'turnen:normal']
     tags = {'maintenance'}
     switch_group = parameter(get_l0_switches(), loggable=True)
     num_nodes = 4
@@ -361,7 +361,7 @@ class OMB_MBW_MR_FullTopology(OMB_MBW_MR_Base):
     '''
     descr = 'OSU mbw_mr full topology (available Level-0 switch groups)'
     valid_systems = ['daint:normal', 'starlex:normal',
-                     'clariden:normal', 'santis:normal']
+                     'clariden:normal', 'santis:normal', 'turnen:normal']
     tags = {'maintenance'}
     num_tasks_per_node = 4
     _record_num_switch_groups = True
