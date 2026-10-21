@@ -88,7 +88,7 @@ class PyTorchMegatronLM_AMD(rfm.RunOnlyRegressionTest):
     sourcesdir = None
     executable = 'bash'
 
-    maintainers = ['VCUE', 'SSA']
+    maintainers = ['UE', 'SSA']
     tags = {'ml', 'bencher'}
 
     @run_after('setup')
@@ -383,7 +383,7 @@ class PyTorchMegatronLM_AMD(rfm.RunOnlyRegressionTest):
 class PyTorchMegatronLM_AMD_CE(PyTorchMegatronLM_AMD, ContainerEngineMixin):
     valid_systems = ['+amdgpu +ce']
     valid_prog_environs = ['builtin']
-    maintainers = ['VCUE', 'SSA']
+    maintainers = ['UE', 'SSA']
     container_image = 'rocm/megatron-lm:v25.6_py312'
 
     @run_after('setup')

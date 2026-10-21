@@ -11,10 +11,10 @@ from uenv import uarch
 
 @rfm.simple_test
 class SphExa(rfm.RegressionTest):
-    descr = 'SphExa test'
+    descr = 'https://github.com/sphexa-org/sphexa test'
     valid_systems = ['+amdgpu +uenv', '+nvgpu +uenv']
     valid_prog_environs = ['+uenv +prgenv +rocm', '+uenv +prgenv +cuda']
-    maintainers = ['SSA']
+    maintainers = ['SSA', 'jgphpc']
     tags = {'production', 'uenv', 'benchmark', 'maintenance', 'bencher'}
 
     branch = variable(str, value='develop')
@@ -75,6 +75,7 @@ class SphExa(rfm.RegressionTest):
                 f'-DCMAKE_CUDA_FLAGS=-ccbin=mpicxx',
                 f'-DCMAKE_CUDA_ARCHITECTURES="{gpu_arch}"'
             ]
+            self.build_system.make_opts = ['sphexa-cuda']
 
     @run_before('run')
     def set_executable(self):
@@ -135,6 +136,20 @@ class SphExa(rfm.RegressionTest):
         steps = sn.extractsingle(self.regex_elapsed, self.stdout, 'steps',
                                  float)
         return sec / steps
+
+    @performance_function('Mpstep/gpu/sec')
+    def pushrate(self):
+        """
+        particle timesteps per GPU and second:
+        np/gpu / sec/step / 1e6 = Mnpstep/gpu/sec
+        """
+        np_per_gpu = (self.sph_side ** 3) / self.num_gpus
+        #
+        sec = sn.extractsingle(self.regex_elapsed, self.stdout, 'sec', float)
+        steps = sn.extractsingle(
+            self.regex_elapsed, self.stdout, 'steps', float)
+        sec_per_step = sec / steps
+        return sn.round(np_per_gpu / sec_per_step / 1e6, 1)
 
     _ref_sec_per_step = {
         'evrard': {

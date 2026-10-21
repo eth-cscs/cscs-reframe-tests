@@ -24,7 +24,14 @@ def is_var_true(var):
     return var.lower() in ['true', 'yes', '1']
 
 
-systems_path = 'systems'
+firecrest = is_var_true(os.environ.get('CSCS_RFM_FIRECREST'))
+if firecrest:
+    # Register the firecrest-slurm scheduler and use the FirecREST-specific
+    # system configurations
+    import firecrest_slurm  # noqa: F401
+    systems_path = 'systems-firecrest'
+else:
+    systems_path = 'systems'
 
 system_conf_files = glob.glob(
     os.path.join(os.path.dirname(__file__), systems_path, '*.py')
@@ -44,6 +51,13 @@ for c in system_configs:
     for key, val in c.items():
         site_configuration.setdefault(key, [])
         site_configuration[key] += val
+
+if firecrest:
+    # The tests run on the machine where ReFrame runs, so the system can only
+    # be detected through the FIRECREST_SYSTEM environment variable
+    site_configuration['autodetect_methods'] = [
+        f'echo {os.environ.get("FIRECREST_SYSTEM", "")}'
+    ]
 
 # Set the systems.partitions.sched_options.max_sacct_failures to a higher value
 # than the default of 3 for all partitions.

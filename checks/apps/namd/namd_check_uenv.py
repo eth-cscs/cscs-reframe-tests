@@ -13,7 +13,7 @@ import uenv
 namd_references = {
     'stmv': {
         'gh200': {'ns_day': (86, -0.05, None, 'ns/day')}, 
-        'zen2': {'ns_day': (4.7, -0.05, None, 'ns/day')}
+        'zen2': {'ns_day': (7, -0.05, None, 'ns/day')}
     },
 }
 
@@ -27,9 +27,9 @@ slurm_config = {
             'gpu': True,
         },
         'zen2': {
-            'nodes': 4,
-            'ntasks-per-node': 128,
-            'cpus-per-task': 1,
+            'nodes': 8,
+            'ntasks-per-node': 64,
+            'cpus-per-task': 2,
             'walltime': '0d0h5m0s',
             'gpu': False,
         },
@@ -235,7 +235,7 @@ class NamdCheckUENV(rfm.RunOnlyRegressionTest):
         self.time_limit = config['walltime']
 
         self.executable_opts = [
-            f'+p {self.num_cpus_per_task}',
+            f'+p {self.num_cpus_per_task - 1}',
             '+setcpuaffinity',
         ]
 

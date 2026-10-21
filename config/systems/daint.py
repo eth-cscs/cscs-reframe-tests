@@ -1,4 +1,4 @@
-# Copyright 2024 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -6,9 +6,29 @@
 # ReFrame CSCS settings
 #
 
-
 import os
 import reframe.utility.osext as osext
+
+
+def _cpe_ce_env():
+    return {
+        'name': 'PrgEnv-ce',
+        'features': [
+            'cpe', 'prgenv',
+            'serial', 'openmp', 'mpi', 'cuda', 'containerized_cpe'],
+        'resources': {
+            'cpe_ce_image': {
+                'image':
+                    # Avoid interpreting '#' as a start of a comment
+                    os.environ['CSCS_RFM_CPE_CE'].replace(r'#', r'\#')
+            }
+        }
+    }
+
+
+_cpe_ce_environs = (
+    ['builtin', 'PrgEnv-ce'] if 'CSCS_RFM_CPE_CE' in os.environ else ['builtin']  # noqa:E501
+)
 
 base_config = {
     'modules_system': 'lmod',
@@ -31,10 +51,8 @@ base_config = {
             'descr': 'GH200',
             'scheduler': 'slurm',
             'time_limit': '10m',
-            'environs': [
-                'builtin',
-                'PrgEnv-ce',
-            ],
+            # 'container_platforms': [],
+            'environs': _cpe_ce_environs,
             'max_jobs': 1000,
             'extras': {
                 'cn_memory': 870000,
@@ -42,7 +60,9 @@ base_config = {
             'features': [
                 'ce', 'gpu', 'nvgpu', 'remote', 'scontrol', 'uenv',
                 'hugepages_slurm'],
-            'access': [f'--account={osext.osgroup()}'],
+            'access': [
+                f'--account={osext.osgroup()}',
+                f'--gpus-per-node=4'],
             'resources': [
                 {
                     'name': 'switches',
@@ -100,21 +120,7 @@ site_configuration = {
     'systems': [
         base_config,
     ],
-    'environments': [
-        {
-            'name': 'PrgEnv-ce',
-            'features': [
-                'cpe', 'prgenv',
-                'serial', 'openmp', 'mpi', 'cuda', 'containerized_cpe'],
-            'resources': {
-                'cpe_ce_image': {
-                    'image':
-                        # Avoid interpretting '#' as a start of a comment
-                        os.environ.get(
-                            'CSCS_RFM_CPE_CE', ''
-                        ).replace(r'#', r'\#')
-                }
-             }
-        },
-    ],
+    'environments': (
+        [_cpe_ce_env()] if 'CSCS_RFM_CPE_CE' in os.environ else []
+    ),
 }

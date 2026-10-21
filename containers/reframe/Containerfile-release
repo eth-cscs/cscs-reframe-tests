@@ -1,24 +1,76 @@
 FROM ubuntu:24.04
 
-# Install dependencies
+# Install ca-certificates first using the default Ubuntu sources, so that the
+# subsequent switch to the internal CSCS HTTPS mirror can be verified.
 RUN apt-get update \
-    && DEBIAN_FRONTEND=noninteractive \
-    apt-get install -y --no-install-recommends \
-        python3 python3-pip git build-essential lmod less && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install ReFrame (latest release)
-RUN git clone -q --depth 1 --branch v4.9.1 https://github.com/reframe-hpc/reframe.git /opt/reframe
-RUN cd /opt/reframe && ./bootstrap.sh
+# Switch to the internal CSCS Ubuntu mirror for faster package downloads.
+COPY apt-workaround/ubuntu.sources /etc/apt/sources.list.d/ubuntu.sources
+COPY apt-workaround/99-jfrog-proxy /etc/apt/apt.conf.d/99-jfrog-proxy
 
-# Add ReFrame to PATH
-ENV PATH="/opt/reframe/bin:${PATH}"
+# Install system dependencies and libraries required by the host's Slurm CLI plugins.
+# The host Slurm plugins (SLES 15 SP6) are linked against OpenLDAP 2.4 and SASL2 .3,
+# while Ubuntu 24.04 ships OpenLDAP 2.5 / SASL2 .2. Compatibility symlinks are added
+# below to allow sbatch/srun to load the host plugins inside the container.
+RUN apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        curl git build-essential lmod less \
+        python3 python3-pip \
+        libldap2 libsasl2-2 libjson-c5 libyaml-0-2 libjansson4 libcurl4 libmunge2 \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-# Test ReFrame 
-RUN reframe --version
+# Compatibility symlinks for host Slurm plugins.
+RUN for d in /usr/lib/aarch64-linux-gnu /usr/lib/x86_64-linux-gnu; do \
+        [ -d "$d" ] || continue; \
+        ln -sf libldap.so.2  "$d/libldap_r-2.4.so.2"; \
+        ln -sf liblber.so.2  "$d/liblber-2.4.so.2"; \
+        ln -sf libsasl2.so.2 "$d/libsasl2.so.3"; \
+    done
 
-# Clone cscs-reframe-tests
-RUN git clone https://github.com/eth-cscs/cscs-reframe-tests /opt/cscs-reframe-tests
+# Install uv.
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+ENV PATH="/root/.local/bin:${PATH}"
+
+# Install ReFrame 4.10.1 from the upstream git tag in editable mode.
+# Editable mode is used so that hpctestlib (which is not shipped in the PyPI
+# wheel) is also importable from /opt/reframe.
+RUN git clone --depth 1 --branch v4.10.1 https://github.com/reframe-hpc/reframe.git /opt/reframe
+
+# Patch ReFrame 4.10.1 scheduler bug (KeyError in _cancel_if_blocked),
+# fixed upstream in https://github.com/reframe-hpc/reframe/pull/3695.
+# Remove this patch after upgrading to ReFrame >= 4.10.2.
+# Upstream code uses `pending_reasons[pending_job].setdefault([])` which raises
+# KeyError; it should be `pending_reasons.setdefault(pending_job, [])`.
+RUN python3 - <<'PY'
+path = '/opt/reframe/reframe/core/schedulers/slurm.py'
+with open(path) as f:
+    text = f.read()
+text = text.replace(
+    '                pending_reasons[pending_job].setdefault([])\n                pending_reasons[pending_job].append(reason)',
+    '                pending_reasons.setdefault(pending_job, []).append(reason)'
+)
+with open(path, 'w') as f:
+    f.write(text)
+PY
+
+RUN uv tool install -e /opt/reframe --with packaging
+
+# Make hpctestlib importable (it is in the ReFrame repo but not part of the
+# declared reframe package, so it is not exposed by the editable install).
+ENV PYTHONPATH=/opt/reframe
+
+# Also make reframe available in a standard PATH location, so the binary is
+# reachable even if the container runtime resets PATH.
+RUN ln -sf /root/.local/bin/reframe /usr/local/bin/reframe
+
+# Verify installation.
+RUN reframe --version && python3 -c "import hpctestlib; print('hpctestlib:', hpctestlib.__file__)"
+
+# Clone cscs-reframe-tests from the main branch.
+RUN git clone --branch main --depth 1 https://github.com/eth-cscs/cscs-reframe-tests /opt/cscs-reframe-tests
 
 ENTRYPOINT ["reframe"]
-

@@ -1,0 +1,38 @@
+# https://github.com/eth-cscs/alps-extended-images/blob/main/.github/workflows/opencode-on-demand-review.yml
+name: opencode
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+
+jobs:
+  opencode:
+    if: |
+      github.event.issue.pull_request &&
+      github.event.comment.user.type != 'Bot' &&
+      startsWith(github.event.comment.body, '/oc-review') &&
+      contains(fromJSON('["jgphpc","ekouts", "gppezzi"]'), github.event.comment.user.login)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    concurrency:
+      group: opencode-review-${{ github.event.issue.number || github.event.pull_request.number }}
+      cancel-in-progress: true
+    permissions:
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Run OpenCode
+        uses: anomalyco/opencode/github@latest
+        env:
+          CSCS_INFERENCE_API_KEY: ${{ github.event.comment.user.login == 'jgphpc' && secrets.CSCS_INFERENCE_KEY_JGPHPC || github.event.comment.user.login == 'ekouts' && secrets.CSCS_INFERENCE_KEY_EKOUTS || secrets.CSCS_INFERENCE_KEY_GPPEZZI }}
+        with:
+          agent: grumpy-reviewer
+          model: cscs/moonshotai/Kimi-K2.7-Code
+          share: false

@@ -1,2 +1,2 @@
-pyfirecrest==2.5.0
+pyfirecrest==3.8.1
 python-hostlist==1.23.0

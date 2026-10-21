@@ -1,2 +1,2 @@
-reframe-hpc==4.9.3
+reframe-hpc>=4.9.3,!=4.10.0,!=4.10.1,!=4.10.2
 packaging

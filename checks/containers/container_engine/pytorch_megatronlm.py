@@ -242,10 +242,10 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
 class PyTorchMegatronLM_CE_Dev(PyTorchMegatronLM, ContainerEngineMixin):
     valid_systems = ['+nvgpu +ce']
     valid_prog_environs = ['builtin']
-    maintainers = ['VCUE']
+    maintainers = ['UE']
     tags = {'ce_dev'}
     container_image = ('jfrog.svc.cscs.ch/ghcr/sarus-suite/containerfiles-ci/'
-                       'megatron-lm:0.15.2-pt25.11')
+                       'megatron-lm:0.19.2-pt26.08')
 
     @run_after('setup')
     def set_container_config(self):
@@ -260,8 +260,3 @@ class PyTorchMegatronLM_CE_Dev(PyTorchMegatronLM, ContainerEngineMixin):
 @rfm.simple_test
 class PyTorchMegatronLM_Skybox(PyTorchMegatronLM_CE_Dev):
     tags = {'ce_dev', 'skybox'}
-
-    @run_after('setup')
-    def skip_test(self):
-        self.skip('WIP: '
-                  'Requires specific functionality in default hooks and CDIs.')

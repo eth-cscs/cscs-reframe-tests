@@ -7,6 +7,7 @@ import os
 import sys
 
 import reframe as rfm
+sys.path.insert(0, os.path.abspath(os.path.join(__file__, '../../../../..')))
 from hpctestlib.microbenchmarks.gpu.kernel_latency import GpuKernelLatency
 
 sys.path.append(os.path.abspath(os.path.join(__file__, '../../../..')))
@@ -62,7 +63,7 @@ class gpu_kernel_latency_check(GpuKernelLatency):
             },
         },
     })
-    maintainers = ['@teojgo']
+    maintainers = []
     tags = {'benchmark', 'diagnostic', 'craype', 'health'}
 
     @run_after('init')

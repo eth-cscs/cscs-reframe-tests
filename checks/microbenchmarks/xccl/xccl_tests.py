@@ -20,7 +20,7 @@ from uenv_slurm_mpi_options import UenvSlurmMpiOptionsMixin  # noqa: E402
 
 class XCCLTestsBase(rfm.RunOnlyRegressionTest):
     valid_prog_environs = ['builtin']
-    maintainers = ['amadonna', 'msimberg', 'VCUE', 'SSA']
+    maintainers = ['amadonna', 'msimberg', 'UE', 'SSA']
     sourcesdir = None
     test_name = parameter(['all_reduce', 'sendrecv'])
     num_nodes = variable(int, value=2)
@@ -47,7 +47,7 @@ class XCCLTestsBase(rfm.RunOnlyRegressionTest):
                 'GB/s': (13.5, -0.15, 0.15, 'GB/s')
             },
             'a100': {
-                'GB/s': (19.0, -0.05, 0.05, 'GB/s')
+                'GB/s': (13.5, -0.15, 0.15, 'GB/s')
             }
         },
         'all_reduce': {
@@ -61,7 +61,7 @@ class XCCLTestsBase(rfm.RunOnlyRegressionTest):
                 'GB/s': (105.0, -0.05, 0.05, 'GB/s')
             },
             'a100': {
-                'GB/s': (31.0, -0.05, 0.05, 'GB/s')
+                'GB/s': (66.0, -0.05, 0.05, 'GB/s')
             }
         }
     }
@@ -136,7 +136,8 @@ def _set_xccl_uenv_env_vars(env_vars):
         {
             # These variables are documented on
             # https://docs.cscs.ch/software/communication/nccl/#using-nccl
-            'NCCL_CROSS_NIC': '1',
+            'NCCL_CROSS_NIC': '0',
+            'NCCL_PXN_DISABLE': '1',
             'NCCL_NET': '\'AWS Libfabric\'',
             'NCCL_NET_GDR_LEVEL': 'PHB',
             'NCCL_PROTO': '^LL128',
@@ -178,7 +179,7 @@ class NCCLTestsCE(XCCLTestsBaseCE):
 
 @rfm.simple_test
 class NCCLTestsCEHost(NCCLTestsCE):
-    descr = 'Point-to-Point and All-Reduce NCCL tests with CE and host netstack'
+    descr = 'Point-to-Point and All-Reduce NCCL test with CE and host netstack'
 
     @run_after('init')
     def setup_netstack_source(self):
@@ -192,17 +193,12 @@ class NCCLTestsSkybox(NCCLTestsCE):
     descr = 'Point-to-Point and All-Reduce NCCL tests with CE/Skybox'
     tags = {'ce_dev', 'skybox'}
     spank_option = 'edf'
-    container_env_key_values = {
-        'devices': ["alps.cscs/cxi=all", "nvidia.com/gpu=all",
-                    "alps.cscs/aws-ofi-nccl=cuda-dl", "/dev/gdrdrv"]
-    }
 
     @run_after('init')
-    def setup_ce(self):
+    def setup_hooks(self):
         self.container_env_table['annotations.com.hooks'].update({
-            'aws_ofi_nccl.variant': 'cuda-dl'
+            'cxi.enabled': 'true'
         })
-        # not used by Skybox right now but kept for consistency
 
 
 @rfm.simple_test

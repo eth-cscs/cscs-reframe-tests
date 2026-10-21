@@ -9,7 +9,6 @@ reframe:
   stage: run
   extends: .f7t-baremetal-runner
   timeout: 8 hours
-  # needs: ['setup and pull']
   variables:
     SLURM_TIMELIMIT: '02:00:00'
   before_script:
@@ -18,15 +17,20 @@ reframe:
     - pwd
     - uenv --version
     # - echo "UENV=$UENV" | tr , "\n"
-    # Send data to elastic on main branch only
-    - '[ "$CI_COMMIT_REF_NAME" != "main" ] && unset RFM_HTTPJSON_URL'
+    # non `main` branch will not send data to Elastic:
+    - '[ "$CI_COMMIT_REF_NAME" != "main" ] && unset CSCS_RFM_HTTPJSON_URL_ES'
     - 'git remote add oripr https://github.com/eth-cscs/cscs-reframe-tests || true'
     - 'echo "it is safe to ignore error: remote already exists"'
     - git remote -v
     - hostname
 
     # use system provided python venv with reframe
-    - source /capstor/store/cscs/cscs/public/reframe/reframe-stable/${CLUSTER_NAME}/rfm-env/bin/activate
+    # - source /capstor/store/cscs/cscs/public/reframe/reframe-stable/${CLUSTER_NAME}/rfm-env/bin/activate
+    - if [ "${CLUSTER_NAME}" = "linard" ] ;then
+        source /capstor/store/cscs/c2sm/cscs/public/reframe/.venv_alps/${CLUSTER_NAME}/bin/activate;
+      else  
+        source /capstor/store/cscs/cscs/public/reframe/.venv_alps/${CLUSTER_NAME}/bin/activate;
+      fi
     - python --version
     - which reframe && reframe --version
   script:
@@ -46,7 +50,7 @@ reframe:
         fi;
       done;
     - UENVA=${UENVA%?}
-    - export CSCS_RFM_UENV=`echo ${UENVA} | sed -e 's-,,-,-g' -e 's/build:://g' -e 's/service:://g' | sort -u`
+    - export CSCS_RFM_UENV=$(echo "${UENVA}" | sed -e 's-,,-,-g' -e 's/build:://g' -e 's/service:://g' | sort -u)
     - echo "CSCS_RFM_UENV=$CSCS_RFM_UENV"
     # If in a PR, run only the tests modified in the PR, else: in CRONJOB
     - |
@@ -59,16 +63,16 @@ reframe:
       else
         git fetch oripr main;
         git diff --name-only oripr/main...;
-        tests_pr=$(git diff --name-only oripr/main... |grep checks |grep py$ |awk '{printf "-c %s ",$0}');
+        tests_pr=$(git diff --name-only oripr/main... |grep ^checks/ |grep '\.py$' |awk '{printf "-c %s ",$0}');
         if [ -z "$tests_pr" ]; then
           echo "no new/modified test(s) found, exiting";
           exit 0
         else
           echo "tests_pr=$tests_pr CSCS_RFM_EXTRA=$CSCS_RFM_EXTRA";
-          if [ -z $CSCS_RFM_EXTRA ] ;then
+          if [ -z "$CSCS_RFM_EXTRA" ] ;then
             ./ci/scripts/alps.sh launch_reframe_1arg "$tests_pr";
           else
-            ./ci/scripts/alps.sh launch_reframe_1arg "$tests_pr $(echo $CSCS_RFM_EXTRA | tr -d \")";
+            ./ci/scripts/alps.sh launch_reframe_1arg "$tests_pr $(echo "$CSCS_RFM_EXTRA" | tr -d \")";
           fi
         fi
       fi

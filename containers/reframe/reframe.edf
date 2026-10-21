@@ -1,3 +1,0 @@
-image = "${SCRATCH}/ce-images/reframe-release.sqsh"
-mounts = ["${SCRATCH}:${SCRATCH}", "${HOME}/.reframe:/${HOME}/.reframe"]
-workdir = "${SCRATCH}"

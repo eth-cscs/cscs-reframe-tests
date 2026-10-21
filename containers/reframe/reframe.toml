@@ -1,0 +1,6 @@
+image = "${SCRATCH}/reframe/ce-images/reframe-release.sqsh"
+mounts = [
+    "${SCRATCH}/reframe:${SCRATCH}/reframe",
+    "${SCRATCH}/reframe/.reframe:${HOME}/.reframe"
+]
+workdir = "${SCRATCH}/reframe"

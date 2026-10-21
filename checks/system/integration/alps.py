@@ -286,11 +286,11 @@ def create_checks(check):
         expected=r'4'
     )
     check(
-        'grep -q "iommu.passthrough=y"  /proc/cmdline || echo FAILED',
-        name='slingshot-iommu-passthrough',
-        descr='Verify IOMMU pass through is enabled on Eiger',
+        'slingshot-show-cxi-iommu-group| grep type=identity | wc -l',
+        name='slingshot-iommu-group-eiger',
+        descr='Verify CXI IOMMU group is set to identity on all NICs',
         valid_systems=['eiger'],
-        not_expected=r'FAILED'
+        expected=r'1'
     )
 
     # ----------------------------------------------------------------------- #
@@ -329,17 +329,10 @@ def create_checks(check):
 
     check(
         'cat /etc/os-release',
-        name='os-version-check-daint',
+        name='os-version-check',
         descr='Verify SUSE Linux Enterprise Server 15 SP6 is installed',
-        valid_systems=['daint', 'santis', 'clariden'],
+        valid_systems=['daint', 'santis', 'clariden', 'eiger'],
         expected=r'PRETTY_NAME="SUSE Linux Enterprise Server 15 SP6"'
-    )
-    check(
-        'cat /etc/os-release',
-        name='os-version-check-eiger',
-        descr='Verify SUSE Linux Enterprise Server 15 SP5 is installed (Eiger)',
-        valid_systems=['eiger'],
-        expected=r'PRETTY_NAME="SUSE Linux Enterprise Server 15 SP5"'
     )
     check(
         'cat /etc/locale.conf',
@@ -473,27 +466,6 @@ def create_checks(check):
         not_expected=r'FAILED'
     )
     check(
-        'grep -q "pe_opt_cray_pe /opt/cray/pe"  /proc/mounts || echo FAILED',
-        name='mount-cray-pe-eiger',
-        descr='Verify Cray PE mount (Eiger)',
-        valid_systems=['eiger'],
-        not_expected=r'FAILED'
-    )
-    check(
-        'grep -q "pe_opt_AMD /opt/AMD"          /proc/mounts || echo FAILED',
-        name='mount-amd-eiger',
-        descr='Verify AMD module mount (Eiger)',
-        valid_systems=['eiger'],
-        not_expected=r'FAILED'
-    )
-    check(
-        'grep -q "pe_opt_intel /opt/intel"      /proc/mounts || echo FAILED',
-        name='mount-intel-eiger',
-        descr='Verify Intel module mount (Eiger)',
-        valid_systems=['eiger'],
-        not_expected=r'FAILED'
-    )
-    check(
         'grep -q "/capstor/scratch/cscs /capstor/scratch/cscs lustre"     /proc/mounts || echo FAILED',
         name='mount-scratch-capstor',
         descr='Verify scratch filesystem is mounted',
@@ -552,10 +524,17 @@ def create_checks(check):
     )
 
     check(
+        'bash -c "[[ $SCRATCH == /ritom/scratch/cscs/*  ]] || echo FAILED"',
+        name='scratch-path-check-ritom',
+        descr='Verify SCRATCH path is under /ritom/scratch/cscs',
+        valid_systems=['daint', 'eiger'],
+        not_expected=r'FAILED'
+    )
+    check(
         'bash -c "[[ $SCRATCH == /capstor/scratch/cscs/*  ]] || echo FAILED"',
         name='scratch-path-check-capstor',
         descr='Verify SCRATCH path is under /capstor/scratch/cscs',
-        valid_systems=['daint', 'eiger', 'santis'],
+        valid_systems=['santis'],
         not_expected=r'FAILED'
     )
     check(
@@ -803,7 +782,6 @@ def create_checks(check):
         descr='Verify system libfabric host directory is present',
         valid_systems=['daint', 'eiger', 'santis', 'clariden'],
         not_expected=r'FAILED',
-        xfail=('Missing host directory on Eiger', lambda test: test.current_system.name == 'eiger'),
     )
 
     # ----------------------------------------------------------------------- #
