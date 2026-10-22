@@ -27,33 +27,32 @@ class ddBlockSizeTest(rfm.RunOnlyRegressionTest):
     prob_block_size = variable(int, value=4096000)
     count = variable(int, value=1000)
     test_path = variable(str, value="$SCRATCH/ddBlockSizeTest")
-    
+    ntasks = parameter([1, 2])
+
     @run_before('run')
     def set_commands(self):
+        self.num_tasks = self.ntasks
         self.executable = "/bin/bash"
-        self.executable_opts = [f''' 
-
+        self.executable_opts = [f'''
         mkdir -p {self.test_path}
 
         sleep 5
-        
-        for ntasks in 1 2; do
-            for bs in 1M 5M {self.prob_block_size}; do
-            
-                echo "------------------------------------------"
-                echo "Running dd with bs=$bs and ntasks=$ntasks count={self.count} path={self.test_path}/dd_largefile.$bs.$SLURM_PROCID"
 
-                /usr/bin/dd if=/dev/zero of={self.test_path}/dd_largefile.$bs.$SLURM_PROCID bs=$bs count={self.count} status=progress
+        ntasks={self.ntasks}
+        for bs in 1M 5M {self.prob_block_size}; do
+            echo "------------------------------------------"
+            echo "Running dd with bs=$bs and ntasks=$ntasks count={self.count} path={self.test_path}/dd_largefile.$bs.$SLURM_PROCID"
 
-                echo "Finished."
+            /usr/bin/dd if=/dev/zero of={self.test_path}/dd_largefile.$bs.$SLURM_PROCID bs=$bs count={self.count} status=progress
 
-                rm {self.test_path}/dd_largefile.*
-                sleep 5
-            done
+            echo "Finished."
+
+            rm {self.test_path}/dd_largefile.$bs.$SLURM_PROCID
+            sleep 5
         done
 
         echo "SUCCESS"
-        '''] 
+        ''']
         
     @sanity_function
     def check_success(self):
