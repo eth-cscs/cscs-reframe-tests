@@ -20,6 +20,7 @@ cscs-ci run alps-daint-uenv;CSCS_RFM_UENV=prgenv-gnu/26.3:v1
 cscs-ci run alps-santis-uenv;CSCS_RFM_UENV=prgenv-gnu/26.3:v1
 cscs-ci run alps-clariden-uenv;CSCS_RFM_UENV=prgenv-gnu/26.3:v1
 
+cscs-ci run alps-turnen-uenv;CSCS_RFM_UENV=prgenv-gnu/26.3:v1
 cscs-ci run alps-starlex-uenv;CSCS_RFM_UENV=prgenv-gnu/26.3:v1
 cscs-ci run alps-beverin-uenv;CSCS_RFM_UENV=prgenv-gnu/25.07-6.3.3:v12
 
@@ -49,7 +50,9 @@ tests gated on `+uenv` are automatically skipped.
 cscs-ci run alps-daint
 cscs-ci run alps-santis
 cscs-ci run alps-clariden
+
 cscs-ci run alps-starlex
+cscs-ci run alps-turnen
 
 cscs-ci run alps-eiger
 ```

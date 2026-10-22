@@ -78,6 +78,7 @@ class MpiInitTest(rfm.RegressionTest, ContainerEngineCPEMixin,
             },
         }
         # }}}
+
         # {{{ regexes:
         regex = (r'^mpi_thread_required=(\w+)\s+mpi_thread_supported=\w+'
                  r'\s+mpi_thread_queried=\w+\s+(\d)')
