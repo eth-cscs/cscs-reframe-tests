@@ -96,7 +96,8 @@ class XCCLTestsBase(rfm.RunOnlyRegressionTest):
         return sn.all([
             sn.assert_found(r'Out of bounds values\s*:\s*0\s*OK', self.stdout),
             sn.assert_found(
-                r'NCCL INFO NET/OFI Selected [pP]rovider is cxi', self.stdout
+                r'NCCL (INFO|WARN) NET/OFI Selected [pP]rovider is cxi',
+                self.stdout
             )
         ])
 
@@ -245,6 +246,8 @@ def _set_rccl_uenv_env_vars(env_vars):
             'NCCL_GDRCOPY_ENABLE': '1',
             'NCCL_NET_FORCE_FLUSH': '1',
             'FI_CXI_DISABLE_NON_INJECT_MSG_IDC': '1',
+            'NCCL_NET_PLUGIN': 'librccl-net.so'
+            # Use aws-ofi-rccl plugin with rccl
         }
     )
 
