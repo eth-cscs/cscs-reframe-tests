@@ -491,7 +491,8 @@ def create_checks(check):
         'printenv SCRATCH || echo FAILED',
         name='env-scratch',
         descr='Verify SCRATCH environment variable is set',
-        valid_systems=['daint', 'eiger', 'santis', 'clariden'],
+        valid_systems=['daint', 'eiger', 'santis', 'clariden',
+                       'starlex', 'pilatus'],
         not_expected=r'FAILED'
     )
     check(
@@ -527,7 +528,7 @@ def create_checks(check):
         'bash -c "[[ $SCRATCH == /ritom/scratch/cscs/*  ]] || echo FAILED"',
         name='scratch-path-check-ritom',
         descr='Verify SCRATCH path is under /ritom/scratch/cscs',
-        valid_systems=['daint', 'eiger'],
+        valid_systems=['daint', 'eiger', 'starlex', 'pilatus'],
         not_expected=r'FAILED'
     )
     check(
