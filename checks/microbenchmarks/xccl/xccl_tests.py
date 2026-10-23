@@ -246,7 +246,8 @@ def _set_rccl_uenv_env_vars(env_vars):
             'NCCL_GDRCOPY_ENABLE': '1',
             'NCCL_NET_FORCE_FLUSH': '1',
             'FI_CXI_DISABLE_NON_INJECT_MSG_IDC': '1',
-            'NCCL_NET_PLUGIN': 'librccl-net.so', # Use aws-ofi-rccl plugin with rccl
+            'NCCL_NET_PLUGIN': 'librccl-net.so'
+            # Use aws-ofi-rccl plugin with rccl
         }
     )
 

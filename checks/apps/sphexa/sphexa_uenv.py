@@ -63,7 +63,7 @@ class SphExa(rfm.RegressionTest):
                 f'-DCMAKE_CUDA_COMPILER=',
                 f'-DCMAKE_HIP_ARCHITECTURES="{gpu_arch}"'
             ]
-            self.build_system.make_opts = ['sphexa-hip']
+            self.build_system.build_opts = ['sphexa-hip']
         else:  # cuda
             gpu_arch = (
                 gpu_arch[len("sm_"):]
@@ -75,7 +75,7 @@ class SphExa(rfm.RegressionTest):
                 f'-DCMAKE_CUDA_FLAGS=-ccbin=mpicxx',
                 f'-DCMAKE_CUDA_ARCHITECTURES="{gpu_arch}"'
             ]
-            self.build_system.make_opts = ['sphexa-cuda']
+            self.build_system.build_opts = ['sphexa-cuda']
 
     @run_before('run')
     def set_executable(self):
@@ -113,10 +113,12 @@ class SphExa(rfm.RegressionTest):
             if self.num_tasks > self.num_tasks_per_node else '--nodes=1',
         ]
         self.env_vars = {'OMP_NUM_THREADS': '$SLURM_CPUS_PER_TASK'}
+        if 'rocm' in self.current_environ.features:
+            self.env_vars['HSA_ENABLE_IPC_MODE_LEGACY'] = '1'
+
         self.prerun_cmds = [
             f'echo "# SLURM_JOBID=$SLURM_JOBID"',
             f'wget --quiet {self.url}/sphexa/50c.h5',
-            'export HSA_ENABLE_IPC_MODE_LEGACY=1',
         ]
 
     @sanity_function
@@ -150,13 +152,14 @@ class SphExa(rfm.RegressionTest):
         steps = sn.extractsingle(
             self.regex_elapsed, self.stdout, 'steps', float)
         sec_per_step = sec / steps
-        return sn.round(np_per_gpu / sec_per_step / 1e6, 1)
+        return sn.round(np_per_gpu / sec_per_step / 1e6, 2)
 
     _ref_sec_per_step = {
         'evrard': {
             'mi200': 5.6,
             'mi300': 5.1,
-            'gh200': 0.9},
+            'gh200': 0.9
+        },
     }
 
     @run_before('performance')

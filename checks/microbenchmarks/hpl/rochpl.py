@@ -129,7 +129,8 @@ class RocHPL(rfm.RegressionTest, UenvSlurmMpiOptionsMixin):
         self.env_vars['OMP_PROC_BIND'] = 'true'
         self.env_vars['OMP_NUM_THREADS'] = \
             f'{self.num_cpus_per_task // self.ntasks_per_core}'
-        self.env_vars['HSA_ENABLE_IPC_MODE_LEGACY'] = '1' # necessary for cray-mpich 9.2.1 and ROCm 7.2.3
+        self.env_vars['HSA_ENABLE_IPC_MODE_LEGACY'] = '1'
+        # necessary for cray-mpich 9.2.1 and ROCm 7.2.3
 
         # executable options
         if self.uarch == 'mi200':
