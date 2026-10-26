@@ -270,7 +270,8 @@ class OMB_MBW_MR_PerSwitch(OMB_MBW_MR_Base):
     # from a single group (group29) on 30 Sep 2026; a full per-switch
     # baseline across all groups will be collected during the next
     # maintenance window. santis has no per-switch reference yet and
-    # runs record-only.
+    # runs record-only. turnen collected from group25 (its only L0
+    # group) on 26 Oct 2026.
     #
     # The ±10% tolerance accommodates normal fabric variance across
     # switches and load conditions; a consistently slow group (outside
@@ -282,6 +283,8 @@ class OMB_MBW_MR_PerSwitch(OMB_MBW_MR_Base):
                            'agg_mr': (11851.62, -0.1, 0.1, 'Messages/s')},
         'clariden:normal': {'agg_bw_mb_s': (49590.22, -0.1, 0.1, 'MB/s'),
                             'agg_mr': (11823.23, -0.1, 0.1, 'Messages/s')},
+        'turnen:normal': {'agg_bw_mb_s': (49084.67, -0.1, 0.1, 'MB/s'),
+                          'agg_mr': (11702.7, -0.1, 0.1, 'Messages/s')},
     }
 
     @run_after('init')
@@ -477,4 +480,5 @@ class OMB_MBW_MR_FullTopology(OMB_MBW_MR_Base):
             'starlex:normal': ref_entry,
             'clariden:normal': ref_entry,
             'santis:normal': ref_entry,
+            'turnen:normal': ref_entry,
         }
