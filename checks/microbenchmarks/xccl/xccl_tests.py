@@ -223,7 +223,7 @@ def _set_rccl_min_nchannels(gpu_devices, env_vars):
 class RCCLTestsCE(XCCLTestsBaseCE):
     descr = 'Point-to-Point and All-Reduce RCCL tests with CE'
     valid_systems = ['+ce +amdgpu']
-    image_tag = parameter(['rocm6.4.3-ubuntu24.04'])
+    image_tag = parameter(['rocm7.2.3-ubuntu24.04'])
 
     @run_after('init')
     def setup_ce(self):
@@ -238,6 +238,7 @@ class RCCLTestsCE(XCCLTestsBaseCE):
     def set_env_vars(self):
         _set_rccl_min_nchannels(
             self.current_partition.select_devices('gpu')[0], self.env_vars)
+        self.env_vars['HSA_ENABLE_IPC_MODE_LEGACY'] = 1
 
 
 def _set_rccl_uenv_env_vars(env_vars):
