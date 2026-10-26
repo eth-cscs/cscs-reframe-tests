@@ -29,7 +29,7 @@ class PyTorchTestBase(rfm.RunOnlyRegressionTest):
             }
         }
         self.job.launcher.options += ['-l --gpus-per-task=1']
-        if 'constrain_devices' in self.current_partition.features:
+        if 'constrain_devices' in curr_part.features:
             # Slurm ConstrainDevices=yes isolates each task to its bound GPU;
             # NCCL P2P needs allow-task-sharing to reach peer GPUs on the node
             self.job.launcher.options += ['--gres-flags=allow-task-sharing']
