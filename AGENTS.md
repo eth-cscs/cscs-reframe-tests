@@ -188,6 +188,24 @@ export CSCS_RFM_UENV=prgenv-gnu/25.11:v1
 | `uenv image ls` | List downloaded uenv images |
 | `export CSCS_RFM_UENV=<label>` | Expose a uenv to ReFrame **without** the `@<system>` suffix |
 
+**CSCS_RFM_UENV delimiter**: the variable accepts comma-separated labels
+qualified with `+<system>` (converted internally to `@<system>` for the
+uenv CLI).  The `%<uarch>` tags shown by `uenv image ls` (e.g. `%gh200`)
+are display-only and are **not** valid input:
+
+```bash
+# CORRECT — the +<system> qualifier is converted to @<system>
+export CSCS_RFM_UENV='prgenv-gnu/26.3:v1+starlex,pytorch/v2.9.1:v2+starlex'
+
+# WRONG — % is not a delimiter; this fails with "is missing, try pulling it"
+export CSCS_RFM_UENV='prgenv-gnu/26.3:v1%gh200'
+```
+
+Images pulled with another vcluster's tag (e.g. `@starlex`) can be
+exposed to ReFrame with the corresponding `+<system>` qualifier, which
+is often useful for testing on a vcluster clone that shares the same
+architecture.
+
 Typical ReFrame workflow:
 
 1. Find the right image: `uenv image find prgenv-gnu`
