@@ -31,4 +31,3 @@ reframe -C cscs-reframe-tests/config/cscs.py -c cscs-reframe-tests/checks/ -R -l
 
 - Follow the instructions from https://reframe-hpc.readthedocs.io/en/latest/tutorial.html#reframe-tutorial
 
-

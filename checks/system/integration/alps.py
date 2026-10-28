@@ -581,6 +581,22 @@ def create_checks(check):
         expected=r'FAILED'
     )
 
+     check(
+        'cat /sys/cray/pm_counters/energy',
+        name='pm_counters_energy',
+        descr='Verify pm_counters energy is available',
+        valid_systems=['daint', 'eiger', 'santis', 'clariden'],
+        expected=r'\d+ J \d+ us'
+    )
+
+     check(
+        'cat /sys/cray/pm_counters/power',
+        name='pm_counters_power',
+        descr='Verify pm_counters power is available',
+        valid_systems=['daint', 'eiger', 'santis', 'clariden'],
+        expected=r'\d+ W \d+ us'
+    )
+
     # ----------------------------------------------------------------------- #
     #
     #                                   Slurm
@@ -626,6 +642,14 @@ def create_checks(check):
     # check('scontrol ping', expected=r'Slurmctld\(backup\) at .* is UP')
     # check('grep "JobComp" /etc/slurm/slurm.conf | grep -v "#"', expected=r'kafka', not_expected=r'elasticsearch', where='-remote')
     # check('grep "JobComp" /run/slurm/conf/slurm.conf | grep -v "#"', expected=r'kafka', not_expected=r'elasticsearch', where='+remote')
+
+    check(
+        'scontrol show conf |grep AcctGatherEnergyType',
+        name='slurm-scontrol-pm_counters',
+        descr='Verify pm_counters',
+        valid_systems=['daint', 'eiger', 'santis', 'clariden'],
+        expected=r'acct_gather_energy/pm_counters'
+    )
 
     # ----------------------------------------------------------------------- #
     #
