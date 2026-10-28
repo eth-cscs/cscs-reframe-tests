@@ -238,8 +238,7 @@ class RCCLTestsCE(XCCLTestsBaseCE):
     def set_env_vars(self):
         _set_rccl_min_nchannels(
             self.current_partition.select_devices('gpu')[0], self.env_vars)
-        if self.test_name == 'sendrecv': # sendrecv doesn't work without HSA_ENABLE_IPC_MODE_LEGACY=1 and all_reduce dosn't work with it
-            self.env_vars['HSA_ENABLE_IPC_MODE_LEGACY'] = 1
+        self.env_vars['HSA_ENABLE_IPC_MODE_LEGACY'] = 1
 
 
 def _set_rccl_uenv_env_vars(env_vars):
