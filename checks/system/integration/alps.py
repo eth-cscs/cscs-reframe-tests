@@ -588,7 +588,7 @@ def create_checks(check):
         'cat /sys/cray/pm_counters/energy',
         name='pm_counters_energy',
         descr='Verify pm_counters energy is available',
-        valid_systems=['daint', 'eiger', 'santis', 'clariden'],
+        valid_systems=['daint', 'eiger', 'santis', 'clariden', 'turnen'],
         expected=r'\d+ J \d+ us'
     )
 
@@ -596,7 +596,7 @@ def create_checks(check):
         'cat /sys/cray/pm_counters/power',
         name='pm_counters_power',
         descr='Verify pm_counters power is available',
-        valid_systems=['daint', 'eiger', 'santis', 'clariden'],
+        valid_systems=['daint', 'eiger', 'santis', 'clariden', 'turnen'],
         expected=r'\d+ W \d+ us'
     )
 
@@ -650,7 +650,7 @@ def create_checks(check):
         'scontrol show conf |grep AcctGatherEnergyType',
         name='slurm-scontrol-pm_counters',
         descr='Verify pm_counters',
-        valid_systems=['daint', 'eiger', 'santis', 'clariden'],
+        valid_systems=['daint', 'eiger', 'santis', 'clariden', 'turnen'],
         expected=r'acct_gather_energy/pm_counters'
     )
 
