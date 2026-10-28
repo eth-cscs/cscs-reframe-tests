@@ -16,7 +16,7 @@ from uenv_slurm_mpi_options import UenvSlurmMpiOptionsMixin  # noqa: E402
 
 rochpl_references = {
     'mi200': {38400: 2.65e+04, 192000: 1.49e+05, 218880: 1.55e+05},
-    'mi300': {38400: 2.53e+04, 192000: 1.57e+05, 218880: 1.62e+05},
+    'mi300': {38400: 2.69e+04, 192000: 1.57e+05, 218880: 1.62e+05},
 }
 
 slurm_config = {
