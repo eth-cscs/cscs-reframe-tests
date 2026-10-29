@@ -140,10 +140,20 @@ class EnvVariableConfigTest(rfm.RunOnlyRegressionTest):
     if envs_info:
         envs_info_par = []
         for envs_i in envs_info:
+            # SCRATCH is verified by the alps.py integration tests
+            # (env-scratch, scratch-path-check-*) which run from a login
+            # session. The node-validator launches reframe from a non-login
+            # shell, so /etc/profile.d (which exports SCRATCH) is not sourced
+            # and the check would always fail with a false positive.
+            if envs_i['env_var'] == 'SCRATCH':
+                continue
             envs_info_par.append((envs_i['env_var'], envs_i['env_value']))
-        envs_info = parameter(envs_info_par)
-        # For now
-        valid_systems = ['-remote']
+        if envs_info_par:
+            envs_info = parameter(envs_info_par)
+            # For now
+            valid_systems = ['-remote']
+        else:
+            valid_systems = []
     else:
         valid_systems = []
     descr = 'Test environment variables of the system'
