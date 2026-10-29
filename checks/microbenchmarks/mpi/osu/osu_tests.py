@@ -27,11 +27,15 @@ class fetch_osu_benchmarks(rfm.RunOnlyRegressionTest):
     #:
     #: :type: :class:`str`
     #: :default: ``'7.2'``
-    version = variable(str, value='7.2')
+    ## version = variable(str, value='7.2')
+    version = variable(str, value='7.5.2')
 
     local = True
+    # osu_url = 'http://mvapich.cse.ohio-state.edu/download/mvapich/'
+    jfrog_url = 'https://jfrog.svc.cscs.ch/artifactory/cscs-reframe-tests/osu'
     osu_file_name = f'osu-micro-benchmarks-{version}.tar.gz'
-    executable = f'curl -LJO http://mvapich.cse.ohio-state.edu/download/mvapich/{osu_file_name}'  # noqa: E501
+    executable = f'curl -LJO {jfrog_url}/{osu_file_name}'
+    # executable = f'curl -LJO http://mvapich.cse.ohio-state.edu/download/mvapich/{osu_file_name}'  # noqa: E501
 
     @sanity_function
     def validate_download(self):
@@ -126,10 +130,14 @@ class build_osu_benchmarks(rfm.CompileOnlyRegressionTest,
         if self.build_type != 'cpu':
             self.build_system.config_opts = [f'--enable-{self.build_type}']
 
-        # Change to the c/mpi directory to avoid building the
-        # non-mpi benchmarks
-        self.build_system.make_opts = ['-C', 'c/mpi']
+        # Change to the sub directories to avoid building all the executables
+        self.build_system.build_opts = ['-C', 'c/mpi/pt2pt/standard',
+                                        'osu_bw', 'osu_latency']
         self.build_system.max_concurrency = 8
+        self.postbuild_cmds += [
+            f'make -j {self.build_system.max_concurrency} '
+            f'-C c/mpi/collective/blocking osu_alltoall osu_allreduce'
+        ]
 
     @sanity_function
     def validate_build(self):
@@ -406,4 +414,5 @@ class osu_collective_check(osu_build_run):
 
         self.num_tasks = self.num_nodes
         with contextlib.suppress(KeyError):
-            self.reference = self.allref[self.benchmark_info[0]][build_type][self.num_nodes]
+            self.reference = \
+                self.allref[self.benchmark_info[0]][build_type][self.num_nodes]
