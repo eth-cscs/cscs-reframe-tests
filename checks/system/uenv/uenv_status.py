@@ -9,7 +9,7 @@ class uenv_status(rfm.RunOnlyRegressionTest):
     local = True
     executable = 'uenv status'
     tags = {'uenv', 'vs-node-validator'}
-    maintainers = ['perettig', 'VCUE']   
+    maintainers = ['perettig', 'UE']   
 
     @sanity_function
     def validate(self):

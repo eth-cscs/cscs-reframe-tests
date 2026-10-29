@@ -20,7 +20,7 @@ from uenv_slurm_mpi_options import UenvSlurmMpiOptionsMixin  # noqa: E402
 
 class XCCLTestsBase(rfm.RunOnlyRegressionTest):
     valid_prog_environs = ['builtin']
-    maintainers = ['amadonna', 'msimberg', 'VCUE', 'SSA']
+    maintainers = ['amadonna', 'msimberg', 'UE', 'SSA']
     sourcesdir = None
     test_name = parameter(['all_reduce', 'sendrecv'])
     num_nodes = variable(int, value=2)
@@ -96,7 +96,8 @@ class XCCLTestsBase(rfm.RunOnlyRegressionTest):
         return sn.all([
             sn.assert_found(r'Out of bounds values\s*:\s*0\s*OK', self.stdout),
             sn.assert_found(
-                r'NCCL INFO NET/OFI Selected [pP]rovider is cxi', self.stdout
+                r'NCCL (INFO|WARN) NET/OFI Selected [pP]rovider is cxi',
+                self.stdout
             )
         ])
 
@@ -222,7 +223,7 @@ def _set_rccl_min_nchannels(gpu_devices, env_vars):
 class RCCLTestsCE(XCCLTestsBaseCE):
     descr = 'Point-to-Point and All-Reduce RCCL tests with CE'
     valid_systems = ['+ce +amdgpu']
-    image_tag = parameter(['rocm6.4.3-ubuntu24.04'])
+    image_tag = parameter(['rocm7.2.3-ubuntu24.04'])
 
     @run_after('init')
     def setup_ce(self):
@@ -237,6 +238,7 @@ class RCCLTestsCE(XCCLTestsBaseCE):
     def set_env_vars(self):
         _set_rccl_min_nchannels(
             self.current_partition.select_devices('gpu')[0], self.env_vars)
+        self.env_vars['HSA_ENABLE_IPC_MODE_LEGACY'] = 1
 
 
 def _set_rccl_uenv_env_vars(env_vars):
@@ -245,6 +247,8 @@ def _set_rccl_uenv_env_vars(env_vars):
             'NCCL_GDRCOPY_ENABLE': '1',
             'NCCL_NET_FORCE_FLUSH': '1',
             'FI_CXI_DISABLE_NON_INJECT_MSG_IDC': '1',
+            'NCCL_NET_PLUGIN': 'librccl-net.so'
+            # Use aws-ofi-rccl plugin with rccl
         }
     )
 

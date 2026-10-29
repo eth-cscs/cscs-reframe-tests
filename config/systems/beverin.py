@@ -6,6 +6,8 @@
 # ReFrame CSCS settings
 #
 
+import reframe.utility.osext as osext
+
 base_config = {
     'modules_system': 'nomod',
     'resourcesdir': '/capstor/store/cscs/cscs/public/reframe/resources',
@@ -37,7 +39,7 @@ base_config = {
                 'cn_memory': 513700,
             },
             'features': ['ce', 'gpu', 'amdgpu', 'remote', 'scontrol', 'uenv'],
-            'access': ['-pmi300'],
+            'access': [f'--account={osext.osgroup()}', '-pmi300'],
             'resources': [
                 {
                     'name': 'switches',
@@ -76,7 +78,7 @@ base_config = {
                 'cn_memory': 515208,
             },
             'features': ['ce', 'gpu', 'amdgpu', 'remote', 'scontrol', 'uenv'],
-            'access': ['-pmi200'],
+            'access': [f'--account={osext.osgroup()}', '-pmi200'],
             'resources': [
                 {
                     'name': 'switches',

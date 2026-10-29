@@ -242,7 +242,7 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
 class PyTorchMegatronLM_CE_Dev(PyTorchMegatronLM, ContainerEngineMixin):
     valid_systems = ['+nvgpu +ce']
     valid_prog_environs = ['builtin']
-    maintainers = ['VCUE']
+    maintainers = ['UE']
     tags = {'ce_dev'}
     container_image = ('jfrog.svc.cscs.ch/ghcr/sarus-suite/containerfiles-ci/'
                        'megatron-lm:0.19.2-pt26.08')
