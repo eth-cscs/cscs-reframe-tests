@@ -37,6 +37,7 @@ class LoginNodesTest(rfm.RegressionTest):
 | uenv | Supports mounting and using user environments | |
 | ce | The partition supports a Container Engine(CE) | |
 | hugepages_slurm | Slurm features `thp_always`, `thp_madvise`, `thp_never` for Hugepages | |
+| constrain_devices | Slurm `ConstrainDevices=yes` — each task is isolated to its bound GPU; tests that need inter-task GPU access (e.g. NCCL P2P) must pass `--gres-flags=allow-task-sharing` to srun | santis, starlex, turnen |
 
 
 ### Features for environments
