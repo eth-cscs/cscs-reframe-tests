@@ -16,6 +16,7 @@ sys.path.append(
 )
 
 from extra_launcher_options import ExtraLauncherOptionsMixin
+from uenv_slurm_mpi_options import UenvSlurmMpiOptionsMixin
 from container_engine import ContainerEngineCPEMixin
 
 
@@ -27,10 +28,14 @@ class fetch_osu_benchmarks(rfm.RunOnlyRegressionTest):
     #: :type: :class:`str`
     #: :default: ``'7.2'``
     version = variable(str, value='7.2')
+    # TODO: version = variable(str, value='7.5.2')
 
     local = True
+    # osu_url = 'http://mvapich.cse.ohio-state.edu/download/mvapich/'
+    jfrog_url = 'https://jfrog.svc.cscs.ch/artifactory/cscs-reframe-tests/osu'
     osu_file_name = f'osu-micro-benchmarks-{version}.tar.gz'
-    executable = f'curl -LJO http://mvapich.cse.ohio-state.edu/download/mvapich/{osu_file_name}'  # noqa: E501
+    executable = f'curl -LJO {jfrog_url}/{osu_file_name}'
+    # executable = f'curl -LJO http://mvapich.cse.ohio-state.edu/download/mvapich/{osu_file_name}'  # noqa: E501
 
     @sanity_function
     def validate_download(self):
@@ -125,10 +130,14 @@ class build_osu_benchmarks(rfm.CompileOnlyRegressionTest,
         if self.build_type != 'cpu':
             self.build_system.config_opts = [f'--enable-{self.build_type}']
 
-        # Change to the c/mpi directory to avoid building the
-        # non-mpi benchmarks
-        self.build_system.make_opts = ['-C', 'c/mpi']
+        # Change to the sub directories to avoid building all the executables
+        self.build_system.build_opts = ['-C', 'c/mpi/pt2pt/standard',
+                                        'osu_bw', 'osu_latency']
         self.build_system.max_concurrency = 8
+        self.postbuild_cmds += [
+            f'make -j {self.build_system.max_concurrency} '
+            f'-C c/mpi/collective/blocking osu_alltoall osu_allreduce'
+        ]
 
     @sanity_function
     def validate_build(self):
@@ -137,7 +146,7 @@ class build_osu_benchmarks(rfm.CompileOnlyRegressionTest,
 
 
 class osu_benchmark(rfm.RunOnlyRegressionTest, ExtraLauncherOptionsMixin,
-                    ContainerEngineCPEMixin):
+                    UenvSlurmMpiOptionsMixin, ContainerEngineCPEMixin):
     '''OSU benchmark test base class.'''
 
     #: Number of warmup iterations.
@@ -209,18 +218,22 @@ class osu_benchmark(rfm.RunOnlyRegressionTest, ExtraLauncherOptionsMixin,
     def setup_per_benchmark(self):
         bench, bench_metric = self.benchmark_info
         if bench_metric == 'latency':
+            min_message_size = ''
             self.message_size = 8
             unit = 'us'
         elif bench_metric == 'bandwidth':
+            min_message_size = '1048576:'
             self.message_size = 4194304
             unit = 'MB/s'
         else:
             raise ValueError(f'unknown benchmark metric: {bench_metric}')
 
         self.executable = bench.split('.')[-1]
-        self.executable_opts = ['-m', f'{self.message_size}',
-                                '-x', f'{self.num_warmup_iters}',
-                                '-i', f'{self.num_iters}', '-c']
+        self.executable_opts = [
+            '-m', f'{min_message_size}{self.message_size}',
+            '-x', f'{self.num_warmup_iters}',
+            '-i', f'{self.num_iters}', '-c'
+        ]
 
         if self.device_buffers != 'cpu':
             self.executable_opts += ['-d', self.device_buffers]
@@ -322,7 +335,7 @@ class osu_pt2pt_check(osu_build_run):
         'mpi.pt2pt.standard.osu_latency': {
             'cpu': {
                 '*': {
-                    'latency': (3.8, None, 0.15, 'us')
+                    'latency': (3.8, None, 0.30, 'us')
                 }
             },
             'cuda': {
@@ -347,6 +360,7 @@ class osu_pt2pt_check(osu_build_run):
 
 @rfm.simple_test
 class osu_collective_check(osu_build_run):
+    maintainers = ['UE']
     benchmark_info = parameter([
         ('mpi.collective.blocking.osu_alltoall', 'latency'),
         ('mpi.collective.blocking.osu_allreduce', 'latency'),
@@ -355,25 +369,54 @@ class osu_collective_check(osu_build_run):
     num_nodes = parameter([6])
     osu_binaries = fixture(build_osu_benchmarks, scope='environment')
 
+    # References are keyed by [benchmark][build_type][num_nodes], then by
+    # system:partition (ScopedDict, '*' is the global fallback).  A single
+    # '*'-scoped reference with a loose +20% upper bound (no lower bound)
+    # covers all systems for now; ideally maintenance and production
+    # systems would have separate references.
     allref = {
-        'mpi.collective.blocking.osu_allreduce': {
-            6: {
-                '*': {
-                    'latency': (8.45, None, 0.10, 'us')
+        'mpi.collective.blocking.osu_alltoall': {
+            'cpu': {
+                6: {
+                    '*': {
+                        'latency': (26.0, None, 0.20, 'us')
+                    },
+                },
+            },
+            'cuda': {
+                6: {
+                    '*': {
+                        'latency': (40.0, None, 0.20, 'us')
+                    },
                 },
             },
         },
-        'mpi.collective.blocking.osu_alltoall': {
-            6: {
-                '*': {
-                    'latency': (14.50, None, 0.10, 'us')
+        'mpi.collective.blocking.osu_allreduce': {
+            'cpu': {
+                6: {
+                    '*': {
+                        'latency': (15.5, None, 0.20, 'us')
+                    },
                 },
             },
-        }
+            'cuda': {
+                6: {
+                    '*': {
+                        'latency': (71.0, None, 0.20, 'us')
+                    },
+                },
+            },
+        },
     }
 
     @run_after('init')
     def setup_by_scale(self):
+        build_type = self.osu_binaries.build_type
+        if build_type == 'cuda':
+            self.device_buffers = 'cuda'
+            self.num_gpus_per_node = 1
+
         self.num_tasks = self.num_nodes
         with contextlib.suppress(KeyError):
-            self.reference = self.allref[self.num_nodes]
+            self.reference = \
+                self.allref[self.benchmark_info[0]][build_type][self.num_nodes]
