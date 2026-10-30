@@ -27,8 +27,8 @@ class fetch_osu_benchmarks(rfm.RunOnlyRegressionTest):
     #:
     #: :type: :class:`str`
     #: :default: ``'7.2'``
-    ## version = variable(str, value='7.2')
-    version = variable(str, value='7.5.2')
+    version = variable(str, value='7.2')
+    # TODO: version = variable(str, value='7.5.2')
 
     local = True
     # osu_url = 'http://mvapich.cse.ohio-state.edu/download/mvapich/'
@@ -218,18 +218,22 @@ class osu_benchmark(rfm.RunOnlyRegressionTest, ExtraLauncherOptionsMixin,
     def setup_per_benchmark(self):
         bench, bench_metric = self.benchmark_info
         if bench_metric == 'latency':
+            min_message_size = ''
             self.message_size = 8
             unit = 'us'
         elif bench_metric == 'bandwidth':
+            min_message_size = '1048576:'
             self.message_size = 4194304
             unit = 'MB/s'
         else:
             raise ValueError(f'unknown benchmark metric: {bench_metric}')
 
         self.executable = bench.split('.')[-1]
-        self.executable_opts = ['-m', f'{self.message_size}',
-                                '-x', f'{self.num_warmup_iters}',
-                                '-i', f'{self.num_iters}', '-c']
+        self.executable_opts = [
+            '-m', f'{min_message_size}{self.message_size}',
+            '-x', f'{self.num_warmup_iters}',
+            '-i', f'{self.num_iters}', '-c'
+        ]
 
         if self.device_buffers != 'cpu':
             self.executable_opts += ['-d', self.device_buffers]
