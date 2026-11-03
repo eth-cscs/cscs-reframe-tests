@@ -97,7 +97,7 @@ def need_fix_hdf5vtk(test):
     elif version in SpecifierSet('~=6.0.0'):
         _patch_cmd = [
             'patch -p 1 -d gadget-plugin.git -i ../fix_reader_v60.patch']
-    else: # neither specified nor any of the previously listed
+    else:  # neither specified nor any of the previously listed
         _patch_cmd = None
 
     return _patch_cmd
