@@ -26,7 +26,7 @@ RUN wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/sbs
 
 RUN git clone https://github.com/eth-cscs/node-burn.git && \
     cd node-burn && \
-    git checkout $(NODEBURN_COMMIT_ID) && \
+    git checkout ${NODEBURN_COMMIT_ID} && \
     if [ "$(uname -m)" != "x86_64" ]; then \
         sed -i 's/find_package(BLAS REQUIRED)/find_package(nvpl REQUIRED COMPONENTS blas)/' CMakeLists.txt; \
         sed -i 's/BLAS::BLAS/nvpl::lapack_lp64_omp/' CMakeLists.txt; \
