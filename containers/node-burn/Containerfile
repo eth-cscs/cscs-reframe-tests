@@ -1,6 +1,6 @@
 FROM docker.io/nvidia/cuda:12.4.1-devel-ubuntu22.04
 
-ARG NODEBURN_COMMIT_ID=be4f759
+ARG NODEBURN_COMMIT_ID=c22ac2f
 ARG OPENBLAS_VERSION=0.3.30
 
 RUN apt-get update && \
