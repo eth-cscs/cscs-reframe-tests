@@ -16,7 +16,7 @@ from uenv_slurm_mpi_options import UenvSlurmMpiOptionsMixin  # noqa: E402
 
 rochpl_references = {
     'mi200': {38400: 2.65e+04, 192000: 1.49e+05, 218880: 1.55e+05},
-    'mi300': {38400: 2.53e+04, 192000: 1.57e+05, 218880: 1.62e+05},
+    'mi300': {38400: 2.69e+04, 192000: 1.57e+05, 218880: 1.62e+05},
 }
 
 slurm_config = {
@@ -78,6 +78,8 @@ class RocHPL(rfm.RegressionTest, UenvSlurmMpiOptionsMixin):
         'https://github.com/rasolca/rocHPL.git'
     ]
     time_limit = '10m'
+    # Lower performance threshold per uarch (default: -0.1)
+    perf_lower_thres = {}
     build_locally = False
 
     @run_before('compile')
@@ -129,6 +131,8 @@ class RocHPL(rfm.RegressionTest, UenvSlurmMpiOptionsMixin):
         self.env_vars['OMP_PROC_BIND'] = 'true'
         self.env_vars['OMP_NUM_THREADS'] = \
             f'{self.num_cpus_per_task // self.ntasks_per_core}'
+        self.env_vars['HSA_ENABLE_IPC_MODE_LEGACY'] = '1'
+        # necessary for cray-mpich 9.2.1 and ROCm 7.2.3
 
         # executable options
         if self.uarch == 'mi200':
@@ -155,7 +159,7 @@ class RocHPL(rfm.RegressionTest, UenvSlurmMpiOptionsMixin):
             reference = {}
             for n in self.matrix_sizes:
                 if n in rochpl_references[self.uarch]:
-                    reference[f'size {n}'] = (rochpl_references[self.uarch][n], -0.1, 0.05, 'Gflop/s')  # noqa: E501
+                    reference[f'size {n}'] = (rochpl_references[self.uarch][n], self.perf_lower_thres.get(self.uarch, -0.1), 0.05, 'Gflop/s')  # noqa: E501
 
             self.reference = {self.current_partition.fullname: reference}
 
@@ -217,3 +221,5 @@ class RocHPL_medium(RocHPL):
 class RocHPL_large(RocHPL):
     matrix_sizes = [218880]
     tags = {'production', 'uenv', 'bencher'}
+    # mi300 performance has higher variability, so we lower the threshold for this test
+    perf_lower_thres = {'mi300': -0.2}

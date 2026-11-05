@@ -16,25 +16,32 @@ from uenv import uarch
 
 cp2k_references = {
     'md': {
-        'gh200': {'time_run': xfail('Known performance regression', (45, None, 0.05, 's'))},  # noqa:E501
-        'zen2': {'time_run': (94, None, 0.05, 's')}
+        'gh200':{ 
+            # Known issue with cray-mpich@:9.0.1 and CUDA Driver 590 and later
+            '2026.1': {'time_run': xfail('Known performance regression', (45, None, 0.05, 's'))},
+            '2026.2': {'time_run': (38, None, 0.05, 's')},
+        },
+        'zen2': {
+	    '2026.1': {'time_run': (94, None, 0.05, 's')},
+	    '2026.2': {'time_run': (94, None, 0.05, 's')},
+        },
     },
     'pbe': {
-        'gh200': {'time_run': xfail('Known performance regression', (51, None, 0.05, 's'))},  # noqa:E501
-        'zen2': {'time_run': (75, None, 0.05, 's')}
+        'gh200': {
+            # Known issue with cray-mpich@:9.0.1 and CUDA Driver 590 and later
+            '2026.1': {'time_run': xfail('Known performance regression', (51, None, 0.05, 's'))},
+            '2026.2': {'time_run': (38, None, 0.05, 's')},
+        },
+        'zen2': {
+            '2026.1': {'time_run': (75, None, 0.05, 's')},
+            '2026.2': {'time_run': (75, None, 0.05, 's')},
+        },
     },
     'rpa': {
-        'gh200': {'time_run': xfail('Known performance regression', (575, None, 0.05, 's'))}  # noqa:E501
-    },
-}
-
-# NOTE: Test for cuPointerGetAttribute workaround
-cp2k_references_workaround = {
-    'md': {
-        'gh200': {'time_run': (38, None, 0.05, 's')},
-    },
-    'pbe': {
-        'gh200': {'time_run': (44, None, 0.05, 's')},
+        'gh200': {
+            '2026.1': {'time_run': (575, None, 0.05, 's')},
+            '2026.2': {'time_run': (340, None, 0.05, 's')},
+        },
     },
 }
 
@@ -248,13 +255,23 @@ class Cp2kCheck_UENV(rfm.RunOnlyRegressionTest):
                 '128'
             self.env_vars['DLAF_UMPIRE_DEVICE_MEMORY_POOL_ALIGNMENT_BYTES'] = \
                 str(2**21)
+        
+        try:
+            uenv_version = self.current_environ.extras['version']
+            self.uenv_version = (
+                uenv_version[0]
+                if isinstance(uenv_version, tuple)
+                else uenv_version.lstrip('v')
+            )
+        except (KeyError, AttributeError):
+            self.uenv_version = version_from_uenv()
 
         # set reference
         if self.uarch is not None and \
            self.uarch in cp2k_references[self.test_name]:
             self.reference = {
                 self.current_partition.fullname:
-                    cp2k_references[self.test_name][self.uarch]
+                    cp2k_references[self.test_name][self.uarch][self.uenv_version]
             }
 
     @run_before('run')
@@ -297,33 +314,6 @@ class Cp2kCheckMD_UENV(Cp2kCheck_UENV):
 class Cp2kCheckMD_UENVExec(Cp2kCheckMD_UENV):
     valid_prog_environs = ['+cp2k -dlaf']
     tags = {'uenv', 'production', 'maintenance', 'bencher'}
-
-
-# NOTE: Remove test for workaround
-@rfm.simple_test
-class Cp2kCheckMD_UENVExec_Workaround(Cp2kCheckMD_UENVExec):
-
-    @run_before("run")
-    def ld_preload(self):
-        # CUDA driver 580 introduces a performance regression to
-        # cuPointerGetAttribute which slows down host buffer communication. The
-        # cuptrgetattr_override.so library overrides cuPointerGetAttribute and
-        # routes it to cuPointerGetAttributes which is faster.
-        if uarch(self.current_partition) == "gh200":
-            self.env_vars["LD_PRELOAD"] = \
-                "/capstor/store/cscs/cscs/public/temp/cuptrgetattr_override.so"
-
-    @run_before('run')
-    def prepare_run_workaround(self):
-        if uarch(self.current_partition) != "gh200":
-            self.skip("Workaround tested only on GH200")
-
-        if self.uarch is not None and \
-           self.uarch in cp2k_references[self.test_name]:
-            self.reference = {
-                self.current_partition.fullname:
-                    cp2k_references_workaround[self.test_name][self.uarch]
-            }
 
 
 @rfm.simple_test
@@ -369,17 +359,7 @@ Included versions:
         # Since this first inner SCF step does converge
         # a different count means a different runtime with the same input file
         # See https://github.com/cp2k/cp2k/pull/4141
-        try:
-            uenv_version = self.current_environ.extras['version']
-            uenv_version = (
-                uenv_version[0]
-                if isinstance(uenv_version, tuple)
-                else uenv_version.lstrip('v')
-            )
-        except (KeyError, AttributeError):
-            uenv_version = version_from_uenv()
-
-        if Version(uenv_version) > Version('2025.1'):
+        if Version(self.uenv_version) > Version('2025.1'):
             # Reduce max_scf to 16 to reproduce previous behaviour
             self.executable_opts = ['-i', 'H2O-128-PBE-TZ-max_scf_16.inp']
         else:
@@ -393,34 +373,6 @@ Included versions:
 class Cp2kCheckPBE_UENVExec(Cp2kCheckPBE_UENV):
     valid_prog_environs = ['+cp2k -dlaf']
     tags = {'uenv', 'production', 'maintenance', 'bencher'}
-
-
-# NOTE: Remove test for workaround
-@rfm.simple_test
-class Cp2kCheckPBE_UENVExec_Workaround(Cp2kCheckPBE_UENVExec):
-
-    @run_before("run")
-    def ld_preload(self):
-        # CUDA driver 580 introduces a performance regression to
-        # cuPointerGetAttribute which slows down host buffer communication. The
-        # cuptrgetattr_override.so library overrides cuPointerGetAttribute and
-        # routes it to cuPointerGetAttributes which is faster.
-        if uarch(self.current_partition) == "gh200":
-            self.env_vars["LD_PRELOAD"] = \
-                "/capstor/store/cscs/cscs/public/temp/cuptrgetattr_override.so"
-
-    @run_before('run')
-    def prepare_run_workaround(self):
-        if uarch(self.current_partition) != "gh200":
-            self.skip("Workaround tested only on GH200")
-
-        if self.uarch is not None and \
-           self.uarch in cp2k_references[self.test_name]:
-            self.reference = {
-                self.current_partition.fullname:
-                    cp2k_references_workaround[self.test_name][self.uarch]
-            }
-
 
 @rfm.simple_test
 class Cp2kCheckPBE_UENVCustomExec(Cp2kCheckPBE_UENV):
