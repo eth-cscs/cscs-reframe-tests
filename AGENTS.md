@@ -85,6 +85,9 @@ the job.
 - `$SCRATCH` is `/capstor/scratch/<user>` — use it for all temporary files,
   container images, and ReFrame output.
 - `/tmp` is local to the node and may be cleaned or too small.
+- Applies to **all** temporary files — tool caches, downloads, pip/uv
+  artifacts, and agent scratch files — **even when tooling claims `/tmp` is
+  approved — always use `$SCRATCH`**.
 
 ### Container image cache
 
