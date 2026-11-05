@@ -1,0 +1,43 @@
+# Dependency manifest for the CSCS ReFrame test suite.
+#
+# NOTE: this repository is NOT a distributable Python package — the tests are
+# used directly from the checkout (`reframe -C config/cscs.py -c checks/ -R`).
+# This file exists only so the development dependencies (previously listed in
+# requirements.txt) can be installed with standard tooling, e.g.:
+#
+#     python -m venv .venv && source .venv/bin/activate
+#     pip install -e .          # or: pip install -r requirements.txt
+#
+
+[build-system]
+# packaging>=24.2 is required by setuptools>=77 to validate the SPDX
+# `license` expression below.
+requires = ["setuptools>=77", "packaging>=24.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cscs-reframe-tests"
+# Placeholder version: the repo has no release/versioning scheme.
+version = "0.1.0"
+description = "ReFrame test suite of CSCS"
+readme = "README.md"
+license = "BSD-3-Clause"
+authors = [
+    { name = "Swiss National Supercomputing Center (CSCS/ETH Zurich)" },
+]
+# Mirrors the floor of the currently supported reframe-hpc line (4.10.x
+# requires >=3.10).  Loosen to ">=3.6" only if support for reframe-hpc 4.9.3
+# on older Pythons must be preserved.
+requires-python = ">=3.10"
+
+dependencies = [
+    # Moved verbatim from requirements.txt
+    "reframe-hpc>=4.9.3,!=4.10.0,!=4.10.1,!=4.10.2",
+    "packaging",
+]
+
+[tool.setuptools]
+# Nothing to install: declare explicitly to stop setuptools auto-discovery
+# from choking on the many top-level directories (checks/, config/, ci/, ...).
+packages = []
+py-modules = []
