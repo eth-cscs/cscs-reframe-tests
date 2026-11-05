@@ -10,9 +10,10 @@
 #
 
 [build-system]
-# packaging>=24.2 is required by setuptools>=77 to validate the SPDX
-# `license` expression below.
-requires = ["setuptools>=77", "packaging>=24.2"]
+# setuptools>=61 is the first release with PEP 621 pyproject metadata
+# support; kept deliberately low for compatibility with older toolchains
+# (e.g. the pip shipped on older HPC images).
+requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -21,7 +22,6 @@ name = "cscs-reframe-tests"
 version = "0.1.0"
 description = "ReFrame test suite of CSCS"
 readme = "README.md"
-license = "BSD-3-Clause"
 authors = [
     { name = "Swiss National Supercomputing Center (CSCS/ETH Zurich)" },
 ]
