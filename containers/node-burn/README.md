@@ -103,6 +103,24 @@ overwritten by a single-arch push (see the warning in step 2).
 `image_tag` on the `NodeBurnCE` base class — update it to the new `<tag>`
 in the same PR, otherwise the tests keep pulling the old image.
 
+### 6. Validate on both architectures
+
+After publishing, run the CE tests on one system per architecture to
+confirm the index resolves correctly on compute nodes — the registry
+check in step 4 only proves the manifest shape, not that the Container
+Engine can fetch and start the right image:
+
+```bash
+reframe -C config/cscs.py -c checks/microbenchmarks/cpu_gpu/node_burn/node-burn-ce.py \
+    --system=<system>:normal -n '<Test>' -r --performance-report
+```
+
+e.g. the GPU tests (`CudaNodeBurn*`) on an arm64 system and the CPU
+tests (`CPUNodeBurn*`) on an amd64 system.  Both the sanity and the
+performance references must pass; a failure on one architecture only
+usually means the index was overwritten by a single-arch push (see
+the warning in step 2).
+
 ## Gotchas
 
 1. **`$(VAR)` is not `${VAR}`** — Dockerfile `ARG`s are interpolated by the
