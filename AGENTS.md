@@ -85,6 +85,9 @@ the job.
 - `$SCRATCH` is `/capstor/scratch/<user>` — use it for all temporary files,
   container images, and ReFrame output.
 - `/tmp` is local to the node and may be cleaned or too small.
+- Applies to **all** temporary files — tool caches, downloads, pip/uv
+  artifacts, and agent scratch files — **even when tooling claims `/tmp` is
+  approved — always use `$SCRATCH`**.
 
 ### Container image cache
 
@@ -103,6 +106,24 @@ can take 20-30 minutes; subsequent runs complete in under a minute.
 - `sinfo -p <partition> --state=IDLE -o "%g %D %N"` to see idle nodes
   per group (useful for ad-hoc checks, but not required for test
   submission).
+
+### Debug queue
+
+- Most systems expose a Slurm `debug` partition alongside `normal`
+  (`sinfo` lists the partitions; `scontrol show partition debug` shows
+  its limits).  It is typically the same hardware as the `normal`
+  queue — the difference is scheduling: a shorter walltime cap
+  (commonly 30 minutes) and a small node limit, intended for quick
+  validation and test runs.
+- To run a ReFrame test on the debug queue, keep
+  `--system <system>:normal` so the test retains the right features,
+  account and topology, and override the Slurm partition on the
+  command line: `-J=--partition=debug`.  The generated job scripts do
+  not emit a `--partition` directive of their own, so the override is
+  the only one Slurm sees.
+- Match the walltime to the debug limit (e.g. `-J=--time=0:20:00`
+  under a 30-minute cap) and allow a few extra minutes when the
+  container image is not yet in the local CE cache.
 
 ### Maintenance reservations
 
