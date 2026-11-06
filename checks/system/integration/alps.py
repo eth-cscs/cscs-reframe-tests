@@ -69,13 +69,15 @@ def create_checks(check):
         valid_systems=['eiger', 'daint', 'clariden'],
         not_expected=r'FAILED'
     )
+
     check(
-        'findmnt -u -O remoteports=172.28.55.1-172.28.55.96 /ritom/scratch || echo FAILED',
+        'findmnt -u -O remoteports=172.28.55.1-172.28.55.96 /ritom/scratch || echo FAILED',  # noqa: E501
         name='ritom-mount-remoteports',
         descr='Verify ritom remoteports=172.28.55.1-172.28.55.96',
         valid_systems=['eiger', 'daint', 'clariden'],
         not_expected=r'FAILED'
     )
+
     check(
         'findmnt -u -O nconnect=64 /ritom/scratch || echo FAILED',
         name='ritom-mount-nconnect',
@@ -83,6 +85,7 @@ def create_checks(check):
         valid_systems=['daint', 'clariden'],
         not_expected=r'FAILED'
     )
+
     check(
         'findmnt -u -O optlockflush /ritom/scratch || echo FAILED',
         name='ritom-mount-optlockflush',
@@ -90,6 +93,7 @@ def create_checks(check):
         valid_systems=['eiger', 'daint', 'clariden'],
         not_expected=r'FAILED'
     )
+
     check(
         'findmnt -u -O noextend /ritom/scratch || echo FAILED',
         name='ritom-mount-noextend',
@@ -97,6 +101,7 @@ def create_checks(check):
         valid_systems=['eiger', 'daint', 'clariden'],
         not_expected=r'FAILED'
     )
+
     check(
         'findmnt -u -O lookupcache=pos /ritom/scratch || echo FAILED',
         name='ritom-mount-loopupcache',
@@ -104,6 +109,7 @@ def create_checks(check):
         valid_systems=['daint', 'clariden'],
         not_expected=r'FAILED'
     )
+
     check(
         'findmnt -u -O spread_reads /ritom/scratch || echo FAILED',
         name='ritom-mount-spread_reads',
@@ -111,6 +117,7 @@ def create_checks(check):
         valid_systems=['daint', 'clariden'],
         not_expected=r'FAILED'
     )
+
     check(
         'findmnt -u -O spread_writes /ritom/scratch || echo FAILED',
         name='ritom-mount-spread_writes',
@@ -118,7 +125,6 @@ def create_checks(check):
         valid_systems=['daint', 'clariden'],
         not_expected=r'FAILED'
     )
-
 
     # ----------------------------------------------------------------------- #
     #
@@ -142,7 +148,7 @@ def create_checks(check):
         descr='Verify remote internet ping routing via DNS',
         valid_systems=['daint', 'eiger', 'santis', 'clariden'],
         expected=r'5 packets transmitted, 5 received, 0% packet loss',
-        #where='+remote',
+        # where='+remote',
     )
     check(
         'ping -n -q -c 5 www.google.com',
@@ -150,22 +156,19 @@ def create_checks(check):
         descr='Verify remote HTTP hostname resolves and responds to ping',
         valid_systems=['daint', 'eiger', 'santis', 'clariden'],
         expected=r'5 packets transmitted, 5 received, 0% packet loss',
-        #where='+remote',
+        # where='+remote',
     )
-
-    # check('ping -n -q -c 5  8.8.8.8',        expected=r'5 packets transmitted, 5 received, 0% packet loss', where='-remote')
-    # check('ping -n -q -c 5  www.google.com', expected=r'5 packets transmitted, 5 received, 0% packet loss', where='-remote')
 
     check.CLASS = 'PROXY'
     check.TAGS = {'sysint-PROXY', 'production', 'maintenance'}
 
-    # check('printenv http_proxy',  expected=r'http://proxy.cscs.ch:8080', where='+remote')
-    # check('printenv https_proxy', expected=r'http://proxy.cscs.ch:8080', where='+remote')
-    # check('printenv no_proxy',    expected=r'.local,.cscs.ch,localhost,148.187.0.0/16,10.0.0.0/8,172.16.0.0/12', where='+remote')
+    # check('printenv http_proxy',  expected=r'http://proxy.cscs.ch:8080', where='+remote')  # noqa: E501
+    # check('printenv https_proxy', expected=r'http://proxy.cscs.ch:8080', where='+remote')  # noqa: E501
+    # check('printenv no_proxy',    expected=r'.local,.cscs.ch,localhost,148.187.0.0/16,10.0.0.0/8,172.16.0.0/12', where='+remote')  # noqa: E501
 
-    # check('printenv http_proxy', expected=r'', where='-remote')
-    # check('printenv https_proxy', expected=r'', where='-remote')
-    # check('printenv no_proxy', expected=r'', where='-remote')
+    # check('printenv http_proxy', expected=r'', where='-remote')  # noqa: E501
+    # check('printenv https_proxy', expected=r'', where='-remote')  # noqa: E501
+    # check('printenv no_proxy', expected=r'', where='-remote')  # noqa: E501
 
     check(
         'curl -s www.google.com -o /dev/null || echo FAILED',
@@ -581,6 +584,22 @@ def create_checks(check):
         expected=r'FAILED'
     )
 
+    check(
+        'cat /sys/cray/pm_counters/energy',
+        name='pm_counters_energy',
+        descr='Verify pm_counters energy is available',
+        valid_systems=['daint', 'eiger', 'santis', 'clariden', 'turnen'],
+        expected=r'\d+ J \d+ us'
+    )
+
+    check(
+        'cat /sys/cray/pm_counters/power',
+        name='pm_counters_power',
+        descr='Verify pm_counters power is available',
+        valid_systems=['daint', 'eiger', 'santis', 'clariden', 'turnen'],
+        expected=r'\d+ W \d+ us'
+    )
+
     # ----------------------------------------------------------------------- #
     #
     #                                   Slurm
@@ -592,7 +611,7 @@ def create_checks(check):
 
     # check('test -e /etc/slurm/slurm.conf      || echo FAILED', not_expected=r'FAILED', where='-remote')
     check(
-        #'test -e /run/slurm/conf/slurm.conf || echo FAILED',
+        # 'test -e /run/slurm/conf/slurm.conf || echo FAILED',
         '(test -e /run/slurm/conf/slurm.conf -o -e /etc/slurm/slurm.conf) || echo FAILED',
         name='slurm-config-exists',
         descr='Verify Slurm configuration file exists',
@@ -626,6 +645,14 @@ def create_checks(check):
     # check('scontrol ping', expected=r'Slurmctld\(backup\) at .* is UP')
     # check('grep "JobComp" /etc/slurm/slurm.conf | grep -v "#"', expected=r'kafka', not_expected=r'elasticsearch', where='-remote')
     # check('grep "JobComp" /run/slurm/conf/slurm.conf | grep -v "#"', expected=r'kafka', not_expected=r'elasticsearch', where='+remote')
+
+    check(
+        'scontrol show conf |grep AcctGatherEnergyType',
+        name='slurm-scontrol-pm_counters',
+        descr='Verify pm_counters',
+        valid_systems=['daint', 'eiger', 'santis', 'clariden', 'turnen'],
+        expected=r'acct_gather_energy/pm_counters'
+    )
 
     # ----------------------------------------------------------------------- #
     #

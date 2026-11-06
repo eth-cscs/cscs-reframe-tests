@@ -176,6 +176,12 @@ class dlaf_base(rfm.RunOnlyRegressionTest, UenvSlurmMpiOptionsMixin):
 
         if self.uarch == "gh200":
             self.job.launcher.options += ["--gpus-per-task=1"]
+            if 'constrain_devices' in self.current_partition.features:
+                # Slurm ConstrainDevices=yes isolates each task to its bound GPU;
+                # MPICH GPU IPC needs allow-task-sharing to reach peer GPUs
+                self.job.launcher.options += [
+                    "--gres-flags=allow-task-sharing"
+                ]
 
         # environment variables
         if self.uarch in ("mi300", "mi200", "zen2"):

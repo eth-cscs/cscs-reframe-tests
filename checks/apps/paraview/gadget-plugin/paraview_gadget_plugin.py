@@ -91,13 +91,13 @@ def need_fix_hdf5vtk(test):
     """Patch code according to ParaView version"""
     version, _ = test.uenv_version
 
-    if version is None or version in SpecifierSet('~=6.1.0'):
+    if version in SpecifierSet('~=6.1.0'):
         _patch_cmd = [
             'patch -p 1 -d gadget-plugin.git -i ../fix_reader_v61.patch']
     elif version in SpecifierSet('~=6.0.0'):
         _patch_cmd = [
             'patch -p 1 -d gadget-plugin.git -i ../fix_reader_v60.patch']
-    else:
+    else:  # neither specified nor any of the previously listed
         _patch_cmd = None
 
     return _patch_cmd

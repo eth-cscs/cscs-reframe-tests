@@ -40,7 +40,7 @@ base_config = {
             },
             'features': [
                 'ce', 'gpu', 'nvgpu', 'remote', 'scontrol', 'uenv',
-                'hugepages_slurm'],
+                'hugepages_slurm', 'constrain_devices'],
             'access': [
                 f'--account={osext.osgroup()}',
                 f'--gpus-per-node=4'
