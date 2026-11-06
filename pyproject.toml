@@ -25,10 +25,10 @@ readme = "README.md"
 authors = [
     { name = "Swiss National Supercomputing Center (CSCS/ETH Zurich)" },
 ]
-# Mirrors the floor of the currently supported reframe-hpc line (4.10.x
-# requires >=3.10).  Loosen to ">=3.6" only if support for reframe-hpc 4.9.3
-# on older Pythons must be preserved.
-requires-python = ">=3.10"
+# One minor above the reframe-hpc 4.10.x floor (>=3.10); the suite is
+# validated on Python 3.11.  Loosen to ">=3.6" only if support for
+# reframe-hpc 4.9.3 on older Pythons must be preserved.
+requires-python = ">=3.11"
 
 dependencies = [
     # Moved verbatim from requirements.txt
