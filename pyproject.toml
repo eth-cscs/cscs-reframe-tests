@@ -36,6 +36,13 @@ dependencies = [
     "packaging",
 ]
 
+[project.optional-dependencies]
+# Only needed with CSCS_RFM_FIRECREST=1 (config/utilities/firecrest_slurm.py)
+firecrest = [
+    "pyfirecrest==3.8.1",
+    "python-hostlist==1.23.0",
+]
+
 [tool.setuptools]
 # Nothing to install: declare explicitly to stop setuptools auto-discovery
 # from choking on the many top-level directories (checks/, config/, ci/, ...).
