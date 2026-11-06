@@ -49,3 +49,4 @@ class cpi_test(rfm.RegressionTest):
     @sanity_function
     def validate(self):
         return sn.assert_found(r'Error is 0.00000000', self.stdout)
+
