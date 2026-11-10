@@ -195,7 +195,7 @@ class MpiGpuDirectOOM(rfm.RegressionTest, ContainerEngineCPEMixin,
             self.env_vars['MPICH_GPU_IPC_ENABLED'] = '0'
 
         self.prerun_cmds += [
-            f'# {self.gh}/blob/main/gpudirect-oom/README.md',
+            f'## {self.gh}/blob/main/gpudirect-oom/README.md',
             f'echo MPICH_GPU_IPC_ENABLED=$MPICH_GPU_IPC_ENABLED'
         ]
 
