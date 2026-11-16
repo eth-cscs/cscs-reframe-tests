@@ -106,14 +106,16 @@ the job.
 ### Container image cache
 
 The Container Engine tests pull large `.sqsh` images (several GB).  They
-are cached in `$SCRATCH/.edf_imagestore/`.  The first pull 
-can take 20-30 minutes per account; subsequent runs complete in under a minute.
+are cached in `$SCRATCH/.edf_imagestore/`.  The first pull can take
+20-30 minutes per account; subsequent runs complete in under a minute.
 
 ### Job submission
 
 - ReFrame submits jobs via Slurm (`sbatch`).  Jobs that cannot start
   immediately are queued — there is **no need to pre-check for idle
   nodes**.  Let Slurm schedule them.
+- Jobs run as the user who invoked `reframe`; `--dry-run` only
+  generates the sbatch scripts and submits nothing.
 - The default walltime for tests should be conservative (e.g.
   `1h00m00s`).
 - `squeue -u <user>` to list queued/running jobs.
@@ -129,6 +131,10 @@ can take 20-30 minutes per account; subsequent runs complete in under a minute.
   queue — the difference is scheduling: a shorter walltime cap
   (commonly 30 minutes) and a small node limit, intended for quick
   validation and test runs.
+- Association limits such as `MaxSubmitJobs` (a cap on the number of
+  pending jobs, enforced per account/partition) can reject large
+  submissions; check them with
+  `sacctmgr show assoc user=$USER format=account,partition,maxsubmitjobs`.
 - To run a ReFrame test on the debug queue, keep
   `--system <system>:normal` so the test retains the right features,
   account and topology, and override the Slurm partition on the
@@ -201,7 +207,7 @@ that has the `uenv` feature.
 # pull once, pinning the system so the right image is fetched
 uenv image pull prgenv-gnu/26.3:v1@starlex
 # expose it to ReFrame WITHOUT the @<system> suffix
-export CSCS_RFM_UENV=prgenv-gnu/25.11:v1
+export CSCS_RFM_UENV=prgenv-gnu/26.3:v1
 ```
 
 - The `prgenv-gnu` uenv provides the features ReFrame tests look for,
@@ -244,8 +250,8 @@ architecture.
 Typical ReFrame workflow:
 
 1. Find the right image: `uenv image find prgenv-gnu`
-2. Pull it for your system: `uenv image pull prgenv-gnu/25.11:v1@starlex`
-3. Expose to ReFrame: `export CSCS_RFM_UENV=prgenv-gnu/25.11:v1`
+2. Pull it for your system: `uenv image pull prgenv-gnu/26.3:v1@starlex`
+3. Expose to ReFrame: `export CSCS_RFM_UENV=prgenv-gnu/26.3:v1`
 4. Verify the environ is visible:
    `reframe -C config/cscs.py --system starlex:normal -L`
 
@@ -279,13 +285,14 @@ uenv case additionally adds `--uenv=<path>/store.squashfs` and
 
 ### Slurm account
 
-Unlike the GH200 vclusters, `config/systems/beverin.py` does **not** set
-a default Slurm account.  ReFrame also explicitly unsets `SBATCH_ACCOUNT`,
-so setting that environment variable is not enough.  Pass the account
-explicitly on the command line:
+As on the GH200 vclusters, the default Slurm account is inferred from
+the user's primary group (e.g. `csstaff`) via `osext.osgroup()` — both
+the `mi300` and `mi200` partitions set `--account` in their `access`
+in `config/systems/beverin.py`, so `--account` is optional.  To
+override the group, pass it explicitly:
 
 ```bash
-reframe -C config/cscs.py ... -J--account=csstaff
+reframe -C config/cscs.py ... --system beverin:mi300 -J account=csstaff
 ```
 
 ### Selecting a partition
@@ -301,10 +308,28 @@ reframe -C config/cscs.py ... --system beverin:mi300
 
 ### Remote topology detection
 
-ReFrame's remote topology detection for `mi300`/`mi200` may fail because
-the detection job needs internet access to install `uv` and then write
-`topo.json`.  A quick workaround is to seed a local topology file so
-ReFrame skips the remote detection:
+ReFrame auto-detects the node topology of `mi300`/`mi200` by submitting
+an `rfm-detect-job` to the partition; the job installs `uv` and runs
+`uvx --from=reframe-hpc reframe --detect-host-topology=topo.json` on a
+compute node.  This also happens with `--dry-run`, needs internet
+access from the compute nodes (beverin has it), and takes a few
+minutes the first time.  The result is cached in
+`~/.reframe/topology/beverin-<partition>/processor.json` and reused on
+subsequent runs.
+
+Because `$HOME` is shared across Alps systems, `uv` state created on
+an aarch64 system (the GH200 vclusters) breaks the detection on
+beverin (x86_64) with `Exec format error (os error 8)` — and vice
+versa.  If the run warns `failed to retrieve remote processor info`,
+reset the shared `uv` state and rerun:
+
+```bash
+rm -rf ~/.local/share/uv/tools/reframe-hpc ~/.cache/uv
+```
+
+As a fallback, a topology file can be seeded from the login partition
+so ReFrame skips the remote detection (note that login and compute
+nodes may have different CPUs):
 
 ```bash
 mkdir -p ~/.reframe/topology/beverin-mi300 ~/.reframe/topology/beverin-mi200
@@ -324,7 +349,12 @@ export CSCS_RFM_UENV=prgenv-gnu/25.07-6.3.3:v12
 ```
 
 The `prgenv-gnu` uenv provides the features ReFrame tests look for,
-including `rocm`, `mpi`, and `prgenv`. Supported features are defined in ls $(uenv image inspect --format '{path}' prgenv-gnu/25.07-6.3.3:v12)/meta/extra/reframe.yaml for each uenv.
+including `rocm`, `mpi`, and `prgenv`.  The supported features of a
+uenv are listed in the `reframe.yaml` file bundled with the image:
+
+```bash
+ls $(uenv image inspect --format '{path}' prgenv-gnu/25.07-6.3.3:v12)/meta/extra/reframe.yaml
+```
 
 ---
 
