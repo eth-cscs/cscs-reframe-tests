@@ -31,7 +31,7 @@ source $RFM_STABLE/rfm-env/bin/activate
 reframe -V
 ```
 
-The config file for CSCS systems is `config/cscs.py`:
+The config file for CSCS systems is `config/cscs.py` (in the cscs-reframe-tests directory):
 
 ```bash
 reframe -C config/cscs.py -c checks/path/to/test.py -n 'TestName' -r --performance-report
@@ -57,6 +57,7 @@ Useful flags:
 | `--dry-run` | Generate sbatch scripts without submitting (useful for verification) |
 | `-J OPT` | Pass a Slurm option (e.g. `-J--account=csstaff`) |
 | `--system <name>:<partition>` | Target a specific system/partition (NOT `-p`, which filters programming environments) |
+| `-s DIR` | Set stage directory prefix to DIR |
 
 ### Validating changes (dry-run)
 
@@ -95,7 +96,7 @@ the job.
 
 ### Use `$SCRATCH`, never `/tmp`
 
-- `$SCRATCH` is `/capstor/scratch/<user>` — use it for all temporary files,
+- `$SCRATCH` is `/ritom/scratch/cscs/$USER` for most systems (daint, starlex, beverin), `/iopsstor/scratch/cscs/$USER` for clariden and `/capstor/scratch/cscs/$USER` for santis - use it for all temporary files,
   container images, and ReFrame output.
 - `/tmp` is local to the node and may be cleaned or too small.
 - Applies to **all** temporary files — tool caches, downloads, pip/uv
@@ -105,8 +106,8 @@ the job.
 ### Container image cache
 
 The Container Engine tests pull large `.sqsh` images (several GB).  They
-are cached in `$SCRATCH/.edf_imagestore/`.  The first pull per account
-can take 20-30 minutes; subsequent runs complete in under a minute.
+are cached in `$SCRATCH/.edf_imagestore/`.  The first pull 
+can take 20-30 minutes per account; subsequent runs complete in under a minute.
 
 ### Job submission
 
@@ -142,8 +143,7 @@ can take 20-30 minutes; subsequent runs complete in under a minute.
 
 - List: `scontrol show reservation`
 - Submit a test into a reservation with `-S 'reservation=<name>'`.
-- `-J` options (like `--reservation`) must go in `sched_options` or be
-  set via the `-S` flag.  Adding them to `self.job.options` inside a
+- `-J` options (like `--reservation`) can be set via the `-S` flag or added to the `sched_options` in config/cscs.py. Adding them to `self.job.options` inside a
   `run_before('run')` hook is **too late** — the job script has already
   been generated.
 
@@ -168,13 +168,14 @@ reframe -C config/cscs.py --system daint:normal -n HostnameCheck --dry-run  # fo
 reframe -C config/cscs.py --system clariden:normal -n HostnameCheck --dry-run  # for clariden
 reframe -C config/cscs.py --system santis:normal -n HostnameCheck --dry-run  # for santis
 
-reframe -C config/cscs.py --system beverin:mi300 -n HostnameCheck --dry-run  # for beverin
+reframe -C config/cscs.py --system beverin:mi300 -n HostnameCheck --dry-run  # for beverin/MI300
+reframe -C config/cscs.py --system beverin:mi200 -n HostnameCheck --dry-run  # for beverin/MI200
 ```
 
 ### Slurm account
 
 The default Slurm account is inferred from the user's primary group
-(e.g. `csstaff`) via `osext.osgroup()` in `config/systems/<system>.py`,
+(e.g. `csstaff`) via `osext.osgroup()` in `config/systems/$CLUSTER_NAME.py`,
 so `--account` is **optional** on all four GH200 vclusters.
 
 - **clariden** uses `--account=a-<group>` (note the `a-` prefix);
@@ -183,7 +184,7 @@ so `--account` is **optional** on all four GH200 vclusters.
 To override the group, pass it explicitly:
 
 ```bash
-reframe -C config/cscs.py --system starlex:normal -J--account=csstaff ...
+reframe -C config/cscs.py --system starlex:normal -J account=csstaff ...
 ```
 
 ### Uenvs — required for non-builtin tests
@@ -198,7 +199,7 @@ that has the `uenv` feature.
 
 ```bash
 # pull once, pinning the system so the right image is fetched
-uenv image pull prgenv-gnu/25.11:v1@starlex
+uenv image pull prgenv-gnu/26.3:v1@starlex
 # expose it to ReFrame WITHOUT the @<system> suffix
 export CSCS_RFM_UENV=prgenv-gnu/25.11:v1
 ```
@@ -274,7 +275,7 @@ uenv case additionally adds `--uenv=<path>/store.squashfs` and
 
 ---
 
-## 4.  Beverin-specific notes
+## 4.  AMD INSTINCT Mi200/Mi300 nodes (Beverin)
 
 ### Slurm account
 
@@ -323,7 +324,7 @@ export CSCS_RFM_UENV=prgenv-gnu/25.07-6.3.3:v12
 ```
 
 The `prgenv-gnu` uenv provides the features ReFrame tests look for,
-including `rocm`, `mpi`, and `prgenv`.
+including `rocm`, `mpi`, and `prgenv`. Supported features are defined in ls $(uenv image inspect --format '{path}' prgenv-gnu/25.07-6.3.3:v12)/meta/extra/reframe.yaml for each uenv.
 
 ---
 
@@ -334,7 +335,7 @@ including `rocm`, `mpi`, and `prgenv`.
 | `config/cscs.py` | Main ReFrame entry point; loads all `config/systems/*.py` and the uenv loader |
 | `config/common.py` | Shared environs (`builtin`, `builtin-gcc`), logging, and ReFrame *modes* (`production`, `maintenance`, `uenv_production`, …) |
 | `config/utilities/uenv.py` | Loads uenv images from `CSCS_RFM_UENV` (or recipes) and exposes them as ReFrame environs |
-| `config/systems/<system>.py` | Per-system config: `daint.py`, `starlex.py`, `clariden.py`, `santis.py`, `beverin.py`, … |
+| `config/systems/$CLUSTER_NAME.py` | Per-system config: `daint.py`, `starlex.py`, `clariden.py`, `santis.py`, `beverin.py`, … |
 | `checks/mixins/container_engine.py` | `ContainerEngineMixin` / `ContainerEngineCPEMixin` — Sarus/container launch, image caching |
 | `checks/mixins/slurm_mpi_pmi2.py` | `SlurmMpiPmi2Mixin` — `--mpi=pmi2` launcher |
 | `uenv_checks/mixins/` | Uenv-specific mixins: `UenvSetup`, `SlurmMpiPmi2Mixin`, `SlurmMpiPmixMixin`, `ContainerEngineCPEMixin`, `UenvSlurmMpiOptionsMixin`, … |
