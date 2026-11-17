@@ -265,7 +265,6 @@ class MemoryOomMpiCheck(SlurmCompiledBaseCheck, UenvSlurmMpiOptionsMixin):
         reference_mem = self.current_partition.extras['cn_memory']
         self.job.options += [f'--mem={reference_mem}']
 
-
     @sanity_function
     def assert_found_oom(self):
         return sn.assert_found(r'(oom-kill)|(Killed)', self.stderr)
