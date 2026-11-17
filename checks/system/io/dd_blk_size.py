@@ -10,18 +10,20 @@ import reframe.utility.sanity as sn
 class ddBlockSizeTest(rfm.RunOnlyRegressionTest):
     """
     Reproduce the behaviour of sbatch_dd_repro.sh:
-      - runs dd write tests with different block sizes
-        - 1M and 5M (control runs) and 4096000 (hangs indefinitely)
-    
+      - runs the dd write test for each block size twice,
+        sequentially: once with 1 task and once with 2 tasks
+        - block sizes are 1M and 5M (control runs) and
+          4096000 (hangs indefinitely)
+
     Original script link:
     https://github.com/eth-cscs/alps-gh200-reproducers/blob/main/stuck-node-on-io/sbatch_dd_repro.sh
     """
- 
-    descr = "dd write tests with different block sizes"
+
+    descr = "dd write test sweeping block sizes sequentially for each task count (1 and 2 tasks)"
     valid_systems = ['*']
     valid_prog_environs = ['builtin']
     tags = {"maintenance", "production"}
-    maintainers = ["UE", "gppezzi"]
+    maintainers = ["UE", "perettig"]
 
     # bs=4096000 can potentially trigger node issues
     prob_block_size = variable(int, value=4096000)
@@ -60,4 +62,3 @@ class ddBlockSizeTest(rfm.RunOnlyRegressionTest):
         return sn.all([
             sn.assert_found(r"SUCCESS", self.stdout),
         ])
-    

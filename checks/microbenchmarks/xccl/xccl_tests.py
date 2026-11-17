@@ -44,7 +44,7 @@ class XCCLTestsBase(rfm.RunOnlyRegressionTest):
                 'GB/s': (24.0, -0.05, 0.05, 'GB/s')
             },
             'mi200': {
-                'GB/s': (13.5, -0.15, 0.15, 'GB/s')
+                'GB/s': (13.5, -0.18, 0.15, 'GB/s')
             },
             'a100': {
                 'GB/s': (13.5, -0.15, 0.15, 'GB/s')

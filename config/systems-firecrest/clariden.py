@@ -1,4 +1,4 @@
-# Copyright 2026 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
+# Copyright Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # ReFrame Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -31,7 +31,7 @@ site_configuration = {
                         'cn_memory': 850000,
                     },
                     'features': ['gpu', 'nvgpu', 'remote'],
-                    'access': [f'--account={_account}'] if _account else [],
+                    'access': [f'--account={_account}', '--gpus-per-node=4'] if _account else ['--gpus-per-node=4'],
                     'resources': [
                         {
                             'name': 'switches',

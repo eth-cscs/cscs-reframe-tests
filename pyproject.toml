@@ -1,0 +1,50 @@
+# Dependency manifest for the CSCS ReFrame test suite.
+#
+# NOTE: this repository is NOT a distributable Python package — the tests are
+# used directly from the checkout (`reframe -C config/cscs.py -c checks/ -R`).
+# This file exists only so the development dependencies (previously listed in
+# requirements.txt) can be installed with standard tooling, e.g.:
+#
+#     python -m venv .venv && source .venv/bin/activate
+#     pip install -e .          # or: pip install -r requirements.txt
+#
+
+[build-system]
+# setuptools>=61 is the first release with PEP 621 pyproject metadata
+# support; kept deliberately low for compatibility with older toolchains
+# (e.g. the pip shipped on older HPC images).
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cscs-reframe-tests"
+# Placeholder version: the repo has no release/versioning scheme.
+version = "0.1.0"
+description = "ReFrame test suite of CSCS"
+readme = "README.md"
+authors = [
+    { name = "Swiss National Supercomputing Center (CSCS/ETH Zurich)" },
+]
+# One minor above the reframe-hpc 4.10.x floor (>=3.10); the suite is
+# validated on Python 3.11.  Loosen to ">=3.6" only if support for
+# reframe-hpc 4.9.3 on older Pythons must be preserved.
+requires-python = ">=3.11"
+
+dependencies = [
+    # Moved verbatim from requirements.txt
+    "reframe-hpc>=4.9.3,!=4.10.0,!=4.10.1,!=4.10.2",
+    "packaging",
+]
+
+[project.optional-dependencies]
+# Only needed with CSCS_RFM_FIRECREST=1 (config/utilities/firecrest_slurm.py)
+firecrest = [
+    "pyfirecrest==3.8.1",
+    "python-hostlist==1.23.0",
+]
+
+[tool.setuptools]
+# Nothing to install: declare explicitly to stop setuptools auto-discovery
+# from choking on the many top-level directories (checks/, config/, ci/, ...).
+packages = []
+py-modules = []

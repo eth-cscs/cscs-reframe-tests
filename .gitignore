@@ -14,3 +14,10 @@ __pycache__/
 
 output/
 stage/
+
+# Python packaging
+*.egg-info/
+/build/
+
+# uv
+uv.lock
