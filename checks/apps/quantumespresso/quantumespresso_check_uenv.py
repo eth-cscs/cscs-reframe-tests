@@ -129,14 +129,18 @@ class QeBuildTestUENV(rfm.CompileOnlyRegressionTest):
     # derives the per-file CUDA Fortran fatbin symbol from the source's full
     # path and truncates it to 63 chars, so a long stage path makes symbols
     # of different files collide at link time ("multiple definition").
-    # The variables are expanded by the shell in the build script.
-    buildprefix = '/dev/shm/$USER/qe-$SLURM_JOB_ID'
+    # The variables are expanded by the shell in the build script; the PID
+    # is a fallback for local builds, where SLURM_JOB_ID is not set.
+    buildprefix = '/dev/shm/$USER/qe-${SLURM_JOB_ID:-$$}'
 
     @run_before('compile')
     def prepare_build(self):
         self.uarch = uenv.uarch(self.current_partition)
         srcdir = f'{self.buildprefix}/src'
         builddir = f'{self.buildprefix}/build'
+        # build_system.srcdir is reset by ReFrame in compile(); configuredir
+        # is passed to cmake as `-S` (same as in ascent.py)
+        self.build_system.configuredir = srcdir
         self.build_system.builddir = builddir
         self.skip_if_no_procinfo()
         cpu = self.current_partition.processor
@@ -147,14 +151,11 @@ class QeBuildTestUENV(rfm.CompileOnlyRegressionTest):
             f'q-e-qe-{self.qe_sources.version}.tar.gz',
         )
 
-        # Extract source code; clean up /dev/shm even if the build fails.
-        # ReFrame resets build_system.srcdir to sourcepath in compile(), so
-        # cd into the sources here; cmake is then called with `-S .`
+        # Extract source code; clean up /dev/shm even if the build fails
         self.prebuild_cmds = [
             f'mkdir -p {srcdir}',
             f"trap 'rm -rf {self.buildprefix}' EXIT",
             f'tar --strip-components=1 -xzf {tarsource} -C {srcdir}',
-            f'cd {srcdir}',
         ]
 
         # Copy the binaries back to shared storage, so that they are visible
