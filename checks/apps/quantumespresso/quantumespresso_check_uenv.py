@@ -137,7 +137,6 @@ class QeBuildTestUENV(rfm.CompileOnlyRegressionTest):
         self.uarch = uenv.uarch(self.current_partition)
         srcdir = f'{self.buildprefix}/src'
         builddir = f'{self.buildprefix}/build'
-        self.build_system.srcdir = srcdir
         self.build_system.builddir = builddir
         self.skip_if_no_procinfo()
         cpu = self.current_partition.processor
@@ -148,11 +147,14 @@ class QeBuildTestUENV(rfm.CompileOnlyRegressionTest):
             f'q-e-qe-{self.qe_sources.version}.tar.gz',
         )
 
-        # Extract source code; clean up /dev/shm even if the build fails
+        # Extract source code; clean up /dev/shm even if the build fails.
+        # ReFrame resets build_system.srcdir to sourcepath in compile(), so
+        # cd into the sources here; cmake is then called with `-S .`
         self.prebuild_cmds = [
             f'mkdir -p {srcdir}',
             f"trap 'rm -rf {self.buildprefix}' EXIT",
             f'tar --strip-components=1 -xzf {tarsource} -C {srcdir}',
+            f'cd {srcdir}',
         ]
 
         # Copy the binaries back to shared storage, so that they are visible
