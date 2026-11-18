@@ -125,11 +125,12 @@ class QeBuildTestUENV(rfm.CompileOnlyRegressionTest):
     tags = {'uenv', 'maintenance'}
     build_time_limit = '0d0h30m0s'
     pwx_executable = None
+    buildprefix = '/dev/shm/q-e-build'
 
     @run_before('compile')
     def prepare_build(self):
         self.uarch = uenv.uarch(self.current_partition)
-        self.build_system.builddir = os.path.join(self.stagedir, 'build')
+        self.build_system.builddir = self.buildprefix
         self.skip_if_no_procinfo()
         cpu = self.current_partition.processor
         self.build_system.max_concurrency = cpu.info['num_cpus_per_socket']
@@ -183,9 +184,7 @@ class QeBuildTestUENV(rfm.CompileOnlyRegressionTest):
 
     @sanity_function
     def validate_test(self):
-        self.pwx_executable = os.path.join(
-            self.stagedir, 'build', 'bin', 'pw.x'
-        )
+        self.pwx_executable = os.path.join(self.buildprefix, 'bin', 'pw.x')
         return os.path.isfile(self.pwx_executable)
 
 
