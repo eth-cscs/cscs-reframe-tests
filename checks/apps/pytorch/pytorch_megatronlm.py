@@ -367,6 +367,7 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
             f'--train-iters {self.training_steps}',
             f'--log-interval 1',
             f'--eval-iters 0',
+            '--eval-interval 1000',
             f'--exit-interval={self.exit_interval}',
             f'--cross-entropy-loss-fusion',
             # Test this for latency
