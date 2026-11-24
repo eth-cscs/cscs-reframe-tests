@@ -25,8 +25,8 @@ class fetch_osu_benchmarks(rfm.RunOnlyRegressionTest):
     #: The version of the benchmarks to fetch.
     #:
     #: :type: :class:`str`
-    #: :default: ``'7.2'``
-    version = variable(str, value='7.2')
+    #: :default: ``'7.5.2'``
+    version = variable(str, value='7.5.2')
 
     local = True
     osu_file_name = f'osu-micro-benchmarks-{version}.tar.gz'
@@ -127,7 +127,7 @@ class build_osu_benchmarks(rfm.CompileOnlyRegressionTest,
 
         # Change to the c/mpi directory to avoid building the
         # non-mpi benchmarks
-        self.build_system.make_opts = ['-C', 'c/mpi']
+        self.build_system.build_opts = ['-C', 'c/mpi']
         self.build_system.max_concurrency = 8
 
     @sanity_function
@@ -218,7 +218,10 @@ class osu_benchmark(rfm.RunOnlyRegressionTest, ExtraLauncherOptionsMixin,
             raise ValueError(f'unknown benchmark metric: {bench_metric}')
 
         self.executable = bench.split('.')[-1]
-        self.executable_opts = ['-m', f'{self.message_size}',
+        # Run only the message size that is checked. OSU 7.5 crashes when
+        # `-m` is given a single value, so pass it as `min:max`.
+        self.executable_opts = ['-m',
+                                f'{self.message_size}:{self.message_size}',
                                 '-x', f'{self.num_warmup_iters}',
                                 '-i', f'{self.num_iters}', '-c']
 
