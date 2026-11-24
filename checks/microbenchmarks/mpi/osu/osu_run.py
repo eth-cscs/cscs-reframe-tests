@@ -3,6 +3,7 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
+import os
 import pathlib
 import sys
 
@@ -31,6 +32,16 @@ class BaseCheck(rfm.RunOnlyRegressionTest, UenvSlurmMpiOptionsMixin):
     }
     tags = {'uenv'}
 
+    # The environment can turn off the eager protocol of the CXI provider
+    # for small messages, which GPU-aware ML environments do for NCCL:
+    # when both FI_CXI_RDZV_THRESHOLD and FI_CXI_RDZV_GET_MIN are 0, every
+    # message that is not sent inline (256 bytes in these tests) uses the
+    # rendezvous protocol. FI_CXI_RDZV_EAGER_SIZE has no effect at this size.
+    # The test runs in the environment as it is provided, and uses
+    # `reference_rdzv` instead of `reference` when it finds these settings.
+    rdzv_env_vars = ['FI_CXI_RDZV_THRESHOLD', 'FI_CXI_RDZV_GET_MIN']
+    reference_rdzv = {}
+
     @run_after('init')
     def set_descr(self):
         self.descr = f'{self.name} on {self.num_tasks} nodes(s)'
@@ -42,6 +53,27 @@ class BaseCheck(rfm.RunOnlyRegressionTest, UenvSlurmMpiOptionsMixin):
         # Use a single socket per node (num_tasks_per_node == 1)
         processor = self.current_partition.processor
         self.num_cpus_per_task = processor.num_cpus_per_socket
+
+    @run_before('run')
+    def report_rdzv_env_vars(self):
+        # Print the values that the job sees: they are set by the uenv view,
+        # so they are not known before the job runs.
+        self.prerun_cmds += [
+            f'echo "{var}=${{{var}-unset}}"' for var in self.rdzv_env_vars
+        ]
+
+    def eager_disabled(self):
+        '''True if the job ran with all of `rdzv_env_vars` set to 0.'''
+        stdout = os.path.join(self.stagedir, sn.evaluate(self.stdout))
+        return all(
+            sn.evaluate(sn.extractall(rf'^{var}=(\S+)', stdout, 1)) == ['0']
+            for var in self.rdzv_env_vars
+        )
+
+    @run_before('performance')
+    def set_reference_for_rdzv(self):
+        if self.reference_rdzv and self.eager_disabled():
+            self.reference = self.reference_rdzv
 
     @sanity_function
     def assert_sanity(self):
@@ -55,6 +87,12 @@ class OSULatency(BaseCheck):
     reference = {
         '*': {
             'latency_256': (2.3, None, 0.60, 'us'),
+            'latency_4M':  (180., None, 0.15, 'us')
+        },
+    }
+    reference_rdzv = {
+        '*': {
+            'latency_256': (10.0, None, 0.25, 'us'),
             'latency_4M':  (180., None, 0.15, 'us')
         },
     }
@@ -75,6 +113,12 @@ class OSUBandwidth(BaseCheck):
     reference = {
         '*': {
             'bandwidth_256': (600., -0.50, None, 'MB/s'),
+            'bandwidth_4M':  (24000., -0.15, None, 'MB/s')
+        },
+    }
+    reference_rdzv = {
+        '*': {
+            'bandwidth_256': (285., -0.20, None, 'MB/s'),
             'bandwidth_4M':  (24000., -0.15, None, 'MB/s')
         },
     }
@@ -124,6 +168,12 @@ class OSUBandwidthCuda(OSUCuda, OSUBandwidth):
             'bandwidth_4M':  (24000., -0.15, None, 'MB/s')
         },
     }
+    reference_rdzv = {
+        '*': {
+            'bandwidth_256': (240., -0.15, None, 'MB/s'),
+            'bandwidth_4M':  (24000., -0.15, None, 'MB/s')
+        },
+    }
 
 
 @rfm.simple_test
@@ -131,6 +181,12 @@ class OSULatencyCuda(OSUCuda, OSULatency):
     reference = {
         '*': {
             'latency_256': (3.75, None, 0.15, 'us'),
+            'latency_4M':  (180., None, 0.15, 'us')
+        },
+    }
+    reference_rdzv = {
+        '*': {
+            'latency_256': (10.5, None, 0.25, 'us'),
             'latency_4M':  (180., None, 0.15, 'us')
         },
     }
