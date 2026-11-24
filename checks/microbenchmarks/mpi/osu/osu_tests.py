@@ -127,7 +127,7 @@ class build_osu_benchmarks(rfm.CompileOnlyRegressionTest,
 
         # Change to the c/mpi directory to avoid building the
         # non-mpi benchmarks
-        self.build_system.make_opts = ['-C', 'c/mpi']
+        self.build_system.build_opts = ['-C', 'c/mpi']
         self.build_system.max_concurrency = 8
 
     @sanity_function
