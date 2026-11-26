@@ -135,44 +135,50 @@ class NVSHMEMAlltoallLatencyUENV(NVSHMEMPerftestBase):
 
 
 @rfm.simple_test
-class NVSHMEMPutBlockUENV(rfm.RegressionTest, UenvSlurmMpiOptionsMixin):
-    '''Build and run the put-block example shipped with NVSHMEM.
+class NVSHMEMRingUENV(rfm.RegressionTest, UenvSlurmMpiOptionsMixin):
+    '''Build and run the dev-guide-ring example shipped with NVSHMEM.
 
     The example is the one from
-    https://github.com/NVIDIA/nvshmem/blob/devel/examples/put-block.cu, which
-    the nvshmem package installs under share/src/examples.  Every PE puts a
-    block of data to its right neighbour and validates what it received from
-    its left neighbour.
+    https://github.com/NVIDIA/nvshmem/blob/devel/examples/dev-guide-ring.cu,
+    which the nvshmem package installs under share/src/examples.  Every PE
+    sends its PE number to its right neighbour, so each PE must receive the
+    number of its left neighbour.  The PEs select their GPU with
+    cudaSetDevice(mype_node) after nvshmem_init(), as recommended by the
+    NVSHMEM documentation, and the ring spans all GPUs of all nodes, so both
+    NVLink and the network are exercised.
+
+    Two bootstraps are tested:
+
+    - mpi: the default of the uenv (NVSHMEM_BOOTSTRAP=mpi).  With
+      MPICH_GPU_SUPPORT_ENABLED=1, MPI_Init creates a CUDA context on GPU 0
+      before the application selects its GPU, so all PEs of a node end up on
+      GPU 0 and internode puts fail with an illegal memory access.  GPU
+      support in Cray MPICH is therefore disabled for this case.
+    - pmi2: NVSHMEM_BOOTSTRAP=pmi with NVSHMEM_BOOTSTRAP_PMI=PMI-2 and
+      srun --mpi=pmi2 (the plain PMI bootstrap does not work with libfabric).
     '''
 
-    descr = 'Build and run the NVSHMEM put-block example'
+    descr = 'Build and run the NVSHMEM dev-guide-ring example'
     valid_systems = ['+nvgpu +uenv']
     valid_prog_environs = ['+uenv +nvshmem']
     maintainers = ['SSA']
     sourcesdir = None
     build_system = 'SingleSource'
     build_locally = False
-    sourcepath = 'put-block.cu'
-    executable = './put-block'
+    sourcepath = 'dev-guide-ring.cu'
+    executable = './dev-guide-ring'
     tags = {'production', 'uenv'}
     time_limit = '10m'
     num_nodes = variable(int, value=2)
+    bootstrap = parameter(['mpi', 'pmi2'])
 
     @run_before('compile')
     def set_build(self):
         gpu = self.current_partition.select_devices('gpu')[0]
         view = '/user-environment/env/default'
         self.prebuild_cmds = [
-            'NVSHMEM_EXAMPLES=$(echo /user-environment/linux-*/nvshmem-*'
-            '/share/src/examples)',
-            'cp $NVSHMEM_EXAMPLES/put-block.cu '
-            '$NVSHMEM_EXAMPLES/bootstrap_helper.h .',
-            # The example validates recv_data right after the kernel without
-            # waiting for the put of its neighbour to complete: add the
-            # missing barrier, otherwise the test fails randomly
-            r"sed -i 's/^\(\s*\)\(CUDA_CHECK(cudaDeviceSynchronize());\)$/"
-            r"\1\2\n\1nvshmem_barrier_all();/' put-block.cu",
-            'grep -q nvshmem_barrier_all put-block.cu'
+            'cp /user-environment/linux-*/nvshmem-*/share/src/examples/'
+            'dev-guide-ring.cu .'
         ]
         self.build_system.cxxflags = [
             '-rdc=true', f'-arch={gpu.arch}', '-ccbin mpicxx',
@@ -184,19 +190,36 @@ class NVSHMEMPutBlockUENV(rfm.RegressionTest, UenvSlurmMpiOptionsMixin):
 
     @run_after('setup')
     def set_num_tasks(self):
-        # One PE per node: the example calls cudaSetDevice(mype_node) only
-        # after nvshmem_init(), so with several PEs per node they would all
-        # be initialised on GPU 0 ("multiple PEs per GPU") and the internode
-        # puts fail with an illegal memory access
-        self.num_tasks_per_node = 1
-        self.num_tasks = self.num_nodes
+        # One PE per GPU; no GPU binding, since the example selects the GPU
+        # itself and needs to see all GPUs of the node
+        num_gpus = self.current_partition.select_devices('gpu')[0].num_devices
+        self.num_tasks_per_node = num_gpus
+        self.num_tasks = self.num_nodes * num_gpus
+
+    @run_after('setup')
+    def set_bootstrap(self):
+        if self.bootstrap == 'mpi':
+            self.env_vars['NVSHMEM_BOOTSTRAP'] = 'mpi'
+            self.env_vars['MPICH_GPU_SUPPORT_ENABLED'] = '0'
+        else:
+            self.env_vars['NVSHMEM_BOOTSTRAP'] = 'pmi'
+            self.env_vars['NVSHMEM_BOOTSTRAP_PMI'] = 'PMI-2'
+            # Replace the --mpi option set by UenvSlurmMpiOptionsMixin
+            self.job.launcher.options = [
+                opt for opt in self.job.launcher.options
+                if not opt.startswith('--mpi=')
+            ] + ['--mpi=pmi2']
 
     @sanity_function
     def assert_sanity(self):
+        pes = sn.extractall(r'^(\d+): received message (\d+)', self.stdout,
+                            1, int)
+        msgs = sn.extractall(r'^(\d+): received message (\d+)', self.stdout,
+                             2, int)
+        npes = self.num_tasks
         return sn.all([
-            sn.assert_eq(
-                sn.count(sn.findall(r'^\[\d+ of \d+\] run complete',
-                                    self.stdout)),
-                self.num_tasks),
-            sn.assert_not_found(r'run failure|Error at', self.stdout),
+            sn.assert_eq(sn.sorted(pes), list(range(npes))),
+            sn.all(sn.map(
+                lambda pm: sn.assert_eq(pm[1], (pm[0] - 1 + npes) % npes),
+                sn.zip(pes, msgs))),
         ])
