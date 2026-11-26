@@ -10,17 +10,33 @@ set -euo pipefail
 export FIRECREST_SYSTEM=lys
 
 # Derive remote user and scratch path from FirecREST.
-REMOTE_USER=$(firecrest id | awk -F'[()]' '{print $2}')
+#
+# `firecrest id` fails against the lys deployment with CLI 3.7.x ("Operation
+# failed: 'group'": the server returns `groups` as a list and no singular
+# `group` key). Fall back to FIRECREST_REMOTE_USER in that case.
+REMOTE_USER="${FIRECREST_REMOTE_USER:-$(firecrest id 2>/dev/null | awk -F'[()]' '{print $2}')}"
+if [[ -z "${REMOTE_USER}" ]]; then
+    echo "ERROR: could not determine the remote user." >&2
+    echo "       'firecrest id' failed and FIRECREST_REMOTE_USER is unset." >&2
+    exit 1
+fi
 REMOTE_SCRATCH=$(firecrest systems | jq -r '.[0].fileSystems[] | select(.dataType=="scratch") | .path')
 REMOTE_DIR="${REMOTE_SCRATCH}/${REMOTE_USER}/reframe"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# lys requires an explicit account for (transfer-based) uploads; set
+# FIRECREST_ACCOUNT to the user's default Slurm account, e.g. `chuv`.
+ACCOUNT_ARGS=()
+if [[ -n "${FIRECREST_ACCOUNT:-}" ]]; then
+    ACCOUNT_ARGS=(--account "${FIRECREST_ACCOUNT}")
+fi
 
 echo "==> Ensuring remote working directory ${REMOTE_DIR} exists"
 firecrest mkdir -p "${REMOTE_DIR}"
 
 echo "==> Uploading test scripts to ${REMOTE_DIR}"
-firecrest upload "${SCRIPT_DIR}/reframe.toml" "${REMOTE_DIR}" reframe.toml
-firecrest upload "${SCRIPT_DIR}/submit-reframe-lys-firecrest.sh" "${REMOTE_DIR}" submit-reframe-lys-firecrest.sh
+firecrest upload "${ACCOUNT_ARGS[@]}" "${SCRIPT_DIR}/reframe.toml" "${REMOTE_DIR}" reframe.toml
+firecrest upload "${ACCOUNT_ARGS[@]}" "${SCRIPT_DIR}/submit-reframe-lys-firecrest.sh" "${REMOTE_DIR}" submit-reframe-lys-firecrest.sh
 
 echo "==> Making remote test script executable"
 firecrest chmod "${REMOTE_DIR}/submit-reframe-lys-firecrest.sh" 755
