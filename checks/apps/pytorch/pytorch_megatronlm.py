@@ -85,7 +85,6 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
             'overlap_p2p_communication_warmup_flush': True,
 
             'ref_tokens_per_sec_per_gpu': 700.0,
-            'ref_throughput_per_gpu': 330.0,
 
             'activation': 'xielu',
             'optimizer': 'ademamix',
@@ -146,7 +145,6 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
             'overlap_p2p_communication_warmup_flush': True,
 
             'ref_tokens_per_sec_per_gpu': 870.0,
-            'ref_throughput_per_gpu': 420.0,
 
             'activation': 'swiglu',
             'optimizer': 'adam',
@@ -191,7 +189,6 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
             'overlap_p2p_communication_warmup_flush': False,
 
             'ref_tokens_per_sec_per_gpu': 7600.0,
-            'ref_throughput_per_gpu': 440.0,
 
             'activation': 'swiglu',
             'optimizer': 'adam',
@@ -244,11 +241,11 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
             'cpus_per_task', (curr_part.processor.num_cpus //
                               self.num_tasks_per_node)
         )
+        # Only tokens/sec has a reference: the TFLOP figure that Megatron
+        # prints depends on the Megatron version for the same tokens/sec.
+        # It is still reported by throughput_per_gpu.
         self.reference = {
             '*': {
-                'throughput_per_gpu':
-                    (model_config['ref_throughput_per_gpu'], -0.1, None,
-                     'TFLOP/s/GPU'),
                 'tokens_per_sec_per_gpu':
                     (model_config['ref_tokens_per_sec_per_gpu'], -0.1, None,
                      'tokens/sec/gpu'),
@@ -367,6 +364,7 @@ class PyTorchMegatronLM(rfm.RunOnlyRegressionTest):
             f'--train-iters {self.training_steps}',
             f'--log-interval 1',
             f'--eval-iters 0',
+            '--eval-interval 1000',
             f'--exit-interval={self.exit_interval}',
             f'--cross-entropy-loss-fusion',
             # Test this for latency
@@ -548,13 +546,40 @@ class PyTorchMegatronLM_UENV(PyTorchMegatronLM):
     valid_prog_environs = ['+pytorch']
     maintainers = ['UE', 'SSA']
 
+    # A commit of the fork that works with Transformer Engine 2.x.
+    # The default of the base class predates it, and fails with
+    # "apply_rope_fusion is not available".
+    megatron_release = 'c3d83c5a0'
+
     @run_after('setup')
     def patch_numpy(self):
         # np.product -> np.prod in latest NumPy versions
         self.prerun_cmds += [
             r"grep -r -l 'np\.product' ${MEGATRON_LM_DIR} | "
-            r"xargs sed -i 's/np.product/np.prod/g'"
+            r"xargs -r sed -i 's/np.product/np.prod/g'"
         ]
+
+    @run_after('setup')
+    def patch_tp_deadlock(self):
+        # TP rank 0 broadcasts `assistant_mask` whenever the dataset returns
+        # one, but the other TP ranks only receive it with --ap-sft. With
+        # tensor parallelism > 1 the job then hangs in the first step.
+        # FIXME: remove when this is fixed in the fork.
+        self.prerun_cmds += [
+            r"sed -i 's/None if \"assistant_mask\" not in data/"
+            r"None if (not args.ap_sft or \"assistant_mask\" not in data)/' "
+            r"${MEGATRON_LM_DIR}/megatron/training/utils.py"
+        ]
+
+    @run_after('setup')
+    def reduce_memory(self):
+        # llama3-8b needs close to all of the memory of a GH200 module.
+        # The node runs out of memory with 32 data loader workers for each
+        # rank, and mock data does not need them.
+        self.executable_opts[-1] = self.executable_opts[-1].replace(
+            '--num-workers 32', '--num-workers 8'
+        )
+        self.env_vars['PYTORCH_CUDA_ALLOC_CONF'] = 'expandable_segments:True'
 
     @run_after('setup')
     def set_env_vars(self):
