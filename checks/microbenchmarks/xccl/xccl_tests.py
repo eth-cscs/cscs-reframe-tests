@@ -44,7 +44,9 @@ class XCCLTestsBase(rfm.RunOnlyRegressionTest):
                 'GB/s': (24.0, -0.05, 0.05, 'GB/s')
             },
             'mi200': {
-                'GB/s': (13.5, -0.18, 0.15, 'GB/s')
+                # No upper bound: RCCL 2.30 (ROCm 7.14) reaches ~20 GB/s,
+                # RCCL from ROCm 7.2 ~12 GB/s
+                'GB/s': (13.5, -0.18, None, 'GB/s')
             },
             'a100': {
                 'GB/s': (13.5, -0.15, 0.15, 'GB/s')
@@ -76,6 +78,13 @@ class XCCLTestsBase(rfm.RunOnlyRegressionTest):
         self.num_gpus_per_node = curr_part.select_devices('gpu')[0].num_devices
         self.num_tasks_per_node = self.num_gpus_per_node
         self.num_tasks = self.num_nodes * self.num_gpus_per_node
+
+        # Give each rank its share of the node: with a single core per rank
+        # the (R|N)CCL proxy threads compete with the rank and the bandwidth
+        # drops (e.g. from 101 to 45 GB/s for RCCL all_reduce on MI200)
+        num_cpus = curr_part.processor.num_cpus
+        if num_cpus:
+            self.num_cpus_per_task = num_cpus // self.num_gpus_per_node
 
     @run_after('setup')
     def set_nchannels_per_net_peer(self):
